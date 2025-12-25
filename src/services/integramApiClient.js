@@ -639,6 +639,14 @@ class IntegramApiClient {
         return `${cleanBaseURL}/${endpoint}`
       }
 
+      // Check if endpoint already starts with database name (e.g., "my/report/app_menu")
+      // This prevents duplication like: /my/my/report/app_menu
+      const endpointStartsWithDb = endpoint.startsWith(`${this.database}/`)
+      if (endpointStartsWithDb) {
+        // Endpoint already includes database, don't add it again
+        return `${cleanBaseURL}/${endpoint}`
+      }
+
       // For dronedoc.ru/sakhwings.ru, use direct database path (no /api/ prefix)
       // Note: JSON_KV is added via params in get/post methods, not in URL
       return `${cleanBaseURL}/${this.database}/${endpoint}`
