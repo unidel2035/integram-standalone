@@ -7,6 +7,68 @@
 - Чаты и коммуникации
 - Меню и навигацию
 
+## 🚀 Первый запуск
+
+### 1. Клонирование
+
+```bash
+git clone https://github.com/unidel2035/integram-standalone.git
+cd integram-standalone
+```
+
+### 2. Установка зависимостей
+
+```bash
+# Frontend
+npm install
+
+# Backend
+cd backend/monolith
+npm install
+cd ../..
+```
+
+### 3. Настройка окружения
+
+```bash
+# Создать .env файлы
+cp .env.example .env
+cp backend/monolith/.env.example backend/monolith/.env
+
+# Отредактировать .env при необходимости
+nano .env
+```
+
+**Минимальная конфигурация для разработки:**
+
+Корневой `.env`:
+```env
+VITE_API_URL=http://localhost:8081
+VITE_WS_URL=ws://localhost:8081
+VITE_INTEGRAM_URL=https://dronedoc.ru
+```
+
+Backend `.env` (`backend/monolith/.env`):
+```env
+PORT=8081
+NODE_ENV=development
+JWT_SECRET=your-development-secret-change-me
+SESSION_SECRET=your-session-secret-change-me
+```
+
+### 4. Запуск в dev режиме
+
+```bash
+# Terminal 1 - Backend
+cd backend/monolith
+npm run dev
+
+# Terminal 2 - Frontend
+npm run dev
+```
+
+Откройте http://localhost:5173
+
 ## Установка
 
 ```bash
@@ -101,6 +163,79 @@ cp .env.example .env
 - **UI**: PrimeVue 4, PrimeIcons, FontAwesome
 - **Backend**: Node.js, Express
 - **API**: Axios, Socket.io
+
+## 🔧 Troubleshooting
+
+### Build падает с ошибкой PrimeVue CSS
+
+**Ошибка:**
+```
+Rollup failed to resolve import "primevue/resources/themes/aura-light-blue/theme.css"
+```
+
+**Решение:**
+- См. Issue #9
+- PrimeVue 4+ использует встроенную систему тем
+- Не импортируйте CSS темы вручную в `main.js`
+
+### Компоненты Landing не найдены
+
+**Ошибка:**
+```
+Failed to resolve component: LandingHero
+```
+
+**Решение:**
+- См. Issue #8
+- Убедитесь, что все компоненты из `src/components/landing/` присутствуют
+- Проверьте правильность импортов в `IntegramLanding.vue`
+
+### Backend не запускается
+
+**Возможные причины:**
+
+1. **Отсутствуют .env файлы**
+   ```bash
+   cp backend/monolith/.env.example backend/monolith/.env
+   ```
+
+2. **Порт 8081 уже занят**
+   ```bash
+   # Найти процесс на порту 8081
+   lsof -i :8081
+   # Убить процесс
+   kill -9 <PID>
+   # Или измените PORT в .env
+   ```
+
+3. **Отсутствуют обязательные переменные окружения**
+   - Проверьте `JWT_SECRET` и `SESSION_SECRET` в `backend/monolith/.env`
+   - См. Issue #10
+
+4. **Дублирующиеся импорты**
+   - См. Issue #14
+   - Проверьте синтаксис: `node -c backend/monolith/src/index.js`
+
+### Frontend не подключается к Backend
+
+**Проверьте:**
+1. Backend запущен и слушает на порту 8081
+2. В корневом `.env` правильно указан `VITE_API_URL=http://localhost:8081`
+3. Нет CORS ошибок в консоли браузера
+
+### Ошибки при npm install
+
+**Решение:**
+```bash
+# Очистите кэш npm
+npm cache clean --force
+
+# Удалите node_modules и package-lock.json
+rm -rf node_modules package-lock.json
+
+# Переустановите зависимости
+npm install
+```
 
 ## Особенности
 
