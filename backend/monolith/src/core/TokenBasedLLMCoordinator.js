@@ -43,7 +43,7 @@ export class TokenBasedLLMCoordinator extends LLMCoordinator {
 1. СНАЧАЛА ОБЯЗАТЕЛЬНО аутентифицируйся: integram_authenticate с параметрами:
 
    ДЕФОЛТНЫЕ ЗНАЧЕНИЯ (используй если пользователь НЕ указал свои):
-   - serverURL: "https://dronedoc.ru"
+   - serverURL: "https://example.integram.io"
    - database: "my"
    - login: "d"
    - password: "d"

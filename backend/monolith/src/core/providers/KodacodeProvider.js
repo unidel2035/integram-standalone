@@ -37,7 +37,7 @@ export class KodacodeProvider extends BaseProvider {
       apiKey: token,
       baseURL: this.baseURL,
       defaultHeaders: {
-        'HTTP-Referer': 'https://dev.drondoc.ru',
+        'HTTP-Referer': 'https://dev.example.integram.io',
         'X-Title': 'Integram AI Platform'
       }
     })

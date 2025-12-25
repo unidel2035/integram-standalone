@@ -43,7 +43,7 @@ export function createIntegramAgentsIntegramRoutes() {
 
       // Authenticate with Integram
       const authResult = await integram.authenticate({
-        serverUrl: serverUrl || 'https://dronedoc.ru',
+        serverUrl: serverUrl || 'https://example.integram.io',
         database: database || 'my',
         login: 'd',  // System user
         password: 'd'
@@ -148,7 +148,7 @@ export function createIntegramAgentsIntegramRoutes() {
 
       // Authenticate
       const authResult = await integram.authenticate({
-        serverUrl: serverUrl || 'https://dronedoc.ru',
+        serverUrl: serverUrl || 'https://example.integram.io',
         database: database || 'my',
         login: 'd',
         password: 'd'
@@ -254,7 +254,7 @@ export function createIntegramAgentsIntegramRoutes() {
 
       // Authenticate
       const authResult = await integram.authenticate({
-        serverUrl: serverUrl || 'https://dronedoc.ru',
+        serverUrl: serverUrl || 'https://example.integram.io',
         database: database || 'my',
         login: 'd',
         password: 'd'
@@ -329,7 +329,7 @@ export function createIntegramAgentsIntegramRoutes() {
 
       // Authenticate
       const authResult = await integram.authenticate({
-        serverUrl: serverUrl || 'https://dronedoc.ru',
+        serverUrl: serverUrl || 'https://example.integram.io',
         database: database || 'my',
         login: 'd',
         password: 'd'
