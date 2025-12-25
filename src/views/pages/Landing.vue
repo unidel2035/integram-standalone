@@ -1,39 +1,21 @@
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useSEO } from '@/composables/useSEO'
-import NewHero from '@/components/landing/NewHero.vue'
-import ProblemsSection from '@/components/landing/ProblemsSection.vue'
-import SolutionSection from '@/components/landing/SolutionSection.vue'
-import HowItWorksSection from '@/components/landing/HowItWorksSection.vue'
-import UseCasesSection from '@/components/landing/UseCasesSection.vue'
-import NewFeaturesSection from '@/components/landing/NewFeaturesSection.vue'
-import NewPricingSection from '@/components/landing/NewPricingSection.vue'
-import FAQSection from '@/components/landing/FAQSection.vue'
-import FinalCTASection from '@/components/landing/FinalCTASection.vue'
-import Footer from '@/components/landing/Footer.vue'
-import AppConfigurator from '@/layout/AppConfigurator.vue'
-import LogoDisplay from '@/components/LogoDisplay.vue'
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
-import Avatar from 'primevue/avatar'
+import LandingHeader from '@/components/landing/LandingHeader.vue'
+import LandingHero from '@/components/landing/LandingHero.vue'
+import LandingFooter from '@/components/landing/LandingFooter.vue'
 
 const isMounted = ref(false)
-const user = ref(localStorage.getItem('user'))
-const userPhoto = ref(localStorage.getItem('currentUserPhoto') || '')
-
-const logout = () => {
-  ;['_xsrf', 'token', 'user', 'id'].forEach(key => localStorage.removeItem(key))
-  user.value = null
-}
 
 // SEO Meta Tags using our custom composable
 const { setStructuredData } = useSEO({
-  title: 'ДронДок - Наймите ИИ агента вместо сотрудника за 10% стоимости',
-  description: 'Малый и средний бизнес (50-700 сотрудников) заменяет работников на ИИ агентов. Служба поддержки, отдел продаж, back-office - все функции автоматизированы. Экономия до 90% на зарплатах без найма, обучения и текучки кадров.',
-  keywords: 'замена сотрудников на ИИ, наем ИИ агентов, автоматизация персонала, ИИ для МСБ, экономия на зарплате, виртуальные сотрудники, автоматизация back-office, ИИ служба поддержки, ИИ отдел продаж, замена персонала',
-  url: 'https://drondoc.ru',
-  image: 'https://drondoc.ru/demo/images/prew.png',
+  title: 'ИНТЕГРАМ - безопасная и удобная платформа для управления данными',
+  description: 'Платформа устанавливается внутри вашей компании: автоматизируйте учёт, планирование и отчётность, не доверяя данные сторонним сервисам. 100% ваши данные. Ваши серверы. Ваш контроль.',
+  keywords: 'управление данными, платформа для данных, безопасное хранение данных, автоматизация учета, планирование, отчетность, корпоративная платформа, интеграм',
+  url: 'https://integram.io',
+  image: '/images/integram-preview.png',
   type: 'website',
-  siteName: 'ДронДок',
+  siteName: 'ИНТЕГРАМ',
   locale: 'ru_RU',
   twitterCard: 'summary_large_image'
 })
@@ -45,8 +27,8 @@ onMounted(() => {
   setStructuredData({
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    'name': 'ДронДок',
-    'description': 'Платформа для найма ИИ агентов вместо сотрудников. Малый и средний бизнес (50-700 человек) заменяет персонал на автоматизированные функции: служба поддержки, отдел продаж, back-office. Экономия до 90% на зарплатах.',
+    'name': 'ИНТЕГРАМ',
+    'description': 'Безопасная и удобная платформа для управления данными. Платформа устанавливается внутри вашей компании: автоматизируйте учёт, планирование и отчётность, не доверяя данные сторонним сервисам.',
     'applicationCategory': 'BusinessApplication',
     'operatingSystem': 'Web',
     'offers': {
@@ -60,175 +42,173 @@ onMounted(() => {
 
 
 <template>
-  <AppConfigurator />
-  <div class="bg-surface-0 dark:bg-surface-900 min-h-screen transition-colors duration-300">
-    <div class="overflow-hidden">
-      <!-- Modern Navigation Header -->
-      <header
-        class="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-surface-900/80 border-b border-surface-200 dark:border-surface-700"
-        :class="{ 'animate-fade-in': isMounted }"
-      >
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex items-center justify-between h-16">
-            <!-- Logo -->
-            <div class="flex items-center gap-2">
-              <RouterLink
-                to="/dashboard"
-                class="text-surface-700 dark:text-surface-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
-              >
-                <LogoDisplay width="120" height="32" class="hidden sm:block" />
-              </RouterLink>
-              <span class="text-xl font-bold text-surface-900 dark:text-surface-100 sm:hidden">ДронДок</span>
-            </div>
+  <div class="landing-page">
+    <!-- Header with Navigation -->
+    <LandingHeader />
 
-            <!-- Navigation Actions -->
-            <div class="flex items-center gap-3" v-if="!user">
-              <!-- Language Switcher -->
-              <div class="language-switcher-wrapper">
-                <LanguageSwitcher />
-              </div>
-              <RouterLink
-                to="/register"
-                class="text-surface-700 dark:text-surface-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium hidden sm:block"
-              >
-                Регистрация
-              </RouterLink>
-              <RouterLink
-                to="/login"
-                class="bg-gradient-to-r from-primary-600 to-cyan-600 hover:from-primary-700 hover:to-cyan-700 text-white px-6 py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg font-medium"
-              >
-                Войти
-              </RouterLink>
-            </div>
+    <!-- Main Content -->
+    <main class="landing-main">
+      <!-- Hero Section -->
+      <LandingHero />
 
-            <div class="flex items-center gap-4" v-else>
-              <!-- Language Switcher for logged in users -->
-              <div class="language-switcher-wrapper">
-                <LanguageSwitcher />
+      <!-- About Section -->
+      <section id="about" class="landing-section">
+        <div class="landing-section-container">
+          <h2 class="landing-section-title">О платформе</h2>
+          <p class="landing-section-text">
+            ИНТЕГРАМ - это современная платформа для управления данными, которая устанавливается внутри вашей компании.
+            Вы сохраняете полный контроль над своими данными, не доверяя их сторонним сервисам.
+          </p>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section id="features" class="landing-section landing-section-alt">
+        <div class="landing-section-container">
+          <h2 class="landing-section-title">Возможности</h2>
+          <div class="landing-features-grid">
+            <div class="landing-feature-card">
+              <div class="landing-feature-icon">
+                <i class="pi pi-lock"></i>
               </div>
-              <div class="flex items-center gap-2">
-                <Avatar
-                  v-if="userPhoto"
-                  :image="userPhoto"
-                  shape="circle"
-                  class="landing-user-avatar"
-                />
-                <i v-else class="pi pi-user text-surface-700 dark:text-surface-300" />
-                <span class="text-surface-700 dark:text-surface-300 hidden sm:block">
-                  {{ user }}
-                </span>
+              <h3 class="landing-feature-title">Безопасность</h3>
+              <p class="landing-feature-text">
+                Ваши данные хранятся на ваших серверах. Полный контроль и безопасность.
+              </p>
+            </div>
+            <div class="landing-feature-card">
+              <div class="landing-feature-icon">
+                <i class="pi pi-chart-line"></i>
               </div>
-              <button
-                @click="logout"
-                class="bg-surface-200 hover:bg-surface-300 dark:bg-surface-700 dark:hover:bg-surface-600 text-surface-900 dark:text-surface-100 px-4 py-2 rounded-full transition-colors shadow-sm hover:shadow-md font-medium"
-              >
-                Выйти
-              </button>
+              <h3 class="landing-feature-title">Автоматизация</h3>
+              <p class="landing-feature-text">
+                Автоматизируйте учёт, планирование и отчётность в одной системе.
+              </p>
+            </div>
+            <div class="landing-feature-card">
+              <div class="landing-feature-icon">
+                <i class="pi pi-users"></i>
+              </div>
+              <h3 class="landing-feature-title">Удобство</h3>
+              <p class="landing-feature-text">
+                Простой и понятный интерфейс для всех сотрудников компании.
+              </p>
             </div>
           </div>
         </div>
-      </header>
+      </section>
+    </main>
 
-      <!-- Add padding to account for fixed header -->
-      <div class="pt-16"></div>
-
-      <!-- Main Content Sections (10 sections) -->
-      <main class="space-y-0">
-        <!-- 1. Hero Section -->
-        <section :class="{ 'animate-fade-in-up delay-100': isMounted }">
-          <NewHero />
-        </section>
-
-        <!-- 2. Problems Section -->
-        <section :class="{ 'animate-fade-in-up delay-200': isMounted }">
-          <ProblemsSection />
-        </section>
-
-        <!-- 3. Solution Section -->
-        <section :class="{ 'animate-fade-in-up delay-300': isMounted }">
-          <SolutionSection />
-        </section>
-
-        <!-- 4. How It Works Section -->
-        <section :class="{ 'animate-fade-in-up delay-400': isMounted }">
-          <HowItWorksSection />
-        </section>
-
-        <!-- 5. Use Cases Section -->
-        <section :class="{ 'animate-fade-in-up delay-500': isMounted }">
-          <UseCasesSection />
-        </section>
-
-        <!-- 6. Features Section -->
-        <section :class="{ 'animate-fade-in-up delay-600': isMounted }">
-          <NewFeaturesSection />
-        </section>
-
-        <!-- 7. Pricing Section -->
-        <section :class="{ 'animate-fade-in-up delay-700': isMounted }">
-          <NewPricingSection />
-        </section>
-
-        <!-- 8. FAQ Section -->
-        <section :class="{ 'animate-fade-in-up delay-800': isMounted }">
-          <FAQSection />
-        </section>
-
-        <!-- 9. Final CTA Section -->
-        <section :class="{ 'animate-fade-in-up delay-900': isMounted }">
-          <FinalCTASection />
-        </section>
-
-        <!-- 10. Footer -->
-        <section :class="{ 'animate-fade-in-up delay-1000': isMounted }">
-          <Footer />
-        </section>
-      </main>
-    </div>
+    <!-- Footer -->
+    <LandingFooter />
   </div>
 </template>
 
 <style scoped>
-.language-switcher-wrapper {
-  display: inline-flex;
+.landing-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.landing-main {
+  padding-top: 64px; /* Account for fixed header */
+}
+
+/* About and Features Sections */
+.landing-section {
+  padding: 4rem 1.5rem;
+}
+
+.landing-section-alt {
+  background: #f9fafb;
+}
+
+.landing-section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.landing-section-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: #1f2937;
+  margin: 0 0 2rem 0;
+}
+
+@media (min-width: 768px) {
+  .landing-section-title {
+    font-size: 3rem;
+  }
+}
+
+.landing-section-text {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #4b5563;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .landing-section-text {
+    font-size: 1.25rem;
+  }
+}
+
+/* Features Grid */
+.landing-features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+@media (min-width: 768px) {
+  .landing-features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.landing-feature-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.landing-feature-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+.landing-feature-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  border-radius: 12px;
+  display: flex;
   align-items: center;
-  margin-right: 0.5rem;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
 }
 
-.language-switcher-wrapper :deep(.language-icon-button) {
-  border: 2px solid transparent;
-  background: transparent;
-  transition: all 0.2s ease;
+.landing-feature-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 1rem 0;
 }
 
-.language-switcher-wrapper :deep(.language-icon-button:hover) {
-  background-color: rgba(var(--primary-600-rgb, 37, 99, 235), 0.1);
-  border-color: var(--primary-600);
-}
-
-.language-switcher-wrapper :deep(.language-icon-button.active) {
-  background: linear-gradient(135deg, var(--primary-600), var(--cyan-600));
-  border-color: var(--primary-600);
-}
-
-/* Adjust for dark mode */
-.dark .language-switcher-wrapper :deep(.language-icon-button:hover) {
-  background-color: rgba(var(--primary-500-rgb, 59, 130, 246), 0.2);
-}
-
-.dark .language-switcher-wrapper :deep(.language-icon-button.active) {
-  background: linear-gradient(135deg, var(--primary-500), var(--cyan-500));
-}
-
-/* User Avatar */
-.landing-user-avatar {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.landing-user-avatar :deep(img) {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
+.landing-feature-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #6b7280;
+  margin: 0;
 }
 </style>

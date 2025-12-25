@@ -20,8 +20,6 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 
 // Import styles
-import 'primevue/resources/themes/aura-light-blue/theme.css'
-import 'primevue/resources/primevue.min.css'
 import 'primeicons/primeicons.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 
