@@ -239,32 +239,10 @@ const fetchUserData = async () => {
 }
 
 // Fetch user profile photo from backend API
+// Profile photo fetching disabled
 const fetchUserPhoto = async (userId) => {
-  try {
-    const token = localStorage.getItem('my_token') || localStorage.getItem('token')
-    if (!token || !userId) return
-
-    const response = await fetch(`/api/profile/${userId}`, {
-      headers: { 'X-Authorization': token }
-    })
-
-    if (response.ok) {
-      const data = await response.json()
-      if (data.success && data.data?.photo) {
-        userPhoto.value = data.data.photo
-        // Cache photo URL in localStorage with userId for multi-account support
-        localStorage.setItem(`userPhoto_${userId}`, data.data.photo)
-        localStorage.setItem('currentUserPhoto', data.data.photo)
-      } else {
-        // No photo - clear cache for this user
-        userPhoto.value = ''
-        localStorage.removeItem(`userPhoto_${userId}`)
-        localStorage.removeItem('currentUserPhoto')
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching user photo:', error)
-  }
+  // Disabled - backend API not available
+  return
 }
 
 const onMenuShow = () => {
