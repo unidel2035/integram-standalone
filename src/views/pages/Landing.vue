@@ -27,13 +27,13 @@ const logout = () => {
 
 // SEO Meta Tags using our custom composable
 const { setStructuredData } = useSEO({
-  title: 'ДронДок - Наймите ИИ агента вместо сотрудника за 10% стоимости',
-  description: 'Малый и средний бизнес (50-700 сотрудников) заменяет работников на ИИ агентов. Служба поддержки, отдел продаж, back-office - все функции автоматизированы. Экономия до 90% на зарплатах без найма, обучения и текучки кадров.',
-  keywords: 'замена сотрудников на ИИ, наем ИИ агентов, автоматизация персонала, ИИ для МСБ, экономия на зарплате, виртуальные сотрудники, автоматизация back-office, ИИ служба поддержки, ИИ отдел продаж, замена персонала',
-  url: 'https://drondoc.ru',
-  image: 'https://drondoc.ru/demo/images/prew.png',
+  title: 'ИНТЕГРАМ - Платформа для интеграции и автоматизации бизнес-процессов',
+  description: 'ИНТЕГРАМ - универсальная платформа для интеграции данных, автоматизации бизнес-процессов и управления информацией. Создавайте, интегрируйте и автоматизируйте ваши рабочие процессы без программирования.',
+  keywords: 'интеграция данных, автоматизация процессов, бизнес-процессы, управление данными, no-code платформа, интеграция систем, автоматизация бизнеса',
+  url: 'https://integram.io',
+  image: 'https://integram.io/images/preview.png',
   type: 'website',
-  siteName: 'ДронДок',
+  siteName: 'ИНТЕГРАМ',
   locale: 'ru_RU',
   twitterCard: 'summary_large_image'
 })
@@ -45,8 +45,8 @@ onMounted(() => {
   setStructuredData({
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    'name': 'ДронДок',
-    'description': 'Платформа для найма ИИ агентов вместо сотрудников. Малый и средний бизнес (50-700 человек) заменяет персонал на автоматизированные функции: служба поддержки, отдел продаж, back-office. Экономия до 90% на зарплатах.',
+    'name': 'ИНТЕГРАМ',
+    'description': 'Универсальная платформа для интеграции данных, автоматизации бизнес-процессов и управления информацией. Создавайте, интегрируйте и автоматизируйте ваши рабочие процессы без программирования.',
     'applicationCategory': 'BusinessApplication',
     'operatingSystem': 'Web',
     'offers': {
@@ -73,13 +73,26 @@ onMounted(() => {
             <!-- Logo -->
             <div class="flex items-center gap-2">
               <RouterLink
-                to="/dashboard"
+                to="/"
                 class="text-surface-700 dark:text-surface-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
               >
-                <LogoDisplay width="120" height="32" class="hidden sm:block" />
+                <LogoDisplay width="140" height="32" class="hidden sm:block" />
+                <span class="text-xl font-bold text-surface-900 dark:text-surface-100 sm:hidden">ИНТЕГРАМ</span>
               </RouterLink>
-              <span class="text-xl font-bold text-surface-900 dark:text-surface-100 sm:hidden">ДронДок</span>
             </div>
+
+            <!-- Navigation Menu (Desktop) -->
+            <nav class="hidden lg:flex items-center gap-6">
+              <a href="#about" class="text-surface-700 dark:text-surface-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+                О платформе
+              </a>
+              <a href="#docs" class="text-surface-700 dark:text-surface-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+                Документация
+              </a>
+              <a href="#contacts" class="text-surface-700 dark:text-surface-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+                Контакты
+              </a>
+            </nav>
 
             <!-- Navigation Actions -->
             <div class="flex items-center gap-3" v-if="!user">
