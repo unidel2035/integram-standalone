@@ -95,7 +95,7 @@ onMounted(() => {
               </RouterLink>
               <RouterLink
                 to="/login"
-                class="bg-gradient-to-r from-primary-600 to-cyan-600 hover:from-primary-700 hover:to-cyan-700 text-white px-6 py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg font-medium"
+                class="bg-gradient-to-r from-[#0062E6] to-[#33AEFF] hover:from-[#0052C6] hover:to-[#2A9EEF] text-white px-6 py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg font-medium"
               >
                 Войти
               </RouterLink>
@@ -207,8 +207,8 @@ onMounted(() => {
 }
 
 .language-switcher-wrapper :deep(.language-icon-button.active) {
-  background: linear-gradient(135deg, var(--primary-600), var(--cyan-600));
-  border-color: var(--primary-600);
+  background: linear-gradient(135deg, #0062E6, #33AEFF);
+  border-color: #0062E6;
 }
 
 /* Adjust for dark mode */
@@ -217,7 +217,7 @@ onMounted(() => {
 }
 
 .dark .language-switcher-wrapper :deep(.language-icon-button.active) {
-  background: linear-gradient(135deg, var(--primary-500), var(--cyan-500));
+  background: linear-gradient(135deg, #0062E6, #33AEFF);
 }
 
 /* User Avatar */
