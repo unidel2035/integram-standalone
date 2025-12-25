@@ -362,8 +362,8 @@ const handleOAuthLogin = async (provider) => {
             rgba(33, 150, 243, 0) 30%
           );
         ">
-        <div class="w-full bg-surface-0 dark:bg-surface-900 py-6 px-6" style="border-radius: 53px; max-width: 400px;">
-          <div class="text-center mb-4">
+        <div class="w-full bg-surface-0 dark:bg-surface-900" style="border-radius: 53px; max-width: 450px; padding: 2rem 2.5rem;">
+          <div style="text-align: center; margin-bottom: 1.5rem;">
             <div class="svg-container" style="display: none;">
               <svg width="256" height="150" version="1.1" id="svg1" sodipodi:docname="dd4.svg"
                 inkscape:version="1.4.1 (93de688d07, 2025-03-30)"
@@ -409,11 +409,7 @@ const handleOAuthLogin = async (provider) => {
                   title="'Настройки API'" />
               </div>
 
-              <label for="email1"
-                class="block text-surface-900 dark:text-surface-0 text-sm font-medium mb-1">Логин</label>
               <InputText id="email1" type="text" placeholder="Логин" class="w-full mb-3" v-model="email" />
-              <label for="password1"
-                class="block text-surface-900 dark:text-surface-0 font-medium text-sm mb-1">Пароль</label>
               <Password id="password1" v-model="password" placeholder="Пароль" :toggleMask="true" class="mb-3" fluid
                 :feedback="false"/>
 

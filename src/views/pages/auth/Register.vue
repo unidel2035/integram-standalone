@@ -325,34 +325,26 @@ const openTelegramLogin = () => {
             rgba(33, 150, 243, 0) 30%
           );
         ">
-                <div class="w-full bg-surface-0 dark:bg-surface-900 py-6 px-6" style="border-radius: 53px; max-width: 400px;">
-                    <div class="text-center mb-4">
+                <div class="w-full bg-surface-0 dark:bg-surface-900" style="border-radius: 53px; max-width: 450px; padding: 2rem 2.5rem;">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
                         <div class="text-2xl font-bold text-surface-900 dark:text-surface-0 mb-1">Создать аккаунт</div>
                         <span class="text-muted-color text-sm">Начните работу с платформой</span>
                     </div>
 
                     <div>
                         <form @submit.prevent="handleSubmit">
-                            <label for="login"
-                                class="block text-surface-900 dark:text-surface-0 text-sm font-medium mb-1">Логин</label>
                             <InputText id="login" type="text" placeholder="Придумайте логин"
                                 class="w-full mb-3" v-model="login" />
 
-                            <label for="email"
-                                class="block text-surface-900 dark:text-surface-0 text-sm font-medium mb-1">Email</label>
                             <InputText id="email" type="email" placeholder="Например: info@drondoc.ru"
                                 class="w-full mb-1" v-model="email" />
                             <small class="block text-muted-color mb-3 text-xs">
                                 Доступные адреса: info@, admin@, support@, sales@, contact@, help@ drondoc.ru
                             </small>
 
-                            <label for="password"
-                                class="block text-surface-900 dark:text-surface-0 font-medium text-sm mb-1">Пароль</label>
                             <Password id="password" v-model="password" placeholder="Создайте пароль" :toggleMask="true"
                                 class="mb-3" :feedback="false" inputClass="w-full"></Password>
 
-                            <label for="confirmPassword"
-                                class="block text-surface-900 dark:text-surface-0 font-medium text-sm mb-1">Подтвердите пароль</label>
                             <Password id="confirmPassword" v-model="confirmPassword" placeholder="Повторите пароль" :toggleMask="true"
                                 class="mb-3" :feedback="false" inputClass="w-full"></Password>
 
