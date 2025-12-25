@@ -350,8 +350,9 @@ const handleOAuthLogin = async (provider) => {
 <template>
   <Toast />
   <div
-    class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen overflow-hidden">
-    <div class="flex flex-col items-center justify-center">
+    class="bg-surface-50 dark:bg-surface-950"
+    style="display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
       <div style="
           border-radius: 56px;
           padding: 0.3rem;
