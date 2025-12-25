@@ -43,6 +43,7 @@ const updateLoaders = isLoading => {
 
 // Функция для получения базового URL с учетом apiBase из localStorage
 // Issue #3848: Support custom database per request via config.targetDatabase
+// Issue #INTEGRAM_STANDALONE: Auto-detect server from window.location for standalone deployment
 const getBaseURL = (targetDatabase = null) => {
   const apiBase = localStorage.getItem('apiBase')
   const db = targetDatabase || localStorage.getItem('db') || 'a2025'
@@ -50,11 +51,31 @@ const getBaseURL = (targetDatabase = null) => {
   // Если выбран localhost, используем локальный адрес
   if (apiBase === 'localhost') return `http://localhost/${db}/`
 
-  // Используем apiBase если указан, иначе дефолтный dronedoc.ru
+  // Используем apiBase если указан, иначе автоопределение по текущему хосту
   // Issue #3924: Changed from sim.sakhwings.ru to dronedoc.ru to avoid CORS errors
-  // Note: We use ?JSON_KV parameter instead of /api/ path
-  // Important: Always add trailing slash to prevent double-slash issues with axios URL joining
-  const baseHost = apiBase || 'dronedoc.ru'
+  // Issue #INTEGRAM_STANDALONE: Auto-detect current hostname for standalone deployments
+  // This allows the same build to work on any server (185.128.105.78, dronedoc.ru, etc.)
+  let baseHost = apiBase
+
+  if (!baseHost) {
+    // Auto-detect from current location
+    const hostname = window.location.hostname
+    const protocol = window.location.protocol // http: or https:
+
+    // Remove /app or other paths from the base URL
+    baseHost = hostname
+
+    // For IP addresses or non-standard servers, use the detected protocol
+    if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/) || hostname === 'localhost') {
+      // IP address or localhost - use detected protocol
+      return `${protocol}//${baseHost}/${db}/`
+    }
+
+    // For named domains (dronedoc.ru, dev.drondoc.ru), default to https
+    baseHost = hostname
+  }
+
+  // Named domains always use https, custom apiBase uses https unless it's IP/localhost
   return `https://${baseHost}/${db}/`
 }
 
