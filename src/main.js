@@ -20,6 +20,8 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 
 // Import styles
+// PrimeVue 4+ uses built-in theme system via @primevue/themes/aura (imported above)
+// No need to import theme CSS manually
 import 'primeicons/primeicons.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 
