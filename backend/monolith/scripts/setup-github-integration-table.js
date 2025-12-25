@@ -151,7 +151,7 @@ async function createGitHubUsersTable() {
 
     // Add requisites (columns)
     const requisites = [
-      { name: 'User ID', type: REQ_TYPE_NUMBER, description: 'DronDoc User ID' },
+      { name: 'User ID', type: REQ_TYPE_NUMBER, description: 'Integram User ID' },
       { name: 'Login', type: REQ_TYPE_SHORT, description: 'GitHub username' },
       { name: 'Name', type: REQ_TYPE_SHORT, description: 'GitHub display name' },
       { name: 'Avatar URL', type: REQ_TYPE_SHORT, description: 'GitHub avatar URL' },

@@ -222,7 +222,7 @@ class IntegramMCPClient {
 
     // Build URL based on server type
     if (isDronedoc) {
-      // DronDoc format: https://dronedoc.ru/{database}/{endpoint}?JSON_KV
+      // Integram format: https://dronedoc.ru/{database}/{endpoint}?JSON_KV
       if (hasDbInPath) {
         // Database already in baseURL, just append endpoint
         const url = `${cleanBaseURL}/${endpoint}`;

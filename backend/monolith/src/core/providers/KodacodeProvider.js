@@ -38,7 +38,7 @@ export class KodacodeProvider extends BaseProvider {
       baseURL: this.baseURL,
       defaultHeaders: {
         'HTTP-Referer': 'https://dev.drondoc.ru',
-        'X-Title': 'DronDoc AI Platform'
+        'X-Title': 'Integram AI Platform'
       }
     })
   }

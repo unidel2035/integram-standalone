@@ -513,7 +513,7 @@ async function saveOAuthPhoto(client, userId, avatarUrl, provider) {
       responseType: 'arraybuffer',
       timeout: 10000,
       headers: {
-        'User-Agent': 'DronDoc/1.0',
+        'User-Agent': 'Integram/1.0',
         'Accept': 'image/*'
       }
     })
