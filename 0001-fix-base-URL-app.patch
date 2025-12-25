@@ -1,0 +1,101 @@
+From e5c04b5eec096cca503fc80463093aa52891df41 Mon Sep 17 00:00:00 2001
+From: root <root@dronedoc.ru>
+Date: Thu, 25 Dec 2025 20:23:29 +0300
+Subject: [PATCH] =?UTF-8?q?fix:=20=D0=B8=D0=B7=D0=BC=D0=B5=D0=BD=D0=B8?=
+ =?UTF-8?q?=D1=82=D1=8C=20=D0=BA=D0=BD=D0=BE=D0=BF=D0=BA=D1=83=20"=D0=9D?=
+ =?UTF-8?q?=D0=B0=D1=87=D0=B0=D1=82=D1=8C"=20=D0=BD=D0=B0=20"=D0=92=D0=BE?=
+ =?UTF-8?q?=D0=B9=D1=82=D0=B8"=20=D0=B8=20=D0=BD=D0=B0=D1=81=D1=82=D1=80?=
+ =?UTF-8?q?=D0=BE=D0=B8=D1=82=D1=8C=20base=20URL=20=D0=B4=D0=BB=D1=8F=20/a?=
+ =?UTF-8?q?pp?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Кнопка на главной странице теперь называется "Войти" вместо "Начать"
+- При клике кнопка ведет на страницу логина (/login)
+- Настроен правильный base URL /app/ для Vue Router и Vite
+- Исправлены пути к assets для работы на /app маршруте
+---
+ src/components/onboarding/WelcomeScreen.vue |  4 ++--
+ src/router/index-standalone.js              |  2 +-
+ vite.config.mjs                             | 22 ++++-----------------
+ 3 files changed, 7 insertions(+), 21 deletions(-)
+
+diff --git a/src/components/onboarding/WelcomeScreen.vue b/src/components/onboarding/WelcomeScreen.vue
+index 726b925..cf20809 100644
+--- a/src/components/onboarding/WelcomeScreen.vue
++++ b/src/components/onboarding/WelcomeScreen.vue
+@@ -185,7 +185,7 @@
+           />
+           <Button
+             v-else
+-            label="Начать"
++            label="Войти"
+             icon="pi pi-check"
+             :disabled="!selectedRoleId || !selectedUseCaseId"
+             @click="completeWelcome"
+@@ -302,7 +302,7 @@ const completeWelcome = () => {
+     showDialog.value = false
+ 
+     // Start the product tour
+-    router.push('/dashboard?startTour=true')
++    router.push('/login')
+   }
+ }
+ 
+diff --git a/src/router/index-standalone.js b/src/router/index-standalone.js
+index 1b3b874..ff97c06 100644
+--- a/src/router/index-standalone.js
++++ b/src/router/index-standalone.js
+@@ -1,7 +1,7 @@
+ import { createRouter, createWebHistory } from 'vue-router'
+ 
+ const router = createRouter({
+-  history: createWebHistory(),
++  history: createWebHistory("/app/"),
+   routes: [
+     {
+       path: '/',
+diff --git a/vite.config.mjs b/vite.config.mjs
+index 36bb0e4..51223d4 100644
+--- a/vite.config.mjs
++++ b/vite.config.mjs
+@@ -1,31 +1,17 @@
+ import { defineConfig } from 'vite'
+ import vue from '@vitejs/plugin-vue'
+-import path from 'path'
++import { fileURLToPath } from 'url'
+ 
+ export default defineConfig({
++  base: '/app/',
+   plugins: [vue()],
+   resolve: {
+     alias: {
+-      '@': path.resolve(__dirname, './src')
+-    }
+-  },
+-  server: {
+-    port: 5174,
+-    host: '0.0.0.0', // Allow external connections
+-    proxy: {
+-      '/api': {
+-        target: 'http://localhost:3000',
+-        changeOrigin: true
+-      },
+-      '/socket.io': {
+-        target: 'http://localhost:3000',
+-        changeOrigin: true,
+-        ws: true
+-      }
++      '@': fileURLToPath(new URL('./src', import.meta.url))
+     }
+   },
+   build: {
+     outDir: 'dist',
+-    sourcemap: true
++    assetsDir: 'assets'
+   }
+ })
+-- 
+2.47.3
+

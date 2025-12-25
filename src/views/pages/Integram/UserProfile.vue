@@ -222,7 +222,7 @@ const photoUrl = computed(() => {
     }
 
     if (photoPath.startsWith('/download')) {
-      return `https://dronedoc.ru${photoPath}`
+      return `${window.location.protocol}//${window.location.hostname}${photoPath}`
     } else if (photoPath.startsWith('http')) {
       return photoPath
     } else {

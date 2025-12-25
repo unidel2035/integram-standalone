@@ -98,7 +98,7 @@ async function handleOAuthCallback() {
         const url = new URL(integramApiClient.getServer());
         localStorage.setItem('apiBase', url.host);
       } catch (e) {
-        localStorage.setItem('apiBase', 'dronedoc.ru');
+        localStorage.setItem('apiBase', window.location.hostname);
       }
 
       toast.add({

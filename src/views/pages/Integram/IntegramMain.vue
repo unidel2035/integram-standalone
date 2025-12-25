@@ -500,7 +500,7 @@ onMounted(async () => {
   const authInfo = integramApiClient.getAuthInfo()
   if (!authInfo.token || !authInfo.xsrf) {
     // Issue #34: Auto-authenticate with default credentials (without requiring manual login)
-    const serverURL = import.meta.env.VITE_INTEGRAM_URL || 'https://dronedoc.ru'
+    const serverURL = import.meta.env.VITE_INTEGRAM_URL || `${window.location.protocol}//${window.location.hostname}`
     const defaultDatabase = database.value || 'my'
     const defaultUsername = 'd'
     const defaultPassword = 'd'
