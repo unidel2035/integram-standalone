@@ -365,7 +365,7 @@ export class TaskQueue extends EventEmitter {
 
   /**
    * Stop cleanup timer and clear resources
-   * Issue #2157: Proper shutdown
+   * Issue #2157, #53: Proper shutdown with EventEmitter cleanup
    */
   shutdown() {
     if (this.cleanupTimer) {
@@ -379,6 +379,16 @@ export class TaskQueue extends EventEmitter {
         clearTimeout(task.timeoutId);
       }
     }
+
+    // Remove all EventEmitter listeners to prevent memory leaks (Issue #53)
+    this.removeAllListeners();
+
+    // Clear queues
+    this.tasks.clear();
+    Object.keys(this.queues).forEach(priority => {
+      this.queues[priority] = [];
+    });
+    this.deadLetterQueue = [];
 
     logger.info('TaskQueue shutdown complete');
   }

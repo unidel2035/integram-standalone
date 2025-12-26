@@ -327,6 +327,7 @@ export class AgentRegistry extends EventEmitter {
 
   /**
    * Cleanup on shutdown
+   * Issue #53: Prevent EventEmitter memory leaks
    */
   shutdown() {
     logger.info('Shutting down AgentRegistry');
@@ -342,6 +343,13 @@ export class AgentRegistry extends EventEmitter {
       this._stopHeartbeatMonitoring(agentId);
     }
 
+    // Remove all EventEmitter listeners to prevent memory leaks (Issue #53)
+    this.removeAllListeners();
+
+    // Clear all data structures
     this.agents.clear();
+    this.heartbeatTimers.clear();
+
+    logger.info('AgentRegistry shutdown complete');
   }
 }
