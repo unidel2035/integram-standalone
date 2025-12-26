@@ -47,6 +47,7 @@ router.get('/', (req, res) => {
       links: {
         self: '/api/v2',
         documentation: '/docs/api/MODERN_API_FORMAT.md',
+        swagger: '/api/v2/docs',
         openapi: '/api/v2/openapi.yaml',
         health: '/api/v2/health'
       },

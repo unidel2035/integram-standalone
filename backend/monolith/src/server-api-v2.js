@@ -3,7 +3,10 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import apiV2Router from './api/v2/index.cjs';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const apiV2Router = require('./api/v2/index.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -99,6 +99,7 @@
     "playwright": "^1.56.1",
     "socks-proxy-agent": "^8.0.5",
     "stripe": "^20.1.0",
+    "swagger-ui-express": "^5.0.1",
     "telegram": "^2.26.22",
     "tough-cookie": "^6.0.0",
     "turndown": "^7.2.0",

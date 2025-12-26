@@ -13,6 +13,7 @@ const { jsonApiMiddleware, jsonApiErrorHandler } = require('./middleware/jsonapi
 // Routes
 const infoRoutes = require('./routes/info');
 const integramRoutes = require('./routes/integram');
+const swaggerRoutes = require('./routes/swagger');
 
 // Применить JSON:API middleware ко всем v2 routes
 router.use(jsonApiMiddleware);
@@ -39,6 +40,7 @@ router.use((req, res, next) => {
 
 // Mount routes
 router.use('/', infoRoutes);              // /api/v2, /api/v2/health, /api/v2/openapi.yaml
+router.use('/docs', swaggerRoutes);       // /api/v2/docs (Swagger UI)
 router.use('/integram', integramRoutes);  // /api/v2/integram/*
 
 // TODO: Добавить остальные routes когда будут реализованы
@@ -58,6 +60,7 @@ router.use((req, res) => {
       availableEndpoints: [
         'GET /api/v2',
         'GET /api/v2/health',
+        'GET /api/v2/docs',
         'GET /api/v2/openapi.yaml',
         'GET /api/v2/openapi.json',
         'GET /api/v2/integram/databases/{database}/types',
