@@ -12,8 +12,7 @@ const ProfileMenu = defineAsyncComponent(() => import('./Profile.vue'))
 const NotificationCenter = defineAsyncComponent(() => import('@/components/NotificationCenter.vue'))
 // Lazy load AgentStatusPanel - only shown when agents button is clicked
 const AgentStatusPanel = defineAsyncComponent(() => import('@/components/AgentStatusPanel.vue'))
-// Keep LogoDisplay and LanguageSwitcher as sync - they're always visible and small
-import LogoDisplay from '@/components/LogoDisplay.vue'
+// Keep LanguageSwitcher as sync - it's always visible and small
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { useNotifications } from '@/composables/notifications'
 import { useWorkspaceAgentStore } from '@/stores/workspaceAgentStore'
@@ -202,9 +201,6 @@ onUnmounted(() => {
       >
         <i class="pi pi-bars"/>
       </button>
-      <router-link to="/" class="layout-topbar-logo">
-        <LogoDisplay width="200" height="40" />
-      </router-link>
     </div>
 
     <div class="layout-topbar-actions">
