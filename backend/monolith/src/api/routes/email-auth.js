@@ -28,6 +28,12 @@ import {
   verifyMagicLink
 } from '../../services/email/EmailVerificationService.js';
 import defaultTokenService from '../../services/ai/defaultTokenService.js';
+import {
+  enforceHTTPS,
+  getSecureAxiosConfig,
+  validateSensitiveDataTransmission,
+  auditSecurityOperation
+} from '../../utils/secureApiClient.js';
 import { validatePasswordStrength } from '../../utils/auth/password.js';
 import { isValidEmail, validateUsername } from '../../utils/auth/validation.js';
 
@@ -159,14 +165,21 @@ router.post('/register-direct', async (req, res) => {
       throw new Error('INTEGRAM_REGISTRATION credentials not configured. Please set INTEGRAM_REGISTRATION_USERNAME and INTEGRAM_REGISTRATION_PASSWORD environment variables.');
     }
 
+    // SECURITY: Validate HTTPS before transmitting credentials (CWE-319 mitigation)
+    enforceHTTPS(baseUrl);
+
     // Step 1: Authenticate with Integram
     const authUrl = `${baseUrl}/${database}/auth?JSON_KV`;
     const formData = new URLSearchParams();
     formData.append('login', systemLogin);
     formData.append('pwd', systemPwd);
 
+    // Get secure axios configuration with HTTPS agent
+    const secureConfig = getSecureAxiosConfig(authUrl, { hasSensitiveData: true });
+
     const authResponse = await axios.post(authUrl, formData, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      ...secureConfig
     });
 
     if (authResponse.data.failed) {
@@ -236,6 +249,10 @@ router.post('/register-direct', async (req, res) => {
     // Use _m_save instead of _m_set (same as MCP integram_set_object_requisites)
     // _m_save requires t{typeId}=value to work correctly
     const saveUrl = `${baseUrl}/${database}/_m_save/${userId}?JSON_KV`;
+
+    // SECURITY: Validate HTTPS before transmitting password (CWE-319 mitigation)
+    validateSensitiveDataTransmission(saveUrl, { password }, ['password', `t${pwdReqId}`]);
+
     const saveData = new URLSearchParams();
     saveData.append('_xsrf', xsrfToken);
     saveData.append(`t${usersTableId}`, username || email.split('@')[0]); // Main value (t18)
@@ -253,11 +270,24 @@ router.post('/register-direct', async (req, res) => {
       }
     }, 'Sending password to Integram _m_save');
 
+    // Get secure axios configuration with HTTPS agent
+    const saveSecureConfig = getSecureAxiosConfig(saveUrl, { hasSensitiveData: true });
+
     await axios.post(saveUrl, saveData, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-Authorization': token
-      }
+      },
+      ...saveSecureConfig
+    });
+
+    // Audit user registration
+    auditSecurityOperation({
+      type: 'user_registered_direct',
+      url: saveUrl,
+      user: email,
+      success: true,
+      details: { userId, database }
     });
 
     logger.info({ email, username, userId, database }, 'User registered successfully');

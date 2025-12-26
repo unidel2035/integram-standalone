@@ -9,14 +9,38 @@
  * - User registration in ddadmin (table 18)
  * - CRUD operations on user records
  * - Session management
+ * - Secure HTTPS communication with certificate validation
+ *
+ * Security features:
+ * - HTTPS enforcement for password transmission (CWE-319 mitigation)
+ * - Certificate pinning support
+ * - Secure TLS configuration
  */
 
 import axios from 'axios';
 import logger from './logger.js';
+import {
+  enforceHTTPS,
+  getSecureAxiosConfig,
+  validateSensitiveDataTransmission,
+  auditSecurityOperation,
+  maskSensitiveData
+} from './secureApiClient.js';
 
 const INTEGRAM_BASE_URL = process.env.INTEGRAM_API_URL || 'https://example.integram.io';
 const DDADMIN_DATABASE = 'ddadmin';
 const USERS_TABLE = '18'; // Table 18 in ddadmin for users
+
+// Validate base URL uses HTTPS on initialization
+try {
+  enforceHTTPS(INTEGRAM_BASE_URL);
+} catch (error) {
+  logger.error({
+    baseUrl: INTEGRAM_BASE_URL,
+    error: error.message
+  }, 'CRITICAL: Integram API base URL must use HTTPS for secure password transmission');
+  throw error;
+}
 
 export class IntegramClient {
   constructor(database = DDADMIN_DATABASE) {
@@ -61,6 +85,9 @@ export class IntegramClient {
     try {
       const url = this.buildUrl('auth');
 
+      // SECURITY: Validate HTTPS before transmitting password (CWE-319 mitigation)
+      validateSensitiveDataTransmission(url, { pwd: password }, ['pwd', 'password']);
+
       logger.info({ url, username }, 'Authenticating with Integram');
 
       // Use form data with correct field names (login, pwd) as required by Integram API
@@ -68,11 +95,23 @@ export class IntegramClient {
       formData.append('login', username);
       formData.append('pwd', password);
 
+      // Get secure axios configuration with HTTPS agent
+      const secureConfig = getSecureAxiosConfig(url, { hasSensitiveData: true });
+
       const response = await axios.post(url, formData, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        ...secureConfig
       });
 
       if (response.data && response.data.failed) {
+        // Audit failed authentication attempt
+        auditSecurityOperation({
+          type: 'authentication_failed',
+          url,
+          user: username,
+          success: false,
+          details: { reason: 'Invalid credentials' }
+        });
         throw new Error('Invalid login or password');
       }
 
@@ -86,6 +125,15 @@ export class IntegramClient {
         role: response.data.role,
         cookies: response.headers['set-cookie']
       };
+
+      // Audit successful authentication
+      auditSecurityOperation({
+        type: 'authentication_success',
+        url,
+        user: username,
+        success: true,
+        details: { userId: this.session.userId }
+      });
 
       logger.info({ username, userId: this.session.userId }, 'Successfully authenticated with Integram');
       return this.session;
@@ -138,6 +186,12 @@ export class IntegramClient {
       // - 33: Name (SHORT)
       // - 209326: Referral Code (код пригласившего) - Issue #5112
       const saveUrl = this.buildUrl('_m_save', userId);
+
+      // SECURITY: Validate HTTPS before transmitting password (CWE-319 mitigation)
+      if (userData.password) {
+        validateSensitiveDataTransmission(saveUrl, { password: userData.password }, ['password', 't20']);
+      }
+
       const saveData = new URLSearchParams();
       saveData.append('_xsrf', this.session.xsrf);
       saveData.append(`t${USERS_TABLE}`, userData.username || userData.email.split('@')[0]); // t18 = username
@@ -158,24 +212,37 @@ export class IntegramClient {
         logger.info({ userId, referralCode: userData.referral_code }, 'Saving referral code to user');
       }
 
-      // DEBUG: Log exact request being sent
+      // DEBUG: Log exact request being sent (with masked password)
       logger.info({
         url: saveUrl,
         data: {
           t18: userData.username || userData.email.split('@')[0],
           t41: userData.email,
-          t20: userData.password ? '[PLAIN_PASSWORD]' : (userData.password_hash ? '[HASH]' : '[NONE]'),
+          t20: userData.password ? maskSensitiveData(userData.password, 0) : '[NONE]',
           t33: userData.display_name || userData.username,
           hasPassword: !!userData.password,
           hasPasswordHash: !!userData.password_hash
         }
       }, 'DEBUG: Sending user data to Integram _m_save');
 
+      // Get secure axios configuration with HTTPS agent
+      const secureConfig = getSecureAxiosConfig(saveUrl, { hasSensitiveData: !!userData.password });
+
       await axios.post(saveUrl, saveData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-Authorization': this.session.token
-        }
+        },
+        ...secureConfig
+      });
+
+      // Audit user creation
+      auditSecurityOperation({
+        type: 'user_created',
+        url: saveUrl,
+        user: userData.email,
+        success: true,
+        details: { userId, email: userData.email }
       });
 
       logger.info({ userId, email: userData.email }, 'User created successfully with requisites');
