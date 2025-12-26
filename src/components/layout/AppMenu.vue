@@ -68,24 +68,6 @@ const baseMenu = [
     label: 'Документы',
     icon: 'pi pi-fw pi-file',
     items: []
-  },
-  {
-    label: 'Разработчикам',
-    icon: 'pi pi-fw pi-code',
-    items: [
-      {
-        label: 'API',
-        icon: 'pi pi-fw pi-server',
-        url: '/app/api/v2/docs/',
-        target: '_self'
-      },
-      {
-        label: 'Песочница',
-        icon: 'pi pi-fw pi-play',
-        url: '/app/api/v2/sandbox',
-        target: '_self'
-      }
-    ]
   }
 ]
 
@@ -650,40 +632,40 @@ const fetchMenuItems = async () => {
 
   // Load MyRoleMenu report from my database via API v2
   try {
-    const token = localStorage.getItem('my_token') || localStorage.getItem('token')
-    
-    if (token) {
-      const apiBase = localStorage.getItem('apiBase') || window.location.hostname
-      
-      // Use API v2 endpoint for report execution
-      const response = await fetch(`https://${apiBase}/api/v2/reports/MyRoleMenu/execute?JSON_KV=true`, {
-        method: 'GET',
+    let token = localStorage.getItem('my_token') || localStorage.getItem('token')
+    const user = localStorage.getItem('user') || localStorage.getItem('my_user')
+
+    if (token && user) {
+      // Use new API v2 endpoint
+      const apiBase = window.location.hostname
+      const apiUrl = `https://${apiBase}/api/v2/integram/databases/my/reports/myrolemenu`
+
+      const response = await fetch(apiUrl, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-Database': 'my',
-          'Content-Type': 'application/vnd.api+json'
+          'X-Authorization': token,
+          'Content-Type': 'application/json'
         }
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        const rows = data.data?.attributes?.rows || data.data || []
-        
-        if (Array.isArray(rows) && rows.length > 0) {
-          // Process MyRoleMenu data
-          pagesSection.items = rows.map(row => ({
-            label: row.Name || row['Name'] || row.name,
-            to: row.HREF || row['HREF'] || row.href,
-            icon: 'pi pi-fw pi-link'
-          }))
-          logger.debug('Loaded MyRoleMenu items via API v2:', pagesSection.items.length)
-        }
-      } else {
-        logger.warn('MyRoleMenu report not found or empty')
+      if (!response.ok) {
+        throw new Error(`API v2 error: ${response.status}`)
+      }
+
+      const jsonApiResponse = await response.json()
+      const reportData = jsonApiResponse.data
+
+      if (reportData && Array.isArray(reportData) && reportData.length > 0) {
+        // Process MyRoleMenu data
+        pagesSection.items = reportData.map(row => ({
+          label: row.Name || row['Name'],
+          to: row.HREF || row['HREF'],
+          icon: 'pi pi-fw pi-link'
+        }))
+        logger.debug('Loaded MyRoleMenu items via API v2:', pagesSection.items.length)
       }
     }
   } catch (error) {
-    logger.error('Failed to load MyRoleMenu via API v2:', error)
+    logger.error('Failed to load MyRoleMenu:', error)
   }
 
   loading.value = false

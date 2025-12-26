@@ -178,11 +178,10 @@ const formatDate = dateValue => {
   }
 }
 
-// Fetch user data from /{db}/xsrf endpoint
+// Fetch user data from API v2
 const fetchUserData = async () => {
   try {
     const authDb = localStorage.getItem('db') || 'a2025'
-    const apiBase = localStorage.getItem('apiBase') || window.location.hostname
     const token = localStorage.getItem('token')
 
     if (!token) {
@@ -190,48 +189,49 @@ const fetchUserData = async () => {
       return
     }
 
-    // Build URL: https://{server}/{db}/xsrf?JSON_KV
-    const baseHost = apiBase === 'localhost' ? 'localhost' : apiBase
-    const protocol = apiBase === 'localhost' ? 'http' : 'https'
-    const url = `${protocol}://${baseHost}/${authDb}/xsrf?JSON_KV=true`
+    // Use new API v2 endpoint
+    const apiBase = window.location.hostname
+    const url = `https://${apiBase}/api/v2/integram/databases/${authDb}/user/current`
 
     const headers = {
-      'X-Authorization': token
+      'X-Authorization': token,
+      'Content-Type': 'application/json'
     }
 
     const response = await fetch(url, { headers })
 
     if (response.ok) {
-      const data = await response.json()
+      const jsonApiResponse = await response.json()
+      const data = jsonApiResponse.data
 
       user.value = {
-        name: data.user || 'Не указан',
+        name: data.username || 'Не указан',
         role: data.role || '',
-        userId: data.id || null,
+        userId: data.userId || null,
       }
 
       // Store user info in localStorage for quick access
-      localStorage.setItem('user', data.user || '')
-      localStorage.setItem('id', data.id || '')
+      localStorage.setItem('user', data.username || '')
+      localStorage.setItem('id', data.userId || '')
 
       // Populate userInfo with additional fields
       userInfo.value = {
-        'ID': data.id,
+        'ID': data.userId,
         'Роль': data.role,
       }
 
       // Fetch user photo from profile API
-      if (data.id) {
-        fetchUserPhoto(data.id)
+      if (data.userId) {
+        fetchUserPhoto(data.userId)
       }
     } else {
-      console.warn('Failed to fetch user data from xsrf endpoint:', response.status)
+      console.warn('Failed to fetch user data from API v2:', response.status)
       // Fallback to localStorage
       user.value.name = localStorage.getItem('user') || 'Не авторизован'
       user.value.userId = localStorage.getItem('id')
     }
   } catch (error) {
-    console.error('Error fetching user data:', error)
+    console.error('Error fetching user data via API v2:', error)
     // Fallback to localStorage
     user.value.name = localStorage.getItem('user') || 'Не авторизован'
     user.value.userId = localStorage.getItem('id')

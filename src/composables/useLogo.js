@@ -1,15 +1,7 @@
 import { ref, computed } from 'vue'
 
-// Predefined colored logo variants from SVG files
-const presetLogos = [
-  { name: 'blue', file: '/demo/images/dd2.svg', color: '#3b82f6', label: 'Синий' },
-  { name: 'red', file: '/demo/images/dd3.svg', color: '#ef4444', label: 'Красный' },
-  { name: 'green', file: '/demo/images/dd4.svg', color: '#22c55e', label: 'Зелёный' },
-  { name: 'purple', file: '/demo/images/dd5.svg', color: '#a855f7', label: 'Фиолетовый' },
-  { name: 'cyan', file: '/demo/images/dd6.svg', color: '#06b6d4', label: 'Голубой' },
-  { name: 'pink', file: '/demo/images/dd7.svg', color: '#ec4899', label: 'Розовый' },
-  { name: 'gray', file: '/demo/images/dd8.svg', color: '#6b7280', label: 'Серый' }
-]
+// Preset logos removed - only dynamic Integram logos are supported
+const presetLogos = []
 
 // Dynamic Integram logo colors (generated with SVG color)
 const dynamicLogoColors = [
@@ -40,23 +32,15 @@ const getSavedLogoConfig = () => {
 
 const logoConfig = ref(
   getSavedLogoConfig() || {
-    type: 'preset', // 'preset', 'dynamic', or 'custom'
-    preset: 'orange', // name from presetLogos
-    color: 'cyan', // name from dynamicLogoColors
+    type: 'dynamic', // 'preset', 'dynamic', or 'custom'
+    preset: null, // name from presetLogos
+    color: 'blue', // name from dynamicLogoColors
     customSvg: null
   }
 )
 
 export function useLogo() {
-  const setPresetLogo = (presetName) => {
-    logoConfig.value = {
-      type: 'preset',
-      preset: presetName,
-      color: null,
-      customSvg: null
-    }
-    saveLogo()
-  }
+  // setPresetLogo removed - only dynamic colors supported now
 
   const setDynamicColor = (colorName) => {
     logoConfig.value = {
@@ -80,9 +64,9 @@ export function useLogo() {
 
   const resetLogo = () => {
     logoConfig.value = {
-      type: 'preset',
-      preset: 'orange',
-      color: null,
+      type: 'dynamic',
+      preset: null,
+      color: 'blue',
       customSvg: null
     }
     saveLogo()
@@ -122,9 +106,9 @@ export function useLogo() {
 
   return {
     logoConfig,
-    presetLogos,
+    presetLogos, // Empty array - presets removed
     dynamicLogoColors,
-    setPresetLogo,
+    // setPresetLogo removed - no longer supported
     setDynamicColor,
     setCustomLogo,
     resetLogo,

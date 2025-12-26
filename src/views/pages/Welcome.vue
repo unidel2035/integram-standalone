@@ -431,7 +431,7 @@
           <template #content>
             <i class="pi pi-envelope support-icon"></i>
             <h3>Email</h3>
-            <div class="email-address">support@drondoc.ru</div>
+            <div class="email-address">support@integram.io</div>
             <p>Время ответа: &lt;2 часа</p>
             <Button
               label="Написать письмо"
@@ -888,13 +888,13 @@ function openChat() {
   onboardingStore.trackFeatureInteraction('support_contacted')
   onboardingStore.trackFeatureInteraction('support_chat_opened')
   // TODO: Integrate with actual chat system (Intercom/Telegram)
-  alert('Функция чата в разработке. Пока напишите нам на support@drondoc.ru')
+  alert('Функция чата в разработке. Пока напишите нам на support@integram.io')
 }
 
 function openEmail() {
   onboardingStore.trackFeatureInteraction('support_contacted')
   onboardingStore.trackFeatureInteraction('support_email_clicked')
-  window.location.href = 'mailto:support@drondoc.ru'
+  window.location.href = 'mailto:support@integram.io'
 }
 
 function openPhone() {
@@ -908,7 +908,7 @@ function scheduleDemo() {
   onboardingStore.trackFeatureInteraction('support_contacted')
   onboardingStore.trackFeatureInteraction('demo_scheduled')
   // TODO: Integrate with Calendly or similar
-  alert('Функция планирования демо в разработке. Напишите нам на support@drondoc.ru')
+  alert('Функция планирования демо в разработке. Напишите нам на support@integram.io')
 }
 
 // New solution-focused functions
@@ -937,7 +937,7 @@ async function activateEnsemble(ensembleType) {
     deploymentDialogVisible.value = true
   } catch (error) {
     console.error('Failed to load ensemble:', error)
-    alert(`Не удалось загрузить ансамбль. Попробуйте позже или свяжитесь с support@drondoc.ru`)
+    alert(`Не удалось загрузить ансамбль. Попробуйте позже или свяжитесь с support@integram.io`)
   }
 }
 

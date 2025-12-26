@@ -104,7 +104,7 @@ const getStatusText = (status) => {
         <div class="flex flex-col gap-3">
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <p class="text-sm">© 2025 Integram            <a
-                    href="https://github.com/unidel2035/dronedoc2025/blob/master/CHANGELOG.md"
+                    href="https://github.com/unidel2035/integram-standalone/blob/master/CHANGELOG.md"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-sm text-muted-color hover:text-primary transition-colors"
