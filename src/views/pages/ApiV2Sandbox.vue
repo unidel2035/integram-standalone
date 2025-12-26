@@ -11,6 +11,9 @@
         <!-- Authentication Section -->
         <div class="auth-section">
           <h3>🔐 Авторизация</h3>
+          <div class="auth-hint">
+            ℹ️ Пользователи хранятся в <code>/{{authForm.database}}/object/18</code> (старый API)
+          </div>
 
           <div :class="['auth-status', authState.isAuthenticated ? 'connected' : 'disconnected']">
             {{ authState.isAuthenticated
@@ -24,12 +27,9 @@
             <input
               v-model="authForm.serverUrl"
               type="text"
-              placeholder="https://dronedoc.ru или https://185.128.105.78"
+              placeholder="https://185.128.105.78"
+              readonly
             />
-            <div class="quick-db-buttons">
-              <button @click="authForm.serverUrl = 'https://dronedoc.ru'">dronedoc.ru</button>
-              <button @click="authForm.serverUrl = 'https://185.128.105.78'">185.128.105.78</button>
-            </div>
           </div>
 
           <div class="auth-input-group">
@@ -177,7 +177,7 @@ export default {
   data() {
     return {
       authForm: {
-        serverUrl: 'https://185.128.105.78',
+        serverUrl: window.location.origin,
         database: 'my',
         login: 'admin',
         password: 'DronedocIntegram2025'
@@ -481,6 +481,23 @@ export default {
   color: #667eea;
   margin: 0 0 15px;
   font-size: 1.2em;
+}
+
+.auth-hint {
+  background: #e7f3ff;
+  border-left: 3px solid #2196f3;
+  padding: 8px 12px;
+  margin-bottom: 15px;
+  font-size: 0.85em;
+  color: #0d47a1;
+}
+
+.auth-hint code {
+  background: rgba(33, 150, 243, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
 }
 
 .auth-status {
