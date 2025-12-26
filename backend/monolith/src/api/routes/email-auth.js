@@ -29,6 +29,8 @@ import {
 } from '../../services/email/EmailVerificationService.js';
 import defaultTokenService from '../../services/ai/defaultTokenService.js';
 import { asyncHandler } from '../../middleware/errorHandler.js';
+import { validatePasswordStrength } from '../../utils/auth/password.js';
+import { isValidEmail, validateUsername } from '../../utils/auth/validation.js';
 
 const router = express.Router();
 
@@ -106,8 +108,33 @@ router.post('/register-direct', async (req, res) => {
     if (!password) {
       return res.status(400).json({ success: false, error: 'Password is required' });
     }
-    if (password.length < 8) {
-      return res.status(400).json({ success: false, error: 'Password must be at least 8 characters' });
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid email format'
+      });
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        errors: passwordValidation.errors
+      });
+    }
+
+    // Validate username if provided
+    if (username) {
+      const usernameValidation = validateUsername(username);
+      if (!usernameValidation.isValid) {
+        return res.status(400).json({
+          success: false,
+          error: usernameValidation.error
+        });
+      }
     }
 
     logger.info({ email, username, database }, 'Direct registration request');
@@ -117,8 +144,13 @@ router.post('/register-direct', async (req, res) => {
     const { createIntegramClient } = await import('../../utils/IntegramClient.js');
 
     const baseUrl = 'https://example.integram.io';
-    const systemLogin = 'api_reg';
-    const systemPwd = 'ca84qkcx';
+    const systemLogin = process.env.INTEGRAM_REGISTRATION_USERNAME;
+    const systemPwd = process.env.INTEGRAM_REGISTRATION_PASSWORD;
+
+    // Validate required credentials
+    if (!systemLogin || !systemPwd) {
+      throw new Error('INTEGRAM_REGISTRATION credentials not configured. Please set INTEGRAM_REGISTRATION_USERNAME and INTEGRAM_REGISTRATION_PASSWORD environment variables.');
+    }
 
     // Step 1: Authenticate with Integram
     const authUrl = `${baseUrl}/${database}/auth?JSON_KV`;
