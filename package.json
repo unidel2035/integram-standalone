@@ -32,7 +32,7 @@
     "vue": "^3.5.13",
     "vue-i18n": "^10.0.4",
     "vue-router": "^4.5.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
