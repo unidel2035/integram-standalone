@@ -70,6 +70,28 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/ApiInfoResponse'
+              example:
+                jsonapi:
+                  version: "1.1"
+                data:
+                  type: api-info
+                  id: integram-api-v2
+                  attributes:
+                    version: "2.0.0"
+                    name: "Integram Standalone API"
+                    description: "Modern AI-friendly JSON API for Integram"
+                    status: beta
+                    features:
+                      - json-api-1.1
+                      - openapi-3.1
+                      - hateoas
+                      - streaming
+                      - webhooks
+                  links:
+                    self: /api/v2
+                    swagger: /api/v2/docs
+                    openapi: /api/v2/openapi.yaml
+                    health: /api/v2/health
 
   /health:
     get:
@@ -95,6 +117,15 @@ paths:
                     format: date-time
                   version:
                     type: string
+              example:
+                status: healthy
+                timestamp: "2025-12-26T10:00:00Z"
+                version: "2.0.0"
+                uptime: 3600
+                memory:
+                  used: 256
+                  total: 512
+                  unit: MB
 
   /auth/login:
     post:
@@ -110,6 +141,12 @@ paths:
           application/vnd.api+json:
             schema:
               $ref: '#/components/schemas/LoginRequest'
+            example:
+              data:
+                type: auth-login
+                attributes:
+                  identifier: user@example.com
+                  password: securePassword123
       responses:
         '200':
           description: Login successful
@@ -237,6 +274,22 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/TypeListResponse'
+              example:
+                jsonapi:
+                  version: "1.1"
+                data:
+                  - type: integram-type
+                    id: type_clients
+                    attributes:
+                      typeId: type_clients
+                      typeName: Клиенты
+                      typeAlias: clients
+                      description: Справочник клиентов компании
+                      objectCount: 150
+                    links:
+                      self: /api/v2/integram/databases/db1/types/type_clients
+                      metadata: /api/v2/integram/databases/db1/types/type_clients/metadata
+                      objects: /api/v2/integram/databases/db1/types/type_clients/objects
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -305,6 +358,14 @@ paths:
           application/vnd.api+json:
             schema:
               $ref: '#/components/schemas/CreateObjectRequest'
+            example:
+              data:
+                type: integram-object
+                attributes:
+                  requisites:
+                    req_name: ООО "Новая Компания"
+                    req_email: info@novaya.ru
+                    req_status: active
       responses:
         '201':
           description: Object created
@@ -354,6 +415,14 @@ paths:
           application/vnd.api+json:
             schema:
               $ref: '#/components/schemas/UpdateObjectRequest'
+            example:
+              data:
+                type: integram-object
+                id: obj_client_001
+                attributes:
+                  requisites:
+                    req_status: inactive
+                    req_email: newemail@example.com
       responses:
         '200':
           description: Object updated

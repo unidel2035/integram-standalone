@@ -16,6 +16,15 @@ class NotificationTriggerService {
    * @param {OrchestratorWebSocket} websocket - WebSocket server instance
    */
   setWebSocket(websocket) {
+    // Close previous WebSocket connection if exists
+    if (this.websocket && this.websocket !== websocket) {
+      logger.info('Closing previous WebSocket connection before setting new one')
+      if (typeof this.websocket.close === 'function') {
+        this.websocket.close()
+      }
+      this.websocket = null
+    }
+
     this.websocket = websocket
     logger.info('WebSocket set for notification trigger service')
   }
@@ -176,6 +185,20 @@ class NotificationTriggerService {
   sendUnreadCountUpdate(userId, count) {
     if (this.websocket) {
       this.websocket.sendUnreadCountToUser(userId, count)
+    }
+  }
+
+  /**
+   * Cleanup method to close WebSocket connection
+   * Should be called during shutdown
+   */
+  cleanup() {
+    if (this.websocket) {
+      logger.info('Cleaning up WebSocket connection in notification trigger service')
+      if (typeof this.websocket.close === 'function') {
+        this.websocket.close()
+      }
+      this.websocket = null
     }
   }
 }

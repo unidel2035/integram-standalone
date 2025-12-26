@@ -245,6 +245,29 @@ export class AgentRegistry extends EventEmitter {
   }
 
   /**
+   * Get memory usage metrics
+   * Issue #60: Added for monitoring memory usage
+   */
+  getMetrics() {
+    return {
+      agentsCount: this.agents.size,
+      maxAgents: this.maxAgents,
+      heartbeatTimersCount: this.heartbeatTimers.size,
+
+      // Warning flag
+      agentsNearLimit: this.agents.size > this.maxAgents * 0.8,
+
+      // Agent status breakdown
+      statusBreakdown: {
+        idle: this.getAgentsByStatus(AgentStatus.IDLE).length,
+        busy: this.getAgentsByStatus(AgentStatus.BUSY).length,
+        offline: this.getAgentsByStatus(AgentStatus.OFFLINE).length,
+        error: this.getAgentsByStatus(AgentStatus.ERROR).length
+      }
+    };
+  }
+
+  /**
    * Start heartbeat monitoring for an agent
    * @private
    */
@@ -327,6 +350,7 @@ export class AgentRegistry extends EventEmitter {
 
   /**
    * Cleanup on shutdown
+   * Issue #53: Prevent EventEmitter memory leaks
    */
   shutdown() {
     logger.info('Shutting down AgentRegistry');
@@ -342,6 +366,13 @@ export class AgentRegistry extends EventEmitter {
       this._stopHeartbeatMonitoring(agentId);
     }
 
+    // Remove all EventEmitter listeners to prevent memory leaks (Issue #53)
+    this.removeAllListeners();
+
+    // Clear all data structures
     this.agents.clear();
+    this.heartbeatTimers.clear();
+
+    logger.info('AgentRegistry shutdown complete');
   }
 }

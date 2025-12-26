@@ -21,6 +21,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 import { unifiedAuthService } from '@/services/unifiedAuthService'
+import { setItemSafe, getItemSafe, removeItemSafe } from '@/utils/localStorage'
 
 export const useAuthStore = defineStore('auth', () => {
   // Unified session data
@@ -120,10 +121,10 @@ export const useAuthStore = defineStore('auth', () => {
         primaryUserId.value = dbToken.userId
         primaryUser.value = dbToken.userName
 
-        localStorage.setItem('token', dbToken.token)
-        localStorage.setItem('_xsrf', dbToken.xsrf)
-        localStorage.setItem('id', dbToken.userId)
-        localStorage.setItem('user', dbToken.userName)
+        setItemSafe('token', dbToken.token)
+        setItemSafe('_xsrf', dbToken.xsrf)
+        setItemSafe('id', dbToken.userId)
+        setItemSafe('user', dbToken.userName)
       }
 
       // Sync ddadmin token
@@ -134,10 +135,10 @@ export const useAuthStore = defineStore('auth', () => {
         ddadminUserId.value = ddToken.userId
         ddadminUser.value = ddToken.userName
 
-        localStorage.setItem('ddadmin_token', ddToken.token)
-        localStorage.setItem('ddadmin_xsrf', ddToken.xsrf)
-        localStorage.setItem('ddadmin_id', ddToken.userId)
-        localStorage.setItem('ddadmin_user', ddToken.userName)
+        setItemSafe('ddadmin_token', ddToken.token)
+        setItemSafe('ddadmin_xsrf', ddToken.xsrf)
+        setItemSafe('ddadmin_id', ddToken.userId)
+        setItemSafe('ddadmin_user', ddToken.userName)
       }
 
       // Tokens synced successfully
@@ -172,25 +173,25 @@ export const useAuthStore = defineStore('auth', () => {
     myUserId.value = null
     myXsrf.value = null
 
-    // Clear localStorage
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    localStorage.removeItem('id')
-    localStorage.removeItem('_xsrf')
-    localStorage.removeItem('ddadmin_token')
-    localStorage.removeItem('ddadmin_user')
-    localStorage.removeItem('ddadmin_id')
-    localStorage.removeItem('ddadmin_xsrf')
-    localStorage.removeItem('my_token')
-    localStorage.removeItem('my_user')
-    localStorage.removeItem('my_id')
-    localStorage.removeItem('my_xsrf')
+    // Clear localStorage using safe wrappers
+    removeItemSafe('token')
+    removeItemSafe('user')
+    removeItemSafe('id')
+    removeItemSafe('_xsrf')
+    removeItemSafe('ddadmin_token')
+    removeItemSafe('ddadmin_user')
+    removeItemSafe('ddadmin_id')
+    removeItemSafe('ddadmin_xsrf')
+    removeItemSafe('my_token')
+    removeItemSafe('my_user')
+    removeItemSafe('my_id')
+    removeItemSafe('my_xsrf')
     // Issue #5112: Clear OAuth/JWT tokens and session data
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    localStorage.removeItem('session_timestamp')
-    localStorage.removeItem('integram_session')
-    localStorage.removeItem('unified_auth_session_id')
+    removeItemSafe('accessToken')
+    removeItemSafe('refreshToken')
+    removeItemSafe('session_timestamp')
+    removeItemSafe('integram_session')
+    removeItemSafe('unified_auth_session_id')
   }
 
   /**
@@ -268,8 +269,8 @@ export const useAuthStore = defineStore('auth', () => {
       // Store API base and database preference
       primaryDatabase.value = database
       primaryApiBase.value = apiBase
-      localStorage.setItem('db', database)
-      localStorage.setItem('apiBase', apiBase)
+      setItemSafe('db', database)
+      setItemSafe('apiBase', apiBase)
 
       // Authenticate to the specified database
       const primaryAuth = await authenticateToDatabase(
@@ -305,20 +306,19 @@ export const useAuthStore = defineStore('auth', () => {
         userId: primaryAuth.id
       })
 
-      // Save each item and verify it was saved
+      // Issue #63: Save each item using safe wrapper with quota handling
       for (const [key, value] of Object.entries(tokenData)) {
-        try {
-          localStorage.setItem(key, value)
+        const success = setItemSafe(key, value)
+        if (!success) {
+          console.error(`[authStore] Failed to save ${key} to localStorage (quota exceeded or storage error)`)
+          throw new Error(`Failed to save ${key} to localStorage - storage quota may be exceeded`)
+        }
 
-          // Verify the value was saved correctly
-          const savedValue = localStorage.getItem(key)
-          if (savedValue !== value) {
-            console.error(`[authStore] Failed to save ${key} to localStorage. Expected: ${value}, Got: ${savedValue}`)
-            throw new Error(`Failed to save ${key} to localStorage`)
-          }
-        } catch (error) {
-          console.error(`[authStore] Error saving ${key} to localStorage:`, error)
-          throw new Error(`Failed to save authentication data to localStorage: ${error.message}`)
+        // Verify the value was saved correctly
+        const savedValue = getItemSafe(key)
+        if (savedValue !== value) {
+          console.error(`[authStore] Failed to save ${key} to localStorage. Expected: ${value}, Got: ${savedValue}`)
+          throw new Error(`Failed to save ${key} to localStorage`)
         }
       }
 
@@ -341,7 +341,11 @@ export const useAuthStore = defineStore('auth', () => {
       // Issue #5005: Save session timestamp for expiration validation
       // This allows the router to check if session is still valid
       const sessionTimestamp = Date.now()
-      localStorage.setItem('session_timestamp', sessionTimestamp.toString())
+      // Issue #63: Use safe wrapper to handle quota overflow
+      if (!setItemSafe('session_timestamp', sessionTimestamp.toString())) {
+        console.error('[authStore] Failed to save session_timestamp - storage quota exceeded')
+        throw new Error('Failed to save session timestamp - storage quota may be exceeded')
+      }
       console.log('[authStore] Session timestamp saved:', sessionTimestamp)
 
       // Issue #3848: integram_session is ONLY for /integram routes
@@ -356,7 +360,11 @@ export const useAuthStore = defineStore('auth', () => {
         authDatabase: database,
         timestamp: sessionTimestamp, // Issue #5005: Add timestamp for session expiration
       }
-      localStorage.setItem('integram_session', JSON.stringify(sessionData))
+      // Issue #63: Use safe wrapper with quota handling for large session data
+      if (!setItemSafe('integram_session', JSON.stringify(sessionData))) {
+        console.error('[authStore] Failed to save integram_session - storage quota exceeded')
+        throw new Error('Failed to save session data - storage quota may be exceeded')
+      }
 
       // Issue #3875: Add delay to ensure localStorage writes are committed in production builds
       // In production, minified code runs faster and localStorage writes may not complete
@@ -408,10 +416,10 @@ export const useAuthStore = defineStore('auth', () => {
     primaryUserId.value = null
     primaryXsrf.value = null
 
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    localStorage.removeItem('id')
-    localStorage.removeItem('_xsrf')
+    removeItemSafe('token')
+    removeItemSafe('user')
+    removeItemSafe('id')
+    removeItemSafe('_xsrf')
 
     // Clear legacy tokens (backward compatibility)
     ddadminToken.value = null
@@ -419,32 +427,32 @@ export const useAuthStore = defineStore('auth', () => {
     ddadminUserId.value = null
     ddadminXsrf.value = null
 
-    localStorage.removeItem('ddadmin_token')
-    localStorage.removeItem('ddadmin_user')
-    localStorage.removeItem('ddadmin_id')
-    localStorage.removeItem('ddadmin_xsrf')
+    removeItemSafe('ddadmin_token')
+    removeItemSafe('ddadmin_user')
+    removeItemSafe('ddadmin_id')
+    removeItemSafe('ddadmin_xsrf')
 
     myToken.value = null
     myUser.value = null
     myUserId.value = null
     myXsrf.value = null
 
-    localStorage.removeItem('my_token')
-    localStorage.removeItem('my_user')
-    localStorage.removeItem('my_id')
-    localStorage.removeItem('my_xsrf')
+    removeItemSafe('my_token')
+    removeItemSafe('my_user')
+    removeItemSafe('my_id')
+    removeItemSafe('my_xsrf')
 
     // Issue #5112: Clear OAuth/JWT tokens
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
+    removeItemSafe('accessToken')
+    removeItemSafe('refreshToken')
 
     // Issue #3848: integram_session is ONLY for /integram routes
     // Clear it separately to not interfere with the rest of the site
-    localStorage.removeItem('integram_session')
-    localStorage.removeItem('unified_auth_session_id')
+    removeItemSafe('integram_session')
+    removeItemSafe('unified_auth_session_id')
 
     // Issue #5005: Clear session timestamp on logout
-    localStorage.removeItem('session_timestamp')
+    removeItemSafe('session_timestamp')
 
     // Keep apiBase and db in localStorage for next login
   }
