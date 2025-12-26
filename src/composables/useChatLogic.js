@@ -156,6 +156,13 @@ export function useChatLogic() {
   // Lifecycle
   const init = () => {}
 
+  // Cleanup function for WebSocket and other resources
+  const cleanup = () => {
+    // Add cleanup logic here when WebSocket is implemented
+    // For now, this is a placeholder for future implementation
+    console.log('[useChatLogic] cleanup called')
+  }
+
   return {
     // State
     activeTabIndex,
@@ -303,6 +310,7 @@ export function useChatLogic() {
     handleTyping,
 
     // Lifecycle
-    init
+    init,
+    cleanup
   }
 }

@@ -873,7 +873,8 @@ const {
   handleTyping,
 
   // Lifecycle
-  init
+  init,
+  cleanup
 } = useChatLogic()
 
 // ========== UI-Specific State & Methods (Chat.vue only) ==========
@@ -1046,6 +1047,11 @@ onUnmounted(() => {
   // Cleanup resize event listeners
   document.removeEventListener('mousemove', handleResize)
   document.removeEventListener('mouseup', stopResize)
+
+  // Cleanup WebSocket and other resources from composable
+  if (cleanup && typeof cleanup === 'function') {
+    cleanup()
+  }
 })
 </script>
 

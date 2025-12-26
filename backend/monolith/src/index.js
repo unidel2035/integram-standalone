@@ -1220,13 +1220,32 @@ class IntegramBackend {
       this.server.on('upgrade', (request, socket, head) => {
         const pathname = new URL(request.url, 'http://localhost').pathname;
 
+        // Add timeout for hanging connections (30 seconds)
+        const timeout = setTimeout(() => {
+          logger.warn({ pathname }, 'WebSocket upgrade timeout, destroying socket');
+          socket.destroy();
+        }, 30000);
+
+        // Clear timeout on socket close
+        socket.on('close', () => clearTimeout(timeout));
+
+        // Handle socket errors during upgrade
+        socket.on('error', (err) => {
+          clearTimeout(timeout);
+          logger.error({ error: err.message, pathname }, 'Socket error during upgrade');
+          socket.destroy();
+        });
+
         if (pathname === '/wsclaude' || pathname.startsWith('/wsclaude?')) {
           console.log('🔌 [Upgrade] Routing to ClaudeTerminalHandler:', pathname);
           this.claudeTerminal.handleUpgrade(request, socket, head);
+          clearTimeout(timeout);
         } else if (pathname === '/ws' || pathname.startsWith('/ws?')) {
           this.websocket.handleUpgrade(request, socket, head);
+          clearTimeout(timeout);
         } else {
           console.log('🔌 [Upgrade] Unknown path, destroying socket:', pathname);
+          clearTimeout(timeout);
           socket.destroy();
         }
       });
@@ -1429,6 +1448,11 @@ class IntegramBackend {
     try {
       // Stop coordinator
       await this.coordinator.shutdown();
+
+      // Cleanup notification trigger service WebSocket
+      if (notificationTrigger && typeof notificationTrigger.cleanup === 'function') {
+        notificationTrigger.cleanup();
+      }
 
       // Close WebSocket
       if (this.websocket) {
