@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>localStorage Quota Handling Test - Issue #63</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #2c3e50;
+      border-bottom: 3px solid #3498db;
+      padding-bottom: 10px;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    button.danger {
+      background: #e74c3c;
+    }
+    button.danger:hover {
+      background: #c0392b;
+    }
+    button.success {
+      background: #27ae60;
+    }
+    button.success:hover {
+      background: #229954;
+    }
+    pre {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .stat-card {
+      background: #ecf0f1;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #3498db;
+    }
+    .stat-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #7f8c8d;
+    }
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .log {
+      background: #34495e;
+      color: #ecf0f1;
+      padding: 10px;
+      border-radius: 5px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    .log div {
+      padding: 2px 0;
+      border-bottom: 1px solid #2c3e50;
+    }
+    .log .error {
+      color: #e74c3c;
+    }
+    .log .success {
+      color: #27ae60;
+    }
+    .log .warn {
+      color: #f39c12;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 localStorage Quota Handling Test</h1>
+  <p><strong>Issue #63:</strong> Testing safe localStorage wrappers with quota management and automatic cleanup</p>
+
+  <div class="test-section">
+    <h2>📊 Storage Statistics</h2>
+    <div class="stats" id="stats">
+      <div class="stat-card">
+        <h3>Total Size</h3>
+        <div class="value" id="stat-size">0 KB</div>
+      </div>
+      <div class="stat-card">
+        <h3>Quota Used</h3>
+        <div class="value" id="stat-percent">0%</div>
+      </div>
+      <div class="stat-card">
+        <h3>Items Count</h3>
+        <div class="value" id="stat-items">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Largest Item</h3>
+        <div class="value" id="stat-largest">N/A</div>
+      </div>
+    </div>
+    <button onclick="updateStats()" class="success">Refresh Stats</button>
+  </div>
+
+  <div class="test-section">
+    <h2>🧪 Test Operations</h2>
+    <button onclick="testNormalWrite()">Test Normal Write</button>
+    <button onclick="testLargeWrite()">Test Large Session Data</button>
+    <button onclick="testQuotaOverflow()">Test Quota Overflow</button>
+    <button onclick="testCleanup()">Test Cleanup Old Data</button>
+    <button onclick="addOldSession()">Add Old Session (for cleanup test)</button>
+    <button onclick="clearStorage()" class="danger">Clear All Storage</button>
+  </div>
+
+  <div class="test-section">
+    <h2>📋 Storage Contents</h2>
+    <pre id="storage-contents">No data in localStorage</pre>
+  </div>
+
+  <div class="test-section">
+    <h2>📝 Test Log</h2>
+    <div class="log" id="log"></div>
+  </div>
+
+  <script type="module">
+    // Import the localStorage utility (this is a simulation for standalone HTML)
+    // In real app, this would be: import { setItemSafe, getItemSafe, ... } from '@/utils/localStorage'
+
+    const MAX_LOCALSTORAGE_SIZE = 5 * 1024 * 1024  // 5 MB
+    const WARN_THRESHOLD = 0.8
+    const MAX_SESSION_AGE = 7 * 24 * 60 * 60 * 1000
+
+    function getStringSize(str) {
+      if (!str) return 0
+      return new Blob([str]).size
+    }
+
+    function getCurrentStorageSize() {
+      let size = 0
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          size += getStringSize(localStorage[key])
+          size += getStringSize(key)
+        }
+      }
+      return size
+    }
+
+    function cleanupOldData() {
+      let bytesFreed = 0
+
+      const sessionTimestamp = localStorage.getItem('session_timestamp')
+      if (sessionTimestamp) {
+        const age = Date.now() - parseInt(sessionTimestamp)
+
+        if (age > MAX_SESSION_AGE) {
+          const sessionData = localStorage.getItem('integram_session')
+          if (sessionData) {
+            bytesFreed += getStringSize(sessionData)
+            localStorage.removeItem('integram_session')
+          }
+
+          bytesFreed += getStringSize(sessionTimestamp)
+          localStorage.removeItem('session_timestamp')
+
+          log(`Removed expired session data (age: ${Math.floor(age / (24 * 60 * 60 * 1000))} days)`, 'success')
+        }
+      }
+
+      // Clean up test keys
+      const testKeys = []
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key) && key.startsWith('test_')) {
+          testKeys.push(key)
+        }
+      }
+
+      testKeys.forEach(key => {
+        const value = localStorage.getItem(key)
+        bytesFreed += getStringSize(value) + getStringSize(key)
+        localStorage.removeItem(key)
+      })
+
+      if (testKeys.length > 0) {
+        log(`Removed ${testKeys.length} test keys`, 'success')
+      }
+
+      return bytesFreed
+    }
+
+    function setItemSafe(key, value) {
+      try {
+        const stringValue = typeof value === 'string' ? value : String(value)
+        const currentSize = getCurrentStorageSize()
+        const newItemSize = getStringSize(stringValue) + getStringSize(key)
+        const projectedSize = currentSize + newItemSize
+
+        if (projectedSize > MAX_LOCALSTORAGE_SIZE * WARN_THRESHOLD) {
+          const percentUsed = ((projectedSize / MAX_LOCALSTORAGE_SIZE) * 100).toFixed(1)
+          log(`⚠️ Near quota limit: ${percentUsed}%`, 'warn')
+
+          const bytesFreed = cleanupOldData()
+          if (bytesFreed > 0) {
+            log(`Freed ${(bytesFreed / 1024).toFixed(2)} KB from cleanup`, 'success')
+          }
+        }
+
+        localStorage.setItem(key, stringValue)
+        return true
+
+      } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+          log('❌ QuotaExceededError: Storage quota exceeded', 'error')
+
+          const bytesFreed = cleanupOldData()
+          log(`Cleanup freed ${(bytesFreed / 1024).toFixed(2)} KB`, 'success')
+
+          try {
+            localStorage.setItem(key, typeof value === 'string' ? value : String(value))
+            log('✅ Successfully saved after cleanup', 'success')
+            return true
+          } catch (e2) {
+            log('❌ Failed to save even after cleanup', 'error')
+            return false
+          }
+        }
+
+        log(`❌ Error: ${e.message}`, 'error')
+        return false
+      }
+    }
+
+    function getStorageStats() {
+      let totalSize = 0
+      const items = {}
+
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          const value = localStorage[key]
+          const itemSize = getStringSize(value) + getStringSize(key)
+          totalSize += itemSize
+          items[key] = itemSize
+        }
+      }
+
+      return {
+        totalSize,
+        totalSizeKB: (totalSize / 1024).toFixed(2),
+        percentUsed: ((totalSize / MAX_LOCALSTORAGE_SIZE) * 100).toFixed(1),
+        items: Object.entries(items)
+          .sort(([, a], [, b]) => b - a)
+          .map(([key, size]) => ({
+            key,
+            sizeKB: (size / 1024).toFixed(2),
+            sizeBytes: size
+          }))
+      }
+    }
+
+    // UI Functions
+    window.log = function(message, type = 'info') {
+      const logDiv = document.getElementById('log')
+      const entry = document.createElement('div')
+      entry.className = type
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`
+      logDiv.insertBefore(entry, logDiv.firstChild)
+    }
+
+    window.updateStats = function() {
+      const stats = getStorageStats()
+      document.getElementById('stat-size').textContent = stats.totalSizeKB + ' KB'
+      document.getElementById('stat-percent').textContent = stats.percentUsed + '%'
+      document.getElementById('stat-items').textContent = stats.items.length
+
+      if (stats.items.length > 0) {
+        document.getElementById('stat-largest').textContent =
+          `${stats.items[0].key.substring(0, 15)}... (${stats.items[0].sizeKB} KB)`
+      } else {
+        document.getElementById('stat-largest').textContent = 'N/A'
+      }
+
+      // Update storage contents
+      const contents = {}
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          const value = localStorage[key]
+          contents[key] = value.length > 100 ? value.substring(0, 100) + '...' : value
+        }
+      }
+      document.getElementById('storage-contents').textContent =
+        Object.keys(contents).length > 0
+          ? JSON.stringify(contents, null, 2)
+          : 'No data in localStorage'
+    }
+
+    window.testNormalWrite = function() {
+      log('Testing normal write operation...')
+      const sessionData = {
+        database: 'my',
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test',
+        userId: 42,
+        userName: 'testuser',
+        timestamp: Date.now()
+      }
+
+      const success = setItemSafe('integram_session', JSON.stringify(sessionData))
+      if (success) {
+        log('✅ Normal write successful', 'success')
+      } else {
+        log('❌ Normal write failed', 'error')
+      }
+      updateStats()
+    }
+
+    window.testLargeWrite = function() {
+      log('Testing large session data write...')
+
+      // Create a realistic large session (around 10 KB)
+      const largeSession = {
+        database: 'my',
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + 'x'.repeat(5000),
+        userId: 42,
+        userName: 'testuser',
+        metadata: {
+          permissions: Array(100).fill('permission_'),
+          settings: Array(100).fill({ key: 'value', data: 'x'.repeat(50) })
+        },
+        timestamp: Date.now()
+      }
+
+      const success = setItemSafe('large_session', JSON.stringify(largeSession))
+      if (success) {
+        log('✅ Large write successful', 'success')
+      } else {
+        log('❌ Large write failed', 'error')
+      }
+      updateStats()
+    }
+
+    window.testQuotaOverflow = function() {
+      log('Testing quota overflow handling...')
+
+      // Try to write 10 MB (should exceed 5 MB quota)
+      const largeData = 'x'.repeat(10 * 1024 * 1024)
+      const success = setItemSafe('test_overflow', largeData)
+
+      if (!success) {
+        log('✅ Quota overflow handled correctly (write blocked)', 'success')
+      } else {
+        log('⚠️ Large data was saved (unexpected)', 'warn')
+      }
+      updateStats()
+    }
+
+    window.testCleanup = function() {
+      log('Testing cleanup function...')
+      const bytesFreed = cleanupOldData()
+      log(`Cleanup freed ${(bytesFreed / 1024).toFixed(2)} KB`, bytesFreed > 0 ? 'success' : 'info')
+      updateStats()
+    }
+
+    window.addOldSession = function() {
+      log('Adding old session data for cleanup test...')
+
+      // Set timestamp to 8 days ago (older than MAX_SESSION_AGE)
+      const oldTimestamp = Date.now() - (8 * 24 * 60 * 60 * 1000)
+      localStorage.setItem('session_timestamp', oldTimestamp.toString())
+
+      const oldSession = {
+        database: 'my',
+        token: 'old_token_should_be_cleaned',
+        userId: 999,
+        timestamp: oldTimestamp
+      }
+      localStorage.setItem('integram_session', JSON.stringify(oldSession))
+
+      log('✅ Old session added (8 days old)', 'success')
+      updateStats()
+    }
+
+    window.clearStorage = function() {
+      if (confirm('Clear all localStorage data?')) {
+        localStorage.clear()
+        log('🗑️ All storage cleared', 'success')
+        updateStats()
+      }
+    }
+
+    // Initialize on load
+    updateStats()
+    log('Test page loaded - Issue #63 localStorage quota handling', 'success')
+  </script>
+</body>
+</html>
