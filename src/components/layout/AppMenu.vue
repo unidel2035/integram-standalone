@@ -68,6 +68,24 @@ const baseMenu = [
     label: 'Документы',
     icon: 'pi pi-fw pi-file',
     items: []
+  },
+  {
+    label: 'Разработчикам',
+    icon: 'pi pi-fw pi-code',
+    items: [
+      {
+        label: 'API',
+        icon: 'pi pi-fw pi-server',
+        url: '/app/api/v2/docs/',
+        target: '_self'
+      },
+      {
+        label: 'Песочница',
+        icon: 'pi pi-fw pi-play',
+        url: '/app/api/v2/sandbox',
+        target: '_self'
+      }
+    ]
   }
 ]
 
@@ -630,32 +648,9 @@ const fetchMenuItems = async () => {
     logger.debug('Created Pages section with default fallback link')
   }
 
-  // Load MyRoleMenu report from my database
-  try {
-    let token = localStorage.getItem('my_token') || localStorage.getItem('token')
-    let xsrf = localStorage.getItem('my_xsrf') || localStorage.getItem('_xsrf')
-    const user = localStorage.getItem('user') || localStorage.getItem('my_user')
-
-    if (token && user) {
-      const apiBase = localStorage.getItem('apiBase') || window.location.hostname
-      integramApiClient.setServer(`https://${apiBase}`)
-      integramApiClient.setCredentials('my', token, xsrf, 'my')
-
-      const response = await integramApiClient.get('report/MyRoleMenu', { JSON_KV: true })
-
-      if (response && Array.isArray(response) && response.length > 0) {
-        // Process MyRoleMenu data
-        pagesSection.items = response.map(row => ({
-          label: row.Name || row['Name'],
-          to: row.HREF || row['HREF'],
-          icon: 'pi pi-fw pi-link'
-        }))
-        logger.debug('Loaded MyRoleMenu items:', pagesSection.items.length)
-      }
-    }
-  } catch (error) {
-    logger.error('Failed to load MyRoleMenu:', error)
-  }
+  // MyRoleMenu loading disabled - database 'my' does not exist
+  // If you need to load menu items from a database, configure the report in your active database
+  logger.debug('MyRoleMenu loading skipped - feature disabled')
 
   loading.value = false
 }

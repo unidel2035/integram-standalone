@@ -172,6 +172,12 @@ const router = createRouter({
 
 // Navigation guard for authentication
 router.beforeEach((to, from, next) => {
+  // Исключаем /api/v2/* из Vue Router - делаем полную перезагрузку страницы
+  if (to.path.startsWith('/api/v2/')) {
+    window.location.href = to.fullPath
+    return
+  }
+
   const isAuthenticated = localStorage.getItem('token')
 
   if (to.meta.requiresAuth && !isAuthenticated) {

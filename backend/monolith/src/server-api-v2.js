@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
-const apiV2Router = require('./api/v2/index.js');
+const apiV2Router = require('./api/v2/index.cjs');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,14 +18,15 @@ app.use(cors());
 // Парсить как JSON и application/vnd.api+json
 app.use(express.json({ type: ['application/json', 'application/vnd.api+json'] }));
 
-// Статические файлы из public (для песочницы)
-app.use('/public', express.static(path.join(__dirname, '../public')));
+// Статические файлы песочницы ПЕРЕД API роутером
+app.use('/api/v2/public', express.static(path.join(__dirname, '../public')));
 
 // Redirect для удобного доступа к песочнице
-app.get('/sandbox', (req, res) => {
-  res.redirect('/public/api-v2-sandbox.html');
+app.get('/api/v2/sandbox', (req, res) => {
+  res.redirect('/api/v2/public/api-v2-sandbox.html');
 });
 
+// API роутер
 app.use('/api/v2', apiV2Router);
 
 app.listen(PORT, () => {
