@@ -1,0 +1,1 @@
+import{y as e,h as s,o as a,w as o,b as t,k as n}from"./index-DSwq2M__.js";const r={__name:"SafeRouterView",setup:r=>(r,u)=>{const i=e("router-view");return a(),s(i,null,{default:o(({Component:e})=>[e?(a(),s(n(e),{key:0})):t("",!0)]),_:1})}};export{r as _};

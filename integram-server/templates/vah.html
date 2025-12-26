@@ -1,0 +1,579 @@
+<style>
+#continueBtn {
+  padding: 2px 15px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+#continueBtn:hover {
+  opacity: 0.8;
+}
+#continueBtn:active {
+  transform: scale(0.95);
+}
+.cmd-ok { color: green; }
+.cmd-err { color: red; }
+.cmd-running{ color: orange };
+#tablesContainer{
+	display:flex;
+	gap:40px;
+	    flex-wrap: wrap-reverse;
+	        align-items: baseline;
+	
+}
+#commandInput{
+	width:100%;
+	max-width:600px;
+}
+#warn{
+    position: absolute;
+    width: 100%;
+    z-index: 100;
+}
+.vah{
+    padding: 15px;
+}
+</style>
+<style>
+.t-parent{
+    /*border: 1px solid #dddddd;*/
+}
+.t-name{
+    background-color: #eee;
+    border: 1px solid #dddddd;
+    padding: 0.5rem 1.5rem 0.5rem 0.5rem;
+}
+.t-reqs{
+    border: 1px solid #dddddd;
+}
+.t-req{
+    margin: .5rem 1rem .25rem .5rem;
+}
+.a-dotted{
+    border-bottom: 1px dotted #333;
+    text-decoration: none;
+}
+.b-sign{
+    margin-top: -3px;
+    margin-right: 2px;
+}
+.ref-or-arr{
+    font-weight: 700;
+}
+</style>
+<div class="vah">
+    <h2>Голосовой ввод команд
+    <a onclick="$('#helper').toggle(333)"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <mask id="path-1-inside-1_4_442" fill="white">
+    <path d="M14 24C19.5228 24 24 19.5228 24 14C24 8.47715 19.5228 4 14 4C8.47715 4 4 8.47715 4 14C4 19.5228 8.47715 24 14 24Z"/>
+    <path d="M11.09 11C11.3251 10.3317 11.7892 9.76811 12.4 9.40913C13.0108 9.05016 13.7289 8.91894 14.4272 9.03871C15.1255 9.15849 15.7588 9.52152 16.2151 10.0635C16.6713 10.6055 16.9211 11.2915 16.92 12C16.92 14 13.92 15 13.92 15"/>
+    <path d="M15 19C15 19.5523 14.5523 20 14 20C13.4477 20 13 19.5523 13 19C13 18.4477 13.4477 18 14 18C14.5523 18 15 18.4477 15 19Z"/>
+    </mask>
+    <path d="M10.1467 10.6682C9.96339 11.1891 10.2372 11.7601 10.7582 11.9433C11.2791 12.1266 11.8501 11.8528 12.0333 11.3318L10.1467 10.6682ZM16.92 12L15.92 11.9985V12H16.92ZM13.6038 14.0513C13.0798 14.226 12.7967 14.7923 12.9713 15.3162C13.146 15.8402 13.7123 16.1233 14.2362 15.9487L13.6038 14.0513ZM23 14C23 18.9706 18.9706 23 14 23V25C20.0751 25 25 20.0751 25 14H23ZM14 23C9.02944 23 5 18.9706 5 14H3C3 20.0751 7.92487 25 14 25V23ZM5 14C5 9.02944 9.02944 5 14 5V3C7.92487 3 3 7.92487 3 14H5ZM14 5C18.9706 5 23 9.02944 23 14H25C25 7.92487 20.0751 3 14 3V5ZM12.0333 11.3318C12.1901 10.8863 12.4994 10.5106 12.9066 10.2713L11.8933 8.547C11.0789 9.02563 10.4601 9.77705 10.1467 10.6682L12.0333 11.3318ZM12.9066 10.2713C13.3138 10.0319 13.7926 9.94447 14.2581 10.0243L14.5962 8.05311C13.6652 7.89341 12.7077 8.06837 11.8933 8.547L12.9066 10.2713ZM14.2581 10.0243C14.7236 10.1042 15.1459 10.3462 15.4501 10.7075L16.9801 9.41953C16.3718 8.69686 15.5273 8.2128 14.5962 8.05311L14.2581 10.0243ZM15.4501 10.7075C15.7542 11.0689 15.9207 11.5262 15.92 11.9985L17.92 12.0015C17.9214 11.0569 17.5884 10.1422 16.9801 9.41953L15.4501 10.7075ZM15.92 12C15.92 12.4691 15.5549 12.9582 14.8653 13.4179C14.5509 13.6275 14.2294 13.789 13.9826 13.8987C13.8606 13.9529 13.7603 13.9929 13.6929 14.0186C13.6593 14.0314 13.6341 14.0406 13.6187 14.0461C13.611 14.0488 13.6058 14.0506 13.6032 14.0515C13.602 14.0519 13.6014 14.0521 13.6014 14.0521C13.6015 14.0521 13.6017 14.052 13.6021 14.0519C13.6023 14.0518 13.6025 14.0517 13.6028 14.0516C13.6029 14.0516 13.6032 14.0515 13.6032 14.0515C13.6035 14.0514 13.6038 14.0513 13.92 15C14.2362 15.9487 14.2365 15.9486 14.2368 15.9485C14.2369 15.9484 14.2372 15.9483 14.2375 15.9483C14.2379 15.9481 14.2385 15.9479 14.239 15.9478C14.2401 15.9474 14.2414 15.9469 14.2429 15.9464C14.2459 15.9454 14.2496 15.9442 14.254 15.9427C14.2628 15.9396 14.2744 15.9356 14.2887 15.9305C14.3173 15.9203 14.3565 15.9061 14.4049 15.8876C14.5015 15.8508 14.6356 15.7971 14.7949 15.7263C15.1106 15.586 15.5391 15.3725 15.9747 15.0821C16.7851 14.5418 17.92 13.5309 17.92 12H15.92ZM14 19V21C15.1046 21 16 20.1046 16 19H14ZM14 19H12C12 20.1046 12.8954 21 14 21V19ZM14 19V17C12.8954 17 12 17.8954 12 19H14ZM14 19H16C16 17.8954 15.1046 17 14 17V19Z" fill="#1A1A1A" mask="url(#path-1-inside-1_4_442)"/>
+    </svg>
+    </a>
+    </h2>
+    <textarea id="commandInput" rows="4" placeholder="Говорите сюда..."></textarea>
+    <br>
+    <table class="table table-bordered table-sm w-auto" id="helper" style="display: none;">
+        <tr><th>Действие<th>Контекст<th>Имя 1<th>Имя 2</tr>
+        <tr><td>помощь<td><td><td></tr>
+        <tr><td>очистить | отменить<td>всё<td><td></tr>
+        <tr><td>удалить | удали<td>слово<td><td></tr>
+        <tr><td rowspan="3">создать | добавить | создай | добавь<td>таблицу | термин<td align="center">X<td></tr>
+        <tr><td>ссылку на таблицу | термин<td align="center">X<td>[<a class="a-dotted" onclick="$('#types').toggle(333)">типа</a> Y]</tr>
+        <tr><td>колонку | поле | свойство<td align="center">X<td>[<a class="a-dotted" onclick="$('#types').toggle(333)">типа</a> Y]</tr>
+        <tr id="types" style="display: none;"><td colspan="4" class="bg-info text-white">
+            Доступные базовые типы данных:<br /><b>строка</b> (по умолчанию), html, текст, время, дата, файл, boolean, число, сумма</tr>
+        <tr><td>выбрать | выбери | показать | покажи<td>таблицу<td align="center">X<td></tr>
+        <tr><td>переименовать | переименуй<td>таблицу | термин | колонку | поле | свойство<td align="center">X<td>в Y</tr>
+        <tr><td rowspan="2">удалить | удали<td>таблицу | термин<td align="center">X<td></tr>
+        <tr><td>колонку | поле | свойство<td align="center">X<td></tr>
+        <tr><td>перейди в | открой<td>таблицу<td align="center">X<td></tr>
+        <tr><td>покажи [все]<td>таблицы<td><td></tr>
+    </table>
+    <button id="continueBtn" style="display: none;">Продолжить (Ctl+Enter) ▶</button>
+    <div class="alert alert-warning hidden" id="warn" role="alert" onclick="$(this).addClass('hidden')"></div>
+    <div id="currentTable" class="mt-2 mb-2"></div>
+    <div id="tablesContainer"></div>
+    <div id="result"></div>
+</div>
+<script>
+const mentionedTerms={}
+    ,BASE_URL="https://"+document.location.host+"/"+db  // твоя база
+    ,baseTypes={"html":"2","строка":"3","время":"4","дата":"9","файл":"10","boolean":"11","текст":"12","число":"13","сумма":"14"}
+    ,baseSign={
+        '2':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17 19L22 14L17 9M11 9L6 14L11 19" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'3':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9V6H22V9M11 22H17M14 6V22" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+        ,'4':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 8V14L18 16M24 14C24 19.5228 19.5228 24 14 24C8.47715 24 4 19.5228 4 14C4 8.47715 8.47715 4 14 4C19.5228 4 24 8.47715 24 14Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'5':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="path-1-inside-1_4_331" fill="white"><path d="M22 4H6C4.89543 4 4 4.89543 4 6V10C4 11.1046 4.89543 12 6 12H22C23.1046 12 24 11.1046 24 10V6C24 4.89543 23.1046 4 22 4Z"/><path d="M22 16H6C4.89543 16 4 16.8954 4 18V22C4 23.1046 4.89543 24 6 24H22C23.1046 24 24 23.1046 24 22V18C24 16.8954 23.1046 16 22 16Z"/><path d="M9 20C9 20.5523 8.55228 21 8 21C7.44772 21 7 20.5523 7 20C7 19.4477 7.44772 19 8 19C8.55228 19 9 19.4477 9 20Z"/><path d="M9 8C9 8.55228 8.55228 9 8 9C7.44772 9 7 8.55228 7 8C7 7.44772 7.44772 7 8 7C8.55228 7 9 7.44772 9 8Z"/></mask><path d="M6 5H22V3H6V5ZM22 5C22.5523 5 23 5.44771 23 6H25C25 4.34315 23.6569 3 22 3V5ZM23 6V10H25V6H23ZM23 10C23 10.5523 22.5523 11 22 11V13C23.6569 13 25 11.6569 25 10H23ZM22 11H6V13H22V11ZM6 11C5.44772 11 5 10.5523 5 10H3C3 11.6569 4.34315 13 6 13V11ZM5 10V6H3V10H5ZM5 6C5 5.44772 5.44772 5 6 5V3C4.34315 3 3 4.34315 3 6H5ZM6 17H22V15H6V17ZM22 17C22.5523 17 23 17.4477 23 18H25C25 16.3431 23.6569 15 22 15V17ZM23 18V22H25V18H23ZM23 22C23 22.5523 22.5523 23 22 23V25C23.6569 25 25 23.6569 25 22H23ZM22 23H6V25H22V23ZM6 23C5.44772 23 5 22.5523 5 22H3C3 23.6569 4.34315 25 6 25V23ZM5 22V18H3V22H5ZM5 18C5 17.4477 5.44772 17 6 17V15C4.34315 15 3 16.3431 3 18H5ZM8 20V22C9.10457 22 10 21.1046 10 20H8ZM8 20H6C6 21.1046 6.89543 22 8 22V20ZM8 20V18C6.89543 18 6 18.8954 6 20H8ZM8 20H10C10 18.8954 9.10457 18 8 18V20ZM8 8V10C9.10457 10 10 9.10457 10 8H8ZM8 8H6C6 9.10457 6.89543 10 8 10V8ZM8 8V6C6.89543 6 6 6.89543 6 8H8ZM8 8H10C10 6.89543 9.10457 6 8 6V8Z" fill="#1A1A1A" mask="url(#path-1-inside-1_4_331)"/></svg>'
+        ,'6':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.12 16.12C15.8454 16.4147 15.5141 16.6512 15.1462 16.8151C14.7782 16.9791 14.3809 17.0673 13.9781 17.0744C13.5753 17.0815 13.1752 17.0074 12.8016 16.8565C12.4281 16.7056 12.0887 16.481 11.8038 16.1962C11.519 15.9113 11.2944 15.5719 11.1435 15.1984C10.9926 14.8248 10.9185 14.4247 10.9256 14.0219C10.9327 13.6191 11.0209 13.2218 11.1849 12.8538C11.3488 12.4859 11.5853 12.1546 11.88 11.88M3 3L25 25M19.94 19.94C18.2306 21.243 16.1491 21.9649 14 22C7 22 3 14 3 14C4.24389 11.6819 5.96914 9.65661 8.06 8.06L19.94 19.94ZM11.9 6.24C12.5883 6.07888 13.2931 5.99834 14 6C21 6 25 14 25 14C24.393 15.1356 23.6691 16.2047 22.84 17.19L11.9 6.24Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'7':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 24C19.5228 24 24 19.5228 24 14C24 8.47715 19.5228 4 14 4C8.47715 4 4 8.47715 4 14C4 19.5228 8.47715 24 14 24Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10L18 14L12 18V10Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'8':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9V6H22V9M11 22H17M14 6V22" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+        ,'9':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 4V8M10 4V8M5 12H23M7 6H21C22.1046 6 23 6.89543 23 8V22C23 23.1046 22.1046 24 21 24H7C5.89543 24 5 23.1046 5 22V8C5 6.89543 5.89543 6 7 6Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'10':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 4.00006H8C7.46957 4.00006 6.96086 4.21077 6.58579 4.58585C6.21071 4.96092 6 5.46963 6 6.00006V22.0001C6 22.5305 6.21071 23.0392 6.58579 23.4143C6.96086 23.7893 7.46957 24.0001 8 24.0001H20C20.5304 24.0001 21.0391 23.7893 21.4142 23.4143C21.7893 23.0392 22 22.5305 22 22.0001V11.0001M15 4.00006L22 11.0001M15 4.00006V11.0001H22" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'11':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 13L13 16L23 6M22 14V21C22 21.5304 21.7893 22.0391 21.4142 22.4142C21.0391 22.7893 20.5304 23 20 23H6C5.46957 23 4.96086 22.7893 4.58579 22.4142C4.21071 22.0391 4 21.5304 4 21V7C4 6.46957 4.21071 5.96086 4.58579 5.58579C4.96086 5.21071 5.46957 5 6 5H17" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'12':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 12H5M23 8H5M23 16H5M19 20H5" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+        ,'13':'<svg class="b-sign" width="15" height="14" viewBox="0 0 28 26" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 10H22M6 16H22M12 4L10 22M18 4L16 22" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'14':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 3V25M19 7H11.5C10.5717 7 9.6815 7.36875 9.02513 8.02513C8.36875 8.6815 8 9.57174 8 10.5C8 11.4283 8.36875 12.3185 9.02513 12.9749C9.6815 13.6313 10.5717 14 11.5 14H16.5C17.4283 14 18.3185 14.3687 18.9749 15.0251C19.6313 15.6815 20 16.5717 20 17.5C20 18.4283 19.6313 19.3185 18.9749 19.9749C18.3185 20.6313 17.4283 21 16.5 21H8" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'15':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 3V6M17 3V6M11 22V25M17 22V25M22 11H25M22 16H25M3 11H6M3 16H6M8 6H20C21.1046 6 22 6.89543 22 8V20C22 21.1046 21.1046 22 20 22H8C6.89543 22 6 21.1046 6 20V8C6 6.89543 6.89543 6 8 6ZM11 11H17V17H11V11Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        ,'16':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="path-1-inside-1_4_331" fill="white"><path d="M22 4H6C4.89543 4 4 4.89543 4 6V10C4 11.1046 4.89543 12 6 12H22C23.1046 12 24 11.1046 24 10V6C24 4.89543 23.1046 4 22 4Z"/><path d="M22 16H6C4.89543 16 4 16.8954 4 18V22C4 23.1046 4.89543 24 6 24H22C23.1046 24 24 23.1046 24 22V18C24 16.8954 23.1046 16 22 16Z"/><path d="M9 20C9 20.5523 8.55228 21 8 21C7.44772 21 7 20.5523 7 20C7 19.4477 7.44772 19 8 19C8.55228 19 9 19.4477 9 20Z"/><path d="M9 8C9 8.55228 8.55228 9 8 9C7.44772 9 7 8.55228 7 8C7 7.44772 7.44772 7 8 7C8.55228 7 9 7.44772 9 8Z"/></mask><path d="M6 5H22V3H6V5ZM22 5C22.5523 5 23 5.44771 23 6H25C25 4.34315 23.6569 3 22 3V5ZM23 6V10H25V6H23ZM23 10C23 10.5523 22.5523 11 22 11V13C23.6569 13 25 11.6569 25 10H23ZM22 11H6V13H22V11ZM6 11C5.44772 11 5 10.5523 5 10H3C3 11.6569 4.34315 13 6 13V11ZM5 10V6H3V10H5ZM5 6C5 5.44772 5.44772 5 6 5V3C4.34315 3 3 4.34315 3 6H5ZM6 17H22V15H6V17ZM22 17C22.5523 17 23 17.4477 23 18H25C25 16.3431 23.6569 15 22 15V17ZM23 18V22H25V18H23ZM23 22C23 22.5523 22.5523 23 22 23V25C23.6569 25 25 23.6569 25 22H23ZM22 23H6V25H22V23ZM6 23C5.44772 23 5 22.5523 5 22H3C3 23.6569 4.34315 25 6 25V23ZM5 22V18H3V22H5ZM5 18C5 17.4477 5.44772 17 6 17V15C4.34315 15 3 16.3431 3 18H5ZM8 20V22C9.10457 22 10 21.1046 10 20H8ZM8 20H6C6 21.1046 6.89543 22 8 22V20ZM8 20V18C6.89543 18 6 18.8954 6 20H8ZM8 20H10C10 18.8954 9.10457 18 8 18V20ZM8 8V10C9.10457 10 10 9.10457 10 8H8ZM8 8H6C6 9.10457 6.89543 10 8 10V8ZM8 8V6C6.89543 6 6 6.89543 6 8H8ZM8 8H10C10 6.89543 9.10457 6 8 6V8Z" fill="#1A1A1A" mask="url(#path-1-inside-1_4_331)"/></svg>'
+        ,'17':'<svg class="b-sign" width="15" height="15" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17 9H20C20.6566 9 21.3068 9.12933 21.9134 9.3806C22.52 9.63188 23.0712 10.0002 23.5355 10.4645C23.9998 10.9288 24.3681 11.48 24.6194 12.0866C24.8707 12.6932 25 13.3434 25 14C25 14.6566 24.8707 15.3068 24.6194 15.9134C24.3681 16.52 23.9998 17.0712 23.5355 17.5355C23.0712 17.9998 22.52 18.3681 21.9134 18.6194C21.3068 18.8707 20.6566 19 20 19H17M11 19H8C7.34339 19 6.69321 18.8707 6.08658 18.6194C5.47995 18.3681 4.92876 17.9998 4.46447 17.5355C3.52678 16.5979 3 15.3261 3 14C3 12.6739 3.52678 11.4021 4.46447 10.4645C5.40215 9.52678 6.67392 9 8 9H11M10 14H18" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    }
+    ,refTemplate=' <svg class="b-sign" width="17" height="17" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.9436 14.9336C12.373 15.5077 12.9209 15.9827 13.5501 16.3265C14.1793 16.6703 14.8751 16.8747 15.5902 16.9259C16.3054 16.9771 17.0231 16.8739 17.6949 16.6233C18.3667 16.3728 18.9767 15.9806 19.4836 15.4736L22.4836 12.4736C23.3944 11.5305 23.8983 10.2675 23.8869 8.95655C23.8755 7.64557 23.3497 6.39151 22.4227 5.46447C21.4956 4.53743 20.2415 4.01158 18.9306 4.00019C17.6196 3.9888 16.3566 4.49277 15.4136 5.40356L13.6936 7.11356M15.9436 12.9336C15.5141 12.3594 14.9662 11.8844 14.337 11.5406C13.7078 11.1969 13.0121 10.9924 12.2969 10.9412C11.5818 10.89 10.864 10.9932 10.1922 11.2438C9.52045 11.4944 8.91044 11.8865 8.40356 12.3936L5.40356 15.3936C4.49277 16.3366 3.9888 17.5996 4.00019 18.9106C4.01158 20.2216 4.53743 21.4756 5.46447 22.4027C6.39151 23.3297 7.64557 23.8555 8.95655 23.8669C10.2675 23.8783 11.5305 23.3744 12.4736 22.4636L14.1836 20.7536" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    ,arrTemplate=' <svg class="b-sign" width="17" height="17" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 8H23M10 14H23M10 20H23M6 8C6 8.55228 5.55228 9 5 9C4.44772 9 4 8.55228 4 8C4 7.44772 4.44772 7 5 7C5.55228 7 6 7.44772 6 8ZM6 14C6 14.5523 5.55228 15 5 15C4.44772 15 4 14.5523 4 14C4 13.4477 4.44772 13 5 13C5.55228 13 6 13.4477 6 14ZM6 20C6 20.5523 5.55228 21 5 21C4.44772 21 4 20.5523 4 20C4 19.4477 4.44772 19 5 19C5.55228 19 6 19.4477 6 20Z" stroke="#1A1A1A"/></svg>'
+    ,input = document.getElementById("commandInput")
+    ,result = document.getElementById("result")
+    ,container = document.getElementById("tablesContainer")
+    ,continueBtn = document.getElementById("continueBtn");
+
+let lastTable,isProcessing,isEditing,checkInterval,metas,lastText='';
+
+const commandPatterns = [
+    {
+      regex: /(очистить|очисти|очисть|отменить|отмени)( всё)/i,
+      type: "clearAll",
+      global: true
+    },
+    {
+      regex: /(помощь)/i,
+      type: "shoHelp",
+      global: true
+    },
+    {
+      regex: /(удали слово|удалить слово)/i,
+      type: "clearOne",
+      global: true
+    },
+    {
+      regex: /(покажи все таблицы|покажи таблицы)/i,
+      type: "showAll",
+    },
+    {
+      regex: /(создать|добавить|создай|добавь|добавь в)[ \t]+(ссылку на)[ \t]+(таблицу|термин)[ \t]+(.+?(?=типа))?(типа +)?(.+)?/i,
+      type: "createRef"
+    },
+    {
+      regex: /(создать|добавить|создай|добавь|добавь в)[ \t]+(таблицу|термин)[ \t]+(.+?(?=типа))?(типа +)?(.+)?/i,
+      type: "createTable"
+    },
+    {
+      regex: /(выбрать|выбери|показать|покажи)[ \t]+таблицу[ \t]+(.+)/i,
+      type: "selectTable"
+    },
+    {
+      regex: /(переведи в|перейди|перейти|перейди в|перейти в|открой)[ \t]+таблицу[ \t]+(.+)/i,
+      type: "goTable"
+    },
+    {
+      regex: /(создать|добавить|создай|добавь|добавь в)[ \t]+(колонку|поле|свойство)[ \t]+(.+?(?=типа))?(типа +)?(.+)?/i,
+      type: "addColumn"
+    },
+    {
+      regex: /(переименовать|переименуй)[ \t]+(таблицу|термин|колонку|поле|свойство)?[ \t]+(.+) в (.+)/i,
+      type: "patchTerm"
+    },
+    {
+      regex: /(удали|удалить)[ \t]+(таблицу|термин)[ \t]+(.+)/i,
+      type: "delTable"
+    },
+    {
+      regex: /(удали|удалить)[ \t]+(колонку|поле|свойство)[ \t]+(.+)/i,
+      type: "delReq"
+    },
+];
+const cmdDelimiters = /([ \t]+)(переименовать|переименуй|выбрать|выбери|очистить|отменить|создать|добавить|создай|добавь|добавь в|удали|удалить)([ \t]+)(таблицу|термин|колонку|поле|свойство|ссылку|всё|слово)/gmi;
+const cmdDelimitersOther = /([ \t]+)(переименовать|переименуй)/gmi;
+newApi('GET','metadata','getMeta');
+function shoHelp(match){
+    $('#helper').toggle(333);
+    clearOne(match);
+}
+function goTable(match){
+    let i=getTermId(match[2]);
+    if(i)
+        window.open('/'+db+'/object/'+i,'goTable').focus();
+    else{
+        cmdErr('не найдено');
+        isProcessing=false;
+    }
+    clearAll(match);
+}
+function clearOne(match){
+    input.value=input.value.substring(0,input.value.length-match[0].length).trim();
+    input.value=input.value.substring(0,input.value.lastIndexOf(" "));
+    isProcessing=false;
+}
+function clearAll(match){
+    input.value='';
+    resultTemplate('clearAll: '+match[1]+' '+match[2]);
+    $('.cmd-running').removeClass('cmd-running').addClass('cmd-ok');
+    isProcessing=false;
+}
+function getMeta(json){
+    metas=json;
+}
+// Инициализация интервала
+function initInterval() {
+    checkInterval = setInterval(() => {
+        if(!isProcessing && !isEditing && input.value !== lastText)
+            processCmd();
+    }, 100);
+}
+input.addEventListener('input',()=>{
+    clearInterval(checkInterval); // остановка таймера
+    isEditing=true;
+    continueBtn.style.display='inline'; // показать кнопку
+});
+function mentionedReqs(rid){
+    if(metas[rid])
+        for(let i in metas[rid].reqs)
+            if(mentionedTerms[metas[rid].reqs[i].orig])
+                return true;
+}
+let tableTemplate='<table class="t-cont mr-3 mb-4" id=":id:"><tr><td class="t-parent p-0" valign="top"><div class="t-name">:name:</div>'
+                    +'<div class="t-reqs shadow-sm">:reqs:</div><td id="children:id:" class="t-child pl-4 mt-0 pt-0" valign="top"></table>'
+    ,reqTemplate='<div class="t-req :ref-or-arr:" id=":id:">:name:</div>';
+function drawTable(i,parent){
+    if($('#'+metas[i].id).length>0)
+        return;
+    var j,k,index,reqs,toDraw;
+    if(isReq(metas[i].id)&&!parent&&metas[i].id!==lastTable) // Requisites to be shown under their parent
+        return;
+    if(showAllFlag||mentionedTerms[metas[i].id]||mentionedReqs(i)||(parent&&$('#'+parent).length>0)){
+        reqs='';
+        for(j in metas[i].reqs)
+            reqs+=reqTemplate.replace(':id:',metas[i].reqs[j].id)
+                            .replace(':name:',baseSign[metas[i].reqs[j].type]+' '+metas[i].reqs[j].val
+                                        +(metas[i].reqs[j].arr_id?arrTemplate:'')
+                                        +(metas[i].reqs[j].ref?refTemplate:''))
+                            .replace(':ref-or-arr:',metas[i].reqs[j].ref||metas[i].reqs[j].arr_id?'ref-or-arr':'');
+        table=tableTemplate.replace(/:id:/gm,metas[i].id)
+                            .replace(':name:',baseSign[metas[i].type]+' '+metas[i].val)
+                            .replace(':reqs:',reqs);
+        if(parent)
+            $('#children'+parent).append(table);
+        else
+            $('#tablesContainer').append(table);
+        for(j in metas[i].reqs)
+            if(metas[i].reqs[j].ref||hasReqs(metas[i].reqs[j].orig)){
+                index=undefined;
+                for(k in metas)
+                    if(metas[k].id===metas[i].reqs[j].orig)
+                        index=k;
+                if(index===undefined){
+                    metas.push({id:metas[i].reqs[j].orig.toString()
+                                ,reqs:[]
+                                ,type:metas[i].reqs[j].type
+                                ,up:'0'
+                                ,val:metas[i].reqs[j].val});
+                    index=metas.length-1;
+                }
+                drawTable(index,metas[i].id)
+            }
+    }
+}
+function isReq(r){
+    let i,j;
+    for(i in metas)
+        for(j in metas[i].reqs)
+            if(metas[i].reqs[j].orig==r)
+                return true;
+}
+function hasReqs(i){
+    for(let j in metas)
+        if(metas[j].id===i&&metas[j].reqs.length>0)
+            return true;
+}
+function drawStructure(){
+    $('#tablesContainer').html('');
+    for(let i in metas)
+        drawTable(i);
+}
+function resultTemplate(t){
+    $('#result').prepend('<div class="cmd-running">'+t+'</div>');
+}
+function processCmd(){
+    var i,match,text;
+	const fd = new FormData();
+    input.value=input.value.replace(cmdDelimiters, '\n$2 $4');
+    lastText=input.value;
+    i=input.value.indexOf("\n");
+    text=input.value.slice(0,i!==-1?i:input.value.length).toLowerCase();
+    for(i in commandPatterns){
+        if(commandPatterns[i].global){ // Global Cmds are effective ignoring the queue
+            if(match=commandPatterns[i].regex.exec(input.value)){
+                isProcessing = true;
+                window[commandPatterns[i].type](match);
+                return;
+            }
+        }
+        else if(match=commandPatterns[i].regex.exec(text)){
+            input.value=input.value.substr(match.input.length+1)
+            resultTemplate(commandPatterns[i].type+': '+match.input);
+            if(typeof window[commandPatterns[i].type]==='function'){
+                isProcessing = true;
+                window[commandPatterns[i].type](match,fd);
+                return;
+            }
+        }
+    }
+    isProcessing=false;
+}
+function cmdNext(json){
+    metas=json;
+    $('#currentTable').html('#'+lastTable+' '+getTermName(lastTable));
+    mentionedTerms[lastTable]=getTermName(lastTable);
+    drawStructure();
+    processCmd();
+}
+function cmdDone(json){
+    if(!json){
+        cmdErr(json);
+        isProcessing=false;
+    }
+    lastTable=json.obj||json.id;
+    if(lastTable){
+        $('#currentTable').html('#'+lastTable+' '+getTermName(lastTable));
+        if(json.warnings)
+            cmdOk(json.warnings);
+        else
+            cmdOk('#'+(json.id||json.obj));
+        return newApi('GET','metadata','cmdNext');
+    }
+    else
+        cmdErr(json[0].error);
+    isProcessing=false;
+}
+function cmdOk(e){
+    $('.cmd-running').addClass('cmd-ok');
+    $('.cmd-running').append(' <span>('+e+')</span>');
+    $('.cmd-running').removeClass('cmd-running');
+}
+function cmdErr(e){
+    $('.cmd-running').addClass('cmd-err');
+    $('.cmd-running').append(' <span>('+e+')</span>');
+    $('.cmd-running').removeClass('cmd-running');
+}
+function checkRef(r){
+    let i,j;
+    for(i in metas)
+        if(metas[i].id===lastTable)
+            for(j in metas[i].reqs)
+                if(metas[i].reqs[j].orig===r&&(!metas[i].reqs[j].attrs||metas[i].reqs[j].attrs.indexOf(':ALIAS=')===-1))
+                    return false;
+    return true;
+}
+function guessTermIdExt(val,base){ // Try to find the Term with 1 ending letter different ()
+    console.log(' guessTermIdExt for '+val+' '+base)
+    let i,j,match;
+    if(val.length<3) // Skip too short terms
+        return;
+    for(i in metas){
+        console.log(metas[i].val.trim().toLowerCase().substr(0,-1)+'==='+val.substr(0,-1));
+        if(metas[i].val.trim().toLowerCase().substr(0,-1)===val.substr(0,val.length-1)&&(!base||metas[i].type===base)){
+            console.log('match '+metas[i].id);
+            if(match&&match!==metas[i].id) // In case there are more than 1 match - discard the result
+                return;
+            match=metas[i].id
+        }
+        else
+            for(j in metas[i].reqs){
+                if(metas[i].reqs[j].val.trim().toLowerCase().substr(0,-1)===val.substr(0,val.length-1)&&(!base||metas[i].type===base)){
+                    console.log('match '+metas[i].reqs[j].orig);
+                    if(match&&match!==metas[i].reqs[j].orig)
+                        return;
+                    match=metas[i].reqs[j].orig;
+                }
+            }
+    }
+    return match;
+}
+function guessTermId(val,base){ // Try to find the Term without ending (Запрос=Запроса)
+    console.log(' guessTermId for '+val+' '+base)
+    let i,j,match;
+    for(i in metas){
+        if(metas[i].val.trim().toLowerCase()===val.substr(0,val.length-1)&&(!base||metas[i].type===base)){
+            if(match&&match!==metas[i].id) // In case there are more than 1 match - discard the result
+                return;
+            match=metas[i].id;
+        }
+        else
+            for(j in metas[i].reqs){
+                if(metas[i].reqs[j].val.trim().toLowerCase()===val.substr(0,val.length-1)&&(!base||metas[i].type===base)){
+                    if(match&&match!==metas[i].reqs[j].orig)
+                        return;
+                    match=metas[i].reqs[j].orig;
+                }
+            }
+    }
+    return match||guessTermIdExt(val,base);
+}
+function getTermId(val,base){
+    console.log(' getTermId for '+val+' '+base)
+    let i,j;
+    val=val.trim().toLowerCase();
+    for(i in metas)
+        if(metas[i].val.trim().toLowerCase()===val&&(!base||metas[i].type===base))
+            return metas[i].id;
+        else
+            for(j in metas[i].reqs)
+                if(metas[i].reqs[j].val.trim().toLowerCase()===val&&(!base||metas[i].type===base))
+                    return metas[i].reqs[j].orig;
+    return guessTermId(val,base);
+}
+function getReqId(val,base){
+    let i,j;
+    val=val.trim().toLowerCase();
+    for(i in metas)
+        if(metas[i].id==lastTable)
+            for(j in metas[i].reqs)
+                if(metas[i].reqs[j].val.trim().toLowerCase()===val&&(!base||metas[i].reqs[j].type===base))
+                    return metas[i].reqs[j].id;
+}
+function getTermName(t){
+    let i,j;
+    t=t.toString();
+    for(i in metas)
+        if(metas[i].id==t)
+            return metas[i].val;
+        else
+            for(j in metas[i].reqs)
+                if(metas[i].reqs[j].orig==t)
+                    return metas[i].reqs[j].val;
+    return '*** не найдено ***';
+}
+function getTermType(t){
+    let i,j;
+    for(i in metas)
+        if(metas[i].id==t)
+            return metas[i].type;
+        else
+            for(j in metas[i].reqs)
+                if(metas[i].reqs[j].orig==t)
+                    return metas[i].reqs[j].type;
+}
+function selectTable(match,fd){
+    if(lastTable=getTermId(match[2]))
+        cmdDone({obj:lastTable});
+    else
+        cmdErr('не найдено');
+    isProcessing=false;
+}
+let showAllFlag;
+function showAll(match,fd){
+    isProcessing=false;
+    showAllFlag=true;
+    drawStructure();
+    showAllFlag=false;
+    processCmd();
+}
+function delReq(match,fd){
+    let i=getReqId(match[3]);
+    if(i)
+        newApi('POST','_deletereq/'+i+'?JSON=1','cmdDone',fd);
+    else{
+        cmdErr('не найдено');
+        isProcessing=false;
+    }
+}
+function delTable(match,fd){
+    let i=getTermId(match[3]);
+    if(i)
+        newApi('POST','_deleteterm/'+i+'?JSON=1','cmdDone',fd);
+    else
+        isProcessing=false;
+}
+function patchTerm(match,fd){
+    let i=getTermId(match[3]);
+	fd.append('val',cap(match[4]));
+    if(i)
+        newApi('POST','_patchterm/'+i+'?JSON=1&t='+getTermType(i),'cmdDone',fd);
+    else
+        isProcessing=false;
+}
+function createRef(match,fd){
+    console.log(match)
+    let i,val,t;
+    if(match[4]){ // Different match set with or without type given
+        val=match[4];
+        t=baseTypes[match[6]];
+    }
+    else
+        val=match[6];
+    i=getTermId(val,t);
+    if(i&&checkRef(i))
+        return newApi('POST','_references/'+i+'?JSON=1','addColumnReq');
+    if(i)
+        isProcessing=false;
+    else{
+        fd.append('val',cap(val));
+        fd.append('t',t||'3');
+        newApi('POST','_terms?JSON=1','createRefNew',fd);
+    }
+}
+function createRefNew(json){
+    if(json.obj)
+        newApi('POST','_references/'+json.obj+'?JSON=1','addColumnReq');
+    else
+        isProcessing=false;
+}
+function addColumn(match,fd){
+    let i,val,t;
+    if(match[3]){
+    	val=cap(match[3]);
+    	t=baseTypes[match[5]]||'3';
+    }
+    else{
+    	val=cap(match[5]);
+    	t='3';
+    }
+    if(i=getTermId(val,t))
+        return addColumnReq({obj:i});
+	fd.append('val',val);
+	fd.append('t', t);
+    newApi('POST','_terms?JSON=1','addColumnReq',fd);
+}
+function addColumnReq(json){
+    newApi('POST','_attributes/'+lastTable+'?JSON=1&t='+json.obj,'cmdDone');
+}
+function createTable(match,fd){
+    if(match[3]){ // Different match set with or without type given
+    	fd.append('val', cap(match[3]));
+    	fd.append('t', baseTypes[match[5]]||'3');
+    }
+    else{
+    	fd.append('val', cap(match[5]));
+    	fd.append('t', '3');
+    }
+    newApi('POST','_terms?JSON=1','cmdDone',fd);
+}
+input.addEventListener('paste', () => {
+    isEditing = false;
+    continueBtn.style.display = 'none';
+});
+continueBtn.addEventListener('click', () => {
+    isEditing = false;
+    continueBtn.style.display = 'none';
+    lastText = input.value;
+    if(!isProcessing) processCmd();
+});
+function cap(val){
+    if (!val) return '';
+    val=val.trim();
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+// Инициализируем при загрузке
+initInterval();
+document.getElementById("commandInput").addEventListener('keydown', (event) => {
+    if(event.key=='Enter'&&event.ctrlKey){
+    	event.preventDefault();
+        event.stopPropagation();
+    	$(continueBtn).click();
+    	initInterval();
+    }
+});
+</script>

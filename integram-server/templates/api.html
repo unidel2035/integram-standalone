@@ -1,0 +1,389 @@
+<style>
+label {
+    margin-top: .2rem;
+    margin-bottom: .1rem;
+}
+.par-tabs{
+    border-top: none;
+}
+.err-msg{
+    padding: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+.conn{
+    border-right: 1px solid lightgray;
+}
+.params td{
+    padding: .1rem;
+}
+</style>
+<div class="row m-1">
+    <div class="col-xs-12 col-sm-4 col-md-5 col-lg-3 conn">
+        <label for="server">Сервис</label>
+        <select id="server" class="form-control form-control-sm" onchange="getParams()">
+            <option value="integram">integram.io</option>
+            <option value="ideav">ideav.online</option>
+            <option value="ideavpro">ideav.pro</option>
+            <option value="postgres">158.160.2.49:8000/api/v1</option>
+        </select>
+        <label for="db">БД</label>
+        <input type="text" id="db" placeholder="apix" value="alex" class="form-control form-control-sm" onchange="getParams()">
+        <label for="authType">Тип авторизации</label>
+        <select id="authType" class="form-control form-control-sm">
+            <option value="auth">Auth token</option>
+            <option value="basic">Basic</option>
+            <option value="secret">secret</option>
+            <option value="none">Нет</option>
+        </select>
+        <label for="user">Пользователь</label>
+        <input type="text" id="user" placeholder="apix" class="form-control form-control-sm">
+        <label for="pwd">Пароль</label>
+        <input type="password" id="pwd" class="form-control form-control-sm">
+        <label for="token" class="creds">Auth token
+            <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" onclick="$('#token').toggle()">
+            <path d="M3 14C3 14 7 6 14 6C21 6 25 14 25 14C25 14 21 22 14 22C7 22 3 14 3 14Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M14 17C15.6569 17 17 15.6569 17 14C17 12.3431 15.6569 11 14 11C12.3431 11 11 12.3431 11 14C11 15.6569 12.3431 17 14 17Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        </label>
+        <br />
+        <input type="text" id="token" class="form-control form-control-sm" value="d1756f68d95f9320e9c4438376d09916" style="display:none">
+        <label for="xsrf" class="creds">XSRF token
+            <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" onclick="$('#xsrf').toggle()">
+            <path d="M3 14C3 14 7 6 14 6C21 6 25 14 25 14C25 14 21 22 14 22C7 22 3 14 3 14Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M14 17C15.6569 17 17 15.6569 17 14C17 12.3431 15.6569 11 14 11C12.3431 11 11 12.3431 11 14C11 15.6569 12.3431 17 14 17Z" stroke="#1A1A1A" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        </label>
+        <br />
+        <input type="text" id="xsrf" class="form-control form-control-sm" value="a5f982e14a5be14a5beefef2341c7e" style="display:none">
+        <button onclick="auth()" class="btn btn-sm btn-outline-secondary w-100 mt-2">Подключиться</button>
+    </div>
+    <div class="col-xs-12 col-sm-8 col-md-7 col-lg-9">
+        <div class="row no-gutters mb-2">
+            <div class="col-6">
+                <label for="cmd">Команда</label>
+                <select id="cmd" class="form-control form-control-sm" onchange="selectCmd(this.value)">
+                    <option value="">--- выберите ---</option>
+                    <option class="cmd-set integram ideav ideavpro" value="1" u="dict">Список таблиц (dict)</option>
+                    <option class="cmd-set integram ideav" value="2" u="metadata">Метаданные (metadata)</option>
+                    <option class="cmd-set integram ideav" value="3" u="object">Содержимое таблицы (GET object)</option>
+                    <option class="cmd-set integram ideav" value="4" u="object" m="POST">Содержимое таблицы (POST object)</option>
+                    <option class="cmd-set integram ideav" value="5" u="edit_obj">Данные о записи (edit_obj)</option>
+                    <option class="cmd-set integram ideav ideavpro" value="6" u="report">Отчет (GET report)</option>
+                    <option class="cmd-set integram ideav" value="7" u="report" m="POST">Отчет (POST report)</option>
+                    <option class="cmd-set integram ideav" value="8" u="_m_new" m="POST">Создать запись (_m_new)</option>
+                    <option class="cmd-set integram ideav" value="9" u="_m_save" m="POST">Обновить запись (_m_save)</option>
+                    <option class="cmd-set postgres" value="10" u="metadata">Метаданные (metadata)</option>
+                    <option class="cmd-set postgres" value="11" u="terms">Список таблиц (terms)</option>
+                </select>
+            </div>
+            <div class="col-6">
+                <label for="cmd">Объект</label>
+                <select id="objects" class="form-control form-control-sm" onchange="getMeta(this.value)"></select>
+                <!-- 
+                <input id="id" type="number" class="form-control form-control-sm">
+                -->
+            </div>
+        </div>
+        <div class="json-type mb-2" style="display:none">
+            <label for="jsonType">Формат</label>
+            <select id="jsonType" class="form-control form-control-sm" onchange="calcUrl()">
+                <option value="JSON">JSON: с описанием колонок отчета и итогами</option>
+                <option value="JSON_KV">JSON_KV: в формате "key1":"val1", "key2":"val2"</option>
+                <option value="JSON_DATA">JSON_DATA: без описания колонок отчета и итогов</option>
+                <option value="JSON_CR">JSON_CR: для обращения из сервиса Creatium</option>
+            </select>
+        </div>
+        <span class="">Заголовки (headers)</span>
+        <div class="headers border shadow-sm p-2 mb-2">&nbsp;</div>
+        <span>Параметры</span>
+        <table class="table table-bordered table-sm mb-2"><thead><tr><th>Параметр<th>Значение<span class="rep"> От</span><th class="rep">Значение До</thead>
+            <tbody class="params"></tbody>
+        </table>
+        <label>URL:</label>
+        <div id="apiCall" class="bg-light p-1 border shadow-sm mb-2">&nbsp;</div>
+        <button onclick="call()" class="btn btn-sm btn-primary w-100 mt-2">Выполнить</button>
+    </div>
+    <div class="err-msg w-100 mt-2" onclick="$(this).hide()" style="display:none"></div>
+    <div class="col-12 mt-2">
+        <label for="result">Результат</label>
+        <textarea id="result" class="form-control w-100"></textarea>
+    </div>
+</div>
+<script>
+const paramTemplate='<tr class="param-line"><td><select class="form-control form-control-sm border-0 item-:j: param"><option value=":param:">:param:</option></select>'
+                              +'<td><input type="text" class="form-control form-control-sm border-0 param-from">'
+                              +'<td><input type="text" class="form-control form-control-sm border-0 param-to">'
+    ,reqTemplate='<tr class="req-line"><td class="req" id=":req:">:name:'
+                            +'<td><input type="text" class="form-control form-control-sm border-0 req-val" placeholder=":ph:" onchange="validateParam(this)">'
+    ,colTemplate='<option value=":param:">:param:</option>';
+function validateParam(el){
+    
+}
+function getColsDone(json){
+    var i,obj,j=0;
+    $('.rep').show();
+    for(i in json.object){
+        obj=json.object[i].id;
+        if(json.reqs&&json.reqs[obj]&&json.reqs[obj][100]){
+            if(j===0)
+                $('.params').html(paramTemplate.replace(/:param:/g,json.reqs[obj][100]).replace(':j:',j));
+            else if(j===1){
+                $('.params').append(paramTemplate.replace(/:param:/g,'').replace(':j:',j));
+                $('.item-1,.item-0').append(colTemplate.replace(/:param:/g,json.reqs[obj][100]));
+            }
+            else
+                $('.item-1,.item-0').append(colTemplate.replace(/:param:/g,json.reqs[obj][100]));
+            j++;
+        }
+    }
+}
+function getRecToEdit(json){
+    $('.req-val').val(json.object[0].id);
+    calcUrl();
+}
+function getMetaDone(json){
+    $('.rep').hide();
+    $('.params').html('');
+    if($('#cmd').val()==='5'){ // edit_obj requires just the object id
+        $('.params').append(reqTemplate.replace(':req:','id')
+                                    .replace(':name:','id <b>(id записи)</b>')
+                                    .replace(':ph:',''));
+        myApi('GET',calcUrl('object/'+json.id+'?JSON&LIMIT=1&'),'getRecToEdit');
+        return;
+    }
+    if($('#cmd').val()==='9') // _m_save requires the object id
+        $('.params').append(reqTemplate.replace(':req:','id')
+                                    .replace(':name:','id <b>(id записи)</b>')
+                                    .replace(':ph:',''));
+    if($('#cmd').val()==='8') // _m_new requires the parent
+        $('.params').append(reqTemplate.replace(':req:','up')
+                                    .replace(':name:','up <b>(родитель)</b>')
+                                    .replace(':ph:','1 - для независимых записей'));
+    $('.params').append(reqTemplate.replace(':req:','t'+json.id)
+                                .replace(':name:','t'+json.id+' <b>('+json.val+')</b>')
+                                .replace(':ph:',''));
+    for(var i in json.reqs)
+        $('.params').append(reqTemplate.replace(':req:','t'+json.reqs[i].id)
+                                    .replace(':name:','t'+json.reqs[i].id+' ('+json.reqs[i].val+')')
+                                    .replace(':ph:',json.reqs[i].attrs?cleanMods(json.reqs[i].attrs):''));
+    $('#up').next().find('input').val(1);
+    if($('#cmd').val()==='2')
+        $('.params input').attr('disabled',true);
+}
+function cleanMods(val){
+    return val.replace(':!NULL:','').replace(':MULTI:','').replace(/:ALIAS=(.*?):/u,'');
+}
+function getMeta(i){
+    if(['2','3','4','5','8','9'].includes($('#cmd').val()))
+        myApi('GET',calcUrl('metadata/'+i+'?JSON&'),'getMetaDone');
+    else if(['6','7'].includes($('#cmd').val()))
+        myApi('GET',calcUrl('object/28?JSON&F_U='+i),'getColsDone');
+    calcUrl();
+}
+function errMsgCard(err,mode){
+    mode='bg-'+(mode||'danger text-white');
+    if(typeof err==='object')
+        err=JSON.stringify(err,null,2);
+    $('.err-msg').html(err).addClass(mode).show();
+    setTimeout(()=>{$('.err-msg').hide()},9000);
+}
+$('.pars a').on('click', function (event) {
+  event.preventDefault();
+  $(this).tab('show');
+  $('.par-tabs').hide();
+  $($(this).attr('t')).show();
+});
+var aServer,aDb,aUser,aPwd,aToken,objs={};
+getParams();
+function selectCmd(val){
+    val=$('.cmd-set[value='+val+']').attr('u');
+    if(val==='report')
+        $('.json-type').show();
+    else
+        $('.json-type').hide();
+    $('.params,.objects').html('');
+    $('#result').val('');
+    switch(val){
+        case 'report':
+            if(objs[aDb]&&objs[aDb][val])
+                fillInReports();
+            else
+                myApi('GET',calcUrl('object/22?JSON&LIMIT=1000'),'getReportsDone');
+            break;
+        case 'metadata':
+        case 'object':
+        case 'edit_obj':
+        case '_m_new':
+        case '_m_save':
+            if(objs[aDb]&&objs[aDb]['object'])
+                fillInTables();
+            else
+                myApi('GET',calcUrl('dict?JSON&'),'getTablesDone');
+            break;
+        default:
+             $('#objects').html('');
+    }
+    calcUrl();
+}
+function getTablesDone(json){
+    objs[aDb]['object']=json;
+    fillInTables();
+}
+function fillInTables(){
+    var h='<option value="">--- выберите таблицу ---</option>';
+    for(var i in objs[aDb]['object'])
+        h+='<option value="'+i+'">'+objs[aDb]['object'][i]+'</option>';
+    $('#objects').html(h);
+}
+function getReportsDone(json){
+    if(!json.object)
+        return errMsgCard(json);
+    objs[aDb]['report']=json.object;
+    fillInReports();
+}
+function fillInReports(){
+    var h='<option value="">--- выберите отчет---</option>';
+    for(var i in objs[aDb]['report'])
+        h+='<option value="'+objs[aDb]['report'][i].id+'">'+objs[aDb]['report'][i].val+'</option>';
+    $('#objects').html(h);
+}
+function callDone(json,cmd){
+    $('#result').val(JSON.stringify(json,null,2));
+    $('#result').css('height','84px');
+    $('#result').css('height',$('#result')[0].scrollHeight+'px');
+}
+function authDone(json){
+    if(json.token){
+        $('#token').val(json.token);
+        $('#xsrf').val(json._xsrf);
+        $('.creds').removeClass('text-danger').addClass('text-success font-weight-bold');
+    }
+    else{
+        $('.creds').removeClass('text-success font-weight-bold').addClass('text-danger');
+        errMsgCard(json);
+    }
+}
+function call(){
+    var fd,h='',m=getMethod();
+    if(m==='POST1')
+        fd = new FormData();
+    else
+        fd='';
+    $('.params').find('.param-line').each(function(){
+        const par=$(this).find('.param').val()
+            ,pFrom=$(this).find('.param-from').val()
+            ,pTo=$(this).find('.param-to').val();
+        if(par){
+            if(pFrom)
+                if(m==='POST1')
+                    fd.append('FR_'+encodeURI(par),encodeURI(pFrom));
+                else
+                    fd+='&FR_'+encodeURI(par)+'='+encodeURI(pFrom);
+            if(pTo)
+                if(m==='POST1')
+                    fd.append('TO_'+encodeURI(par),encodeURI(pTo));
+                else
+                    fd+='&TO_'+encodeURI(par)+'='+encodeURI(pTo);
+        }
+    });
+    if(cmdUrl()!=='edit_obj')
+        $('.req-line').each(function(){
+            const req=$(this).find('.req').attr('id')
+                ,val=$(this).find('.req-val').val();
+            if(val&&val.length>0)
+                fd+='&'+req+'='+encodeURI(val);
+        });
+    myApi(getMethod(),calcUrl(),'callDone',fd||'',$('#cmd').val());
+}
+function getParams(){
+    aDb=$('#db').val().length>0?$('#db').val():$('#db').attr('placeholder');
+    objs[aDb]={};
+    aServer=$('#server').find('option[value="'+$('#server').val()+'"]').html();
+    $('.cmd-set').hide();
+    $('.'+$('#server').val()).show();
+    //$('#cmd').find('.'+$('#server').val()).first().attr('selected',true);
+}
+function auth(){
+    aUser=$('#user').val();
+    aPwd=$('#pwd').val();
+    if(aUser&&aPwd)
+        myApi('POST','https://'+aServer+'/'+aDb+'/auth?JSON','authDone','login='+aUser+'&pwd='+aPwd);
+}
+function getMethod(){
+    return $('.cmd-set[value='+$('#cmd').val()+']').attr('m')||'GET';
+}
+function cmdUrl(){
+    return $('.cmd-set[value='+$('#cmd').val()+']').attr('u');
+}
+function calcUrl(u){
+    var u=u||cmdUrl();
+    console.log(u)
+    if(u==='edit_obj'){
+        if($('.req-val').val()>0)
+            u+='/'+$('.req-val').val()+'?JSON';
+        else
+            u+='/{'+'id объекта}?JSON';
+    }
+    else{
+        if($('#objects').val()&&$('#objects').val().length>0)
+            u+='/'+$('#objects').val();
+        if(u.indexOf('?JSON')===-1) // Add JSON in case it's missing
+            if(u.indexOf('?')===-1)
+                u+='?'+$('#jsonType').val();
+            else
+                u=u.replace('?','?JSON');
+    }
+    u='https://'+aServer+'/'+aDb+'/'+u;
+    $('#apiCall').html(getMethod()+': '+u);
+    return u;
+}
+// Функция для отправки асинхронного запроса по https api с обработкой его результата
+function myApi(m,u,b,vars,index){ // Параметры: метод, адрес, действие - ветка switch, параметры, ID целевого элемента
+    vars=vars||''; // По умолчанию список параметров пуст
+    var h,v,json,obj=new XMLHttpRequest(); // Объявляем переменную под JSON и API по HTTPS
+    if(m==='POST'){ // Если это POST запрос, то передаем заданные параметры
+        if(typeof vars=='object')
+            vars.append('_xsrf',$('#xsrf').val());
+        else
+            vars='_xsrf='+$('#xsrf').val()+'&'+vars; // добавляем токен xsrf, необходимый для POST-запроса
+    }
+    else
+        u+=vars;
+    $('#apiCall').html(m+': '+u);
+    $('.headers').html('');
+    obj.open(m,u,true); // Открываем асинхронное соединение заданным методом по нужному адресу
+    switch($('#authType').val()){
+        case 'basic':
+            h='Authorization';
+            v='Basic '+btoa($('#user').val()+':'+$('#pwd').val());
+            obj.setRequestHeader(h,v);
+            $('.headers').append(h+': '+v+'<br />');
+            break;
+        case 'auth':
+            h='x-authorization';
+            v=$('#token').val();
+            obj.setRequestHeader(h,v);
+            $('.headers').append(h+': '+v+'<br />');
+            break;
+    }
+    if(m==='POST'){
+        h='Content-Type';
+        v='application/x-www-form-urlencoded';
+        obj.setRequestHeader(h,v);
+        $('.headers').append(h+': '+v+'<br />');
+    }
+    obj.onload=function(e){ // Когда запрос вернет результат - сработает эта функция
+        try{ // в this.responseText лежит ответ от сервера
+            json=JSON.parse(this.responseText); // Пытаемся разобрать ответ как JSON
+        }
+        catch(e){ // Если произошла ошибка при разборе JSON
+            errMsgCard(this.responseText); // Выводим ошибку
+        }
+        obj.abort(); // Закрываем соединение
+        if(typeof window[b]==='function') // Вызываем функцию-исполнитель переданного действия (callback)
+            window[b](json,index);
+    };
+    obj.send(vars); // отправили запрос и теперь будем ждать ответ, а пока - выходим
+}
+</script>

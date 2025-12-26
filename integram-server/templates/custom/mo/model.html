@@ -1,0 +1,414 @@
+<style>
+.f-head{
+    position: sticky;
+    top: 49px;
+    z-index: 1;
+}
+.f-sheet-tab{
+    display:;
+}
+.f-first-cell{
+    position: relative;
+}
+.f-cell{
+    
+}
+.f-item:hover{
+    background-color: #fafafa;
+}
+.f-first-cell .show-id{
+    display:none;
+}
+.f-first-cell:hover .show-id{
+    display:block;
+}
+.show-id:hover{
+    color:#000000;
+}
+.show-id{
+    position: absolute;
+    right: 0.5rem;
+    color:lightgray;
+    cursor:pointer;
+}
+.err{
+    background-color: #ffeeee;
+}
+</style>
+<div id="model" class="f-model m-2">
+    <ul class="nav nav-tabs sheet-tabs"></ul>
+    <div class="sheets"></div>
+</div>
+<script>
+const repRegex=/^\[([A-Za-я-ЯЁё][A-Za-я-ЯЁё0-9]*)(\.[A-Za-я-ЯЁё][A-Za-я-ЯЁё0-9]*)\]$/
+    ,itemRegex=/^\[([A-Za-я-ЯЁё][ A-Za-я-ЯЁё0-9\(\)-]*)\]$/
+    ,exprRegex=/(СУММА)\(\[(.*?)\]:\[(.*?)\]\)/g
+    ,itemIdRegex=/\[\d+\]/g;
+const sheetTab='<li class="nav-item"><a id=":id:" class="nav-link f-sheet-tab" onclick="setActive(this)">:name:</a></li>'
+    ,sheet='<div id="s:id:" class="f-sheet" style="display:none"></div>'
+    ,panel='<div id=":id:" f-period=":period:" class="f-panel pt-3"><h4>:name:</h4><table class="table table-sm table-bordered w-auto"><tr class="f-head"><th>:head:</table></div>'
+    ,head='<th range=":from:-:to:">:head:'
+    ,item='<tr class="f-item" id=":id:" item-name=":name:"><td class="f-first-cell" style="padding-left::pl:.2rem"><div class="show-id"><span onclick="copy2Buffer(:id:)">:id:</span>'
+        +' <a href="/'+db+'/edit_obj/:id:" target="edit-item"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top:-4px;">'
+		+'    <path d="M17.2857 13.09V17.2857C17.2857 17.7025 17.1201 18.1022 16.8254 18.3969C16.5307 18.6916 16.1311 18.8572 15.7143 18.8572H4.71428C4.29751 18.8572 3.89781 18.6916 3.60311 18.3969C3.30841 18.1022 3.14285 17.7025 3.14285 17.2857V6.28574C3.14285 5.86897 3.30841 5.46927 3.60311 5.17457C3.89781 4.87987 4.29751 4.71431 4.71428 4.71431H8.91M15.7143 3.14288L18.8571 6.28574L11 14.1429H7.85714V11L15.7143 3.14288Z" stroke="lightgray" stroke-linecap="round" stroke-linejoin="round"></path>'
+		+' </svg></a></div>'
+        +':name:'
+    ,cell='<td range=":from:-:to:" ready=":ready:" class="f-cell :classes:" align="right" title=":title:">:val:';
+let modelData={},periodData={},periods={},values={},formulas={},items={},reports={},ajaxes=0;
+function getPeriods(json,period){
+    periodData[period]=json;
+    ajaxes--;
+    drawPeriods();
+}
+const replaceItems = (match, key) => {
+    if(items[key])
+        return '['+items[key].name+']';
+    return '(Not found '+key+')';
+}
+function calcLineTotals(){
+    $('.f-line-sum').each(function(){
+        let valids,v=0;
+        $(this).attr('title',t9n('[RU]Сумма значений строки[EN]Totals of the line'));
+        $(this).closest('tr').find('.f-rg-cell').each(function(){
+            if(parseFloat($(this).html())||parseFloat($(this).html())===0){
+                valids=true;
+                v+=parseFloat($(this).html());
+            }
+        });
+        if(valids) // Display the totals in case there was at least one valid value 
+            this.innerHTML=v;
+    });
+}
+function debugMsg(m){
+    console.log(m);
+}
+// Calculate the cells values based on formulas and the stuff around, recusively
+function calcCells(){
+    var val=0,progress=true,todo=true,j=0;
+    while(progress&&todo&&j++<100){ // Limit to 100 iterations without progress
+        progress=false;
+        todo=false;
+        $('td[ready=0]').each(function(){
+            todo=true;
+            let i,refs,item=$(this).closest('tr').attr('id')
+                ,f=formulas[item];
+            if(!f) // There might be no formula for the cell
+                return;
+            $(this).attr('title',f);
+            refs=f.match(itemIdRegex); // Fetch the references to other cells by IDs
+            if(refs){
+                refs=[...new Set(refs.map(s => s.replace(/[\[\]]/g,'')))];
+                for(i in refs){
+                    $('#'+refs[i]).find('.f-rg-cell[range='+$(this).attr('range')+'],.f-col-cell[range='+$(this).attr('range')+']').each(function(){
+                        if($(this).attr('ready')==='1') // Get all ready cells mentioned in the formula
+                            f=f.replace(new RegExp('\\\['+refs[i]+'\\\]'),$(this).html()||0);
+                    });
+                    $('#'+refs[i]).find('.f-values').each(function(){
+                        if($(this).attr('ready')==='1')
+                            f=f.replace(new RegExp('\\\['+refs[i]+'\\\]'),$(this).html()||0);
+                    });
+                }
+                refs=f.match(itemIdRegex); // Re-check, if there are no unresolved links
+                if(!refs)
+                    progress=evalFormula(this,f); // Evaluate the formula and filll the cell in if Ok
+                $(this).attr('title',$(this).attr('title').replace(/\[(\d+)\]/g,replaceItems)+'='+f);
+            }
+            else if(refs=f.match(exprRegex)){ // process Smart Range expressions (To do)
+                for(i in refs)
+                    console.log(refs[i])
+            }
+            else
+                progress=evalFormula(this,f); // The value might be hardcoded in the formula with no links
+        });
+        calcLineTotals(); // Calc the totals after all the cells are calculated
+    }
+    $('td[ready=0]').addClass('err');
+}
+function evalFormula(el,f){
+    let val;
+    try{
+        val=parseFloat(eval(f)); // Validate the formula expression
+        if(isNaN(val))
+            return false;
+    }
+    catch(e){
+        val='N/A'; // Log the fatal error, if any
+        debugMsg(e+': '+f);
+    }
+    $(el).html(val); // or set the result
+    $(el).attr('ready','1');
+    return true;
+}
+function dateYMD(d){
+    return d.slice(6)+d.slice(3, 5)+d.slice(0, 2);
+}
+// Collect the values from all the reports we met in the model
+function getRepVals(){
+    let rep,i,j,repField,date;
+    for(rep in reports){
+        for(i in reports[rep][0]){ // The first column is the date
+            date=i;
+            break;
+        }
+        for(i in formulas) // Scan formulas and fetch the report data
+            if(formulas[i].indexOf('['+rep+'.')===0){
+                repField=formulas[i].match(repRegex)[2].substr(1);
+                $('#'+i).find('.f-rg-cell').each(function(){
+                    let val=0,range=$(this).attr('range').split('-'); // Apply the column range
+                    for(j in reports[rep])
+                        if(reports[rep][j][date]>=range[0]&&reports[rep][j][date]<=range[1])
+                            val+=getFloat(reports[rep][j][repField]);
+                    $(this).html(normalizeVal(i,val));
+                    $(this).attr('ready','1');
+                });
+            }
+    }
+}
+// Get the report and save for future use
+function getRepDone(json,rep){
+    if(!json)
+        return;
+    reports[rep]=json;
+    ajaxes--;
+    drawPeriods();
+}
+function getRep(rep,fr,to){
+    reports[rep]={};
+    ajaxes++;
+    newApi('GET','report/'+rep+'?JSON_KV&FR_Date='+fr+'&TO_Date='+to,'getRepDone','',rep);
+}
+function getColVal(item,col){
+    let i,acc=0,valids=false;
+    for(i in values[item])
+        if(values[item][i].col===col){
+            valids=true;
+            acc+=getFloat(values[item][i].val);
+        }
+    if(valids)
+        return normalizeVal(item,acc);
+}
+function getVal(item,fr,to){
+    let i,acc=0,valids=false;
+    for(i in values[item])
+        if(!fr // The date is empty
+                ||(values[item][i].date>=fr&&values[item][i].date<=to)){    // or within the range
+            valids=true;
+            acc+=getFloat(values[item][i].val);
+        }
+    if(valids)
+        return normalizeVal(item,acc);
+}
+function getFloat(v){
+    return parseFloat(v.replace(/ /g,'').replace(/\,/g,'.'));
+}
+function drawPeriods(){
+    let i,rg;
+    // Wait for values and all periods data to come
+    if(ajaxes>0)
+        return;
+    $('.f-panel').each(function(){
+        const p=periodData[$(this).attr('f-period')];
+        for(rg in modelData[this.id].rgs){
+            let i,v,rep,fr,to;
+            switch(modelData[this.id].rgs[rg].type){
+                case 'rg': // Repeating group - calculatable cells for every period of the model's range
+                    for(i in p){ // draw a column as a set of cells for each item of each period
+                        fr=dateYMD(p[i].r[1]);
+                        to=dateYMD(p[i].r[2]);
+                        $(this).find('.f-head').append(head.replace(':head:',p[i].r[0])
+                                                            .replace(':from:',fr)
+                                                            .replace(':to:',to));
+                        $(this).find('.f-item').each(function(){
+                            if(formulas[this.id]){
+                                if(formulas[this.id]==='[]')
+                                    v=getVal($(this).attr('item-name'),fr,to);
+                                else if(itemRegex.test(formulas[this.id]))
+                                    v=getVal(formulas[this.id].match(itemRegex)[1],fr,to)||'0';
+                            }
+                            $(this).append(cell.replace(':val:',v||'')
+                                            .replace(':ready:',v||formulas[this.id]==='[]'||!formulas[this.id]?'1':'0')
+                                            .replace(':title:',v||formulas[this.id]==='[]'||!formulas[this.id]?v:'')
+                                            .replace(':classes:','f-rg-cell')
+                                            .replace(':from:',fr)
+                                            .replace(':to:',to));
+                        });
+                    }
+                    break;
+                case 'value': // Set of values - single column for all items with values from the values table or report
+                    $(this).find('.f-head').append(head.replace(':head:',modelData[this.id].rgs[rg].head||t9n('[RU]Значение[EN]Value')));
+                    $(this).find('.f-item').each(function(){
+                        let altName;
+                        // First search by item ID for predefined model values, then - by name for those from the values table
+                        if(formulas[this.id]&&(altName=formulas[this.id].match(itemRegex))) // Check for the alternative name for the item
+                            v=normalizeVal(this.id,values[this.id]||getVal(altName[1]));
+                        else
+                            v=normalizeVal(this.id,values[this.id]||getVal(items[this.id].name));
+                        $(this).append(cell.replace(':val:',v||'')
+                                        .replace(':classes:','f-values')
+                                        .replace(':from:','-')
+                                        .replace(':to:','-')
+                                        .replace(':ready:',v||formulas[this.id]==='[]'||!formulas[this.id]?'1':'0')
+                                        .replace(':title:',formulas[this.id]||''));
+                    });
+                    break;
+                case 'mu': // A column to display measurement units, set for items, if any
+                    $(this).find('.f-head').append(head.replace(':head:',modelData[this.id].rgs[rg].head||t9n('[RU]Ед.изм.[EN]Measure unit')));
+                    $(this).find('.f-item').each(function(){
+                        $(this).append(cell.replace(':val:',items[this.id].mu||'')
+                                        .replace(':classes:','f-mus')
+                                        .replace(':from:','-')
+                                        .replace(':to:','-')
+                                        .replace(':ready:','1')
+                                        .replace(':title:',v||''));
+                    });
+                    break;
+                case 'line': // The total amount of the values of the repeating group for this item
+                    $(this).find('.f-head').append(head.replace(':head:',modelData[this.id].rgs[rg].head||t9n('[RU]Сумма[EN]Total')));
+                    $(this).find('.f-item').each(function(){
+                        $(this).append(cell.replace(':val:','')
+                                        .replace(':classes:','f-line-sum')
+                                        .replace(':from:','-')
+                                        .replace(':to:','-')
+                                        .replace(':title:',t9n('[RU]Сумма[EN]Total'))
+                                        .replace(':ready:','1'));
+                    });
+                    break;
+                default:
+                    rep=modelData[this.id].rgs[rg].src; // We got a report to draw the columns instead of the Date periods
+                    let col;
+                    if(rep)
+                        for(i in periodData[rep]){ // There are two dimensions - unwrap those into the table
+                            for(j in periodData[rep][i]){
+                                if(col=periodData[rep][i][j]){
+                                    $(this).find('.f-head').append(head.replace(':head:',col)
+                                                                        .replace(':from:-:to:',i));
+                                    $(this).find('.f-item').each(function(){
+                                        let ready=0;
+                                        v=getColVal(items[this.id].name,col); // Get the cell data from the source report
+                                        if(v||formulas[this.id]==='[]')
+                                            ready=1;
+                                        $(this).append(cell.replace(':val:',normalizeVal(this.id,v||''))
+                                                        .replace(':ready:',ready)
+                                                        .replace(':title:','')
+                                                        .replace(':classes:','f-col-cell')
+                                                        .replace(':from:-:to:',i));
+                                    });
+                                }
+                                break;
+                            }
+                        }
+                    break;
+            }
+        }
+    });
+    getRepVals(); // Scatter the reports values 
+    calcCells(); // Calculate the calculatables
+}
+function normalizeVal(item,val){
+    let v=val||'';
+    if(typeof val==='object')
+        v=val[0].val;
+    return v.toString().replace(/ /g,'').replace(/\,/g,'.');
+}
+// Get the source data for the model
+function getSrc(json){
+    for(let i in json)
+        if(json[i].value.length>0)
+            try{
+                values[json[i].item]=JSON.parse('['+json[i].value+']');
+            }
+            catch(e){
+                values[json[i].item]='error '+e+' in '+json[i].value;
+            }
+    ajaxes--;
+    drawPeriods();
+}
+// Get the model's data: sheets, panels, tables, rows, formulas, etc.
+function getModel(json){
+    let i,j,rep,html,filter,fr,to;
+    for(i in json){
+        periods[json[i].period]=1;
+        items[json[i].itemID]={name:json[i].item,format:json[i].format,mu:json[i].MU};
+        if(json[i].RGsourceID&&!periods[json[i].RGsourceID]){
+            periods[json[i].RGsourceID]=1;
+            ajaxes++;
+            newApi('GET','report/'+json[i].RGsourceID+'?JSON_KV&FR_Date='+json[i].periodFrom+'&TO_Date='+json[i].periodTo,'getPeriods','',json[i].RGsourceID);
+        }
+    }
+    // The range for th whole model is the same
+    fr=json[i].periodFrom;
+    to=json[i].periodTo;
+    // Fetch the source data
+    ajaxes++;
+    newApi('GET','report/6431?JSON_KV&Fr='+dateYMD(fr)+'&To='+dateYMD(to),'getSrc');
+    // Fetch only those periods mentioned in the model
+    if(periods['Год']){
+        ajaxes++;
+        newApi('GET','object/794?JSON_DATA&LIMIT=10000&FR_5597=>='+fr+'&FR_5598=<='+to,'getPeriods','','Год');
+    }
+    if(periods['Квартал']){
+        ajaxes++;
+        newApi('GET','object/449?JSON_DATA&LIMIT=10000&FR_5769=>='+fr+'&FR_5770=<='+to,'getPeriods','','Квартал');
+    }
+    if(periods['Месяц']){
+        ajaxes++;
+        newApi('GET','object/526?JSON_DATA&LIMIT=10000&FR_5599=>='+fr+'&FR_5197=<='+to,'getPeriods','','Месяц');
+    }
+    for(i in json){
+        // Put a sheet on the model
+        if($('#'+json[i].sheetID).length===0){
+            $('#model .sheet-tabs').append(sheetTab.replace(/:id:/g,json[i].sheetID)
+                                            .replace(/:name:/,json[i].sheet));
+            $('#model .sheets').append(sheet.replace(/:id:/,json[i].sheetID)
+                                            .replace(/:name:/,json[i].sheet));
+        }
+        // Put a panel on the sheet
+        if($('#'+json[i].panelID).length===0){
+            $('#s'+json[i].sheetID).append(panel.replace(/:id:/g,json[i].panelID)
+                                            .replace(/:head:/,json[i].itemsHead||json[i].panel)
+                                            .replace(/:period:/,json[i].period)
+                                            .replace(/:name:/,json[i].panel));
+            modelData[json[i].panelID]={ items:{}, rgs:{} };
+        }
+        // Fill in the items list in the table
+        if(json[i].itemID&&$('#'+json[i].itemID).length===0)
+            $('#'+json[i].panelID+' table tbody').append(item.replace(/:id:/g,json[i].itemID)
+                                            .replace(/:pl:/,json[i].level-1)
+                                            .replace(/:name:/g,json[i].item));
+        // Remember items with their repeating groups, and formulas
+        if(!modelData[json[i].panelID].rgs[json[i].RG])
+            modelData[json[i].panelID].rgs[json[i].RG]={type:json[i].RGtype,head:json[i].rgHead,src:json[i].RGsourceID};
+        // save the data predefined in the model, if any
+        if(json[i].value.length>0)
+            values[json[i].itemID]=normalizeVal(json[i].itemID,json[i].value);
+        // Remember the formula
+        if(json[i].formulas.length>0){
+            formulas[json[i].itemID]=json[i].formulas;
+            // In case the formula is a report column reference - retrieve the report
+            if(rep=json[i].formulas.match(repRegex))
+                if(!reports[rep[1]])
+                    getRep(rep[1],fr,to);
+        }
+    }
+    // Activate the first tab, if it's not yet active
+    if($('.active').length===0){
+        $('.f-sheet-tab').first().addClass('active');
+        $('.f-sheet').first().show();
+    }
+}
+function setActive(el){
+    $('.f-sheet').hide();
+    $('.f-sheet-tab').removeClass('active');
+    $(el).addClass('active');
+    $('#s'+el.id).show();
+}
+function copy2Buffer(text){
+    var $temp = $("<textarea />");
+    $("body").append($temp);
+    $temp.val(text).select();
+    document.execCommand("copy");
+    $temp.remove();
+}
+if(id>0)
+    newApi('GET','report/4905?JSON_KV&FR_modelID='+id,'getModel');
+</script>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API v2 Песочница - Integram Standalone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            height: calc(100vh - 200px);
+        }
+
+        .left-panel, .right-panel {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .left-panel {
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .endpoint-group {
+            margin-bottom: 30px;
+        }
+
+        .endpoint-group h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+
+        .endpoint:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .endpoint.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .method.get { background: #28a745; color: white; }
+        .method.post { background: #007bff; color: white; }
+        .method.patch { background: #ffc107; color: black; }
+        .method.delete { background: #dc3545; color: white; }
+
+        .path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .request-section {
+            margin-bottom: 25px;
+        }
+
+        .request-section h4 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .response-container {
+            margin-top: 20px;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .response-status {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .response-status.success { background: #28a745; color: white; }
+        .response-status.error { background: #dc3545; color: white; }
+
+        .response-time {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .json-key { color: #e06c75; }
+        .json-value { color: #98c379; }
+        .json-string { color: #e5c07b; }
+        .json-number { color: #d19a66; }
+        .json-boolean { color: #c678dd; }
+        .json-null { color: #56b6c2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 API v2 Песочница</h1>
+            <p>Интерактивное тестирование Integram Standalone API v2</p>
+        </div>
+
+        <div class="content">
+            <div class="left-panel">
+                <div class="endpoint-group">
+                    <h3>📋 Discovery & Info</h3>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2" data-desc="API Discovery">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v2</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2/health" data-desc="Health Check">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v2/health</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2/openapi.json" data-desc="OpenAPI Spec (JSON)">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v2/openapi.json</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <h3>📊 Integram Types</h3>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2/integram/databases/{database}/types" data-desc="List Tables">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v2/integram/databases/{database}/types</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2/integram/databases/{database}/types/{typeId}/metadata" data-desc="Get Table Metadata">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v2/integram/databases/{database}/types/{typeId}/metadata</span>
+                    </div>
+                </div>
+
+                <div class="endpoint-group">
+                    <h3>📦 Integram Objects</h3>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2/integram/databases/{database}/types/{typeId}/objects" data-desc="List Objects">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v2/integram/databases/{database}/types/{typeId}/objects</span>
+                    </div>
+                    <div class="endpoint" data-method="POST" data-path="/api/v2/integram/databases/{database}/types/{typeId}/objects" data-desc="Create Object">
+                        <span class="method post">POST</span>
+                        <span class="path">/api/v2/integram/databases/{database}/types/{typeId}/objects</span>
+                    </div>
+                    <div class="endpoint" data-method="GET" data-path="/api/v2/integram/databases/{database}/objects/{objectId}" data-desc="Get Object">
+                        <span class="method get">GET</span>
+                        <span class="path">/api/v2/integram/databases/{database}/objects/{objectId}</span>
+                    </div>
+                    <div class="endpoint" data-method="PATCH" data-path="/api/v2/integram/databases/{database}/objects/{objectId}" data-desc="Update Object">
+                        <span class="method patch">PATCH</span>
+                        <span class="path">/api/v2/integram/databases/{database}/objects/{objectId}</span>
+                    </div>
+                    <div class="endpoint" data-method="DELETE" data-path="/api/v2/integram/databases/{database}/objects/{objectId}" data-desc="Delete Object">
+                        <span class="method delete">DELETE</span>
+                        <span class="path">/api/v2/integram/databases/{database}/objects/{objectId}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="request-section">
+                    <h4>🔧 Параметры запроса</h4>
+                    <div class="input-group">
+                        <label>Метод</label>
+                        <input type="text" id="method" value="GET" readonly>
+                    </div>
+                    <div class="input-group">
+                        <label>URL</label>
+                        <input type="text" id="url" value="https://185.128.105.78/api/v2">
+                    </div>
+                    <div class="input-group" id="bodyGroup" style="display: none;">
+                        <label>Request Body (JSON)</label>
+                        <textarea id="requestBody" placeholder='{"data": {"type": "...", "attributes": {...}}}'></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendRequest()">
+                        ▶️ Отправить запрос
+                        <span id="loader" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+
+                <div class="response-container" id="responseContainer" style="display: none;">
+                    <div class="response-header">
+                        <div>
+                            <h4>📥 Ответ</h4>
+                            <span id="responseStatus" class="response-status"></span>
+                        </div>
+                        <span id="responseTime" class="response-time"></span>
+                    </div>
+                    <pre id="responseBody"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+
+        // Примеры тел запросов для разных endpoints
+        const requestBodyExamples = {
+            'POST /api/v2/integram/databases/{database}/types/{typeId}/objects': JSON.stringify({
+                "data": {
+                    "type": "integram-object",
+                    "attributes": {
+                        "requisites": {
+                            "req_name": "ООО Тестовая Компания",
+                            "req_email": "test@example.com",
+                            "req_status": "active"
+                        }
+                    }
+                }
+            }, null, 2),
+            'PATCH /api/v2/integram/databases/{database}/objects/{objectId}': JSON.stringify({
+                "data": {
+                    "type": "integram-object",
+                    "id": "{objectId}",
+                    "attributes": {
+                        "requisites": {
+                            "req_name": "ООО Обновленная Компания"
+                        }
+                    }
+                }
+            }, null, 2)
+        };
+
+        // Обработчики для endpoints
+        document.querySelectorAll('.endpoint').forEach(endpoint => {
+            endpoint.addEventListener('click', function() {
+                // Убрать активный класс со всех
+                document.querySelectorAll('.endpoint').forEach(e => e.classList.remove('active'));
+                // Добавить активный класс к текущему
+                this.classList.add('active');
+
+                const method = this.dataset.method;
+                const path = this.dataset.path;
+
+                document.getElementById('method').value = method;
+                document.getElementById('url').value = baseUrl + path;
+
+                // Показать/скрыть тело запроса
+                const bodyGroup = document.getElementById('bodyGroup');
+                const requestBody = document.getElementById('requestBody');
+
+                if (method === 'POST' || method === 'PATCH' || method === 'PUT') {
+                    bodyGroup.style.display = 'block';
+                    const exampleKey = `${method} ${path}`;
+                    requestBody.value = requestBodyExamples[exampleKey] || '';
+                } else {
+                    bodyGroup.style.display = 'none';
+                }
+
+                // Скрыть предыдущий ответ
+                document.getElementById('responseContainer').style.display = 'none';
+            });
+        });
+
+        async function sendRequest() {
+            const method = document.getElementById('method').value;
+            const url = document.getElementById('url').value;
+            const requestBody = document.getElementById('requestBody').value;
+            const loader = document.getElementById('loader');
+            const responseContainer = document.getElementById('responseContainer');
+            const responseStatus = document.getElementById('responseStatus');
+            const responseTime = document.getElementById('responseTime');
+            const responseBodyElem = document.getElementById('responseBody');
+
+            // Показать loader
+            loader.style.display = 'inline-block';
+            responseContainer.style.display = 'none';
+
+            const startTime = performance.now();
+
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/vnd.api+json',
+                        'Accept': 'application/vnd.api+json'
+                    }
+                };
+
+                if ((method === 'POST' || method === 'PATCH' || method === 'PUT') && requestBody) {
+                    options.body = requestBody;
+                }
+
+                const response = await fetch(url, options);
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+
+                const data = await response.json();
+
+                // Скрыть loader
+                loader.style.display = 'none';
+
+                // Показать ответ
+                responseContainer.style.display = 'block';
+
+                // Установить статус
+                if (response.ok) {
+                    responseStatus.textContent = `${response.status} ${response.statusText}`;
+                    responseStatus.className = 'response-status success';
+                } else {
+                    responseStatus.textContent = `${response.status} ${response.statusText}`;
+                    responseStatus.className = 'response-status error';
+                }
+
+                responseTime.textContent = `${duration}ms`;
+
+                // Форматировать JSON с подсветкой синтаксиса
+                responseBodyElem.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
+
+            } catch (error) {
+                loader.style.display = 'none';
+                responseContainer.style.display = 'block';
+                responseStatus.textContent = 'ERROR';
+                responseStatus.className = 'response-status error';
+                responseTime.textContent = '';
+                responseBodyElem.textContent = error.message;
+            }
+        }
+
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        // Автоматически выбрать первый endpoint при загрузке
+        window.addEventListener('load', () => {
+            document.querySelector('.endpoint').click();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,471 @@
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<style>
+.dict-list{
+    max-width: 900px;
+    padding: 3px;
+    display: flex;
+    flex-wrap: wrap;
+}
+.dict-item:hover,.data-item:hover {
+    padding: 9px;
+    margin: 5px;
+}
+.dict-item,.data-item,.dash-bar {
+    font: 400 14px;
+    color: #4675AC;
+    margin: 0 5px 0 5px;
+    padding: 7px;
+    margin: 7px;
+    border: 1px solid #CCDFFF;
+    border-radius: 5px;
+    transition: all 0.25s;
+    background: linear-gradient(to right, #f6f6f6, #fafafa);
+    cursor: pointer;
+    text-align: center;
+}
+.dict-href:hover{
+    text-decoration: none;
+}
+.dict-item:hover,.data-item:hover{
+    background: #eee;
+    box-shadow: 0px 5px 7px rgba(0, 97, 254, 0.21);
+    color: #333;
+}
+.google-visualization-charteditor-category-label {
+    color: #666;
+    font-family: Arial,sans-serif;
+    margin-left: 8px;
+    margin-right: 8px;
+    position: relative;
+    text-decoration: inherit;
+}
+.google-visualization-charteditor-mini {
+    margin: 2px;
+}
+.google-visualization-charteditor-mini-line {
+    background: no-repeat url(//ssl.gstatic.com/charts/static/mini3.png) 0 -126px;
+    width: 21px;
+    height: 21px;
+}
+.google-visualization-charteditor-mini-pie {
+    background: no-repeat url(//ssl.gstatic.com/charts/static/mini3.png) 0 -84px;
+    width: 21px;
+    height: 21px;
+}
+.google-visualization-charteditor-mini-column {
+    background: no-repeat url(//ssl.gstatic.com/charts/static/mini3.png) 0 0;
+    width: 21px;
+    height: 21px;
+}
+.google-visualization-charteditor-mini-area {
+    background: no-repeat url(//ssl.gstatic.com/charts/static/mini3.png) 0 -105px;
+    width: 21px;
+    height: 21px;
+}
+.google-visualization-charteditor-mini-bar {
+    background: no-repeat url(//ssl.gstatic.com/charts/static/mini3.png) 0 -168px;
+    width: 21px;
+    height: 21px;
+}
+.google-visualization-charteditor-mini-scatter {
+    background: no-repeat url(//ssl.gstatic.com/charts/static/mini3.png) 0 -147px;
+    width: 21px;
+    height: 21px;
+}
+</style>
+<div id="msg" class="alert w-100" style="display: none;"></div>
+<div class="select-dash" id="dashlist" style="display:none">
+    <div class="pl-3 pt-3">Выберите доску или создайте новую:</div>
+    <div class="dict-list" id="bi">
+        <a class="dict-href">
+            <div class="dash-bar" id=":id:">
+                <span class="google-visualization-charteditor-category-label">:name:</span>
+            </div>
+        </a>
+    </div>
+</div>
+<div id="dash" class="m-1 m-sm-3 p-1 p-sm-3 shadow" style="display:none">
+    <input type="text" id="dash-name" placeholder="Введите название доски" class="form-control ">
+    <a class="btn btn-outline-secondary dash-panel edit-panel edit-mode mt-2" onclick="addPanel()">Добавить панель</a>
+    <div id="editpan" class="dash-panel edit-panel edit-mode p-1 p-sm-2 shadow" style="display:none">
+        <input type="text" id="panel-name" placeholder="Введите название панели" class="form-control ">
+        <div class="select-type">
+            <div class="pl-3 pt-3">Выберите тип диаграммы:</div>
+            <div class="dict-list" id="charts">
+                <a class="dict-href">
+                    <div class="dict-item" chart=":id:">
+                        <span class="google-visualization-charteditor-mini google-visualization-charteditor-mini-:id: goog-inline-block"></span>
+                        <span class="google-visualization-charteditor-category-label chart-type">:name:</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="pl-3 pt-3 select-type" style="display:none">
+            Тип диаграммы: <div class="pl-3 d-inline chosen-type"></div> <img class="icon8 clear-type" src="/i/delete-sign-20-red.png">
+        </div>
+        <div class="select-data" id="datalist">
+            <div class="pl-3 pt-3">Выберите набор данных:</div>
+            <div class="dict-list" id="sources">
+                <a class="dict-href">
+                    <div class="data-item" data-item=":id:">
+                        <span class="google-visualization-charteditor-category-label">:name:</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="pl-3 pt-3 data-selected" style="display:none">
+            Набор данных: <div class="pl-3 d-inline" id="chosenData"></div> <img class="icon8 clear-data" src="/i/delete-sign-20-red.png">
+        </div>
+        <div class="pl-3 pt-3 select-axis" style="display:none">
+    		<div style="display: inline-block;" class="mr-2">
+        		<label class="mb-0 mt-1 x-label">Ось X:</label>
+    		    <select class="form-control w-auto x-ddl" onchange="recalcChart()">
+    				<option value=":id:">:name:</option>
+    			</select>
+    	    </div>
+    		<div style="display: inline-block;" class="y-axis mr-2">
+        		<label class="mb-0 mt-1 y-label">
+        		    Ось Y:
+        		</label>
+    		     <img class="icon8 mb-1" style="display:none" src="/i/delete-sign-16-red.png" onclick="$(this).parent().remove();recalcChart()">
+    		    <select class="form-control w-auto y-ddl" onchange="recalcChart()">
+    			</select>
+    	    </div>
+    		<div class="add-y" style="display: inline-block;">
+    		    <a onclick="addY()" title="Добавить параметр">
+    		        <img class="icon8 mb-2" src="/i/plus-30-333333.png">
+    		    </a>
+    	    </div>
+        </div>
+        <div id="newChart" class="chart-div"></div>
+        <div class="d-inline-block pl-2 pr-2 pt-4"><button onclick="savePanel()" id="saveBtn" class="btn btn-primary">Сохранить</button></div>
+        <div class="d-inline-block pt-4"><a href="{_global_.id}"><button class="btn btn-outline-secondary">Отменить</button></a></div>
+    </div>
+</div>
+<script>
+function savePanel(){
+    if($('#panel-name').val()==='')
+        $('#panel-name').val($('.chosen-type').find('.chart-type').html()+' — '+$('#chosenData').find('.chosen-data').html());
+    intApi('GET','object/269?JSON&F_269='+encodeURIComponent($('#panel-name').val()),'checkName',encodeURIComponent($('#panel-name').val()));
+    $('#saveBtn').prop('disabled', true);
+}
+function recalcChart(){
+    intApi('GET','object/'+$('#chosenData').attr('data-item')+'?JSON','parseItem');
+}
+function addY(){
+    $('div.y-axis:last').clone().insertAfter('div.y-axis:last');
+    $('div.y-axis:last').find('img').show();
+}
+var dataItems,dataCols=$('.x-ddl').html(),dataList=$('#sources').html(),chartBarTemplate=$('#charts').html(),chartBars='',saveSet={}
+    ,chartTypes={pie:{name:'Круговая',x:'SHORT',y:'NUMBER:SIGNED',xname:'Имя сектора',yname:'Доля'}
+                ,line:{name:'Линейная',x:'NUMBER:SIGNED:DATE',y:'NUMBER:SIGNED',multiy:true}
+                ,area:{name:'Области',x:'NUMBER:SIGNED:DATE',y:'NUMBER:SIGNED',multiy:true}
+                ,column:{name:'Стобцы',x:'SHORT',y:'NUMBER:SIGNED'}
+                ,bar:{name:'Гистограмма',x:'SHORT',y:'NUMBER:SIGNED'}
+                ,scatter:{name:'Точечная',x:'NUMBER:SIGNED',y:'NUMBER:SIGNED'}
+            };
+google.charts.load('current', {packages: ['corechart']});
+//google.charts.setOnLoadCallback(runWizard);
+// Функция для отправки асинхронного запроса по https api с обработкой его результата
+function intApi(m,u,b,vars,index){ // Параметры: метод, адрес, действие - ветка switch, параметры, ID целевого элемента
+    vars=vars||''; // По умолчанию список параметров пуст
+    var h='',template,i,j,json,obj=new XMLHttpRequest(); // Объявляем переменную под JSON и API по HTTPS
+    obj.open(m,'/'+db+'/'+u,true); // Открываем асинхронное соединение заданным методом по нужному адресу
+    if(m=='POST'){ // Если это POST запрос, то передаем заданные параметры
+        if(typeof vars=='object')
+            vars.append('_xsrf',xsrf);
+        else{
+            obj.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+            vars='_xsrf='+xsrf+'&'+vars; // добавляем токен xsrf, необходимый для POST-запроса
+        }
+    }
+    obj.onload=function(e){ // Когда запрос вернет результат - сработает эта функция
+        try{ // в this.responseText лежит ответ от сервера
+            json=JSON.parse(this.responseText); // Пытаемся разобрать ответ как JSON
+        }
+        catch(e){ // Если произошла ошибка при разборе JSON
+            h=this.responseText;
+        }
+        obj.abort(); // Закрываем соединение
+        switch(b){ // Отрабатываем заданную команду - переходим в соответствующую ветку case
+            case 'checkName':
+                if(json.object){
+                    errMsg('warning','Такое имя уже существует, выберите другое');
+                    $('#saveBtn').prop('disabled',false);
+                    return;
+                }
+                intApi('POST','_m_new/269?JSON&up=1&t271=BI&t269='+index+'&t273='+encodeURIComponent(JSON.stringify(saveSet)),'save-set');
+
+                break;
+            case 'parseItem':
+                var ct=$('.chosen-type').attr('chosen-type'),arr,val;
+                if(chartTypes[ct]){
+                    arr=[],j=0;
+                    arr[j]=[$('.x-label').html()];
+                    $('.y-ddl').each(function(){
+                        arr[j].push($('[value="'+this.value+'"]').html());
+                    });
+                    for(i in json.object){
+                        arr[++j]=[];
+                        if($('.x-ddl').val()==json.type.id)
+                            val='NUMBER:SIGNED'.indexOf(json.type.base)===-1?json.object[i].val:parseFloat(json.object[i].val);
+                        else
+                            val='NUMBER:SIGNED'.indexOf(json.req_base[$('.x-ddl').val()])===-1?json.reqs[json.object[i].id][$('.x-ddl').val()]
+                                                                                :parseFloat(json.reqs[json.object[i].id][$('.x-ddl').val()]);
+                        arr[j].push(val);
+                        $('.y-ddl').each(function(){
+                            if(this.value==json.type.id)
+                                val='NUMBER:SIGNED'.indexOf(json.type.base)===-1?json.object[i].val:parseFloat(json.object[i].val);
+                            else
+                                val='NUMBER:SIGNED'.indexOf(json.req_base[this.value])===-1?json.reqs[json.object[i].id][this.value]
+                                                                                    :parseFloat(json.reqs[json.object[i].id][this.value]);
+                            arr[j].push(val);
+                        });
+                    }
+                }
+                console.log(arr);
+                window[ct+'Chart']('newChart',arr);
+                break;
+            case 'dashlist':
+                template=$('#bi').html();
+                for(i in json.object)
+                    h+=template.replace(':name:',json.object[i].val)
+                            .replace(':id:',json.object[i].id);
+                h+=template.replace(':name:','Создать...')
+                        .replace(':id:','newbi');
+                $('#bi').html(h);
+                $('#newbi').css('background','linear-gradient(92.58deg, #419CE1 4.59%, #1283DA 90.68%)').parent().attr('href',action+'/0');
+                $('#newbi').find('.google-visualization-charteditor-category-label').css('color','#eee');
+                $('#dashlist').show();
+                break;
+            case 'sources':
+                dataItems=json.edit_types;
+                dataTypes=json.types;
+                for(i in dataItems[0])
+                    if(parseInt(dataItems[0][i])>269&&dataItems.ord[i]==='1'&&dataItems.req_t[i]!=='')
+                        h+=dataList.replace(':name:','<img title="Таблица" class="icon8 mb-1" src="/i/grid-16.png"> &nbsp;'+dataItems[4][i])
+                            .replace(':id:',dataItems[0][i]);
+                $('#sources').html(h);
+                $('#dash').show();
+                $('.data-item').click(function(){
+                    var i=$(this).attr('data-item');
+                    $('#chosenData').html(this.innerHTML).attr('data-item',i);
+                    $('.select-data').hide(50);
+                    $('.data-selected').show(50);
+                    var h=dataCols.replace(':name:',reqName(i))
+                                .replace(':id:',i)
+                        ,ct=$('.chosen-type').attr('chosen-type');
+                    if(!chartTypes[ct])
+                        return;
+                    for(j in dataItems[0])
+                        if(dataItems[0][j]===i)
+                            h+=dataCols.replace(':name:',reqName(dataItems.req_t[j]))
+                                    .replace(':id:',dataItems.req_id[j]);
+                    var coord=getDimensions(ct,i);
+                    $('.x-ddl,.y-ddl').html(h);
+                    $('.x-label').html(chartTypes[ct].xname||'Ось X');
+                    $('.y-label').html(chartTypes[ct].yname||'Ось Y');
+                    $('.x-ddl').val(coord.xddl||$('.x-ddl').val());
+                    $('.y-ddl').val(coord.yddl||$('.y-ddl').val());
+                    if(chartTypes[ct].multiy)
+                        $('.add-y').show();
+                    else
+                        $('.add-y').hide();
+                    $('.select-axis').show(50);
+                    intApi('GET','object/'+i+'?JSON','parseItem');
+                });
+                $('.edit-panel').toggle();
+                $('.clear-data').click(function(){
+                    $('.chart-div,#chosenData').html('');
+                    $('.select-data').show(50);
+                    $('.data-selected').hide(50);
+                    $('.select-axis').hide(50);
+                });
+                break;
+        }
+    }
+    obj.send(vars); // отправили запрос и теперь будем ждать ответ, а пока - выходим
+}
+if(id==='')
+    intApi('GET','object/269?JSON&F_271=BI','dashlist');
+else if(id==='0')
+    $('#dash').show();
+    
+function getDimensions(ct,i){
+    var xddl,yddl;
+    if(chartTypes[ct].x.indexOf(reqType(i))!==-1) // Choose the ddl value in case the type matches
+        xddl=i;
+    else if(chartTypes[ct].y.indexOf(reqType(i))!==-1)
+        yddl=i;
+    for(var j in dataItems[0])
+        if(dataItems[0][j]===i){
+            if(xddl===undefined&&yddl!==dataItems.req_id[j])
+                if(chartTypes[ct].x.indexOf(reqType(dataItems.req_t[j]))!==-1)
+                    xddl=dataItems.req_id[j];
+            if(yddl===undefined&&xddl!==dataItems.req_id[j])
+                if(chartTypes[ct].y.indexOf(reqType(dataItems.req_t[j]))!==-1)
+                    yddl=dataItems.req_id[j];
+        }
+    return {xddl,yddl};
+}
+function addPanel(){
+    intApi('GET','edit_types?JSON','sources');
+    for(var i in chartTypes)
+        chartBars+=chartBarTemplate.replace(':id:',i)
+                                .replace(':name:',chartTypes[i].name);
+    $('#charts').html(chartBars);
+    $('.dict-item').click(function(){
+        var ct=$(this).attr('chart');
+        $('.chosen-type').html(this.innerHTML).attr('chosen-type',ct);
+        $('.select-type').toggle(50);
+        if($('#chosenData').html()===''){
+            window[ct+'Chart']('newChart');
+            $('.data-item').each(function(){
+                var coord=getDimensions(ct,$(this).attr('data-item'));
+                console.log(coord);
+                if(coord.xddl===undefined||coord.yddl===undefined)
+                    $(this).parent().hide();
+                else
+                    $(this).parent().show();
+            });
+        }
+        else
+            $('.data-item[data-item="'+$('#chosenData').attr('data-item')+'"]').click();
+    });
+    $('.clear-type').click(function(){
+        $('.chart-div,.chosen-type').html('').attr('chosen-type','');
+        $('.select-type').toggle(50);
+        $('#sources').find('.dict-href').show();
+    });
+}
+function reqType(i){
+    for(var j in dataItems[0])
+        if(dataItems[0][j]===i)
+            return dataTypes[dataItems.t[j]];
+}
+function reqName(i){
+    for(var j in dataItems[0])
+        if(dataItems[0][j]===i)
+            return dataItems[4][j];
+}
+// Define the charts to be drawn
+function getTitle(chartDiv){
+    return $('#chosenData').find('.chosen-data').html();
+}
+function checkLog(arr){
+    var i,j,avgs=[];
+    for(i in arr) // Calc the column averages
+        for(j in arr[i])
+            if(j>0&&i>0)
+                avgs[j]=((avgs[j]||0)*i+arr[i][j])/i;
+    for(i in avgs)
+        for(j in avgs)
+            if(avgs[i]/avgs[j]>30) // Set Log in case of a disproportion
+                return 'log';
+    return 'linear';
+}
+function pieChart(chartDiv,arr) {
+    var data = google.visualization.arrayToDataTable(arr||[
+      ['Task', 'Hours per Day'],
+      ['Work',     11],
+      ['Eat',      2],
+      ['Commute',  2],
+      ['Watch TV', 2],
+      ['Sleep',    7]
+    ]);
+    // Instantiate and draw the chart.
+    var chart = new google.visualization["PieChart"](document.getElementById(chartDiv));
+    // Set chart options
+    var options = {title:getTitle(chartDiv),
+          legend: { position: 'bottom' }
+    };
+    chart.draw(data, options);
+}
+function lineChart(chartDiv,arr) {
+    var data = google.visualization.arrayToDataTable(arr||[
+      ['Year', 'Sales', 'Expenses'],
+      ['2004',  1000,      400],
+      ['2005',  1170,      460],
+      ['2006',  660,       1120],
+      ['2007',  1030,      540]
+    ]);
+    var options = {
+      title: getTitle(chartDiv),
+      curveType: 'function',
+      vAxis: {scaleType: checkLog(arr)},
+      legend: { position: 'bottom' }
+    };
+    var chart = new google.visualization.LineChart(document.getElementById(chartDiv));
+    chart.draw(data, options);
+}
+function areaChart(chartDiv,arr) {
+    var data = google.visualization.arrayToDataTable(arr||[
+      ['Year', 'Sales', 'Expenses'],
+      ['2013',  1000,      400],
+      ['2014',  1170,      460],
+      ['2015',  660,       1120],
+      ['2016',  1030,      540]
+    ]);
+    var options = {
+      title: getTitle(chartDiv),
+      vAxis: {scaleType: checkLog(arr)}
+    };
+    var chart = new google.visualization.AreaChart(document.getElementById(chartDiv));
+    chart.draw(data, options);
+}
+function barChart(chartDiv,arr) {
+    var data = google.visualization.arrayToDataTable(arr||[
+        ["Element", "Density", { role: "style" } ],
+        ["Copper", 8.94, "#b87333"],
+        ["Silver", 10.49, "silver"],
+        ["Gold", 19.30, "gold"],
+        ["Platinum", 21.45, "color: #e5e4e2"]
+    ]);
+    var view = new google.visualization.DataView(data);
+    view.setColumns([0, 1]);
+    var options = {
+        title: getTitle(chartDiv),
+        bar: {groupWidth: "95%"}
+    };
+    var chart = new google.visualization.BarChart(document.getElementById(chartDiv));
+    chart.draw(view, options);
+}
+function columnChart(chartDiv,arr) {
+    var data = google.visualization.arrayToDataTable(arr||[
+        ["Element", "Density", { role: "style" } ],
+        ["Copper", 8.94, "#b87333"],
+        ["Silver", 10.49, "silver"],
+        ["Gold", 19.30, "gold"],
+        ["Platinum", 21.45, "color: #e5e4e2"]
+    ]);
+    var view = new google.visualization.DataView(data);
+    view.setColumns([0, 1]);
+    var options = {
+        title: getTitle(chartDiv),
+        bar: {groupWidth: "95%"},
+        legend: { position: 'bottom' }
+    };
+    var chart = new google.visualization.ColumnChart(document.getElementById(chartDiv));
+    chart.draw(view, options);
+}
+function scatterChart(chartDiv,arr) {
+    var data = google.visualization.arrayToDataTable(arr||[
+      ['Age', 'Weight'],
+      [ 8,      12],
+      [ 4,      5.5],
+      [ 11,     14],
+      [ 4,      5],
+      [ 3,      3.5],
+      [ 6.5,    7]
+    ]);
+    var options = {
+      title: getTitle(chartDiv),
+      legend: { position: 'bottom' }
+    };
+    var chart = new google.visualization.ScatterChart(document.getElementById(chartDiv));
+    chart.draw(data, options);
+}
+function errMsg(cl,msg){
+    $('#msg').removeClass('alert-danger').removeClass('alert-success').addClass(cl).html(msg).show().delay(4500).slideUp(400);
+}
+</script>

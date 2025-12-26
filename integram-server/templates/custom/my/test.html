@@ -1,0 +1,351 @@
+<style>
+    body.{
+		font-family: "Century Gothic";
+	}
+	.output{
+        color:#15141aff;
+        line-height:1.5;
+        padding:1rem;
+        height:100%;
+		max-width:660px;
+    }
+    h4 {
+		font: 1.5rem 'Century Gothic', sans-serif;
+		font-weight : bold;
+	}
+	p, label {
+        font: 1rem 'Century Gothic', sans-serif;
+    }
+    input {
+        margin: 0.4rem;
+    }
+	
+	.form-check-input:checked {
+		background-color: #0b0b0c;
+	    border-color: #000000;	
+	}
+	
+	img{
+		max-width:450px;
+		margin: 0 auto;
+		display:block;
+	}
+
+	.form-check{
+		padding-top: 1rem;
+	}
+
+	@media (max-width: 450px) {
+		img{
+			max-width:90%;
+		}
+	}
+
+	[type="radio"]:checked,[type="radio"]:not(:checked) {
+        position: absolute;
+        left: -9999px;
+    }
+    [type="radio"]:checked + label,[type="radio"]:not(:checked) + label
+    {
+        position: relative;
+        padding-left: 28px;
+        cursor: pointer;
+        line-height: 20px;
+        display: inline-block;
+        /*color: #666;*/
+    }
+    [type="radio"]:checked + label:before,
+    [type="radio"]:not(:checked) + label:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 18px;
+        height: 18px;
+        border: 1px solid #7d7474;
+        border-radius: 100%;
+        background: #fff;
+    }
+    [type="radio"]:checked + label:after,
+    [type="radio"]:not(:checked) + label:after {
+        content: '';
+        width: 14px;
+        height: 14px;
+        background: #2c292a;;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        border-radius: 100%;
+        -webkit-transition: all 0.2s ease;
+        transition: all 0.2s ease;
+    }
+    [type="radio"]:not(:checked) + label:after {
+        opacity: 0;
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    }
+    [type="radio"]:checked + label:after {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+    .n {
+        opacity: .7;
+    }
+    .n-of {
+        opacity: .3;
+    }
+    .o-label{
+        font-weight: bold;
+    }
+    .wrong {
+        color: red;
+    }
+    .right {
+        color: green;
+    }
+</style>
+<div id="card" class="d-flex justify-content-center" style="display:none">
+    <div class="p-2 pr-sm-5 pt-4 pl-sm-5">
+        <div class="m-auto p-2 p-sm-4 shadow output">
+        <div style="text-align: center;"><span class="n">1</span><span class="n-of">/</span><span class="n-of of">*</span></div>
+            <h4 class='text-center mb-3 mt-2'>:q:</h4>
+            <center><img class="m-0 m-sm-3 p-0 p-sm-3" src=":i:"></center>
+            <div id="answersList" class='mt-4'>
+                <p class="mt-3">
+                    <input type="radio" id="test:o:" name="radio-group" onchange="answer(:n:,:o:)">
+                    <label class="o-label" for="test:o:">:a:</label>
+                </p>
+            </div>
+            <center>
+                <button type="text" name="submit" id="next" class="btn btn-primary" onclick="show(curq);" style="display:none">Следующий вопрос</button>
+            </center>
+            <div id="res" class="alert" style="display:none"></div>
+            <div id="stats" class="alert alert-info" style="display:none">
+                <p>Ваша статистика <b>за сегодня</b>:</p>
+                <p>Правильных ответов: <span id="correct"></span></p>
+                <p>Всего ответов: <span id="total"></span></p>
+                <p>Результативность: <span id="eff"></span></p>
+            </div>
+        </div>
+    </div> 
+</div>
+<script>
+var quiz={
+    "1":{"q":"Что такое Интеграл?",
+        "i":"/i/quiz/qdm.gif",
+        "a":{
+            "1":"Визуальный редактор web-страниц",
+            "2":"Табличный процессор",
+            "3":"Платформа разработки web-приложений",
+            "4":"Понятие из тригонометрии"
+        }},
+    "2":{"q":"Что хранится в свойстве Ответственный на этой схеме?",
+        "i":"/i/quiz/resp.png",
+        "a":{
+            "1":"Имя создателя записи, как текст",
+            "2":"Подчиненная таблица Ответственный",
+            "3":"Ссылка на запись в таблице Ответственный",
+            "4":"Ссылка на запись в таблице Пользователь"
+        }},
+    "3":{"q":"Как найти все таблицы, связанные с Категорией?",
+        "i":"/i/quiz/linx.png",
+        "a":{
+            "1":"Поискать &laquo;Категория&raquo; в меню Структура",
+            "2":"Нажать &laquo;Связи&raquo; в меню таблицы&nbsp;&mdash; их список появится в колонке справа",
+            "3":"Выбрать термин &laquo;Категория&raquo; в конструкторе Запросов&nbsp;&mdash; все его связи появятся",
+            "4":"Все эти варианты верные"
+        }},
+    "4":{"q":"Можно ли добавить таблице два одинаковых поля?",
+        "i":"/i/quiz/two.png",
+        "a":{
+            "1":"Нет",
+            "2":"Да",
+            "3":"Да, только если это ссылки",
+            "4":"Да, только если это подчиненные таблицы"
+        }},
+    "5":{"q":"На базе какого инструмента сделан Интеграл?",
+        "i":"/i/quiz/v.png",
+        "a":{
+            "1":"Таблицы Airtable лежат в основе Интеграла",
+            "2":"Собственный патентованный подход&nbsp;&mdash; QDM",
+            "3":"Интеграл использует структуру хранения как в MS Excel",
+            "4":"Используется самая мощная реляционная DB Oracle"
+        }},
+    "6":{"q":"Сколько таблиц можно одновременно использовать в конструкторе запросов?",
+        "i":"/i/quiz/cols.png",
+        "a":{
+            "1":"Не более 4",
+            "2":"Не более 20",
+            "3":"Ограничений нет",
+            "4":"Без ограничений, но только подчиненные таблицы"
+        }},
+    "7":{"q":"Что означает базовый тип MEMO в Интеграле?",
+        "i":"/i/quiz/memo.png",
+        "a":{
+            "1":"Примечание к полю таблицы",
+            "2":"Поле таблицы, в которое можно ввести многострочное значение",
+            "3":"Поле, ограниченное длиной в 2048 символов",
+            "4":"В системе нет такого типа"
+        }},
+    "8":{"q":"Зачем используется галка Интерактивный в Конструкторе запросов?",
+        "i":"/i/quiz/ia.png",
+        "a":{
+            "1":"Независимые объекты выводятся как ссылка для их редактирования",
+            "2":"Чтобы включить автоматическое связывание колонок запроса",
+            "3":"Отчет динамически адаптируется под размер страницы",
+            "4":"Для включения голосового помощника Олег"
+        }},
+    "9":{"q":"Можно ли программировать создание записей в таблицах Конструктором запросов?",
+        "i":"/i/quiz/create.png",
+        "a":{
+            "1":"Запросы не создают записи, а только выбирают их из базы",
+            "2":"Нет",
+            "3":"Да, в таблицах, у которых есть родительская запись",
+            "4":"Да, если их колонки идут в конце запроса (справа)"
+        }},
+    "10":{"q":"Какие варианты организации пользовательских форм возможны в Интеграле?",
+        "i":"/i/quiz/form.png",
+        "a":{
+            "1":"Сделать формы и пульты в Конструкторе форм Интеграла",
+            "2":"Сверстать свои формы в HTML или визуальном редакторе, подложить в шаблоны",
+            "3":"Использовать формы Tilda, Bubble и подобные системы с API Интеграла",
+            "4":"Базовый интерфейс Интеграла плюс всё перечисленное выше"
+        }},
+    "11":{"q":"Какое ограничение по количеству строк в таблице Интеграла?",
+        "i":"/i/quiz/limit.png",
+        "a":{
+            "1":"1048576, как в MS Excel",
+            "2":"50000, как в Airtable",
+            "3":"200, как в бесплатном Bubble",
+            "4":"Ограничений нет"
+        }},
+    "12":{"q":"Какое поле лучше использовать для задания категории клиента из справочника?",
+        "i":"/i/quiz/cat.png",
+        "a":{
+            "1":"Ссылку на запись в таблице категорий",
+            "2":"Подчиненную таблицу категорий",
+            "3":"Обычный реквизит типа SHORT&nbsp;&mdash; поле ввода",
+            "4":"Ссылку на запрос (его имя)"
+        }},
+    "13":{"q":"Что означает значок % в фильтрах запросов и таблиц?",
+        "i":"/i/quiz/pc.png",
+        "a":{
+            "1":"Пустое значение",
+            "2":"Любое непустое значение",
+            "3":"Значение содержит знак %",
+            "4":"Значение равно знаку %"
+        }},
+    "14":{"q":"Что означает тип поля CHARS?",
+        "i":"/i/quiz/chars.png",
+        "a":{
+            "1":"Текст длиной до 127 символов",
+            "2":"Текст, выводимый как многострочное поле ввода",
+            "3":"Число",
+            "4":"Строка неограниченной длины"
+        }},
+    "15":{"q":"В формулах конструктора запросов можно использовать:",
+        "i":"/i/quiz/formulas.png",
+        "a":{
+            "1":"Имена других запросов (вложенные запросы)",
+            "2":"Служебные слова Интеграла, выражения и функции языка SQL",
+            "3":"Простые арифметические действия над соседними колонками",
+            "4":"Всё перечисленное, а также строковые и числовые константы"
+        }},
+    "16":{"q":"В чём уникальное отличие Интеграла от конструкторов No-code?",
+        "i":"/i/quiz/qdm.gif",
+        "a":{
+            "1":"Гибкое управление доступом пользователей к таблицам",
+            "2":"Конструктор запросов, равноценный по возможностям языку SQL",
+            "3":"Шаблонизатор для страниц интерфейса пользователя",
+            "4":"Всё перечисленное уникально"
+        }}
+};
+var i,j,k=-1,q=[],answersList=$('#answersList').html();
+for(i in quiz)
+    k++;
+$('.of').html(k+1);
+var card=$('#card').html(),curq=0,score=0;
+for(i in quiz){
+    do {j=Math.round(Math.random()*k)} while(q[j]!==undefined);
+    q[j]=quiz[i];
+    q[j].n=i;
+}
+function getReportCell(i,col,json){
+    for(var j in json.columns)
+        if(json.columns[j].name===col)
+            return json.data[j][i];
+}
+function answer(n,i){
+    $('#answersList').find('input').prop('disabled',true);
+    intApi('POST','report/8755?JSON&confirmed=1&FR_DB='+db+'&n='+n+'&o='+i,'answer','',i);
+    curq++;
+}
+// Функция для отправки асинхронного запроса по https api с обработкой его результата
+function intApi(m,u,b,vars,index){ // Параметры: метод, адрес, действие - ветка switch, параметры, ID целевого элемента
+    vars=vars||''; // По умолчанию список параметров пуст
+    var h='',i,j,json,obj=new XMLHttpRequest(); // Объявляем переменную под JSON и API по HTTPS
+    obj.open(m,'/my/'+u,true); // Открываем асинхронное соединение заданным методом по нужному адресу
+    if(m=='POST'){ // Если это POST запрос, то передаем заданные параметры
+        if(typeof vars=='object')
+            vars.append('_xsrf',xsrf);
+        else{
+            obj.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+            vars='_xsrf='+xsrf+'&'+vars; // добавляем токен xsrf, необходимый для POST-запроса
+        }
+    }
+    obj.onload=function(e){ // Когда запрос вернет результат - сработает эта функция
+        try{ // в this.responseText лежит ответ от сервера
+            json=JSON.parse(this.responseText); // Пытаемся разобрать ответ как JSON
+        }
+        catch(e){ // Если произошла ошибка при разборе JSON
+            h=this.responseText;
+        }
+        obj.abort(); // Закрываем соединение
+        switch(b){ // Отрабатываем заданную команду - переходим в соответствующую ветку case
+            case 'answer':
+                if(getReportCell(0,'Result',json)==='1')
+                    score++,$('label[for=test'+index+']').addClass('right').prepend('(верно) ');
+                else
+                    $('label[for=test'+index+']').addClass('wrong').prepend('(неверно) ');
+                if(curq<=k)
+                    return $('#next').show();
+                if(score===curq)
+                    $('#res').html('Отлично! Вы верно ответили на все вопросы. <a target="tg" href="https://t.me/+U13Y8rQ4BXFjYjcy">Приходите в чат</a> за платным заданием.').addClass('alert-success');
+                else if(score>=curq*.8)
+                    $('#res').html('Хорошо ('+score+' из '+curq+')! Вероятно, вы справитесь на Отлично после чтения <a target="help" href="https://help.ideav.online">Руководства пользователя</a> и при наличии практики.').addClass('alert-info');
+                else if(score>=curq*.6)
+                    $('#res').html('Вы кое-что знаете об Интеграле ('+score+' из '+curq+')! Вам необходимо больше практики, и всё получится.').addClass('alert-warning');
+                else if(score>curq*.3)
+                    $('#res').html('Странно. Ваш результат чуть лучше случайного ('+score+' из '+curq+'). Попробуйте ещё раз, пожалуйста!').addClass('alert-danger');
+                else
+                    $('#res').html('Вы как-будто старались всё ответить неверно ('+score+' из '+curq+'). Попробуйте ещё раз, пожалуйста!').addClass('alert-danger');
+                $('#res').show();
+                intApi('POST','report/9180?JSON','stats');
+                break;
+                
+            case 'stats':
+                $('#correct').html(getReportCell(0,'Result',json));
+                $('#total').html(getReportCell(0,'No',json));
+                $('#eff').html(Math.round(getReportCell(0,'Result',json)/getReportCell(0,'No',json)*100)+'%');
+                $('#stats').show();
+                break;
+        }
+    }
+    obj.send(vars); // отправили запрос и теперь будем ждать ответ, а пока - выходим
+}
+function show(i){
+    var j,h='';
+    $('#card,#next').hide();
+    for(j in q[i].a)
+        h+=answersList.replace(':a:',q[i].a[j])
+                    .replace(':n:',q[i].n)
+                    .replace(/:o:/g,j);
+    $('#card').html(card.replace(':q:',q[i].q)
+                    .replace(':i:',q[i].i));
+    $('#answersList').html(h);
+    $('.n').html(i+1);
+    $('#card').show();
+}
+show(0);
+</script>
