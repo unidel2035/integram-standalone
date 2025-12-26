@@ -19,10 +19,12 @@ import { useNotifications } from '@/composables/notifications'
 import { useWorkspaceAgentStore } from '@/stores/workspaceAgentStore'
 import { useI18n } from 'vue-i18n'
 import { onMounted, ref, watch, computed, nextTick } from 'vue'
+import { useTimer } from '@/composables/useTimer'
 
 const { t } = useI18n()
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout()
 const { unreadCount } = useNotifications()
+const { setInterval: setTimerInterval } = useTimer()
 
 // Safely access workspaceAgentStore - handle case where Pinia might not be ready yet (Issue #5216)
 let workspaceAgentStore
@@ -168,7 +170,7 @@ onMounted(() => {
     }
   })
   // Also check periodically in case storage event doesn't fire (same tab)
-  setInterval(updateUserPhoto, 3000)
+  setTimerInterval(updateUserPhoto, 3000)
 })
 
 </script>

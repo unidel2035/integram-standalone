@@ -3579,6 +3579,12 @@ onUnmounted(() => {
     clearTimeout(searchDebounceTimer)
     searchDebounceTimer = null
   }
+
+  // Clear directory load progress interval
+  if (dirLoadProgressInterval) {
+    clearInterval(dirLoadProgressInterval)
+    dirLoadProgressInterval = null
+  }
 })
 </script>
 
