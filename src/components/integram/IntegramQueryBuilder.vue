@@ -653,10 +653,13 @@ const columnFormatTypes = Object.freeze([
 // ✅ Extract constant object for aggregate columns to avoid recreation
 const ALL_COLUMNS_OPTION = Object.freeze({ value: '*', label: '* (все колонки)' })
 
-// Breadcrumb
-const breadcrumbItems = computed(() => [
-  { label: 'Конструктор запросов', icon: 'pi pi-sliders-h' }
+// ✅ Extract constant breadcrumb to avoid recreation
+const QUERY_BUILDER_BREADCRUMB = Object.freeze([
+  Object.freeze({ label: 'Конструктор запросов', icon: 'pi pi-sliders-h' })
 ])
+
+// Breadcrumb
+const breadcrumbItems = computed(() => QUERY_BUILDER_BREADCRUMB)
 
 // Computed
 const isQueryValid = computed(() => {
