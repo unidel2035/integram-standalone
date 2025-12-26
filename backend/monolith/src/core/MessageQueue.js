@@ -14,6 +14,7 @@ export class MessageQueue extends EventEmitter {
     // Size limits to prevent unbounded growth
     this.maxQueueSize = options.maxQueueSize || 10000; // Max messages per queue
     this.maxStorageSize = options.maxStorageSize || 100000; // Max key-value pairs
+    this.maxSubscriptions = options.maxSubscriptions || 1000; // Issue #60: Max subscription channels
 
     // In-memory storage for queues
     this.queues = new Map();
@@ -30,9 +31,15 @@ export class MessageQueue extends EventEmitter {
     // Pending dequeue operations (for blocking behavior)
     this.pendingDequeues = new Map();
 
+    // Issue #60: Start periodic cleanup
+    this.cleanupInterval = options.cleanupInterval || 60000; // 1 minute
+    this._startCleanup();
+
     logger.info('MessageQueue initialized (in-memory mode)', {
       maxQueueSize: this.maxQueueSize,
-      maxStorageSize: this.maxStorageSize
+      maxStorageSize: this.maxStorageSize,
+      maxSubscriptions: this.maxSubscriptions,
+      cleanupInterval: this.cleanupInterval
     });
   }
 
@@ -47,9 +54,15 @@ export class MessageQueue extends EventEmitter {
 
   /**
    * Disconnect - cleanup for in-memory implementation
-   * Kept for API compatibility
+   * Issue #60: Improved to clear all Maps and timers
    */
   async disconnect() {
+    // Stop cleanup timer
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+
     // Clear all TTL timers
     for (const timer of this.ttlTimers.values()) {
       clearTimeout(timer);
@@ -63,6 +76,16 @@ export class MessageQueue extends EventEmitter {
       }
     }
     this.pendingDequeues.clear();
+
+    // Issue #60: Clear all subscriptions
+    this.subscriptions.clear();
+
+    // Issue #60: Clear storage and queues
+    this.storage.clear();
+    this.queues.clear();
+
+    // Issue #60: Remove all event listeners
+    this.removeAllListeners();
 
     logger.info('MessageQueue disconnected (in-memory mode)');
     this.emit('disconnected');
@@ -217,10 +240,15 @@ export class MessageQueue extends EventEmitter {
 
   /**
    * Subscribe to a channel
+   * Issue #60: Enforce maxSubscriptions limit
    */
   async subscribe(channel, handler) {
     try {
       if (!this.subscriptions.has(channel)) {
+        // Issue #60: Check subscription limit before adding new channel
+        if (this.subscriptions.size >= this.maxSubscriptions) {
+          throw new Error(`Maximum subscriptions limit reached: ${this.maxSubscriptions}`);
+        }
         this.subscriptions.set(channel, []);
       }
 
@@ -331,6 +359,148 @@ export class MessageQueue extends EventEmitter {
       logger.error({ key, error: error.message }, 'Failed to delete key');
       throw error;
     }
+  }
+
+  /**
+   * Start periodic cleanup
+   * Issue #60: Prevent unbounded memory growth
+   * @private
+   */
+  _startCleanup() {
+    this.cleanupTimer = setInterval(() => {
+      this._cleanup();
+    }, this.cleanupInterval);
+
+    logger.debug('MessageQueue cleanup timer started');
+  }
+
+  /**
+   * Cleanup expired and orphaned resources
+   * Issue #60: Prevent memory leaks
+   * @private
+   */
+  _cleanup() {
+    const initialMetrics = {
+      subscriptions: this.subscriptions.size,
+      ttlTimers: this.ttlTimers.size,
+      pendingDequeues: this.pendingDequeues.size,
+      storage: this.storage.size
+    };
+
+    // Cleanup empty subscription channels
+    this._cleanupSubscriptions();
+
+    // Cleanup orphaned TTL timers
+    this._cleanupExpiredTimers();
+
+    // Cleanup empty pending dequeues
+    this._cleanupPendingDequeues();
+
+    // Enforce storage limit
+    this._enforceStorageLimit();
+
+    const finalMetrics = {
+      subscriptions: this.subscriptions.size,
+      ttlTimers: this.ttlTimers.size,
+      pendingDequeues: this.pendingDequeues.size,
+      storage: this.storage.size
+    };
+
+    // Log cleanup stats if something was removed
+    if (
+      initialMetrics.subscriptions !== finalMetrics.subscriptions ||
+      initialMetrics.ttlTimers !== finalMetrics.ttlTimers ||
+      initialMetrics.pendingDequeues !== finalMetrics.pendingDequeues ||
+      initialMetrics.storage !== finalMetrics.storage
+    ) {
+      logger.info({ initial: initialMetrics, final: finalMetrics }, 'MessageQueue cleanup completed');
+    }
+  }
+
+  /**
+   * Cleanup empty subscription channels
+   * Issue #60: Remove channels with no handlers
+   * @private
+   */
+  _cleanupSubscriptions() {
+    for (const [channel, handlers] of this.subscriptions.entries()) {
+      if (handlers.length === 0) {
+        this.subscriptions.delete(channel);
+      }
+    }
+  }
+
+  /**
+   * Cleanup orphaned TTL timers
+   * Issue #60: Remove timers for non-existent keys
+   * @private
+   */
+  _cleanupExpiredTimers() {
+    for (const [key, timer] of this.ttlTimers.entries()) {
+      if (!this.storage.has(key)) {
+        clearTimeout(timer);
+        this.ttlTimers.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Cleanup empty pending dequeue lists
+   * Issue #60: Remove queues with no pending operations
+   * @private
+   */
+  _cleanupPendingDequeues() {
+    for (const [queueName, pending] of this.pendingDequeues.entries()) {
+      if (pending.length === 0) {
+        this.pendingDequeues.delete(queueName);
+      }
+    }
+  }
+
+  /**
+   * Enforce storage size limit
+   * Issue #60: Ensure storage doesn't exceed maxStorageSize
+   * @private
+   */
+  _enforceStorageLimit() {
+    if (this.storage.size > this.maxStorageSize) {
+      const excess = this.storage.size - this.maxStorageSize;
+      const keys = Array.from(this.storage.keys());
+
+      // Remove oldest elements (FIFO)
+      for (let i = 0; i < excess; i++) {
+        const key = keys[i];
+        this.storage.delete(key);
+
+        // Also clear TTL timer if exists
+        if (this.ttlTimers.has(key)) {
+          clearTimeout(this.ttlTimers.get(key));
+          this.ttlTimers.delete(key);
+        }
+      }
+
+      logger.warn({ excess, maxStorageSize: this.maxStorageSize }, 'Storage limit exceeded, removed oldest items');
+    }
+  }
+
+  /**
+   * Get memory usage metrics
+   * Issue #60: Added for monitoring memory usage
+   */
+  getMetrics() {
+    return {
+      queuesCount: this.queues.size,
+      storageSize: this.storage.size,
+      maxStorageSize: this.maxStorageSize,
+      subscriptionsCount: this.subscriptions.size,
+      maxSubscriptions: this.maxSubscriptions,
+      ttlTimersCount: this.ttlTimers.size,
+      pendingDequeuesCount: this.pendingDequeues.size,
+
+      // Warning flags
+      storageNearLimit: this.storage.size > this.maxStorageSize * 0.8,
+      subscriptionsNearLimit: this.subscriptions.size > this.maxSubscriptions * 0.8
+    };
   }
 
   /**

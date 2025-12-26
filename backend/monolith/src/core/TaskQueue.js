@@ -45,7 +45,8 @@ export class TaskQueue extends EventEmitter {
     this.maxRetries = options.maxRetries || 3;
     this.taskTimeout = options.taskTimeout || 300000; // 5 minutes default
     this.deadLetterQueue = [];
-    this.maxDeadLetterSize = options.maxDeadLetterSize || 1000;
+    this.maxDeadLetterSize = options.maxDeadLetterSize || 100; // Issue #60: Reduced from 1000 to 100
+    this.deadLetterTTL = options.deadLetterTTL || 3600000; // Issue #60: 1 hour TTL for dead letter items
     this.taskRetentionMs = options.taskRetentionMs || 86400000; // 24 hours
     this.cleanupInterval = options.cleanupInterval || 3600000; // 1 hour
 
@@ -57,6 +58,7 @@ export class TaskQueue extends EventEmitter {
       taskTimeout: this.taskTimeout,
       maxTasks: this.maxTasks,
       maxDeadLetterSize: this.maxDeadLetterSize,
+      deadLetterTTL: this.deadLetterTTL,
       taskRetentionMs: this.taskRetentionMs
     });
   }
@@ -183,7 +185,13 @@ export class TaskQueue extends EventEmitter {
     } else {
       // Move to dead letter queue
       task.status = TaskStatus.FAILED;
-      this.deadLetterQueue.push(task.id);
+      // Issue #60: Add expiry timestamp to dead letter items
+      const deadLetterItem = {
+        taskId: task.id,
+        failedAt: Date.now(),
+        expiresAt: Date.now() + this.deadLetterTTL
+      };
+      this.deadLetterQueue.push(deadLetterItem);
       metrics.decrement('tasksInProgress');
       metrics.increment('tasksFailed');
 
@@ -252,9 +260,17 @@ export class TaskQueue extends EventEmitter {
 
   /**
    * Get dead letter queue
+   * Issue #60: Updated to handle new structure with expiry
    */
   getDeadLetterQueue() {
-    return this.deadLetterQueue.map(id => this.tasks.get(id));
+    return this.deadLetterQueue.map(item => {
+      const task = this.tasks.get(item.taskId);
+      return {
+        task,
+        failedAt: item.failedAt,
+        expiresAt: item.expiresAt
+      };
+    });
   }
 
   /**
@@ -269,6 +285,31 @@ export class TaskQueue extends EventEmitter {
       failed: this.getTasksByStatus(TaskStatus.FAILED).length,
       cancelled: this.getTasksByStatus(TaskStatus.CANCELLED).length,
       deadLetter: this.deadLetterQueue.length
+    };
+  }
+
+  /**
+   * Get memory usage metrics
+   * Issue #60: Added for monitoring memory usage
+   */
+  getMetrics() {
+    return {
+      tasksCount: this.tasks.size,
+      maxTasks: this.maxTasks,
+      deadLetterCount: this.deadLetterQueue.length,
+      maxDeadLetterSize: this.maxDeadLetterSize,
+
+      // Warning flags
+      tasksNearLimit: this.tasks.size > this.maxTasks * 0.8,
+      deadLetterNearLimit: this.deadLetterQueue.length > this.maxDeadLetterSize * 0.8,
+
+      // Queue sizes
+      queues: {
+        critical: this.queues[TaskPriority.CRITICAL].length,
+        high: this.queues[TaskPriority.HIGH].length,
+        normal: this.queues[TaskPriority.NORMAL].length,
+        low: this.queues[TaskPriority.LOW].length
+      }
     };
   }
 
@@ -341,10 +382,14 @@ export class TaskQueue extends EventEmitter {
       this.tasks.delete(taskId);
     }
 
-    // Limit dead letter queue size
+    // Issue #60: Remove expired items from dead letter queue
+    this.deadLetterQueue = this.deadLetterQueue.filter(item => item.expiresAt > now);
+
+    // Limit dead letter queue size (after removing expired items)
     if (this.deadLetterQueue.length > this.maxDeadLetterSize) {
       const removed = this.deadLetterQueue.length - this.maxDeadLetterSize;
       this.deadLetterQueue.splice(0, removed);
+      logger.warn({ removed }, 'Dead letter queue size limit reached, removed oldest items');
     }
 
     // Limit queue sizes (remove orphaned task IDs)
