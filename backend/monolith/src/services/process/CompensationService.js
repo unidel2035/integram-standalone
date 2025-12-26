@@ -11,6 +11,7 @@
  */
 
 import EventEmitter from 'events'
+import { Parser } from 'expr-eval'
 import logger from '../../utils/logger.js'
 
 /**
@@ -284,14 +285,51 @@ export class CompensationService extends EventEmitter {
   }
 
   /**
-   * Simple expression evaluator
+   * Safe expression evaluator using expr-eval library
+   *
+   * This method uses a sandboxed expression parser that prevents:
+   * - Code injection attacks
+   * - Access to system functions (require, process, etc.)
+   * - Arbitrary code execution
+   *
+   * Supported operations:
+   * - Arithmetic: +, -, *, /, %, ^
+   * - Comparison: ==, !=, <, <=, >, >=
+   * - Logical: and, or, not
+   * - Ternary: condition ? true_val : false_val
+   * - Functions: abs, ceil, floor, round, sqrt, etc.
+   *
+   * @param {string} expression - Mathematical/logical expression to evaluate
+   * @param {Object} context - Variables available in the expression
+   * @returns {any} Evaluation result or undefined on error
    */
   evaluateExpression(expression, context) {
     try {
-      const func = new Function('context', `with(context) { return ${expression}; }`)
-      return func(context)
+      // Input validation
+      if (typeof expression !== 'string' || !expression.trim()) {
+        logger.warn('Invalid expression: must be a non-empty string', { expression })
+        return undefined
+      }
+
+      // Create a new parser instance for each evaluation
+      const parser = new Parser()
+
+      // Parse and evaluate the expression with the provided context
+      const result = parser.evaluate(expression, context)
+
+      logger.debug('Expression evaluated successfully', {
+        expression,
+        result,
+        contextKeys: Object.keys(context || {})
+      })
+
+      return result
     } catch (error) {
-      logger.error('Failed to evaluate expression:', error, { expression })
+      logger.error('Failed to evaluate expression:', error, {
+        expression,
+        errorMessage: error.message,
+        contextKeys: Object.keys(context || {})
+      })
       return undefined
     }
   }
