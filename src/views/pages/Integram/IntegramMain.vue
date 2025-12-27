@@ -1,5 +1,8 @@
 <template>
   <div class="layout-wrapper" :class="containerClass">
+    <!-- Top bar -->
+    <app-topbar @chat-toggle="handleChatToggle" />
+
     <!-- Sidebar -->
     <app-sidebar />
 
@@ -180,6 +183,7 @@ import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import integramApiClient from '@/services/integramApiClient'
 import SafeRouterView from '@/components/SafeRouterView.vue'
+import AppTopbar from '@/components/layout/AppTopbar.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 // Lazy load Chat component - it's large and impacts page load
 const Chat = defineAsyncComponent(() => import('@/components/layout/Chat.vue'))
@@ -532,6 +536,11 @@ function logout() {
   integramApiClient.logout()
   document.cookie = `${database.value}=;Path=/`
   router.push('/integram/login')
+}
+
+// Handle chat toggle from AppTopbar
+function handleChatToggle(newState) {
+  isChatActive.value = newState
 }
 
 // Issue #5112: Watch route params to sync dropdown selection
