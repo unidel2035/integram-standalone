@@ -105,7 +105,14 @@ class IntegramApiClient {
     // Direct Integram API URL (not through backend proxy)
     // Load from localStorage or use default
     const savedServer = localStorage.getItem('integram_server')
-    let initialURL = savedServer || import.meta.env.VITE_INTEGRAM_API_URL || 'https://app.integram.io'
+
+    // Fix CORS: Use current origin if no saved server or env variable
+    // This allows the app to work on any domain (интеграм.рф, dronedoc.ru, etc.)
+    const defaultURL = (typeof window !== 'undefined' && window.location)
+      ? window.location.origin
+      : 'https://app.integram.io'
+
+    let initialURL = savedServer || import.meta.env.VITE_INTEGRAM_API_URL || defaultURL
 
     // Fix: Clean up incorrectly saved server URLs that include database path
     // Remove trailing slash
@@ -614,8 +621,8 @@ class IntegramApiClient {
    *
    * Different servers have different URL structures:
    * - app.integram.io: https://app.integram.io/api/{database}/{endpoint}
-   * - dronedoc.ru with a2025: https://dronedoc.ru/a2025/{endpoint}?JSON_KV
-   * - other databases on dronedoc.ru: https://dronedoc.ru/{database}/{endpoint}
+   * - dronedoc.ru, интеграм.рф, sakhwings.ru: https://domain.ru/{database}/{endpoint}?JSON_KV
+   * - IP addresses: http://IP/{database}/{endpoint}
    */
   buildURL(endpoint) {
     if (!this.database) {
@@ -625,10 +632,14 @@ class IntegramApiClient {
     // Remove trailing slash from baseURL to prevent double slashes
     let cleanBaseURL = this.baseURL.replace(/\/$/, '')
 
-    // Check if we're using dronedoc.ru or sakhwings.ru server (same URL structure)
+    // Check if we're using dronedoc.ru, sakhwings.ru, or интеграм.рф server (same URL structure)
     // Also treat IP addresses (e.g., 185.128.105.78) the same way (no /api/ prefix)
     const isIPAddress = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(cleanBaseURL)
-    const isDronedoc = cleanBaseURL.includes('dronedoc.ru') || cleanBaseURL.includes('sakhwings.ru') || isIPAddress
+    const isDronedoc = cleanBaseURL.includes('dronedoc.ru') ||
+                       cleanBaseURL.includes('sakhwings.ru') ||
+                       cleanBaseURL.includes('xn--80afflxcxn.xn--p1ai') || // интеграм.рф (Punycode)
+                       cleanBaseURL.includes('интеграм.рф') ||
+                       isIPAddress
 
     if (isDronedoc) {
       // Fix: Check if baseURL already contains the database path
@@ -647,7 +658,7 @@ class IntegramApiClient {
         return `${cleanBaseURL}/${endpoint}`
       }
 
-      // For dronedoc.ru/sakhwings.ru, use direct database path (no /api/ prefix)
+      // For dronedoc.ru/sakhwings.ru/интеграм.рф/IP addresses, use direct database path (no /api/ prefix)
       // Note: JSON_KV is added via params in get/post methods, not in URL
       return `${cleanBaseURL}/${this.database}/${endpoint}`
     }
