@@ -733,11 +733,12 @@ onUnmounted(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding-top: 4rem; /* Account for fixed AppTopbar height */
 }
 
 .integram-menubar {
   position: sticky;
-  top: 0;
+  top: 4rem; /* Stick below the fixed AppTopbar (4rem height) */
   z-index: 1000;
 }
 
