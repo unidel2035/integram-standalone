@@ -9,6 +9,48 @@ import integramApiClient from './integramApiClient';
 
 class IntegramService {
   /**
+   * Check if authenticated
+   */
+  isAuthenticated() {
+    return integramApiClient.isAuthenticated();
+  }
+
+  /**
+   * Set session from existing data
+   */
+  setSession(sessionData) {
+    return integramApiClient.setSession(sessionData);
+  }
+
+  /**
+   * Authenticate with credentials
+   */
+  async auth(username, password, database) {
+    return integramApiClient.auth(username, password, database);
+  }
+
+  /**
+   * Get object list from a type
+   */
+  async getObjectList(typeId, params = {}) {
+    return integramApiClient.getObjectList(typeId, params);
+  }
+
+  /**
+   * Get object edit data
+   */
+  async getObjectEditData(objectId) {
+    return integramApiClient.getObjectEditData(objectId);
+  }
+
+  /**
+   * Set object requisites
+   */
+  async setObjectRequisites(objectId, requisites) {
+    return integramApiClient.setObjectRequisites(objectId, requisites);
+  }
+
+  /**
    * Get objects from a type with filters
    */
   async getObjects(typeId, filters = {}) {
