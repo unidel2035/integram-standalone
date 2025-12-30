@@ -12,6 +12,30 @@ import { useAuthStore } from '@/stores/authStore'
 
 const authStore = useAuthStore()
 
+// Нормализация пути меню - гарантирует абсолютный путь начинающийся с /app
+// Исправляет Issue: ссылки меню становятся относительными и дублируются
+const normalizePath = (path) => {
+  if (!path || typeof path !== 'string') return '/app/welcome'
+
+  let cleanPath = path.trim()
+
+  // Уже абсолютный путь с /app - возвращаем как есть
+  if (cleanPath.startsWith('/app/')) return cleanPath
+
+  // Абсолютный путь без /app (например /welcome) - добавляем /app
+  if (cleanPath.startsWith('/')) {
+    // Исключения: внешние пути которые не должны иметь /app префикс
+    const noAppPrefix = ['/login', '/register', '/about', '/workspaces', '/workspace/', '/docs', '/developers']
+    if (noAppPrefix.some(prefix => cleanPath.startsWith(prefix))) {
+      return cleanPath
+    }
+    return '/app' + cleanPath
+  }
+
+  // Относительный путь (например integram/my/table/18) - добавляем /app/
+  return '/app/' + cleanPath
+}
+
 const props = defineProps({
   searchQuery: {
     type: String,
@@ -504,11 +528,11 @@ const loadSidebarMenuFromIntegram = async () => {
         const cleanГруппа = String(группа).replace(/<[^>]*>/g, '').trim()
 
         if (cleanНазвание && cleanНазвание !== 'null' && cleanНазвание !== '') {
-          // Формируем пункт меню
+          // Формируем пункт меню с нормализованным путём
           const menuItem = {
             label: cleanНазвание,
             icon: cleanИконка,
-            to: cleanМаршрут.startsWith('/') ? cleanМаршрут : `/${cleanМаршрут}`
+            to: normalizePath(cleanМаршрут)
           }
 
           // Добавляем в группу
@@ -655,10 +679,10 @@ const fetchMenuItems = async () => {
       const reportData = jsonApiResponse.data
 
       if (reportData && Array.isArray(reportData) && reportData.length > 0) {
-        // Process MyRoleMenu data
+        // Process MyRoleMenu data with path normalization
         pagesSection.items = reportData.map(row => ({
           label: row.Name || row['Name'],
-          to: row.HREF || row['HREF'],
+          to: normalizePath(row.HREF || row['HREF']),
           icon: 'pi pi-fw pi-link'
         }))
         logger.debug('Loaded MyRoleMenu items via API v2:', pagesSection.items.length)
