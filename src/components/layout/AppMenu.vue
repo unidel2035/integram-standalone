@@ -12,32 +12,27 @@ import { useAuthStore } from '@/stores/authStore'
 
 const authStore = useAuthStore()
 
-// Нормализация пути меню - гарантирует абсолютный путь начинающийся с /app
-// Исправляет Issue: ссылки меню становятся относительными и дублируются
+// Нормализация пути меню - возвращает путь для Vue Router с base="/app/"
+// Vue Router сам добавляет /app/, поэтому здесь НЕ добавляем /app/
+// Исправляет Issue #65: двойной /app/app/ в URL меню
 const normalizePath = (path) => {
-  if (!path || typeof path !== 'string') return '/app/welcome'
+  if (!path || typeof path !== 'string') return '/welcome'
 
   let cleanPath = path.trim()
 
-  // Уже абсолютный путь с /app - возвращаем как есть
-  if (cleanPath.startsWith('/app/')) return cleanPath
-
-  // Относительный путь начинающийся с app/ - просто добавляем / в начало
-  // Исправляет Issue: app/integram/my/table -> /app/integram/my/table (не /app/app/...)
-  if (cleanPath.startsWith('app/')) return '/' + cleanPath
-
-  // Абсолютный путь без /app (например /welcome) - добавляем /app
-  if (cleanPath.startsWith('/')) {
-    // Исключения: внешние пути которые не должны иметь /app префикс
-    const noAppPrefix = ['/login', '/register', '/about', '/workspaces', '/workspace/', '/docs', '/developers']
-    if (noAppPrefix.some(prefix => cleanPath.startsWith(prefix))) {
-      return cleanPath
-    }
-    return '/app' + cleanPath
+  // Убираем /app/ или app/ в начале если есть - роутер сам добавит
+  if (cleanPath.startsWith('/app/')) {
+    cleanPath = cleanPath.slice(4) // "/app/welcome" -> "/welcome"
+  } else if (cleanPath.startsWith('app/')) {
+    cleanPath = '/' + cleanPath.slice(4) // "app/welcome" -> "/welcome"
   }
 
-  // Относительный путь (например integram/my/table/18) - добавляем /app/
-  return '/app/' + cleanPath
+  // Если путь не начинается с / - добавляем
+  if (!cleanPath.startsWith('/')) {
+    cleanPath = '/' + cleanPath // "integram/my/table" -> "/integram/my/table"
+  }
+
+  return cleanPath
 }
 
 const props = defineProps({
