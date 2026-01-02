@@ -22,6 +22,10 @@ const normalizePath = (path) => {
   // Уже абсолютный путь с /app - возвращаем как есть
   if (cleanPath.startsWith('/app/')) return cleanPath
 
+  // Относительный путь начинающийся с app/ - просто добавляем / в начало
+  // Исправляет Issue: app/integram/my/table -> /app/integram/my/table (не /app/app/...)
+  if (cleanPath.startsWith('app/')) return '/' + cleanPath
+
   // Абсолютный путь без /app (например /welcome) - добавляем /app
   if (cleanPath.startsWith('/')) {
     // Исключения: внешние пути которые не должны иметь /app префикс
