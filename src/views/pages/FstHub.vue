@@ -258,6 +258,18 @@ const pipeline = [
 
 const modules = [
   {
+    id: 'sourcing',
+    name: 'AI Deal Sourcing',
+    phase: 'Фаза 0 — Поиск стартапов',
+    icon: 'pi pi-search',
+    color: '#667eea',
+    path: '/fst-sourcing',
+    featured: true,
+    status: 'live',
+    desc: 'Автоматический мониторинг открытых источников: Telegram, HH.ru, ЕГРЮЛ, ФИПС, Сколково, GitHub, СМИ. AI-скоринг релевантности, суверенности, сигналов роста. Быстрое добавление в воронку.',
+    tags: ['AI', 'Парсинг', 'Автоматизация', 'Скоринг', 'Sourcing'],
+  },
+  {
     id: 'committee',
     name: 'AI Инвесткомитет',
     phase: 'Фаза 1 — Оценка проекта',
