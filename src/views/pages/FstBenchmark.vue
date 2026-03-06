@@ -2,7 +2,7 @@
   <div class="bm-root">
     <div class="bm-header">
       <div>
-        <h1>Бенчмаркинг портфеля</html>
+        <h1>Бенчмаркинг портфеля</h1>
         <span class="bm-sub">Сравнение с отраслевыми мультипликаторами и пирами</span>
       </div>
       <div class="bm-actions">
