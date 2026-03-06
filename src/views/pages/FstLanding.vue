@@ -306,7 +306,7 @@ const modules = [
 .land {
   background: #03060f;
   color: #e2e8f0;
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: 'Onest', -apple-system, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
