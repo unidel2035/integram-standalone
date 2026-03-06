@@ -198,7 +198,7 @@ onMounted(async () => {
       name: r.name || '—', subfund: 'БАС',
       entryDate: r.updatedAt ? (() => { const p = r.updatedAt.match(/(\d{2})\.(\d{2})\.(\d{4})/); return p ? `${p[3]}-${p[2]}` : r.updatedAt.slice(0, 7); })() : '—',
       invested: 0, nav: r.kpi || 0, moic: 1.0,
-      status: r.riskStatusId ? 'watch' : 'active'
+      status: (r.riskStatusId && !['1119','1125'].includes(String(r.riskStatusId))) ? 'watch' : 'active'
     }))
     lpPartners.value = lpRows
     if (lpRows.length) {
