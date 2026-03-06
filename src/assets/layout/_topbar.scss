@@ -47,6 +47,9 @@
         color: var(--text-color);
         transition: background-color var(--element-transition-duration);
         cursor: pointer;
+        border: none;
+        background: transparent;
+        outline: none;
 
         &:hover {
             background-color: var(--surface-hover);
