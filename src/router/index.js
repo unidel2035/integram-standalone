@@ -35,6 +35,7 @@ const routes = [
       { path: 'fst-registry', component: () => import('@/views/pages/FstRegistry.vue'), meta: { title: 'Реестр производителей БПЛА' } },
     ]
   },
+  { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },
   { path: '/:pathMatch(.*)*', redirect: '/fst-hub' }
 ]
 
