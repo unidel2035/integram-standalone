@@ -14,7 +14,10 @@
     <!-- Сводная панель LP -->
     <div class="lp-summary-grid">
       <div class="lp-kpi" v-for="kpi in kpiCards" :key="kpi.label">
-        <div class="lp-kpi-val" :class="kpi.color">{{ kpi.value }}</div>
+        <div class="lp-kpi-val" :class="kpi.color">
+          <span v-if="loading" class="kpi-loading">…</span>
+          <span v-else>{{ kpi.value }}</span>
+        </div>
         <div class="lp-kpi-label">{{ kpi.label }}</div>
         <div class="lp-kpi-delta" :class="kpi.delta >= 0 ? 'up' : 'down'">
           {{ kpi.delta >= 0 ? '+' : '' }}{{ kpi.delta }}% к прошлому кварталу
@@ -170,6 +173,7 @@ import { getPortfolio, getLPPartners } from '@/services/fstApi'
 
 const activeTab = ref('portfolio')
 const showCapCall = ref(false)
+const loading = ref(true)
 
 const tabs = [
   { id: 'portfolio', label: 'Портфель' },
@@ -198,7 +202,7 @@ onMounted(async () => {
       name: r.name || '—', subfund: 'БАС',
       entryDate: r.updatedAt ? (() => { const p = r.updatedAt.match(/(\d{2})\.(\d{2})\.(\d{4})/); return p ? `${p[3]}-${p[2]}` : r.updatedAt.slice(0, 7); })() : '—',
       invested: 0, nav: r.kpi || 0, moic: 1.0,
-      status: (r.riskStatusId && !['1119','1125'].includes(String(r.riskStatusId))) ? 'watch' : 'active'
+      status: (r.riskStatusId && !['1119','1125','Одобрен','В работе'].includes(String(r.riskStatusId))) ? 'watch' : 'active'
     }))
     lpPartners.value = lpRows
     if (lpRows.length) {
@@ -212,6 +216,7 @@ onMounted(async () => {
       }
     }
   } catch (e) { console.warn('LP portfolio load failed', e) }
+  finally { loading.value = false }
 })
 
 const cashFlows = ref({
