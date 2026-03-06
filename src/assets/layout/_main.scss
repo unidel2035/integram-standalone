@@ -1,0 +1,71 @@
+.layout-main-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: space-between;
+    padding: 6rem 2rem 0 2rem;
+    transition: margin-left var(--layout-section-transition-duration);
+    pointer-events: none; /* Allow drag-and-drop to pass through */
+}
+
+.layout-main-container > * {
+    pointer-events: auto; /* Children remain interactive */
+}
+
+.layout-main {
+    flex: 1 1 auto;
+    padding-bottom: 2rem;
+    position: relative; /* Required for absolute-positioned children like WorkspaceIDE */
+    pointer-events: none; /* Allow drag-and-drop to pass through */
+}
+
+.layout-main > * {
+    pointer-events: auto; /* Children remain interactive */
+}
+
+/* =====================================================
+   Block Editor full-bleed mode (Notion/Coda style)
+   Applied via html.block-editor-page class
+   ===================================================== */
+html.block-editor-page,
+html.block-editor-page body {
+    overflow: hidden;
+    height: 100%;
+}
+
+html.block-editor-page .layout-wrapper {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+html.block-editor-page .layout-main-container {
+    /* Strip decorative padding — editor fills exactly below topbar */
+    padding: 4rem 0 0 0;
+    min-height: unset;
+    /* height: calc(100%) does not work in flex-column context — use flex-grow instead */
+    height: unset;
+    flex: 1 1 0;
+    overflow: hidden;
+    justify-content: flex-start;
+}
+
+html.block-editor-page .layout-main {
+    height: 100%;
+    overflow: hidden;
+    padding: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+html.block-editor-page .layout-main > * {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Hide footer in full-bleed editor mode */
+html.block-editor-page .layout-footer {
+    display: none;
+}
