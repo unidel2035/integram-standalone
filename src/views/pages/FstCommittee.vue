@@ -472,6 +472,7 @@ import {
   PROJECTS_POOL, SUBFUNDS, SPEED_MULTIPLIERS,
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
+import { saveDecision, createProject, STATUSES } from '@/services/fstApi'
 
 // ── State ─────────────────────────────────────────────────────
 
@@ -675,6 +676,43 @@ function handleEvent(event) {
     setTimeout(() => {
       conclusionVisible.value = true
     }, 1500)
+    // Сохранить решение ИК в fst
+    saveDecisionToFst(session.value)
+  }
+}
+
+async function saveDecisionToFst(sess) {
+  if (!sess) return
+  try {
+    const project = PROJECTS_POOL.find(p => p.id === sess.projectId) || {}
+    const votes = sess.votes || []
+    const votesAgainst = votes.filter(v => v.verdict === 'REJECT').length
+    const approved = sess.decision?.humanApproval?.verdict === 'APPROVE'
+    const decisionName = `ИК: ${project.name || sess.projectId} — ${new Date().toLocaleDateString('ru')}`
+
+    // Создать проект в fst если его ещё нет
+    let fstProjectId = null
+    try {
+      const created = await createProject({
+        name: project.company || project.name || sess.projectId,
+        description: project.description || '',
+        amount: project.askRub || 0,
+        statusId: approved ? STATUSES['Одобрен'] : STATUSES['На доработке']
+      })
+      fstProjectId = created?.id
+    } catch { /* проект уже может существовать */ }
+
+    // Сохранить решение ИК
+    await saveDecision({
+      name: decisionName,
+      votesAgainst,
+      conditions: sess.conclusion || '',
+      meetingDate: new Date().toISOString(),
+      projectId: fstProjectId,
+      decisionId: approved ? 1129 : 1133  // Одобрено / Отклонено (справочник 1090)
+    })
+  } catch (err) {
+    console.warn('saveDecisionToFst failed:', err.message)
   }
 }
 

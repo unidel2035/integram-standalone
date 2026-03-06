@@ -315,6 +315,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { saveDeal as saveDealToFst } from '@/services/fstApi'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
@@ -518,9 +519,22 @@ ${Object.entries(d.conditions).filter(([,v])=>v).map(([k])=>`<div style="font-si
 
 async function saveDeal() {
   saving.value = true
-  await new Promise(r => setTimeout(r, 1500))
-  saving.value = false
-  toast.add({ severity: 'success', summary: 'Сохранено', detail: `Сделка ${deal.value.companyName} сохранена в Integram`, life: 3000 })
+  try {
+    await saveDealToFst({
+      name:        `Сделка: ${deal.value.companyName}`,
+      companyName: deal.value.companyName,
+      sharePercent: deal.value.sharePercent || 0,
+      spvName:     deal.value.spvName || '',
+      termSheet:   termSheet.value || '',
+      signDate:    deal.value.signDate ? new Date(deal.value.signDate).toISOString() : new Date().toISOString()
+    })
+    toast.add({ severity: 'success', summary: 'Сохранено в fst', detail: `Сделка ${deal.value.companyName} записана в Integram fst`, life: 3000 })
+  } catch (err) {
+    console.warn('saveDeal to fst failed:', err.message)
+    toast.add({ severity: 'warn', summary: 'Локальное сохранение', detail: 'Не удалось сохранить в fst: ' + err.message, life: 4000 })
+  } finally {
+    saving.value = false
+  }
 }
 
 function copyTermSheet() {
