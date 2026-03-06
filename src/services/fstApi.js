@@ -141,6 +141,104 @@ export async function createProject(data) {
   return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
 }
 
+/**
+ * Создать проект из заявки стартапа (/fst-apply)
+ * @param {Object} application - Данные формы заявки
+ * @returns {Promise<Object>}
+ */
+export async function createProjectFromApplication(application) {
+  // Определяем субфонд по сфере деятельности
+  let subfundId = null
+  if (application.sector?.includes('БАС') || application.sector?.includes('БПЛА')) {
+    subfundId = SUBFUNDS.БАС
+  } else if (application.sector?.includes('робототехни')) {
+    subfundId = SUBFUNDS.РОБО
+  } else if (application.sector?.includes('энергетик')) {
+    subfundId = SUBFUNDS.МЭ
+  }
+
+  // Определяем стадию
+  let stageId = null
+  if (application.stage?.includes('Pre-Seed')) {
+    stageId = STAGES['Pre-seed']
+  } else if (application.stage?.includes('Seed')) {
+    stageId = STAGES.Seed
+  } else if (application.stage?.includes('A')) {
+    stageId = STAGES['Round A']
+  } else if (application.stage?.includes('B')) {
+    stageId = STAGES['Round B']
+  }
+
+  // Формируем extended data для совместимости с getEnrichedProjects
+  const extended = {
+    title: `${application.companyName} — ${application.description?.substring(0, 50)}`,
+    market: application.sector,
+    trl: application.trl || 5,
+    mrl: Math.floor(application.trl * 1.1) || 5, // Примерная оценка MRL
+    sovereigntyScore: Math.floor(application.sovereignty / 11.11) || 6, // 0-100 → 0-9
+    localizationRatio: (application.sovereignty || 60) / 100,
+    marketSize: (application.tam || 10) * 1_000_000_000, // млрд → руб
+    projectedIRR: 0.25, // Дефолтное значение, будет рассчитано на ИК
+    teamStrength: Math.min(1, (application.teamSize || 5) / 20),
+    employees: application.teamSize || 5,
+    founded: application.foundedYear || new Date().getFullYear(),
+    patents: parseInt(application.patents) || 0,
+    strengths: application.usp ? [application.usp] : [],
+    risks: [],
+    documents: [application.pitchFile, application.modelFile].filter(Boolean)
+  }
+
+  // Храним полную заявку в JSON
+  const fullApplication = {
+    companyName: application.companyName,
+    inn: application.inn,
+    sector: application.sector,
+    stage: application.stage,
+    foundedYear: application.foundedYear,
+    city: application.city,
+    description: application.description,
+    trl: application.trl,
+    patents: application.patents,
+    tam: application.tam,
+    sam: application.sam,
+    competitors: application.competitors,
+    usp: application.usp,
+    sovereignty: application.sovereignty,
+    amount: application.amount,
+    equityOffered: application.equityOffered,
+    preMoney: application.preMoney,
+    arr: application.arr,
+    runway: application.runway,
+    teamSize: application.teamSize,
+    ceoName: application.ceoName,
+    achievements: application.achievements,
+    email: application.email,
+    phone: application.phone,
+    telegram: application.telegram,
+    website: application.website,
+    pitchFile: application.pitchFile,
+    modelFile: application.modelFile,
+    submittedAt: new Date().toISOString()
+  }
+
+  // Формат совместимый с fstExtendedApi.js parseExtendedData
+  const descriptionWithExtended = `${application.description || 'Заявка от стартапа'}
+<!--FST_EXTENDED_DATA:${JSON.stringify(extended)}-->
+<!--FST_FULL_APPLICATION:${JSON.stringify(fullApplication)}-->`
+
+  const body = new URLSearchParams({
+    [`t${TYPE_PROJECTS}`]: application.companyName,
+    t1156: application.inn || '',
+    t1157: (application.amount || 0) * 1_000_000, // Конвертируем млн → руб
+    t1158: descriptionWithExtended,
+    t1159: new Date().toISOString(),
+    ...(subfundId ? { t1177: subfundId } : {}),
+    ...(stageId   ? { t1179: stageId   } : {}),
+    t1183: STATUSES['Новый'] // Новая заявка всегда со статусом "Новый"
+  })
+  return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
+}
+
 export async function updateProject(id, data) {
   const body = new URLSearchParams(data)
   return api(`_m_set/${id}?JSON_KV`, { method: 'POST', body })
@@ -164,6 +262,118 @@ export async function saveDecision(data) {
     ...(data.decisionId ? { t1187: data.decisionId } : {})
   })
   return api(`_m_new/${TYPE_IC_DECISIONS}?JSON_KV`, { method: 'POST', body })
+}
+
+/**
+ * Сохранить полный протокол заседания инвесткомитета с AI-агентами
+ *
+ * @param {Object} session - Объект сессии из FstCommitteeEngine
+ * @param {string} projectId - ID проекта в fst
+ * @returns {Promise<Object>} Созданная запись решения ИК
+ */
+export async function saveCommitteeSession(session, projectId) {
+  // Формируем полный JSON протокола
+  const protocol = {
+    sessionId: session.id || `session-${Date.now()}`,
+    projectId: session.projectId,
+    timestamp: new Date().toISOString(),
+
+    // Решение комитета
+    decision: {
+      recommendation: session.decision?.recommendation || 'DEFER',
+      aggregatedScore: session.decision?.aggregatedScore || 0,
+      voteCounts: session.decision?.voteCounts || {},
+      conditions: session.decision?.conditions || [],
+      risks: session.decision?.risks || []
+    },
+
+    // Голоса агентов
+    votes: (session.votes || []).map(v => ({
+      agentId: v.agentId,
+      verdict: v.verdict,
+      score: v.score,
+      confidence: v.confidence,
+      reasoning: v.reasoning || ''
+    })),
+
+    // Аргументы дебатов
+    arguments: (session.arguments || []).map(arg => ({
+      id: arg.id,
+      agentId: arg.agentId,
+      type: arg.type,
+      dimension: arg.dimension,
+      text: arg.text,
+      targetArgId: arg.targetArgId || null,
+      timestamp: arg.timestamp || new Date().toISOString()
+    })),
+
+    // Параметры политики ФСТ на момент сессии
+    policy: session.policy || {},
+
+    // Утверждение человеком
+    humanApproval: session.decision?.humanApproval || null,
+
+    // Скоры по измерениям
+    dimScores: session.dimScores || {}
+  }
+
+  // Определяем итоговое решение ИК
+  const finalVerdict = session.decision?.humanApproval?.verdict || session.decision?.recommendation || 'DEFER'
+  const decisionIdMap = {
+    'APPROVE': 1129,           // Одобрен
+    'APPROVE_CONDITIONAL': 1131, // Одобрен с условиями
+    'REJECT': 1133,            // Отклонён
+    'DEFER': 1135              // На доработку
+  }
+
+  const votesAgainst = (session.votes || []).filter(v => v.verdict === 'REJECT').length
+  const hasConditions = (session.decision?.conditions || []).length > 0
+
+  // Если APPROVE с условиями, меняем статус
+  const decisionId = (finalVerdict === 'APPROVE' && hasConditions)
+    ? decisionIdMap['APPROVE_CONDITIONAL']
+    : decisionIdMap[finalVerdict]
+
+  // Создаём запись в БД
+  const body = new URLSearchParams({
+    [`t${TYPE_IC_DECISIONS}`]: `ИК: ${session.project?.title || session.projectId} — ${new Date().toLocaleDateString('ru')}`,
+    t1161: votesAgainst,
+    t1162: JSON.stringify(protocol, null, 2), // Полный JSON протокола
+    t1163: new Date().toISOString(),
+    ...(projectId ? { t1185: projectId } : {}),
+    ...(decisionId ? { t1187: decisionId } : {})
+  })
+
+  return api(`_m_new/${TYPE_IC_DECISIONS}?JSON_KV`, { method: 'POST', body })
+}
+
+/**
+ * Получить все протоколы ИК (с парсингом JSON)
+ */
+export async function getCommitteeSessions() {
+  const data = await api(`_m_list/${TYPE_IC_DECISIONS}?JSON_KV`)
+  const objects = data.object || []
+  const reqs = data.reqs || {}
+
+  return objects.map(obj => {
+    let protocol = null
+    try {
+      const jsonStr = reqs[obj.id]?.['1162'] || '{}'
+      protocol = JSON.parse(jsonStr)
+    } catch (e) {
+      console.warn(`Failed to parse protocol for decision ${obj.id}:`, e)
+    }
+
+    return {
+      id: obj.id,
+      name: obj.val,
+      votesAgainst: Number(reqs[obj.id]?.['1161'] || 0),
+      protocol: protocol,
+      meetingDate: reqs[obj.id]?.['1163'] || null,
+      projectId: reqs[obj.id]?.['1185'] || null,
+      decisionId: reqs[obj.id]?.['1187'] || null
+    }
+  })
 }
 
 // ── Deals ─────────────────────────────────────────────────────────────────

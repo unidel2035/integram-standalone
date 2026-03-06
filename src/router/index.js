@@ -9,6 +9,7 @@ const routes = [
       { path: '', redirect: '/fst-hub' },
       { path: 'fst-hub', component: () => import('@/views/pages/FstHub.vue'), meta: { title: 'ФСТ НТИ — Главная' } },
       { path: 'fst-committee', component: () => import('@/views/pages/FstCommittee.vue'), meta: { title: 'AI-инвесткомитет' } },
+      { path: 'fst-protocol', component: () => import('@/views/pages/FstProtocol.vue'), meta: { title: 'Протоколы инвесткомитета' } },
       { path: 'fst-deal', component: () => import('@/views/pages/FstDeal.vue'), meta: { title: 'Доведение сделки' } },
       { path: 'fst-portfolio', component: () => import('@/views/pages/FstPortfolio.vue'), meta: { title: 'Портфельный монитор' } },
       { path: 'fst-twin', component: () => import('@/views/pages/FstDigitalTwin.vue'), meta: { title: 'Цифровой двойник компании' } },
