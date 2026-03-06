@@ -1,0 +1,372 @@
+<template>
+  <div class="wf-root">
+    <div class="wf-header">
+      <div>
+        <h1>Waterfall Калькулятор</h1>
+        <span class="wf-subtitle">Распределение выручки от выхода по очерёдности</span>
+      </div>
+      <button class="wf-btn secondary" @click="exportWaterfall">Экспорт</button>
+    </div>
+
+    <!-- Параметры выхода -->
+    <div class="wf-inputs-card">
+      <h3>Параметры выхода</h3>
+      <div class="wf-inputs-grid">
+        <div class="wf-field">
+          <label>Выручка от продажи, млн ₽</label>
+          <input v-model.number="params.exitProceeds" type="number" step="50" @input="calc" />
+        </div>
+        <div class="wf-field">
+          <label>Hurdle Rate (preferred return), %</label>
+          <input v-model.number="params.hurdleRate" type="number" step="0.5" @input="calc" />
+        </div>
+        <div class="wf-field">
+          <label>Carried Interest, %</label>
+          <input v-model.number="params.carry" type="number" step="1" @input="calc" />
+        </div>
+        <div class="wf-field">
+          <label>Дата закрытия фонда</label>
+          <input v-model="params.fundCloseDate" type="date" @change="calc" />
+        </div>
+        <div class="wf-field">
+          <label>Дата выхода</label>
+          <input v-model="params.exitDate" type="date" @change="calc" />
+        </div>
+        <div class="wf-field">
+          <label>Общий объём фонда, млн ₽</label>
+          <input v-model.number="params.fundSize" type="number" step="100" @input="calc" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Стек инвесторов -->
+    <div class="wf-stack-card">
+      <div class="wf-stack-header">
+        <h3>Стек инвесторов</h3>
+        <button class="wf-btn primary small" @click="showAddInvestor = true">+ Инвестор</button>
+      </div>
+      <table class="wf-table">
+        <thead>
+          <tr>
+            <th>Инвестор</th>
+            <th>Взносы, млн ₽</th>
+            <th>Тип преф.</th>
+            <th>Множитель</th>
+            <th>Участие</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(inv, i) in investors" :key="i">
+            <td class="inv-name">{{ inv.name }}</td>
+            <td class="num">{{ inv.capital }}</td>
+            <td><span class="pref-badge" :class="inv.prefType">{{ prefLabel(inv.prefType) }}</span></td>
+            <td class="num">{{ inv.mult }}x</td>
+            <td class="num">{{ inv.participating ? 'Да' : 'Нет' }}</td>
+            <td><button class="del-btn" @click="removeInvestor(i)">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Водопад распределения -->
+    <div class="wf-result-card">
+      <h3>Распределение выхода — {{ params.exitProceeds }} млн ₽</h3>
+
+      <!-- Трамплин шагов -->
+      <div class="wf-steps">
+        <div v-for="(step, i) in waterfallSteps" :key="i" class="wf-step">
+          <div class="step-num">{{ i + 1 }}</div>
+          <div class="step-body">
+            <div class="step-title">{{ step.title }}</div>
+            <div class="step-desc">{{ step.desc }}</div>
+          </div>
+          <div class="step-amount" :class="step.color">{{ step.amount }} млн ₽</div>
+          <div class="step-bar-wrap">
+            <div class="step-bar" :style="{ width: step.pct + '%', background: step.barColor }"></div>
+            <span class="step-pct">{{ step.pct.toFixed(1) }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Итоговая таблица по инвесторам -->
+      <h4>Итог по инвесторам</h4>
+      <table class="wf-table result-table">
+        <thead>
+          <tr>
+            <th>Инвестор</th>
+            <th>Вложено</th>
+            <th>Ликв. преф.</th>
+            <th>Участие</th>
+            <th>Carry</th>
+            <th>Итого</th>
+            <th>MOIC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in resultRows" :key="row.name">
+            <td class="inv-name">{{ row.name }}</td>
+            <td class="num">{{ row.capital }}</td>
+            <td class="num">{{ row.liquidPref }}</td>
+            <td class="num">{{ row.participation }}</td>
+            <td class="num">{{ row.carry }}</td>
+            <td class="num bold">{{ row.total }}</td>
+            <td class="num" :class="row.moic >= 1 ? 'green' : 'red'">{{ row.moic }}x</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td><strong>Итого</strong></td>
+            <td class="num bold">{{ totalCapital }}</td>
+            <td colspan="3"></td>
+            <td class="num bold">{{ params.exitProceeds }}</td>
+            <td class="num bold">{{ overallMoic }}x</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- IRR по сценариям -->
+    <div class="wf-irr-card">
+      <h3>IRR-анализ по сценариям</h3>
+      <div class="irr-scenarios">
+        <div v-for="s in irrScenarios" :key="s.label" class="irr-sc">
+          <div class="irr-exit">{{ s.exitMult }}x</div>
+          <div class="irr-label">{{ s.label }}</div>
+          <div class="irr-val" :class="s.irr >= params.hurdleRate ? 'green' : 'red'">{{ s.irr }}%</div>
+          <div class="irr-bar-wrap">
+            <div class="irr-bar" :style="{ width: Math.min(s.irr / 50 * 100, 100) + '%', background: s.irr >= params.hurdleRate ? '#66bb6a' : '#ef5350' }"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Investor Modal -->
+    <div v-if="showAddInvestor" class="modal-overlay" @click.self="showAddInvestor = false">
+      <div class="modal-box">
+        <h3>Добавить инвестора</h3>
+        <div class="modal-form">
+          <label>Название</label>
+          <input v-model="newInv.name" />
+          <label>Взносы, млн ₽</label>
+          <input v-model.number="newInv.capital" type="number" step="10" />
+          <label>Тип ликв. предпочтения</label>
+          <select v-model="newInv.prefType">
+            <option value="none">Обычные акции (нет)</option>
+            <option value="non_part">Non-participating preferred</option>
+            <option value="part">Participating preferred</option>
+            <option value="capped">Capped participating</option>
+          </select>
+          <label>Множитель (1x, 2x...)</label>
+          <input v-model.number="newInv.mult" type="number" step="0.25" min="0.5" />
+          <label>
+            <input type="checkbox" v-model="newInv.participating" />
+            Участие в upside после ликв. преф.
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button class="wf-btn secondary" @click="showAddInvestor = false">Отмена</button>
+          <button class="wf-btn primary" @click="addInvestor">Добавить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+
+const showAddInvestor = ref(false)
+
+const params = ref({
+  exitProceeds: 2000,
+  hurdleRate:   8,
+  carry:        20,
+  fundSize:     2120,
+  fundCloseDate: '2023-01-01',
+  exitDate:      '2028-12-31'
+})
+
+const investors = ref([
+  { name: 'Основатели',      capital: 0,   prefType: 'none',     mult: 1, participating: true  },
+  { name: 'ФСТ НТИ (БАС)',   capital: 450, prefType: 'non_part', mult: 1, participating: false },
+  { name: 'ФСТ НТИ (РОБО)',  capital: 270, prefType: 'non_part', mult: 1, participating: false },
+  { name: 'ФСТ НТИ (МЭ)',    capital: 90,  prefType: 'non_part', mult: 1, participating: false },
+  { name: 'Со-инвесторы',    capital: 310, prefType: 'part',     mult: 1, participating: true  }
+])
+
+function prefLabel(t) {
+  return { none: 'Common', non_part: 'Non-part.', part: 'Participating', capped: 'Capped' }[t] || t
+}
+
+function removeInvestor(i) { investors.value.splice(i, 1) }
+
+const totalCapital = computed(() => investors.value.reduce((s, i) => s + i.capital, 0))
+
+// Waterfall calculation
+const waterfallSteps = computed(() => {
+  const exit = params.value.exitProceeds
+  const steps = []
+
+  // Step 1: Return of capital
+  const rcAmount = Math.min(exit, totalCapital.value)
+  steps.push({ title: 'Возврат капитала', desc: 'LP получают вложенные средства', amount: rcAmount, pct: rcAmount / exit * 100, color: 'blue', barColor: '#42a5f5' })
+
+  // Step 2: Preferred return / hurdle
+  const yearsHeld = 5
+  const preferredReturn = Math.min(exit - rcAmount, totalCapital.value * Math.pow(1 + params.value.hurdleRate / 100, yearsHeld) - totalCapital.value)
+  const prefReturnActual = Math.max(0, preferredReturn)
+  steps.push({ title: `Preferred Return (${params.value.hurdleRate}%)`, desc: `Накопленный доход за ${yearsHeld} лет`, amount: Math.round(prefReturnActual), pct: prefReturnActual / exit * 100, color: 'green', barColor: '#66bb6a' })
+
+  // Step 3: GP Catch-up
+  const remaining2 = exit - rcAmount - prefReturnActual
+  const catchup = Math.min(remaining2, (params.value.carry / (100 - params.value.carry)) * prefReturnActual)
+  const catchupActual = Math.max(0, catchup)
+  steps.push({ title: 'GP Catch-up', desc: `УК догоняет до ${params.value.carry}% carry`, amount: Math.round(catchupActual), pct: catchupActual / exit * 100, color: 'purple', barColor: '#ab47bc' })
+
+  // Step 4: Carry split
+  const remaining3 = exit - rcAmount - prefReturnActual - catchupActual
+  const carryAmount = Math.max(0, remaining3 * params.value.carry / 100)
+  steps.push({ title: `Carried Interest (${params.value.carry}%)`, desc: 'Вознаграждение УК от сверхдохода', amount: Math.round(carryAmount), pct: carryAmount / exit * 100, color: 'orange', barColor: '#ff9800' })
+
+  // Step 5: Remaining to LP
+  const toLP = Math.max(0, remaining3 - carryAmount)
+  steps.push({ title: 'Остаток LP', desc: 'Pro-rata распределение среди LP', amount: Math.round(toLP), pct: toLP / exit * 100, color: 'blue', barColor: '#42a5f5' })
+
+  return steps
+})
+
+const resultRows = computed(() => {
+  const exit = params.value.exitProceeds
+  const totalCap = totalCapital.value || 1
+  return investors.value.map(inv => {
+    const share = inv.capital / totalCap
+    const liqPref = inv.prefType !== 'none' ? Math.min(inv.capital * inv.mult, exit * share * 1.5) : 0
+    const participation = inv.participating ? Math.round(exit * share * 0.3) : 0
+    const carry = inv.name.includes('ФСТ') ? 0 : 0
+    const total = Math.round(liqPref + participation)
+    return {
+      name: inv.name,
+      capital: inv.capital,
+      liquidPref: Math.round(liqPref),
+      participation,
+      carry,
+      total,
+      moic: inv.capital > 0 ? (total / inv.capital).toFixed(2) : '—'
+    }
+  })
+})
+
+const overallMoic = computed(() => {
+  const cap = totalCapital.value
+  return cap > 0 ? (params.value.exitProceeds / cap).toFixed(2) : '—'
+})
+
+const irrScenarios = computed(() => {
+  const n = 5
+  const cap = totalCapital.value || 1
+  return [
+    { label: 'Пессимист. 0.8x', exitMult: 0.8, irr: calcIrr(cap * 0.8, cap, n) },
+    { label: 'Базовый 1.5x',     exitMult: 1.5, irr: calcIrr(cap * 1.5, cap, n) },
+    { label: 'Оптимист. 2.5x',   exitMult: 2.5, irr: calcIrr(cap * 2.5, cap, n) },
+    { label: 'Джекпот 4x',       exitMult: 4.0, irr: calcIrr(cap * 4.0, cap, n) }
+  ]
+})
+
+function calcIrr(fv, pv, n) {
+  return ((Math.pow(fv / pv, 1 / n) - 1) * 100).toFixed(1)
+}
+
+function calc() {}
+
+const newInv = ref({ name: '', capital: 100, prefType: 'non_part', mult: 1, participating: false })
+function addInvestor() {
+  investors.value.push({ ...newInv.value })
+  showAddInvestor.value = false
+  newInv.value = { name: '', capital: 100, prefType: 'non_part', mult: 1, participating: false }
+}
+
+function exportWaterfall() {
+  const rows = [
+    ['Шаг', 'Описание', 'Сумма млн ₽', 'Доля %'],
+    ...waterfallSteps.value.map((s, i) => [i + 1, s.title, s.amount, s.pct.toFixed(2)])
+  ]
+  const csv = rows.map(r => r.join(',')).join('\n')
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a'); a.href = url; a.download = 'waterfall.csv'; a.click()
+  URL.revokeObjectURL(url)
+}
+</script>
+
+<style scoped>
+.wf-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
+.wf-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.wf-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
+.wf-subtitle { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.wf-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.wf-btn.primary  { background: var(--p-primary-color); color: #fff; }
+.wf-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
+.wf-btn.small { padding: 5px 10px; font-size: 0.78rem; }
+
+.wf-inputs-card, .wf-stack-card, .wf-result-card, .wf-irr-card {
+  background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px;
+}
+h3 { margin: 0 0 14px; font-size: 1rem; color: var(--p-text-color); }
+h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
+
+.wf-inputs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.wf-field { display: flex; flex-direction: column; gap: 4px; }
+.wf-field label { font-size: 0.75rem; color: var(--p-text-muted-color); }
+.wf-field input { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; }
+
+.wf-stack-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.wf-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.wf-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-surface-border); font-size: 0.75rem; }
+.wf-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-surface-border); color: var(--p-text-color); }
+.wf-table tfoot td { border-top: 2px solid var(--p-surface-border); border-bottom: none; background: var(--p-surface-ground); }
+.inv-name { font-weight: 600; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.bold { font-weight: 700; }
+.green { color: #66bb6a; } .red { color: #ef5350; }
+.pref-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+.pref-badge.none     { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.pref-badge.non_part { background: #1565c022; color: #1565c0; }
+.pref-badge.part     { background: #7b1fa222; color: #7b1fa2; }
+.pref-badge.capped   { background: #e65100 22; color: #e65100; }
+.del-btn { background: none; border: none; color: var(--p-text-muted-color); cursor: pointer; font-size: 0.9rem; padding: 2px 6px; }
+.del-btn:hover { color: #ef5350; }
+
+.wf-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.wf-step { display: grid; grid-template-columns: 30px 1fr auto 150px; align-items: center; gap: 12px; background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 12px 16px; }
+.step-num { font-size: 1.1rem; font-weight: 900; color: var(--p-primary-color); }
+.step-title { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }
+.step-desc  { font-size: 0.72rem; color: var(--p-text-muted-color); }
+.step-amount { font-size: 1rem; font-weight: 700; text-align: right; min-width: 80px; }
+.step-amount.blue   { color: #42a5f5; }
+.step-amount.green  { color: #66bb6a; }
+.step-amount.purple { color: #ab47bc; }
+.step-amount.orange { color: #ff9800; }
+.step-bar-wrap { display: flex; align-items: center; gap: 6px; }
+.step-bar { height: 8px; border-radius: 4px; transition: width 0.4s; }
+.step-pct { font-size: 0.72rem; color: var(--p-text-muted-color); white-space: nowrap; }
+
+.result-table td, .result-table th { vertical-align: middle; }
+
+.irr-scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.irr-sc { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 14px; }
+.irr-exit { font-size: 1.4rem; font-weight: 900; color: var(--p-primary-color); }
+.irr-label { font-size: 0.75rem; color: var(--p-text-muted-color); margin: 2px 0 8px; }
+.irr-val { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
+.irr-bar-wrap { height: 6px; background: var(--p-surface-border); border-radius: 3px; overflow: hidden; }
+.irr-bar { height: 100%; border-radius: 3px; transition: width 0.4s; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-box { background: var(--p-content-background); border-radius: 12px; padding: 24px; width: 400px; max-width: 95vw; }
+.modal-box h3 { margin: 0 0 16px; }
+.modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.modal-form label { font-size: 0.78rem; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 6px; }
+.modal-form input, .modal-form select { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
+.modal-form input[type=checkbox] { width: auto; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+</style>

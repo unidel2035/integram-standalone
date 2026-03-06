@@ -1,0 +1,255 @@
+import { logger } from '@/utils/logger'
+/**
+ * Authentication Store
+ *
+ * Manages multi-database authentication:
+ * - Primary DB authentication (user-selected database)
+ * - ddadmin DB authentication (automatic, for system/admin features)
+ *
+ * This store maintains separate tokens and authentication states for:
+ * 1. The user's selected database (default: A2025 on dronedoc.ru)
+ * 2. The ddadmin database (for Tokens.vue and other admin components)
+ */
+
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import axios from 'axios'
+
+export const useAuthStore = defineStore('auth', () => {
+  // Primary database authentication
+  const primaryToken = ref(null)
+  const primaryUser = ref(null)
+  const primaryUserId = ref(null)
+  const primaryXsrf = ref(null)
+  const primaryDatabase = ref('A2025') // Default database
+  const primaryApiBase = ref('dronedoc.ru') // Default API base
+
+  // ddadmin database authentication
+  const ddadminToken = ref(null)
+  const ddadminUser = ref(null)
+  const ddadminUserId = ref(null)
+  const ddadminXsrf = ref(null)
+
+  // Loading states
+  const isLoading = ref(false)
+  const error = ref(null)
+
+  // Computed properties
+  const isAuthenticated = computed(() => !!primaryToken.value)
+  const isDdadminAuthenticated = computed(() => !!ddadminToken.value)
+
+  /**
+   * Initialize store from localStorage
+   */
+  function initFromLocalStorage() {
+    // Load primary auth data
+    primaryToken.value = localStorage.getItem('token')
+    primaryUser.value = localStorage.getItem('user')
+    primaryUserId.value = localStorage.getItem('id')
+    primaryXsrf.value = localStorage.getItem('_xsrf')
+    primaryDatabase.value = localStorage.getItem('db') || 'A2025'
+    primaryApiBase.value = localStorage.getItem('apiBase') || 'dronedoc.ru'
+
+    // Load ddadmin auth data
+    ddadminToken.value = localStorage.getItem('ddadmin_token')
+    ddadminUser.value = localStorage.getItem('ddadmin_user')
+    ddadminUserId.value = localStorage.getItem('ddadmin_id')
+    ddadminXsrf.value = localStorage.getItem('ddadmin_xsrf')
+  }
+
+  /**
+   * Perform authentication to a specific database
+   */
+  async function authenticateToDatabase(login, password, apiBase, database) {
+    const formData = new URLSearchParams()
+    formData.append('login', login)
+    formData.append('pwd', password)
+
+    // Determine the base URL
+    let baseURL
+    if (apiBase === 'localhost') {
+      baseURL = `http://localhost/${database}/`
+    } else {
+      baseURL = `https://${apiBase}/${database}`
+    }
+
+    // Create axios instance for this specific database
+    const client = axios.create({
+      baseURL,
+      timeout: 5000000,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+
+    // Make authentication request
+    const response = await client.post('/auth', formData, {
+      params: { JSON_KV: true }
+    })
+
+    let data = response.data
+
+    // Handle case where API returns array instead of object
+    if (Array.isArray(data) && data.length > 0) {
+      data = data[0]
+    }
+
+    // Check if authentication was successful
+    // API returns: { token, _xsrf, id, msg } on success
+    // or { error, warning } on failure
+    if (!data.token) {
+      throw new Error(data.error || data.warning || 'Authentication failed')
+    }
+
+    return {
+      token: data.token,
+      _xsrf: data._xsrf,
+      id: data.id,
+      user: login
+    }
+  }
+
+  /**
+   * Login to both primary database and ddadmin
+   */
+  async function login(login, password, apiBase = 'dronedoc.ru', database = 'A2025') {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // 1. Authenticate to primary database
+      const primaryAuth = await authenticateToDatabase(login, password, apiBase, database)
+
+      // Store primary auth data
+      primaryToken.value = primaryAuth.token
+      primaryUser.value = primaryAuth.user
+      primaryUserId.value = primaryAuth.id
+      primaryXsrf.value = primaryAuth._xsrf
+      primaryDatabase.value = database
+      primaryApiBase.value = apiBase
+
+      localStorage.setItem('token', primaryAuth.token)
+      localStorage.setItem('user', primaryAuth.user)
+      localStorage.setItem('id', primaryAuth.id)
+      localStorage.setItem('_xsrf', primaryAuth._xsrf)
+      localStorage.setItem('db', database)
+      localStorage.setItem('apiBase', apiBase)
+
+      // 2. Authenticate to ddadmin database with same credentials
+      try {
+        const ddadminAuth = await authenticateToDatabase(login, password, apiBase, 'ddadmin')
+
+        // Store ddadmin auth data separately
+        ddadminToken.value = ddadminAuth.token
+        ddadminUser.value = ddadminAuth.user
+        ddadminUserId.value = ddadminAuth.id
+        ddadminXsrf.value = ddadminAuth._xsrf
+
+        localStorage.setItem('ddadmin_token', ddadminAuth.token)
+        localStorage.setItem('ddadmin_user', ddadminAuth.user)
+        localStorage.setItem('ddadmin_id', ddadminAuth.id)
+        localStorage.setItem('ddadmin_xsrf', ddadminAuth._xsrf)
+
+        logger.info('✅ Successfully authenticated to both databases:', {
+          primary: `${database}@${apiBase}`,
+          ddadmin: `ddadmin@${apiBase}`
+        })
+      } catch (ddadminError) {
+        console.warn('⚠️ Failed to authenticate to ddadmin database:', ddadminError)
+        // Don't fail the entire login if ddadmin auth fails
+        // Some users might not have access to ddadmin
+      }
+
+      return { success: true, user: primaryAuth.user }
+    } catch (err) {
+      error.value = err.message || 'Login failed'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Logout from all databases
+   */
+  function logout() {
+    // Clear primary auth data
+    primaryToken.value = null
+    primaryUser.value = null
+    primaryUserId.value = null
+    primaryXsrf.value = null
+
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('id')
+    localStorage.removeItem('_xsrf')
+
+    // Clear ddadmin auth data
+    ddadminToken.value = null
+    ddadminUser.value = null
+    ddadminUserId.value = null
+    ddadminXsrf.value = null
+
+    localStorage.removeItem('ddadmin_token')
+    localStorage.removeItem('ddadmin_user')
+    localStorage.removeItem('ddadmin_id')
+    localStorage.removeItem('ddadmin_xsrf')
+
+    // Keep apiBase and db in localStorage for next login
+  }
+
+  /**
+   * Get authentication data for ddadmin database
+   */
+  function getDdadminAuth() {
+    return {
+      token: ddadminToken.value,
+      user: ddadminUser.value,
+      id: ddadminUserId.value,
+      xsrf: ddadminXsrf.value,
+      isAuthenticated: isDdadminAuthenticated.value
+    }
+  }
+
+  /**
+   * Get authentication data for primary database
+   */
+  function getPrimaryAuth() {
+    return {
+      token: primaryToken.value,
+      user: primaryUser.value,
+      id: primaryUserId.value,
+      xsrf: primaryXsrf.value,
+      database: primaryDatabase.value,
+      apiBase: primaryApiBase.value,
+      isAuthenticated: isAuthenticated.value
+    }
+  }
+
+  return {
+    // State
+    primaryToken,
+    primaryUser,
+    primaryUserId,
+    primaryXsrf,
+    primaryDatabase,
+    primaryApiBase,
+    ddadminToken,
+    ddadminUser,
+    ddadminUserId,
+    ddadminXsrf,
+    isLoading,
+    error,
+
+    // Computed
+    isAuthenticated,
+    isDdadminAuthenticated,
+
+    // Actions
+    initFromLocalStorage,
+    login,
+    logout,
+    getDdadminAuth,
+    getPrimaryAuth
+  }
+})
