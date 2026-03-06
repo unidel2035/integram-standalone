@@ -1,5 +1,6 @@
 <template>
   <div class="apply-root">
+    <Toast position="bottom-center" />
     <div class="apply-hero">
       <h1>Подать заявку в ФСТ НТИ</h1>
       <p>Фонд инвестирует в технологические компании в сфере БАС, робототехники и малой энергетики на стадиях Seed, A и B</p>
@@ -220,8 +221,9 @@
       <div class="step-nav">
         <button class="apply-btn secondary" @click="prevStep" :disabled="currentStep === 0">← Назад</button>
         <button v-if="currentStep < steps.length - 1" class="apply-btn primary" @click="nextStep">Далее →</button>
-        <button v-else class="apply-btn primary submit" @click="submitApplication" :disabled="!canSubmit">
-          Отправить заявку
+        <button v-else class="apply-btn primary submit" @click="submitApplication" :disabled="!canSubmit || submitting">
+          <i v-if="submitting" class="pi pi-spin pi-spinner" style="font-size: 0.9rem; margin-right: 6px;"></i>
+          {{ submitting ? 'Отправка...' : 'Отправить заявку' }}
         </button>
       </div>
     </div>
@@ -244,10 +246,14 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useToast } from 'primevue/usetoast'
+import { createProjectFromApplication } from '@/services/fstApi'
 
+const toast = useToast()
 const currentStep = ref(0)
 const submitted = ref(false)
 const applicationId = ref('')
+const submitting = ref(false)
 
 const steps = ['Компания', 'Технология', 'Финансы', 'Документы']
 
@@ -302,9 +308,32 @@ function handleDrop(e, type) {
   if (file) form.value[type + 'File'] = file.name
 }
 
-function submitApplication() {
-  applicationId.value = 'FST-' + Date.now().toString().slice(-6)
-  submitted.value = true
+async function submitApplication() {
+  if (!canSubmit.value) return
+
+  submitting.value = true
+  try {
+    const result = await createProjectFromApplication(form.value)
+    applicationId.value = result.id ? `FST-${result.id}` : `FST-${Date.now().toString().slice(-6)}`
+    submitted.value = true
+
+    toast.add({
+      severity: 'success',
+      summary: 'Заявка отправлена',
+      detail: `Ваша заявка успешно принята. Номер: ${applicationId.value}`,
+      life: 5000
+    })
+  } catch (error) {
+    console.error('Failed to submit application:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Ошибка отправки',
+      detail: 'Не удалось отправить заявку. Попробуйте позже или свяжитесь с нами по email.',
+      life: 5000
+    })
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
