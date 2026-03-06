@@ -386,16 +386,25 @@ found/
 
 ## Roadmap
 
-See [Issues](https://github.com/unidel2035/found/issues) for full backlog.
+📋 **[Complete Roadmap](docs/ROADMAP.md)** — full development plan with priorities, milestones, and technical comparison with EQT Motherbrain, SignalFire Beacon, and BlackRock Aladdin.
 
-**Upcoming:**
-- [ ] Secondary market module (LP stake trading)
-- [ ] Open API with webhook subscriptions
-- [ ] Telegram bot for fund managers
-- [ ] Black-Litterman portfolio allocation optimizer
-- [ ] Co-investor syndication network
-- [ ] Board Pack auto-generator
-- [ ] Public deal application form
+**Current Focus (P0):**
+- 📝 Public application form for startups (#84)
+- 💾 Investment committee protocol storage (#85)
+
+**Next Quarter (P1):**
+- 🤖 AI Deal Sourcing — automatic startup discovery (#20)
+- 🔗 External data integration: ЕГРЮЛ, Роспатент, HH.ru (#11)
+
+**Upcoming (P2-P3):**
+- Portfolio Intelligence with weekly AI reports
+- Black-Litterman portfolio allocation
+- Co-investor syndication network
+- Secondary market for LP stakes
+- Open API with webhooks
+- Telegram bot for fund managers
+
+See [Issues](https://github.com/unidel2035/found/issues) for full backlog and [docs/ROADMAP.md](docs/ROADMAP.md) for detailed breakdown.
 
 ---
 
