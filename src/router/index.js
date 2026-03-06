@@ -16,6 +16,7 @@ const routes = [
       { path: 'fst-fund', component: () => import('@/views/pages/FstFundTwin.vue'), meta: { title: 'Цифровой двойник фонда' } },
       { path: 'fst-execution', component: () => import('@/views/pages/FstExecution.vue'), meta: { title: 'Исполнение сделок' } },
       { path: 'fst-dealflow', component: () => import('@/views/pages/FstDealflow.vue'), meta: { title: 'Воронка сделок' } },
+      { path: 'fst-sourcing', component: () => import('@/views/pages/FstSourcing.vue'), meta: { title: 'AI Deal Sourcing' } },
       { path: 'fst-memo', component: () => import('@/views/pages/FstMemo.vue'), meta: { title: 'AI Инвест-меморандум' } },
       { path: 'fst-lp', component: () => import('@/views/pages/FstLp.vue'), meta: { title: 'LP Dashboard' } },
       { path: 'fst-captable', component: () => import('@/views/pages/FstCaptable.vue'), meta: { title: 'Cap Table' } },
