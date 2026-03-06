@@ -133,10 +133,10 @@ export const AGENTS = [
   },
   {
     id: 'devil',
-    name: 'Адвокат дьявола',
+    name: 'Критический аналитик',
     shortName: 'Критик',
-    role: 'DEVILS_ADVOCATE',
-    avatar: '😈',
+    role: 'CRITICAL_ANALYST',
+    avatar: '🔍',
     color: '#78909c',
     bias: 'pessimist',
     weight: 0.14,
