@@ -76,6 +76,66 @@ const routes = [
     meta: { title: 'ILPA Отчётность' }
   },
   {
+    path: '/fst-benchmark',
+    component: () => import('@/views/pages/FstBenchmark.vue'),
+    meta: { title: 'Бенчмаркинг портфеля' }
+  },
+  {
+    path: '/fst-exit',
+    component: () => import('@/views/pages/FstExit.vue'),
+    meta: { title: 'Сценарии выхода' }
+  },
+  {
+    path: '/fst-sovereignty',
+    component: () => import('@/views/pages/FstSovereignty.vue'),
+    meta: { title: 'Аудит суверенности 9D' }
+  },
+  {
+    path: '/fst-apply',
+    component: () => import('@/views/pages/FstApply.vue'),
+    meta: { title: 'Подать заявку в ФСТ НТИ' }
+  },
+  {
+    path: '/fst-esg',
+    component: () => import('@/views/pages/FstEsg.vue'),
+    meta: { title: 'ESG-скоринг портфеля' }
+  },
+  {
+    path: '/fst-compliance',
+    component: () => import('@/views/pages/FstCompliance.vue'),
+    meta: { title: 'AML/KYC Комплаенс' }
+  },
+  {
+    path: '/fst-grants',
+    component: () => import('@/views/pages/FstGrants.vue'),
+    meta: { title: 'Трекер грантов' }
+  },
+  {
+    path: '/fst-natproject',
+    component: () => import('@/views/pages/FstNatproject.vue'),
+    meta: { title: 'Нацпроект БАС 2024–2030' }
+  },
+  {
+    path: '/fst-syndication',
+    component: () => import('@/views/pages/FstSyndication.vue'),
+    meta: { title: 'Со-инвестирование' }
+  },
+  {
+    path: '/fst-duediligence',
+    component: () => import('@/views/pages/FstDuediligence.vue'),
+    meta: { title: 'AI Due Diligence' }
+  },
+  {
+    path: '/fst-legal',
+    component: () => import('@/views/pages/FstLegal.vue'),
+    meta: { title: 'Юридические документы' }
+  },
+  {
+    path: '/fst-registry',
+    component: () => import('@/views/pages/FstRegistry.vue'),
+    meta: { title: 'Реестр производителей БПЛА' }
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/fst-hub'
   }
