@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FST Intelligence Report — Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .meta {
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #5c6bc0;
+    }
+
+    .highlights {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .highlight-col {
+      padding: 16px;
+      border-radius: 8px;
+    }
+
+    .positive {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+    }
+
+    .negative {
+      background: #ffebee;
+      border-left: 4px solid #f44336;
+    }
+
+    .highlight-label {
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .risk-card {
+      background: #f5f5f5;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border-left: 4px solid #ef5350;
+    }
+
+    .risk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .company-name {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .risk-level {
+      background: #ef5350;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .metrics {
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .button {
+      background: #5c6bc0;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 8px;
+    }
+
+    .button:hover {
+      background: #4a5ab8;
+    }
+
+    .status {
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+
+    .status.info {
+      background: #e3f2fd;
+      border-left: 4px solid #2196F3;
+    }
+
+    .status.success {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+    }
+
+    .status.error {
+      background: #ffebee;
+      border-left: 4px solid #f44336;
+    }
+
+    pre {
+      background: #263238;
+      color: #aed581;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .controls {
+      position: sticky;
+      top: 20px;
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <h2>FST Intelligence Report — Test Suite</h2>
+    <button class="button" onclick="testApiEndpoint()">1. Test API Endpoint</button>
+    <button class="button" onclick="testReportGeneration()">2. Generate Test Report</button>
+    <button class="button" onclick="testSaveReport()">3. Save to Database</button>
+    <button class="button" onclick="loadReports()">4. Load All Reports</button>
+    <div id="status"></div>
+  </div>
+
+  <div class="container" id="report-container">
+    <h1>Portfolio Intelligence: 3–9 марта 2026 (Demo)</h1>
+    <div class="meta">Сгенерировано: 9 марта 2026, 09:00 · Автоматический AI-отчёт</div>
+
+    <div class="section">
+      <div class="section-title">1. Executive Digest</div>
+      <p>На прошедшей неделе портфель ФСТ НТИ показал стабильную динамику: 3 компании достигли ключевых технологических вех (TRL 6→7), общая выручка портфеля выросла на 12% м/м.</p>
+
+      <div class="highlights">
+        <div class="highlight-col positive">
+          <div class="highlight-label">✅ Топ-3 позитива</div>
+          <ul>
+            <li>АвиаЛогик получил контракт на 120 млн ₽ с МЧС</li>
+            <li>МикроЭнерджи завершил сертификацию ГОСТ Р</li>
+            <li>БеспилотПро расширился на 12 инженеров</li>
+          </ul>
+        </div>
+        <div class="highlight-col negative">
+          <div class="highlight-label">⚠️ Топ-3 риска</div>
+          <ul>
+            <li>АвиаТех: runway сократился до 4 месяцев</li>
+            <li>РобоСистемы: TRL откат с 6 на 5</li>
+            <li>Конкурент привлёк $50M Series B</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">2. Компании в зоне риска</div>
+
+      <div class="risk-card">
+        <div class="risk-header">
+          <div class="company-name">АвиаТех</div>
+          <div class="risk-level">Критический</div>
+        </div>
+        <div class="metrics">Runway: 4 мес</div>
+        <div>
+          <strong>Рекомендации:</strong>
+          <ul>
+            <li>Немедленно организовать bridge-раунд на 15-20 млн ₽</li>
+            <li>Пересмотреть burn rate</li>
+            <li>Рассмотреть синдикацию</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="risk-card">
+        <div class="risk-header">
+          <div class="company-name">РобоСистемы</div>
+          <div class="risk-level">Высокий</div>
+        </div>
+        <div class="metrics">Runway: 9 мес · TRL стагнация 2+ кв</div>
+        <div>
+          <strong>Рекомендации:</strong>
+          <ul>
+            <li>Провести технический аудит прототипа</li>
+            <li>Привлечь консультантов из НИИ</li>
+            <li>Рассмотреть pivot</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin.includes('localhost')
+      ? 'http://localhost:3000/api'
+      : '/api'
+
+    function showStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('status')
+      statusDiv.className = `status ${type}`
+      statusDiv.innerHTML = message
+    }
+
+    async function testApiEndpoint() {
+      showStatus('Testing AI tokens endpoint...', 'info')
+      try {
+        const response = await fetch(`${API_BASE}/ai-tokens/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            modelId: 'deepseek/deepseek-chat',
+            prompt: 'Привет! Это тест API для FST Intelligence.',
+            systemPrompt: 'Ты — помощник ФСТ НТИ.',
+            application: 'FstIntelligenceTest'
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          showStatus(`✅ API работает!<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success')
+        } else {
+          showStatus(`❌ API error: ${response.status} ${response.statusText}`, 'error')
+        }
+      } catch (err) {
+        showStatus(`❌ Network error: ${err.message}<br>Backend может быть выключен.`, 'error')
+      }
+    }
+
+    async function testReportGeneration() {
+      showStatus('Generating test report with AI...', 'info')
+
+      const mockContext = {
+        totalCompanies: 7,
+        companies: [
+          { name: 'АвиаЛогик', kpi: 78, riskStatusId: 1125 },
+          { name: 'АвиаТех', kpi: 45, riskStatusId: 1127 },
+          { name: 'РобоСистемы', kpi: 62, riskStatusId: 1117 },
+        ],
+        weekStart: '3 марта',
+        weekEnd: '9 марта'
+      }
+
+      try {
+        const systemPrompt = `Ты — аналитик ФСТ НТИ. Сгенерируй краткий еженедельный отчёт в формате JSON.`
+        const userPrompt = `Создай отчёт за ${mockContext.weekStart} — ${mockContext.weekEnd}. Данные: ${JSON.stringify(mockContext.companies)}. Формат: {"title": "...", "executiveDigest": "<p>...</p>", "topPositives": [], "topRisks": [], "riskCompanies": []}`
+
+        const response = await fetch(`${API_BASE}/ai-tokens/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            modelId: 'deepseek/deepseek-chat',
+            prompt: userPrompt,
+            systemPrompt: systemPrompt,
+            application: 'FstIntelligence'
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const report = typeof data.response === 'string'
+            ? JSON.parse(data.response.replace(/```json\s*/g, '').replace(/```\s*/g, ''))
+            : data.response
+
+          showStatus(`✅ Отчёт сгенерирован!<br><pre>${JSON.stringify(report, null, 2)}</pre>`, 'success')
+
+          // Update page with generated report
+          if (report.executiveDigest) {
+            document.querySelector('.container p').innerHTML = report.executiveDigest
+          }
+        } else {
+          showStatus(`❌ Generation failed: ${response.status}`, 'error')
+        }
+      } catch (err) {
+        showStatus(`❌ Error: ${err.message}`, 'error')
+      }
+    }
+
+    async function testSaveReport() {
+      showStatus('Saving report to database...', 'info')
+
+      const mockReport = {
+        title: 'Portfolio Intelligence: Test Report',
+        createdAt: new Date().toISOString(),
+        executiveDigest: '<p>Test executive digest</p>',
+        topPositives: ['Test positive 1', 'Test positive 2'],
+        topRisks: ['Test risk 1', 'Test risk 2'],
+        actionItems: [{text: 'Test action', completed: false}],
+        riskCompanies: [],
+        marketNews: [],
+        expectedKPIs: [],
+        risksCount: 2,
+        actionsCount: 1
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/fst-intelligence/reports`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mockReport)
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          showStatus(`✅ Report saved!<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success')
+        } else if (response.status === 404) {
+          showStatus(`⚠️ Backend endpoint not implemented yet (404).<br>Отчёт будет использовать mock данные.`, 'info')
+        } else {
+          showStatus(`❌ Save failed: ${response.status}`, 'error')
+        }
+      } catch (err) {
+        showStatus(`❌ Error: ${err.message}`, 'error')
+      }
+    }
+
+    async function loadReports() {
+      showStatus('Loading all reports...', 'info')
+
+      try {
+        const response = await fetch(`${API_BASE}/fst-intelligence/reports`)
+
+        if (response.ok) {
+          const data = await response.json()
+          showStatus(`✅ Loaded ${data.reports.length} reports<br><pre>${JSON.stringify(data.reports, null, 2)}</pre>`, 'success')
+        } else if (response.status === 404) {
+          showStatus(`⚠️ Backend endpoint not implemented yet (404).<br>Frontend будет использовать mock данные.`, 'info')
+        } else {
+          showStatus(`❌ Load failed: ${response.status}`, 'error')
+        }
+      } catch (err) {
+        showStatus(`❌ Error: ${err.message}`, 'error')
+      }
+    }
+
+    // Auto-test on load
+    window.addEventListener('load', () => {
+      showStatus('✅ Test page loaded. Click buttons above to test functionality.', 'success')
+    })
+  </script>
+</body>
+</html>

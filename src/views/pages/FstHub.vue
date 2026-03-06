@@ -330,6 +330,18 @@ const modules = [
     tags: ['Светофор', 'ЕГРЮЛ', 'AI-отчёт', 'Runway', 'Риски'],
   },
   {
+    id: 'intelligence',
+    name: 'Portfolio Intelligence',
+    phase: 'Фаза 4 — Онлайн-мониторинг',
+    icon: 'pi pi-chart-line',
+    color: '#5c6bc0',
+    path: '/fst-intelligence',
+    featured: true,
+    status: 'live',
+    desc: 'Еженедельный AI-отчёт по портфелю: Executive Digest, компании в зоне риска, рыночная разведка БАС/РОБО/МЭ, прогноз на следующую неделю. Доставка на email и Telegram.',
+    tags: ['AI-отчёт', 'Аналитика', 'Риски', 'Прогноз', 'Разведка'],
+  },
+  {
     id: 'fund',
     name: 'Цифровой двойник фонда',
     phase: 'Фаза 5 — Фонд-индекс',

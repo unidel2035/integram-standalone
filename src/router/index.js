@@ -35,6 +35,7 @@ const routes = [
       { path: 'fst-duediligence', component: () => import('@/views/pages/FstDuediligence.vue'), meta: { title: 'AI Due Diligence' } },
       { path: 'fst-legal', component: () => import('@/views/pages/FstLegal.vue'), meta: { title: 'Юридические документы' } },
       { path: 'fst-registry', component: () => import('@/views/pages/FstRegistry.vue'), meta: { title: 'Реестр производителей БПЛА' } },
+      { path: 'fst-intelligence', component: () => import('@/views/pages/FstIntelligence.vue'), meta: { title: 'Portfolio Intelligence' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },
