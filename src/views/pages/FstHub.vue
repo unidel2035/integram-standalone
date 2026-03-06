@@ -10,27 +10,69 @@
         </div>
         <h1 class="fst-hub-title">Фонд Суверенных Технологий НТИ</h1>
         <p class="fst-hub-subtitle">
-          AI-платформа управления венчурным портфелем: от оценки заявок до мониторинга компаний в реальном времени
+          Инвесткомитет нового поколения: не автоматизация совещаний, а новый способ принимать решения.
+          От заявки до решения — 48 часов вместо 3–6 месяцев.
         </p>
-        <div class="fst-hub-stats">
-          <div class="fst-hub-stat">
-            <span class="fst-hub-stat-val">6.4 млрд ₽</span>
-            <span class="fst-hub-stat-label">AUM портфеля</span>
+        <div class="fst-hub-cta-row">
+          <button class="fst-hub-cta-primary" @click="go('/fst-apply')">
+            <i class="pi pi-file-plus"></i>
+            Подать заявку
+          </button>
+          <button class="fst-hub-cta-secondary" @click="go('/fst-committee')">
+            <i class="pi pi-play"></i>
+            Смотреть инвесткомитет
+          </button>
+        </div>
+        <div class="fst-hub-value-row">
+          <div class="fst-hub-value-item">
+            <i class="pi pi-eye" style="color:#66bb6a"></i>
+            <span>Прозрачные решения с аргументами</span>
           </div>
-          <div class="fst-hub-stat-sep"></div>
-          <div class="fst-hub-stat">
-            <span class="fst-hub-stat-val">7</span>
-            <span class="fst-hub-stat-label">Портфельных компаний</span>
+          <div class="fst-hub-value-sep"></div>
+          <div class="fst-hub-value-item">
+            <i class="pi pi-bolt" style="color:#ffa726"></i>
+            <span>48 часов от заявки до протокола ИК</span>
           </div>
-          <div class="fst-hub-stat-sep"></div>
-          <div class="fst-hub-stat">
-            <span class="fst-hub-stat-val">3</span>
-            <span class="fst-hub-stat-label">Субфонда</span>
+          <div class="fst-hub-value-sep"></div>
+          <div class="fst-hub-value-item">
+            <i class="pi pi-shield" style="color:#42a5f5"></i>
+            <span>Суверенность как критерий оценки</span>
           </div>
-          <div class="fst-hub-stat-sep"></div>
-          <div class="fst-hub-stat">
-            <span class="fst-hub-stat-val">38%</span>
-            <span class="fst-hub-stat-label">IRR прогноз</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Before / After -->
+    <div class="fst-hub-before-after">
+      <div class="fst-hub-ba-title">Как мы перестроили процесс, а не автоматизировали его</div>
+      <div class="fst-hub-ba-grid">
+        <div class="fst-hub-ba-col fst-hub-ba-before">
+          <div class="fst-hub-ba-label">
+            <i class="pi pi-times-circle"></i> Традиционный фонд
+          </div>
+          <div class="fst-hub-ba-steps">
+            <div v-for="step in beforeSteps" :key="step" class="fst-hub-ba-step fst-hub-ba-step--before">
+              {{ step }}
+            </div>
+          </div>
+          <div class="fst-hub-ba-result fst-hub-ba-result--bad">
+            <i class="pi pi-clock"></i> 3–6 месяцев · решение без объяснений
+          </div>
+        </div>
+        <div class="fst-hub-ba-arrow">
+          <i class="pi pi-arrow-right"></i>
+        </div>
+        <div class="fst-hub-ba-col fst-hub-ba-after">
+          <div class="fst-hub-ba-label">
+            <i class="pi pi-check-circle"></i> ФСТ НТИ
+          </div>
+          <div class="fst-hub-ba-steps">
+            <div v-for="step in afterSteps" :key="step" class="fst-hub-ba-step fst-hub-ba-step--after">
+              {{ step }}
+            </div>
+          </div>
+          <div class="fst-hub-ba-result fst-hub-ba-result--good">
+            <i class="pi pi-bolt"></i> 48 часов · протокол дебатов доступен стартапу
           </div>
         </div>
       </div>
@@ -100,7 +142,7 @@
     <div class="fst-hub-footer">
       <div class="fst-hub-footer-left">
         <i class="pi pi-shield" style="color:#ffa726"></i>
-        <span>ФСТ НТИ · Суверенная AI-платформа управления активами · <b>v2026.03</b></span>
+        <span>ФСТ НТИ · Перестраиваем процессы, а не автоматизируем их · <b>v2026.03</b></span>
       </div>
       <div class="fst-hub-footer-right">
         <span style="color:var(--p-text-muted-color);font-size:11px">Powered by DronDoc Platform</span>
@@ -124,8 +166,24 @@ function statusLabel(s) {
   return { live: 'Live', demo: 'Demo', beta: 'Beta' }[s] || s
 }
 
+const beforeSteps = [
+  'Стартап шлёт PDF на email',
+  'Менеджер вручную вносит в Excel',
+  'Скоринг по чужому шаблону',
+  'Закрытое совещание без фиксации',
+  'Решение: «одобрено» или «отказано»',
+]
+
+const afterSteps = [
+  'Стартап заполняет структурированную форму',
+  'AI строит карту проекта по онтологии',
+  'Инвесткомитет: 6 AI-агентов дебатируют',
+  'Протокол с аргументами каждого агента',
+  'Решение + обоснование доступны стартапу',
+]
+
 const pipeline = [
-  { id: 1, name: 'Заявка', sub: 'Компания подаёт проект', icon: 'pi pi-file', color: '#42a5f5', path: '/fst-committee' },
+  { id: 1, name: 'Заявка', sub: 'Компания подаёт проект', icon: 'pi pi-file', color: '#42a5f5', path: '/fst-apply' },
   { id: 2, name: 'Инвесткомитет', sub: '6 AI-агентов дебатируют', icon: 'pi pi-users', color: '#ab47bc', path: '/fst-committee' },
   { id: 3, name: 'Сделка', sub: 'Term Sheet · SPV · Транши', icon: 'pi pi-file-edit', color: '#ffa726', path: '/fst-deal' },
   { id: 4, name: 'Исполнение', sub: 'Задачи · KPI · Транши', icon: 'pi pi-list-check', color: '#26c6da', path: '/fst-execution' },
@@ -565,6 +623,150 @@ const tools = [
   margin-top: 1px;
 }
 
+/* ── CTA Row ──────────────────────────────────────────────────────────────── */
+.fst-hub-cta-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.fst-hub-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: #ffa726;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.fst-hub-cta-primary:hover { background: #fb8c00; transform: translateY(-1px); }
+.fst-hub-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: transparent;
+  color: var(--p-text-color);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.fst-hub-cta-secondary:hover { border-color: var(--p-primary-color); transform: translateY(-1px); }
+
+/* ── Value Row ────────────────────────────────────────────────────────────── */
+.fst-hub-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.fst-hub-value-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--p-text-muted-color);
+  padding-right: 20px;
+}
+.fst-hub-value-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--p-surface-border);
+  margin-right: 20px;
+}
+
+/* ── Before / After ───────────────────────────────────────────────────────── */
+.fst-hub-before-after {
+  padding: 24px 32px;
+  background: var(--p-surface-card);
+  border-bottom: 1px solid var(--p-surface-border);
+}
+.fst-hub-ba-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--p-text-muted-color);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.fst-hub-ba-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.fst-hub-ba-col {
+  flex: 1;
+  min-width: 0;
+}
+.fst-hub-ba-arrow {
+  display: flex;
+  align-items: center;
+  padding-top: 36px;
+  color: var(--p-text-muted-color);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.fst-hub-ba-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.fst-hub-ba-before .fst-hub-ba-label { color: #ef9a9a; }
+.fst-hub-ba-after .fst-hub-ba-label { color: #a5d6a7; }
+.fst-hub-ba-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.fst-hub-ba-step {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+.fst-hub-ba-step--before {
+  background: rgba(239, 83, 80, 0.07);
+  color: var(--p-text-muted-color);
+  border-left: 2px solid rgba(239, 83, 80, 0.3);
+}
+.fst-hub-ba-step--after {
+  background: rgba(102, 187, 106, 0.07);
+  color: var(--p-text-color);
+  border-left: 2px solid rgba(102, 187, 106, 0.4);
+}
+.fst-hub-ba-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+.fst-hub-ba-result--bad {
+  background: rgba(239, 83, 80, 0.1);
+  color: #ef9a9a;
+}
+.fst-hub-ba-result--good {
+  background: rgba(102, 187, 106, 0.1);
+  color: #a5d6a7;
+}
+
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 .fst-hub-footer {
   display: flex;
@@ -589,5 +791,10 @@ const tools = [
   .fst-hub-title { font-size: 22px; }
   .fst-hub-body { padding: 16px; }
   .fst-hub-pipeline { padding: 10px 12px; }
+  .fst-hub-before-after { padding: 16px; }
+  .fst-hub-ba-grid { flex-direction: column; }
+  .fst-hub-ba-arrow { padding-top: 0; transform: rotate(90deg); align-self: center; }
+  .fst-hub-value-row { gap: 8px; }
+  .fst-hub-value-sep { display: none; }
 }
 </style>
