@@ -405,6 +405,16 @@
             </ul>
           </div>
 
+          <!-- Financial Calculator -->
+          <div class="fst-fin-calc-wrap">
+            <FinancialCalculator
+              :initial-ic="currentProject?.askRub || 100"
+              :initial-wacc="fstPolicy.wacc || 18"
+              :initial-cf="currentProject?.projectedCf || [0, 20, 40, 60, 80]"
+              @metrics="onFinMetrics"
+            />
+          </div>
+
           <!-- Human Approval Panel -->
           <div v-if="session.phase === 'HUMAN_APPROVAL'" class="fst-human-panel">
             <div class="fst-panel-subtitle" style="color:#ffa726">
@@ -473,6 +483,7 @@ import {
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
 import { saveDecision, createProject, STATUSES } from '@/services/fstApi'
+import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 
 // ── State ─────────────────────────────────────────────────────
 
@@ -487,6 +498,14 @@ const running = ref(false)
 const timelineEl = ref(null)
 
 const fstPolicy = ref({ ...FST_POLICY_DEFAULTS })
+
+// Финансовый калькулятор
+const finMetrics = ref({ npv: null, irr: null, pi: null, gatePass: false })
+const currentProject = computed(() => PROJECTS_POOL.find(p => p.id === selectedProjectId.value))
+
+function onFinMetrics(m) {
+  finMetrics.value = m
+}
 
 let engine = null
 
@@ -1409,6 +1428,9 @@ onUnmounted(() => {
   padding: 0 12px 12px;
   display: flex;
   flex-direction: column;
+}
+.fst-fin-calc-wrap {
+  margin-top: 12px;
 }
 
 .fst-radar-container {
