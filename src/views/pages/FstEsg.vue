@@ -131,18 +131,22 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getESGScores } from '@/services/fstApi'
 
 const view = ref('portfolio')
 
-const companies = ref([
-  { name: 'АгроДрон',       e: 82, s: 74, g: 78, trend: +4, updated: '2026-01-15' },
-  { name: 'RoboFarm',       e: 78, s: 81, g: 82, trend: +2, updated: '2026-01-20' },
-  { name: 'МедТех БПЛА',    e: 65, s: 88, g: 71, trend: -1, updated: '2026-01-12' },
-  { name: 'DroneLogistics', e: 58, s: 72, g: 68, trend:  0, updated: '2026-01-18' },
-  { name: 'ЭнергоРобот',    e: 71, s: 61, g: 55, trend: -3, updated: '2026-01-25' },
-  { name: 'CyberPilot',     e: 74, s: 78, g: 85, trend: +6, updated: '2026-01-10' }
-])
+const companies = ref([])
+
+onMounted(async () => {
+  try {
+    const rows = await getESGScores()
+    companies.value = rows.map(r => ({
+      name: r.name, e: r.eScore || 0, s: r.sScore || 0, g: r.gScore || 0,
+      trend: 0, updated: r.scoredAt?.slice(0, 10) || '—'
+    }))
+  } catch (e) { console.warn('ESG load failed', e) }
+})
 
 function portfolioScore(cat) {
   const key = cat.toLowerCase()

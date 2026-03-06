@@ -165,7 +165,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getPortfolio } from '@/services/fstApi'
 
 const activeTab = ref('portfolio')
 const showCapCall = ref(false)
@@ -186,16 +187,19 @@ const kpiCards = ref([
   { label: 'Портфельных ко.',   value: '8',     color: 'gray',  delta: +14.3 }
 ])
 
-const portfolio = ref([
-  { name: 'АгроДрон',       subfund: 'БАС',  entryDate: '2024-03', invested: 180, nav: 265, moic: 1.47, status: 'active' },
-  { name: 'RoboFarm',       subfund: 'РОБО', entryDate: '2024-06', invested: 120, nav: 198, moic: 1.65, status: 'active' },
-  { name: 'МедТех БПЛА',    subfund: 'БАС',  entryDate: '2024-09', invested: 250, nav: 280, moic: 1.12, status: 'active' },
-  { name: 'DroneLogistics', subfund: 'БАС',  entryDate: '2023-12', invested: 350, nav: 420, moic: 1.20, status: 'active' },
-  { name: 'ЭнергоРобот',    subfund: 'МЭ',   entryDate: '2024-01', invested: 90,  nav:  74, moic: 0.82, status: 'watch'  },
-  { name: 'CyberPilot',     subfund: 'БАС',  entryDate: '2023-06', invested: 200, nav: 310, moic: 1.55, status: 'active' },
-  { name: 'НейроМат',       subfund: 'РОБО', entryDate: '2024-11', invested: 150, nav: 135, moic: 0.90, status: 'watch'  },
-  { name: 'AeroSpace Rус',  subfund: 'БАС',  entryDate: '2024-04', invested: 780, nav: 958, moic: 1.23, status: 'active' }
-])
+const portfolio = ref([])
+
+onMounted(async () => {
+  try {
+    const rows = await getPortfolio()
+    portfolio.value = rows.map(r => ({
+      name: r.name || '—', subfund: 'БАС',
+      entryDate: r.updatedAt?.slice(0, 7) || '—',
+      invested: 0, nav: r.kpi || 0, moic: 1.0,
+      status: r.riskStatusId ? 'watch' : 'active'
+    }))
+  } catch (e) { console.warn('LP portfolio load failed', e) }
+})
 
 const cashFlows = ref({
   contributions: [

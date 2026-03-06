@@ -130,7 +130,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getApplications } from '@/services/fstApi'
 
 const columns = [
   { id: 'new',       label: 'Новые',            color: '#90a4ae' },
@@ -142,15 +143,20 @@ const columns = [
   { id: 'rejected',  label: 'Отклонено',         color: '#ef5350' }
 ]
 
-const deals = ref([
-  { id: 1, company: 'ООО ДронСервис',  subfund: 'БАС', stage: 'screening', askMln: 80,  trl: 5, sovereignty: 7, score: 72, receivedDate: '2026-02-10', contact: 'Петров Д.А.', source: 'Партнёр', description: 'Сервисное обслуживание БПЛА для нефтегаза. LOI с Лукойл.' },
-  { id: 2, company: 'АО НейроПилот',   subfund: 'БАС', stage: 'analysis',  askMln: 150, trl: 6, sovereignty: 8, score: 85, receivedDate: '2026-02-05', contact: 'Соколова М.В.', source: 'Конференция', description: 'AI-система управления роем БПЛА. 3 патента, партнёрство с МФТИ.' },
-  { id: 3, company: 'ООО РоботМед',    subfund: 'РОБО',stage: 'ic_prep',   askMln: 200, trl: 7, sovereignty: 6, score: 79, receivedDate: '2026-01-28', contact: 'Карпов И.С.', source: 'ФРИИ', description: 'Хирургические роботы для минимально инвазивных операций. CE Mark получен.' },
-  { id: 4, company: 'АО ЧипРус',       subfund: 'МЭ',  stage: 'new',       askMln: 300, trl: 4, sovereignty: 9, score: 61, receivedDate: '2026-02-18', contact: 'Новиков А.Р.', source: 'Прямое обращение', description: 'Производство микросхем памяти DDR5 на отечественной элементной базе.' },
-  { id: 5, company: 'ООО АгроВижн',    subfund: 'РОБО',stage: 'ic',        askMln: 120, trl: 7, sovereignty: 7, score: 88, receivedDate: '2026-01-15', contact: 'Сидорова П.К.', source: 'Акселератор', description: 'Компьютерное зрение для сельского хозяйства. Выручка 45 млн/год.' },
-  { id: 6, company: 'ООО КиберЗащита', subfund: 'МЭ',  stage: 'rejected',  askMln: 50,  trl: 3, sovereignty: 4, score: 35, receivedDate: '2026-01-20', contact: 'Попов Р.В.', source: 'Email', description: 'Отклонено: низкий TRL, нет продаж.' },
-  { id: 7, company: 'АО ФотонКС',      subfund: 'МЭ',  stage: 'approved',  askMln: 180, trl: 8, sovereignty: 8, score: 91, receivedDate: '2025-12-10', contact: 'Беляев А.М.', source: 'ВЭБ.РФ', description: 'Фотонные интегральные схемы для телекоммуникаций.' }
-])
+const deals = ref([])
+
+onMounted(async () => {
+  try {
+    const rows = await getApplications()
+    deals.value = rows.map(r => ({
+      id: r.id, company: r.name || '—', subfund: 'БАС',
+      stage: 'new', askMln: Math.round((r.amount || 0) / 1_000_000),
+      trl: 5, sovereignty: 5, score: null,
+      receivedDate: r.submittedAt?.slice(0, 10) || '—',
+      contact: r.email || '—', source: '—', description: r.description || ''
+    }))
+  } catch (e) { console.warn('Dealflow load failed', e) }
+})
 
 const selectedDeal = ref(null)
 const showNewDeal = ref(false)
