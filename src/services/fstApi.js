@@ -210,16 +210,38 @@ export async function getPortfolio() {
   const data = await api(`object/${TYPE_PORTFOLIO}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
-  return objects.map(obj => ({
-    id:          obj.id,
-    name:        obj.val,
-    kpi:         Number(reqs[obj.id]?.['2242'] || 0),
-    aiReport:    reqs[obj.id]?.['1171'] || '',
-    updatedAt:   cleanDate(reqs[obj.id]?.['1172']) || null,
-    riskStatusId: reqs[obj.id]?.['1198'] || null,
-    projectId:   reqs[obj.id]?.['1195'] || null,
-    dealId:      reqs[obj.id]?.['1197'] || null
-  }))
+  return objects.map(obj => {
+    const r = reqs[obj.id] || {}
+    let metrics = {}
+    try { metrics = JSON.parse(r['3521'] || '{}') } catch {}
+    return {
+      id:           obj.id,
+      name:         obj.val,
+      kpi:          Number(r['2242'] || 0),
+      aiReport:     r['3507'] || r['1171'] || '',
+      updatedAt:    cleanDate(r['3508'] || r['1172']) || null,
+      riskStatusId: r['ref_1198']?.split(':')[1] || r['1198'] || null,
+      projectId:    r['ref_1195']?.split(':')[1] || r['1195'] || null,
+      dealId:       r['ref_1197']?.split(':')[1] || r['1197'] || null,
+      // Новые поля (Фаза 1 миграции)
+      invested:     Number(r['3519'] || 0),
+      nav:          Number(r['3520'] || metrics.nav_mln || 0),
+      subfundId:    r['ref_3524']?.split(':')[1] || r['3524'] || null,
+      subfundName:  r['3524'] || null,
+      stageId:      r['ref_3525']?.split(':')[1] || r['3525'] || null,
+      stageName:    r['3525'] || null,
+      // Из JSON метрик
+      health:       metrics.health    || Number(r['2242'] || 0),
+      trl:          metrics.trl       || 0,
+      runway:       metrics.runway    || 0,
+      headcount:    metrics.headcount || 0,
+      revenue:      metrics.revenue   || 0,
+      growth:       metrics.growth    || 0,
+      fstShare:     metrics.fst_share || 0,
+      inn:          metrics.inn       || '',
+      riskLevel:    metrics.risk_level|| 'green',
+    }
+  })
 }
 
 export async function updatePortfolioCompany(id, { kpi, aiReport }) {
