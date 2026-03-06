@@ -302,9 +302,9 @@ function exportWaterfall() {
 <style scoped>
 .wf-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .wf-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.wf-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.wf-subtitle { font-size: 0.85rem; color: var(--p-text-muted-color); }
-.wf-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.wf-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.wf-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.wf-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .wf-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .wf-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
 .wf-btn.small { padding: 5px 10px; font-size: 0.78rem; }

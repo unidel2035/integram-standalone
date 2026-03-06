@@ -1,0 +1,149 @@
+/* ═══════════════════════════════════════════════════════════════
+   FST Design System — единые стили для всех страниц ФСТ НТИ
+   Адаптация: светлая / тёмная тема через var(--p-*)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Glass-морфизм переменные (меняются при смене темы) ── */
+:root {
+  --fst-glass-xs:        rgba(0, 0, 0, 0.03);
+  --fst-glass-sm:        rgba(0, 0, 0, 0.05);
+  --fst-glass-md:        rgba(0, 0, 0, 0.08);
+  --fst-glass-lg:        rgba(0, 0, 0, 0.14);
+  --fst-glass-xl:        rgba(0, 0, 0, 0.20);
+  --fst-border-subtle:   rgba(0, 0, 0, 0.08);
+  --fst-border-glass:    rgba(0, 0, 0, 0.12);
+  --fst-separator:       rgba(0, 0, 0, 0.12);
+  --fst-dim-text:        rgba(0, 0, 0, 0.45);
+  --fst-nav-backdrop:    color-mix(in srgb, var(--p-surface-ground) 90%, transparent);
+  --fst-brand:           #ffa726;
+  --fst-brand-glow:      rgba(255, 167, 38, 0.25);
+}
+
+.p-dark {
+  --fst-glass-xs:        rgba(255, 255, 255, 0.04);
+  --fst-glass-sm:        rgba(255, 255, 255, 0.06);
+  --fst-glass-md:        rgba(255, 255, 255, 0.09);
+  --fst-glass-lg:        rgba(255, 255, 255, 0.15);
+  --fst-glass-xl:        rgba(255, 255, 255, 0.22);
+  --fst-border-subtle:   rgba(255, 255, 255, 0.07);
+  --fst-border-glass:    rgba(255, 255, 255, 0.12);
+  --fst-separator:       rgba(255, 255, 255, 0.10);
+  --fst-dim-text:        rgba(255, 255, 255, 0.45);
+  --fst-nav-backdrop:    color-mix(in srgb, var(--p-surface-ground) 88%, transparent);
+}
+
+/* ── Типографика ── */
+/* Заголовок страницы */
+.fst-page-h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--p-text-color);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+/* Подзаголовок */
+.fst-page-sub {
+  font-size: 0.9375rem;
+  color: var(--p-text-muted-color);
+  margin: 0;
+  line-height: 1.5;
+}
+/* Заголовок секции */
+.fst-section-h2 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 0 0 16px;
+  color: var(--p-text-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* KPI — крупное число */
+.fst-kpi-val {
+  font-size: 2.125rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+/* KPI — подпись */
+.fst-kpi-label {
+  font-size: 0.6875rem;
+  color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 5px;
+  font-weight: 600;
+}
+/* Мелкий мета-текст */
+.fst-meta {
+  font-size: 0.8125rem;
+  color: var(--p-text-muted-color);
+}
+
+/* ── Корень страницы ── */
+.fst-page-root {
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100vh;
+  background: var(--p-surface-ground);
+}
+
+/* ── Карточка ── */
+.fst-card {
+  background: var(--p-content-background);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+/* ── Кнопки ── */
+.fst-btn {
+  padding: 9px 18px;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity .15s, transform .1s;
+  white-space: nowrap;
+}
+.fst-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.fst-btn:active { transform: translateY(0); }
+.fst-btn.primary   { background: var(--p-primary-color); color: #fff; }
+.fst-btn.secondary { background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
+.fst-btn.danger    { background: #ef5350; color: #fff; }
+.fst-btn.success   { background: #43a047; color: #fff; }
+
+/* ── Select ── */
+.fst-select {
+  padding: 8px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color .15s;
+}
+.fst-select:focus { border-color: var(--p-primary-color); }
+
+/* ── Нормализация размеров заголовков в inner-страницах ── */
+/* Охватываем распространённые паттерны именования header h1 */
+[class*="-header"] h1,
+[class*="-hero"] h1 {
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+[class*="-subtitle"],
+[class*="-sub"]:not(button):not(span):not(div[class*="-subfund"]):not(div[class*="-subf"]) {
+  font-size: 0.9375rem !important;
+}
+/* KPI значения */
+[class*="-kpi-val"],
+[class*="-val"]:where(.kpi-val, .gs-val, .nav-val) {
+  font-size: 2rem !important;
+}

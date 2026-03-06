@@ -240,12 +240,12 @@ function exportBenchmark() {
 <style scoped>
 .bm-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .bm-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.bm-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.bm-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.bm-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.bm-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .bm-actions { display: flex; gap: 8px; align-items: center; }
-.bm-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.bm-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .bm-btn.secondary { background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
-.bm-select { padding: 7px 10px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.bm-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
 .bm-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px; }
 .bm-section h2 { margin: 0 0 16px; font-size: 1.05rem; color: var(--p-text-color); }

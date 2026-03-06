@@ -197,10 +197,10 @@ function exportGrants() {
 <style scoped>
 .gr-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .gr-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.gr-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.gr-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.gr-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.gr-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .gr-actions { display: flex; gap: 8px; }
-.gr-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.gr-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .gr-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .gr-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
 
@@ -211,9 +211,9 @@ function exportGrants() {
 .gs-lbl { font-size: 0.72rem; color: var(--p-text-muted-color); margin-top: 4px; }
 
 .gr-filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.gr-filter { padding: 6px 14px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.82rem; }
+.gr-filter { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.82rem; }
 .gr-filter.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
-.gr-search { padding: 6px 12px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.82rem; flex: 1; max-width: 260px; }
+.gr-search { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.82rem; flex: 1; max-width: 260px; }
 
 .gr-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
 .gr-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }

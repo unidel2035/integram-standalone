@@ -281,12 +281,12 @@ function generateReport() { window.print() }
 <style scoped>
 .sv-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .sv-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.sv-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.sv-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.sv-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.sv-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .sv-actions { display: flex; gap: 8px; align-items: center; }
-.sv-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.sv-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .sv-btn.primary { background: var(--p-primary-color); color: #fff; }
-.sv-select { padding: 7px 10px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.sv-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
 .sv-summary-bar { display: flex; align-items: center; gap: 20px; background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 16px 20px; flex-wrap: wrap; }
 .sv-total-score { text-align: center; min-width: 90px; }

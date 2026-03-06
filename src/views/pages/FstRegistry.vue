@@ -208,10 +208,10 @@ function syncRegistry() { syncStatus.value[3].status = 'ok'; syncStatus.value[3]
 <style scoped>
 .reg-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .reg-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.reg-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.reg-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.reg-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.reg-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .reg-actions { display: flex; gap: 8px; }
-.reg-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.reg-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .reg-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .reg-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
 
@@ -248,8 +248,8 @@ function syncRegistry() { syncStatus.value[3].status = 'ok'; syncStatus.value[3]
 .small-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid var(--p-primary-color); background: transparent; color: var(--p-primary-color); cursor: pointer; font-size: 0.75rem; font-weight: 600; }
 
 .search-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-.reg-search { flex: 1; min-width: 200px; background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 7px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; }
-.reg-select { padding: 7px 10px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.reg-search { flex: 1; min-width: 200px; background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; }
+.reg-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 .no-results { text-align: center; color: var(--p-text-muted-color); padding: 20px; font-size: 0.85rem; }
 
 .reg-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 640px; }

@@ -367,8 +367,8 @@ const tools = [
 /* ═══════════════════════════════════════════════════════════ BASE */
 .fst-hub {
   min-height: 100vh;
-  background: #05080f;
-  color: #e2e8f0;
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
   font-family: var(--p-font-family, 'Inter', sans-serif);
 }
 
@@ -380,7 +380,7 @@ const tools = [
   align-items: center;
   overflow: hidden;
   padding: 64px 48px 56px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--fst-glass-xs);
 }
 
 /* Animated grid */
@@ -436,9 +436,9 @@ const tools = [
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: rgba(148,163,184,0.9);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--p-text-muted-color);
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--fst-glass-md);
   border-radius: 20px;
   padding: 5px 16px;
   margin-bottom: 28px;
@@ -467,7 +467,7 @@ const tools = [
   font-size: clamp(32px, 4vw, 52px);
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #f1f5f9;
+  color: var(--p-text-color);
 }
 .fst-hero-title-line--accent {
   background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #34d399 100%);
@@ -478,7 +478,7 @@ const tools = [
 
 .fst-hero-sub {
   font-size: 17px;
-  color: #94a3b8;
+  color: var(--p-text-muted-color);
   line-height: 1.7;
   margin: 0 0 32px;
 }
@@ -515,9 +515,9 @@ const tools = [
   align-items: center;
   gap: 8px;
   padding: 13px 28px;
-  background: rgba(255,255,255,0.05);
-  color: #e2e8f0;
-  border: 1px solid rgba(255,255,255,0.12);
+  background: var(--fst-glass-xs);
+  color: var(--p-text-color);
+  border: 1px solid var(--fst-glass-md);
   border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
@@ -526,7 +526,7 @@ const tools = [
   backdrop-filter: blur(8px);
 }
 .fst-btn-ghost:hover {
-  background: rgba(255,255,255,0.1);
+  background: var(--fst-glass-md);
   border-color: rgba(167,139,250,0.5);
   transform: translateY(-2px);
 }
@@ -540,13 +540,13 @@ const tools = [
 .fst-hero-stat-val {
   font-size: 24px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--p-text-color);
   letter-spacing: -0.02em;
   line-height: 1;
 }
 .fst-hero-stat-label {
   font-size: 11px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
   margin-top: 4px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -569,7 +569,7 @@ const tools = [
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--fst-glass-sm);
 }
 .fst-orbit-ring--1 {
   inset: 0;
@@ -590,13 +590,13 @@ const tools = [
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--fst-glass-sm);
+  border: 1px solid var(--fst-glass-md);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--p-text-muted-color);
   transform:
     rotate(var(--angle))
     translateX(135px)
@@ -631,14 +631,14 @@ const tools = [
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--p-text-muted-color);
   margin-bottom: 20px;
 }
 
 /* ═══════════════════════════════════════════════════════ PIPELINE */
 .fst-pipeline-wrap {
   padding: 40px 32px 36px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--fst-glass-xs);
   background: rgba(255,255,255,0.015);
 }
 .fst-pipeline {
@@ -655,7 +655,7 @@ const tools = [
   flex-shrink: 0;
 }
 .fst-pipe-connector {
-  color: rgba(255,255,255,0.15);
+  color: var(--fst-glass-lg);
   padding: 0 4px;
   margin-top: -24px;
   flex-shrink: 0;
@@ -665,8 +665,8 @@ const tools = [
   flex-direction: column;
   align-items: center;
   padding: 16px 20px 14px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--fst-glass-sm);
   border-top: 2px solid var(--c);
   border-radius: 10px;
   cursor: pointer;
@@ -676,7 +676,7 @@ const tools = [
   text-align: center;
 }
 .fst-pipe-card:hover {
-  background: rgba(255,255,255,0.07);
+  background: var(--fst-glass-sm);
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 20px color-mix(in srgb, var(--c) 20%, transparent);
 }
@@ -707,11 +707,11 @@ const tools = [
 .fst-pipe-name {
   font-size: 13px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--p-text-color);
 }
 .fst-pipe-sub {
   font-size: 10px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
   margin-top: 3px;
   line-height: 1.3;
 }
@@ -719,7 +719,7 @@ const tools = [
 /* ════════════════════════════════════════════════ BEFORE / AFTER */
 .fst-transform {
   padding: 40px 0 40px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--fst-glass-xs);
 }
 .fst-transform-grid {
   display: flex;
@@ -748,14 +748,14 @@ const tools = [
   align-items: center;
   justify-content: center;
   padding: 0 16px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   gap: 4px;
   flex-shrink: 0;
 }
 .fst-arrow-line {
   width: 1px;
   flex: 1;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(to bottom, transparent, var(--fst-glass-md), transparent);
   margin-bottom: 4px;
 }
 .fst-transform-header {
@@ -793,7 +793,7 @@ const tools = [
 }
 .fst-transform-list li {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--p-text-muted-color);
   padding: 8px 12px;
   border-radius: 6px;
   line-height: 1.4;
@@ -805,7 +805,7 @@ const tools = [
 .fst-transform-col--after li {
   background: rgba(52,211,153,0.05);
   border-left: 2px solid rgba(52,211,153,0.3);
-  color: #cbd5e1;
+  color: var(--p-text-color);
 }
 .fst-transform-result {
   display: flex;
@@ -830,7 +830,7 @@ const tools = [
 /* ═══════════════════════════════════════════════════════ MODULES */
 .fst-modules {
   padding: 40px 0 36px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--fst-glass-xs);
 }
 .fst-modules-grid {
   display: grid;
@@ -842,7 +842,7 @@ const tools = [
   position: relative;
   overflow: hidden;
   background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid var(--fst-glass-sm);
   border-radius: 14px;
   padding: 22px;
   cursor: pointer;
@@ -852,8 +852,8 @@ const tools = [
   gap: 10px;
 }
 .fst-mod-card--hero {
-  border-color: rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.04);
+  border-color: var(--fst-glass-md);
+  background: var(--fst-glass-xs);
 }
 .fst-mod-card:hover {
   border-color: color-mix(in srgb, var(--mc) 40%, transparent);
@@ -917,17 +917,17 @@ const tools = [
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #475569;
+  color: var(--p-text-muted-color);
 }
 .fst-mod-name {
   font-size: 18px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--p-text-color);
   line-height: 1.2;
 }
 .fst-mod-desc {
   font-size: 12px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
   line-height: 1.65;
   flex: 1;
 }
@@ -940,16 +940,16 @@ const tools = [
   font-size: 10px;
   padding: 3px 9px;
   border-radius: 20px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: #64748b;
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--fst-glass-md);
+  color: var(--p-text-muted-color);
 }
 .fst-mod-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--fst-glass-xs);
 }
 .fst-mod-path {
   font-size: 11px;
@@ -958,7 +958,7 @@ const tools = [
 }
 .fst-mod-arrow {
   font-size: 12px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   transition: color 0.2s, transform 0.2s;
 }
 .fst-mod-card:hover .fst-mod-arrow {
@@ -969,7 +969,7 @@ const tools = [
 /* ════════════════════════════════════════════════════════ TOOLS */
 .fst-tools-wrap {
   padding: 36px 0 32px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--fst-glass-xs);
 }
 .fst-tools {
   display: grid;
@@ -983,14 +983,14 @@ const tools = [
   gap: 14px;
   padding: 14px 18px;
   background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid var(--fst-glass-sm);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.18s;
 }
 .fst-tool:hover {
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.12);
+  background: var(--fst-glass-xs);
+  border-color: var(--fst-glass-md);
   transform: translateX(4px);
 }
 .fst-tool-icon {
@@ -1003,11 +1003,11 @@ const tools = [
 .fst-tool-name {
   font-size: 13px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--p-text-color);
 }
 .fst-tool-desc {
   font-size: 11px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -1015,11 +1015,11 @@ const tools = [
 }
 .fst-tool-arrow {
   font-size: 11px;
-  color: #334155;
+  color: var(--p-text-muted-color);
   flex-shrink: 0;
   transition: color 0.15s;
 }
-.fst-tool:hover .fst-tool-arrow { color: #94a3b8; }
+.fst-tool:hover .fst-tool-arrow { color: var(--p-text-muted-color); }
 
 /* ════════════════════════════════════════════════════════ FOOTER */
 .fst-footer {
@@ -1027,10 +1027,10 @@ const tools = [
   align-items: center;
   justify-content: space-between;
   padding: 16px 32px;
-  background: rgba(255,255,255,0.02);
-  border-top: 1px solid rgba(255,255,255,0.05);
+  background: var(--fst-glass-xs);
+  border-top: 1px solid var(--fst-glass-xs);
   font-size: 12px;
-  color: #334155;
+  color: var(--p-text-muted-color);
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -1040,9 +1040,9 @@ const tools = [
   gap: 8px;
 }
 .fst-footer-brand .pi-shield { color: #a78bfa; }
-.fst-footer-brand span:first-of-type { color: #64748b; font-weight: 600; }
+.fst-footer-brand span:first-of-type { color: var(--p-text-muted-color); font-weight: 600; }
 .fst-footer-sep { opacity: 0.3; }
-.fst-footer-motto { color: #334155; font-style: italic; }
+.fst-footer-motto { color: var(--p-text-muted-color); font-style: italic; }
 .fst-footer-right { color: #1e293b; }
 
 /* ══════════════════════════════════════════════════ RESPONSIVE */
@@ -1062,7 +1062,7 @@ const tools = [
 
 /* ══════════════════════════════════════════════════ SKELETON LOADER */
 .fst-skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+  background: linear-gradient(90deg, var(--fst-glass-xs) 25%, var(--fst-glass-md) 50%, var(--fst-glass-xs) 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
   border-radius: 4px;

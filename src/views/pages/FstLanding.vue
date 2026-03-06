@@ -159,8 +159,8 @@
     <section id="numbers" class="land-numbers">
       <div class="land-numbers-bg"></div>
       <div class="land-numbers-inner">
-        <div class="land-section-eyebrow" style="color:rgba(255,255,255,0.4)">В цифрах</div>
-        <h2 class="land-section-h2" style="color:#fff">Суверенный фонд<br><span>нового поколения</span></h2>
+        <div class="land-section-eyebrow" style="color:var(--fst-dim-text)">В цифрах</div>
+        <h2 class="land-section-h2">Суверенный фонд<br><span>нового поколения</span></h2>
         <div class="land-numbers-grid">
           <div v-for="n in numbers" :key="n.label" class="land-number">
             <div class="land-number-val" :style="{ color: n.color }">{{ n.val }}</div>
@@ -267,7 +267,7 @@ const oldProcess = [
 
 const newProcess = [
   'Стартап заполняет структурированную форму',
-  'AI строит карту проекта по онтологии БПЛА',
+  'AI строит предметную карту проекта по онтологии',
   'Инвесткомитет: 6 AI-агентов дебатируют',
   'Протокол с аргументами каждого агента',
   'Решение + обоснование доступны стартапу',
@@ -284,11 +284,11 @@ const pipeline = [
 
 const numbers = [
   { val: '48 ч', label: 'Время решения', desc: 'Среднее время от заявки до протокола ИК', color: '#a78bfa' },
-  { val: '6', label: 'AI-агентов', desc: 'Технолог, финансист, суверенность, риск, стратег, адвокат дьявола', color: '#38bdf8' },
+  { val: '6', label: 'AI-агентов', desc: 'Технолог, финансист, суверенность, риск, стратег, критический аналитик', color: '#38bdf8' },
   { val: '9D', label: 'Суверенность', desc: 'Девятимерная матрица оценки суверенности технологии', color: '#34d399' },
   { val: '3', label: 'Субфонда', desc: 'БАС · Робототехника · Машиностроение', color: '#fb923c' },
   { val: '100%', label: 'Прозрачность', desc: 'Полный протокол дебатов доступен стартапу после решения', color: '#f59e0b' },
-  { val: 'AI+', label: 'Онтология', desc: '1140+ концептов рынка БПЛА в базе знаний фонда', color: '#f87171' },
+  { val: 'AI+', label: 'Онтология', desc: 'Предметные онтологии по каждому рынку НТИ', color: '#f87171' },
 ]
 
 const modules = [
@@ -304,8 +304,8 @@ const modules = [
 <style scoped>
 /* ════════════════════════════════════════════════════════ BASE */
 .land {
-  background: #03060f;
-  color: #e2e8f0;
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
   font-family: 'Onest', -apple-system, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
@@ -320,9 +320,9 @@ const modules = [
   align-items: center;
   padding: 0 48px;
   height: 64px;
-  background: rgba(3, 6, 15, 0.85);
+  background: var(--fst-nav-backdrop);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--fst-glass-xs);
 }
 .land-nav-logo {
   display: flex;
@@ -349,8 +349,8 @@ const modules = [
   flex-direction: column;
   line-height: 1.2;
 }
-.land-logo-text span:first-child { font-size: 12px; color: #64748b; }
-.land-logo-text span:last-child { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+.land-logo-text span:first-child { font-size: 12px; color: var(--p-text-muted-color); }
+.land-logo-text span:last-child { font-size: 13px; font-weight: 700; color: var(--p-text-color); }
 
 .land-nav-links {
   display: flex;
@@ -359,11 +359,11 @@ const modules = [
 }
 .land-nav-links a {
   font-size: 13px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
   text-decoration: none;
   transition: color 0.15s;
 }
-.land-nav-links a:hover { color: #e2e8f0; }
+.land-nav-links a:hover { color: var(--p-text-color); }
 
 .land-nav-actions {
   display: flex;
@@ -373,14 +373,14 @@ const modules = [
 .land-nav-btn {
   padding: 7px 18px;
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--fst-glass-md);
   border-radius: 8px;
-  color: #94a3b8;
+  color: var(--p-text-muted-color);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s;
 }
-.land-nav-btn:hover { border-color: rgba(255,255,255,0.2); color: #e2e8f0; }
+.land-nav-btn:hover { border-color: var(--fst-glass-xl); color: var(--p-text-color); }
 .land-nav-cta {
   padding: 7px 18px;
   background: linear-gradient(135deg, #7c3aed, #4f46e5);
@@ -486,9 +486,9 @@ const modules = [
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: rgba(148,163,184,0.8);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--p-text-muted-color);
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--fst-glass-md);
   border-radius: 100px;
   padding: 6px 18px;
   margin-bottom: 40px;
@@ -506,7 +506,7 @@ const modules = [
   0%,100% { box-shadow: 0 0 6px #34d399; }
   50% { box-shadow: 0 0 16px #34d399; }
 }
-.land-hero-badge-sep { width: 1px; height: 12px; background: rgba(255,255,255,0.15); }
+.land-hero-badge-sep { width: 1px; height: 12px; background: var(--fst-glass-lg); }
 .land-hero-badge-tag {
   background: rgba(124,58,237,0.2);
   color: #a78bfa;
@@ -527,7 +527,7 @@ const modules = [
 .land-h1-line {
   font-size: clamp(40px, 6vw, 80px);
   font-weight: 900;
-  color: #f1f5f9;
+  color: var(--p-text-color);
 }
 .land-h1-accent {
   background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 40%, #34d399 80%);
@@ -538,7 +538,7 @@ const modules = [
 
 .land-hero-p {
   font-size: clamp(16px, 2vw, 20px);
-  color: #64748b;
+  color: var(--p-text-muted-color);
   line-height: 1.7;
   margin: 0 0 40px;
 }
@@ -575,10 +575,10 @@ const modules = [
   align-items: center;
   gap: 10px;
   padding: 16px 36px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--fst-glass-md);
   border-radius: 12px;
-  color: #cbd5e1;
+  color: var(--p-text-color);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -586,7 +586,7 @@ const modules = [
   backdrop-filter: blur(8px);
 }
 .land-btn-hero-ghost:hover {
-  background: rgba(255,255,255,0.08);
+  background: var(--fst-glass-md);
   border-color: rgba(167,139,250,0.4);
   transform: translateY(-3px);
 }
@@ -596,9 +596,9 @@ const modules = [
   display: flex;
   gap: 0;
   justify-content: center;
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid var(--fst-glass-sm);
   border-radius: 16px;
-  background: rgba(255,255,255,0.02);
+  background: var(--fst-glass-xs);
   backdrop-filter: blur(8px);
   overflow: hidden;
   max-width: 600px;
@@ -608,19 +608,19 @@ const modules = [
   flex: 1;
   padding: 20px 16px;
   text-align: center;
-  border-right: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid var(--fst-glass-xs);
 }
 .land-stat:last-child { border-right: none; }
 .land-stat-val {
   font-size: 26px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--p-text-color);
   letter-spacing: -0.02em;
   line-height: 1;
 }
 .land-stat-label {
   font-size: 11px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   margin-top: 5px;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -636,7 +636,7 @@ const modules = [
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: #334155;
+  color: var(--p-text-muted-color);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -656,8 +656,8 @@ const modules = [
 .land-pillars {
   padding: 80px 48px;
   background: rgba(255,255,255,0.015);
-  border-top: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--fst-glass-xs);
+  border-bottom: 1px solid var(--fst-glass-xs);
 }
 .land-pillars-inner {
   display: grid;
@@ -668,14 +668,14 @@ const modules = [
 }
 .land-pillar {
   padding: 32px;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--fst-glass-sm);
   border-top: 3px solid var(--pc);
   border-radius: 14px;
-  background: rgba(255,255,255,0.02);
+  background: var(--fst-glass-xs);
   transition: all 0.2s;
 }
 .land-pillar:hover {
-  background: rgba(255,255,255,0.04);
+  background: var(--fst-glass-xs);
   box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 24px color-mix(in srgb, var(--pc) 10%, transparent);
 }
 .land-pillar-icon {
@@ -693,12 +693,12 @@ const modules = [
 .land-pillar-title {
   font-size: 20px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--p-text-color);
   margin-bottom: 10px;
 }
 .land-pillar-text {
   font-size: 14px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
   line-height: 1.7;
 }
 
@@ -708,14 +708,14 @@ const modules = [
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--p-text-muted-color);
   margin-bottom: 16px;
   text-align: center;
 }
 .land-section-h2 {
   font-size: clamp(28px, 4vw, 48px);
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--p-text-color);
   text-align: center;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -763,15 +763,15 @@ const modules = [
 }
 .land-vs-line {
   width: 1px; flex: 1;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.08), transparent);
+  background: linear-gradient(to bottom, transparent, var(--fst-glass-md), transparent);
 }
 .land-vs-badge {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.12em;
-  color: #334155;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
+  color: var(--p-text-muted-color);
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--fst-glass-sm);
   border-radius: 6px;
   padding: 4px 8px;
 }
@@ -811,17 +811,17 @@ const modules = [
 .land-compare-step--old {
   background: rgba(239,68,68,0.05);
   border-left: 2px solid rgba(239,68,68,0.2);
-  color: #94a3b8;
+  color: var(--p-text-muted-color);
 }
 .land-compare-step--new {
   background: rgba(52,211,153,0.05);
   border-left: 2px solid rgba(52,211,153,0.3);
-  color: #cbd5e1;
+  color: var(--p-text-color);
 }
 .land-step-num {
   font-size: 11px;
   font-weight: 700;
-  color: #475569;
+  color: var(--p-text-muted-color);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
   margin-top: 1px;
@@ -850,9 +850,9 @@ const modules = [
 /* ════════════════════════════════════════════════ PIPELINE */
 .land-pipeline-section {
   padding: 100px 48px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  background: rgba(255,255,255,0.01);
+  border-top: 1px solid var(--fst-glass-xs);
+  border-bottom: 1px solid var(--fst-glass-xs);
+  background: var(--fst-glass-xs);
 }
 .land-pipeline {
   display: flex;
@@ -912,19 +912,19 @@ const modules = [
   max-width: 80px;
   background: repeating-linear-gradient(
     to right,
-    rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 4px,
+    var(--fst-glass-lg) 0px, var(--fst-glass-lg) 4px,
     transparent 4px, transparent 10px
   );
 }
 .land-pipe-name {
   font-size: 14px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--p-text-color);
   padding: 0 12px;
 }
 .land-pipe-sub {
   font-size: 11px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   margin-top: 4px;
   padding: 0 12px;
   line-height: 1.3;
@@ -949,8 +949,8 @@ const modules = [
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--fst-glass-sm);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -959,7 +959,7 @@ const modules = [
   background: rgba(3,6,15,0.8);
   transition: background 0.2s;
 }
-.land-number:hover { background: rgba(255,255,255,0.03); }
+.land-number:hover { background: var(--fst-glass-xs); }
 .land-number-val {
   font-size: 52px;
   font-weight: 900;
@@ -970,19 +970,19 @@ const modules = [
 .land-number-label {
   font-size: 16px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--p-text-color);
   margin-bottom: 6px;
 }
 .land-number-desc {
   font-size: 13px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   line-height: 1.5;
 }
 
 /* ════════════════════════════════════════════════ MODULES */
 .land-modules-section {
   padding: 100px 48px;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--fst-glass-xs);
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -996,7 +996,7 @@ const modules = [
   overflow: hidden;
   padding: 28px;
   background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid var(--fst-glass-sm);
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.25s;
@@ -1028,19 +1028,19 @@ const modules = [
 .land-module-name {
   font-size: 17px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--p-text-color);
   margin-bottom: 8px;
 }
 .land-module-desc {
   font-size: 13px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   line-height: 1.55;
 }
 .land-module-arrow {
   position: absolute;
   bottom: 20px; right: 20px;
   font-size: 14px;
-  color: #334155;
+  color: var(--p-text-muted-color);
   transition: color 0.2s, transform 0.2s;
 }
 .land-module:hover .land-module-arrow {
@@ -1054,7 +1054,7 @@ const modules = [
   padding: 120px 48px;
   text-align: center;
   overflow: hidden;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--fst-glass-xs);
 }
 .land-cta-bg {
   position: absolute; inset: 0;
@@ -1086,14 +1086,14 @@ const modules = [
 .land-cta-h2 {
   font-size: clamp(32px, 5vw, 56px);
   font-weight: 900;
-  color: #f1f5f9;
+  color: var(--p-text-color);
   letter-spacing: -0.03em;
   line-height: 1.1;
   margin: 0 0 20px;
 }
 .land-cta-sub {
   font-size: 17px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
   line-height: 1.7;
   margin: 0 0 40px;
 }
@@ -1125,26 +1125,26 @@ const modules = [
   align-items: center;
   gap: 10px;
   padding: 16px 40px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--fst-glass-md);
   border-radius: 12px;
-  color: #cbd5e1;
+  color: var(--p-text-color);
   font-size: 17px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
-.land-btn-cta-ghost:hover { background: rgba(255,255,255,0.08); transform: translateY(-3px); }
+.land-btn-cta-ghost:hover { background: var(--fst-glass-md); transform: translateY(-3px); }
 .land-cta-note {
   font-size: 12px;
-  color: #334155;
+  color: var(--p-text-muted-color);
 }
 
 /* ════════════════════════════════════════════════ FOOTER */
 .land-footer {
   padding: 32px 48px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-  background: rgba(255,255,255,0.01);
+  border-top: 1px solid var(--fst-glass-xs);
+  background: var(--fst-glass-xs);
 }
 .land-footer-inner {
   display: flex;
@@ -1156,16 +1156,16 @@ const modules = [
   margin: 0 auto;
 }
 .land-footer-brand { display: flex; align-items: center; gap: 12px; }
-.land-footer-name { font-size: 14px; font-weight: 700; color: #94a3b8; }
-.land-footer-sub { font-size: 11px; color: #334155; margin-top: 2px; }
+.land-footer-name { font-size: 14px; font-weight: 700; color: var(--p-text-muted-color); }
+.land-footer-sub { font-size: 11px; color: var(--p-text-muted-color); margin-top: 2px; }
 .land-footer-links { display: flex; gap: 24px; }
 .land-footer-link {
   font-size: 13px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   cursor: pointer;
   transition: color 0.15s;
 }
-.land-footer-link:hover { color: #94a3b8; }
+.land-footer-link:hover { color: var(--p-text-muted-color); }
 .land-footer-right { font-size: 12px; color: #1e293b; }
 
 /* ════════════════════════════════════════════════ RESPONSIVE */
@@ -1181,7 +1181,7 @@ const modules = [
   .land-process { padding: 60px 20px; }
   .land-compare { flex-direction: column; gap: 16px; }
   .land-compare-vs { flex-direction: row; padding: 8px 0; }
-  .land-vs-line { width: 40px; height: 1px; flex: none; background: rgba(255,255,255,0.08); }
+  .land-vs-line { width: 40px; height: 1px; flex: none; background: var(--fst-glass-md); }
   .land-pipeline-section { padding: 60px 20px; }
   .land-numbers { padding: 60px 20px; }
   .land-numbers-grid { grid-template-columns: 1fr; }

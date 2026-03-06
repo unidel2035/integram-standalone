@@ -292,8 +292,8 @@ function sendCapCall() {
   flex-wrap: wrap;
   gap: 12px;
 }
-.lp-title-block h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.lp-subtitle { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.lp-title-block h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.lp-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .lp-actions { display: flex; gap: 8px; }
 .lp-btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
 .lp-btn.primary  { background: var(--p-primary-color); color: #fff; }
@@ -310,7 +310,7 @@ function sendCapCall() {
   border-radius: 10px;
   padding: 14px 16px;
 }
-.lp-kpi-val { font-size: 1.5rem; font-weight: 700; }
+.lp-kpi-val { font-size: 2rem; font-weight: 700; }
 .lp-kpi-val.blue  { color: var(--p-primary-color); }
 .lp-kpi-val.green { color: #66bb6a; }
 .lp-kpi-val.gray  { color: var(--p-text-color); }
@@ -320,7 +320,7 @@ function sendCapCall() {
 .lp-kpi-delta.down { color: #ef5350; }
 
 .lp-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-.lp-tab { padding: 7px 16px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
+.lp-tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
 .lp-tab.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
 
 .lp-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px; }
