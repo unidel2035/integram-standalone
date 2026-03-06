@@ -37,6 +37,16 @@ export default defineConfig({
       }
     }
   },
+  optimizeDeps: {
+    include: [
+      'vue-virtual-scroller',
+      'primevue/checkbox',
+      'primevue/password',
+      'primevue/inputswitch',
+      'primevue/toast',
+      'primevue/progressspinner',
+    ]
+  },
   test: {
     globals: true,
     environment: 'happy-dom',
