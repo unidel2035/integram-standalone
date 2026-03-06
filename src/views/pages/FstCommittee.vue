@@ -483,6 +483,7 @@ import {
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
 import { saveDecision, createProject, STATUSES } from '@/services/fstApi'
+import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 
 // ── State ─────────────────────────────────────────────────────
 
@@ -501,7 +502,7 @@ const fstPolicy = ref({ ...FST_POLICY_DEFAULTS })
 
 // Финансовый калькулятор
 const finMetrics = ref({ npv: null, irr: null, pi: null, gatePass: false })
-const currentProject = computed(() => projectsPool.value.find(p => p.id === selectedProjectId.value))
+const currentProject = computed(() => PROJECTS_POOL.find(p => p.id === selectedProjectId.value))
 
 function onFinMetrics(m) {
   finMetrics.value = m
