@@ -51,6 +51,13 @@
 const FST_SERVER = import.meta.env.VITE_FST_SERVER || 'https://ai2o.ru'
 const FST_DB = import.meta.env.VITE_FST_DB || 'fst'
 
+// Очищает дату: epoch (1970) и пустые → null
+function cleanDate(val) {
+  if (!val) return null
+  if (val.startsWith('01.01.1970') || val.startsWith('1970-01-01')) return null
+  return val
+}
+
 let _token = null
 let _xsrf = null
 
@@ -118,7 +125,7 @@ export async function getProjects() {
     ogrn:        reqs[obj.id]?.['2237'] || '',
     amount:      Number(reqs[obj.id]?.['2238'] || 0),
     description: reqs[obj.id]?.['1158'] || '',
-    submittedAt: reqs[obj.id]?.['1159'] || null,
+    submittedAt: cleanDate(reqs[obj.id]?.['1159']) || null,
     subfundId:   reqs[obj.id]?.['1177'] || null,
     stageId:     reqs[obj.id]?.['1179'] || null,
     statusId:    reqs[obj.id]?.['1183'] || null
@@ -208,7 +215,7 @@ export async function getPortfolio() {
     name:        obj.val,
     kpi:         Number(reqs[obj.id]?.['2242'] || 0),
     aiReport:    reqs[obj.id]?.['1171'] || '',
-    updatedAt:   reqs[obj.id]?.['1172'] || null,
+    updatedAt:   cleanDate(reqs[obj.id]?.['1172']) || null,
     riskStatusId: reqs[obj.id]?.['1198'] || null,
     projectId:   reqs[obj.id]?.['1195'] || null,
     dealId:      reqs[obj.id]?.['1197'] || null
@@ -259,7 +266,7 @@ export async function getDDChecks(projectId) {
     ddType:     reqs[obj.id]?.['2011'] || '',
     progress:   Number(reqs[obj.id]?.['2244'] || 0),
     statusId:   reqs[obj.id]?.['2225'] || null,
-    startedAt:  reqs[obj.id]?.['2042'] || null,
+    startedAt:  cleanDate(reqs[obj.id]?.['2042']) || null,
     aiSummary:  reqs[obj.id]?.['2061'] || '',
     verdict:    reqs[obj.id]?.['2067'] || ''
   }))
@@ -308,7 +315,7 @@ export async function getApplications() {
     amount:      Number(reqs[obj.id]?.['2245'] || 0),
     statusId:    reqs[obj.id]?.['2229'] || null,
     description: reqs[obj.id]?.['2070'] || '',
-    submittedAt: reqs[obj.id]?.['2071'] || null
+    submittedAt: cleanDate(reqs[obj.id]?.['2071']) || null
   }))
 }
 
@@ -347,7 +354,7 @@ export async function getGrants(projectId) {
     program:   reqs[obj.id]?.['2030'] || '',
     amount:    Number(reqs[obj.id]?.['2246'] || 0),
     statusId:  reqs[obj.id]?.['2231'] || null,
-    deadline:  reqs[obj.id]?.['2063'] || null
+    deadline:  cleanDate(reqs[obj.id]?.['2063']) || null
   }))
 }
 
@@ -382,7 +389,7 @@ export async function getLPPartners() {
     typeId:       reqs[obj.id]?.['2233'] || null,
     commitment:   Number(reqs[obj.id]?.['2247'] || 0),
     paid:         Number(reqs[obj.id]?.['2064'] || 0),
-    joinedAt:     reqs[obj.id]?.['2072'] || null
+    joinedAt:     cleanDate(reqs[obj.id]?.['2072']) || null
   }))
 }
 
@@ -418,7 +425,7 @@ export async function getESGScores(projectId) {
     sScore:    Number(reqs[obj.id]?.['2032'] || 0),
     gScore:    Number(reqs[obj.id]?.['2039'] || 0),
     comment:   reqs[obj.id]?.['2065'] || '',
-    scoredAt:  reqs[obj.id]?.['2073'] || null
+    scoredAt:  cleanDate(reqs[obj.id]?.['2073']) || null
   }))
 }
 
@@ -454,7 +461,7 @@ export async function getSovereigntyAudits(projectId) {
     data_:     Number(reqs[obj.id]?.['2033'] || 0),
     team:      Number(reqs[obj.id]?.['2040'] || 0),
     other:     reqs[obj.id]?.['2066'] || '',
-    auditedAt: reqs[obj.id]?.['2074'] || null
+    auditedAt: cleanDate(reqs[obj.id]?.['2074']) || null
   }))
 }
 

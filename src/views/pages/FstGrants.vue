@@ -156,7 +156,7 @@ const summary = computed(() => [
   { label: 'Одобрено, млн ₽',    value: grants.value.filter(g => g.status === 'approved').reduce((s, g) => s + g.amount, 0), color: 'green'  },
   { label: 'На рассмотрении',     value: grants.value.filter(g => g.status === 'pending' || g.status === 'review').length,   color: 'orange' },
   { label: 'Просрочен отчёт',    value: grants.value.filter(g => g.report === 'overdue').length,                 color: 'red'    },
-  { label: 'Использовано, %',    value: Math.round(grants.value.filter(g => g.usedPct > 0).reduce((s, g) => s + g.usedPct, 0) / grants.value.filter(g => g.usedPct > 0).length) + '%', color: 'blue' }
+  { label: 'Использовано, %',    value: (() => { const used = grants.value.filter(g => g.usedPct > 0); return used.length ? Math.round(used.reduce((s, g) => s + g.usedPct, 0) / used.length) + '%' : '0%' })(), color: 'blue' }
 ])
 
 const upcomingDeadlines = computed(() => {

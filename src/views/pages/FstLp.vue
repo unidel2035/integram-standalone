@@ -196,7 +196,7 @@ onMounted(async () => {
     const [portfolioRows, lpRows] = await Promise.all([getPortfolio(), getLPPartners()])
     portfolio.value = portfolioRows.map(r => ({
       name: r.name || '—', subfund: 'БАС',
-      entryDate: r.updatedAt?.slice(0, 7) || '—',
+      entryDate: r.updatedAt ? (() => { const p = r.updatedAt.match(/(\d{2})\.(\d{2})\.(\d{4})/); return p ? `${p[3]}-${p[2]}` : r.updatedAt.slice(0, 7); })() : '—',
       invested: 0, nav: r.kpi || 0, moic: 1.0,
       status: r.riskStatusId ? 'watch' : 'active'
     }))
