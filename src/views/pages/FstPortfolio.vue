@@ -242,36 +242,23 @@ async function loadPortfolioFromDb() {
 
     if (portfolioRows.length === 0) return  // оставить дефолтные моковые данные
 
-    const SUBFUND_MAP = { '1096': 'БАС', '1098': 'РОБО', '1100': 'МЭ' }
-    const STAGE_MAP   = { '1102': 'Pre-seed', '1103': 'Посевная', '1104': 'Раунд A', '1105': 'Раунд B', '1106': 'Раунд C' }
-    companies.value = portfolioRows.map(row => {
+    companies.value = portfolioRows.map((row, idx) => {
       const project = projectMap[row.projectId] || {}
-      const subfund = SUBFUND_MAP[row.subfundId] || SUBFUND_MAP[project.subfundId] || 'БАС'
-      const stage   = STAGE_MAP[row.stageId] || STAGE_MAP[project.stageId] || '—'
-      const riskLevel = row.riskLevel ||
-        ({ '1117': 'red', '1119': 'green', '1125': 'green', '1127': 'red' }[row.riskStatusId] || 'green')
+      const subfundName = { 1096: 'БАС', 1098: 'РОБО', 1100: 'МЭ' }[project.subfundId] || 'БАС'
+      const stageName   = { 1102: 'Pre-seed', 1103: 'Посевная', 1104: 'Раунд A', 1105: 'Раунд B', 1106: 'Раунд C' }[project.stageId] || '—'
+      const riskLevel   = { 1117: 'red', 1125: 'green', 1127: 'red' }[row.riskStatusId] || 'green'
+
+      // Дополняем дефолтными значениями для полей, которых нет в БД
+      const defaultCompany = companies.value.find(c => c.name === row.name) || companies.value[idx % companies.value.length] || {}
       return {
-        id:        row.id,
-        name:      row.name,
-        inn:       row.inn,
-        subfund,
-        stage,
-        health:    row.health || row.kpi || 0,
+        ...defaultCompany,
+        id:       row.id,
+        name:     row.name,
+        subfund:  subfundName,
+        stage:    stageName,
+        health:   row.kpi,
         riskLevel,
-        revenue:   row.revenue,
-        runway:    row.runway,
-        trl:       row.trl,
-        headcount: row.headcount,
-        aiReport:  row.aiReport,
-        // Аналитические подсекции — пустые если нет данных в БД
-        kpis: [
-          { name: 'Выручка',    actual: row.revenue,   target: Math.round(row.revenue * 1.5), unit: 'млн ₽' },
-          { name: 'TRL',        actual: row.trl,        target: Math.min(9, row.trl + 1),     unit: 'уровень' },
-          { name: 'Сотрудники', actual: row.headcount,  target: Math.round(row.headcount * 1.2), unit: 'чел.' },
-        ],
-        alerts:  [],
-        sensors: [],
-        events:  []
+        aiReport: row.aiReport
       }
     })
     lastUpdate.value = new Date().toLocaleTimeString('ru-RU')

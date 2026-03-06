@@ -5,42 +5,42 @@
  *
  * fst/1155 "Проекты ФСТ v2":
  *   t1155 = название компании (main)
- *   t2237 = ОГРН (SHORT/31)
- *   t2238 = Запрашиваемая сумма, руб (NUMBER/108)
+ *   t1156 = ОГРН (SHORT)
+ *   t1157 = Запрашиваемая сумма, руб (NUMBER)
  *   t1158 = Описание проекта (HTML)
  *   t1159 = Дата подачи (DATETIME)
- *   t1178 = Субфонд (ref→1082)
- *   t1180 = Стадия (ref→1084)
- *   t1182 = Тип финансирования (ref→1086)
- *   t1184 = Статус проекта (ref→1088)
+ *   t1177 = Субфонд (ref→1082)
+ *   t1179 = Стадия (ref→1084)
+ *   t1181 = Тип финансирования (ref→1086)
+ *   t1183 = Статус проекта (ref→1088)
  *
  * fst/1160 "Решения ИК":
  *   t1160 = название (main)
- *   t2239 = Голосов ПРОТИВ (NUMBER/108)
+ *   t1161 = Голосов ПРОТИВ (NUMBER)
  *   t1162 = Условия одобрения (HTML)
  *   t1163 = Дата заседания (DATETIME)
- *   t1186 = Проект (ref→1155)
- *   t1188 = Решение ИК (ref→1090)
+ *   t1185 = Проект (ref→1155)
+ *   t1187 = Решение ИК (ref→1090)
  *
  * fst/1164 "Сделки ФСТ":
  *   t1164 = название (main)
- *   t2241 = Доля, % (NUMBER/108)
- *   t2240 = SPV название (SHORT/31)
+ *   t1165 = Доля, % (NUMBER)
+ *   t1166 = SPV название (SHORT)
  *   t1167 = Term Sheet (HTML)
  *   t1168 = Дата подписания (DATETIME)
- *   t1189 = Проект (ref→1155)
- *   t1191 = Решение ИК (ref→1160)
- *   t1192 = Тип финансирования (ref→1086)
- *   t1194 = Статус сделки (ref→1092)
+ *   t1185 = Проект (ref→1155)
+ *   t1190 = Решение ИК (ref→1160)
+ *   t1181 = Тип финансирования (ref→1086)
+ *   t1193 = Статус сделки (ref→1092)
  *
  * fst/1169 "Портфельные компании":
  *   t1169 = название (main)
- *   t2242 = KPI прогресс, % (NUMBER/108)
+ *   t1170 = KPI прогресс, % (NUMBER)
  *   t1171 = AI отчёт (HTML)
  *   t1172 = Дата обновления (DATETIME)
- *   t1198 = Риск-статус (ref→1088)
- *   t1195 = Проект (ref→1155)
- *   t1197 = Сделка (ref→1164)
+ *   t1183 = Риск-статус (ref→1088)
+ *   t1185 = Проект (ref→1155)
+ *   t1196 = Сделка (ref→1164)
  *
  * Справочники:
  *   Субфонды (1082): БАС=1096, РОБО=1098, МЭ=1100
@@ -116,16 +116,16 @@ export const TYPE_PROJECTS = 1155
  * Возвращает нормализованный массив проектов.
  */
 export async function getProjects() {
-  const data = await api(`object/${TYPE_PROJECTS}?JSON_KV`)
+  const data = await api(`_m_list/${TYPE_PROJECTS}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
     id:          obj.id,
     name:        obj.val,
-    ogrn:        reqs[obj.id]?.['2237'] || '',
-    amount:      Number(reqs[obj.id]?.['2238'] || 0),
+    ogrn:        reqs[obj.id]?.['1156'] || '',
+    amount:      Number(reqs[obj.id]?.['1157'] || 0),
     description: reqs[obj.id]?.['1158'] || '',
-    submittedAt: cleanDate(reqs[obj.id]?.['1159']) || null,
+    submittedAt: reqs[obj.id]?.['1159'] || null,
     subfundId:   reqs[obj.id]?.['1177'] || null,
     stageId:     reqs[obj.id]?.['1179'] || null,
     statusId:    reqs[obj.id]?.['1183'] || null
@@ -139,8 +139,8 @@ export async function getProject(id) {
 export async function createProject(data) {
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: data.name,
-    t2237: data.ogrn || '',
-    t2238: data.amount || 0,
+    t1156: data.ogrn || '',
+    t1157: data.amount || 0,
     t1158: data.description || '',
     t1159: data.submittedAt || new Date().toISOString(),
     ...(data.subfundId ? { t1177: data.subfundId } : {}),
@@ -166,11 +166,11 @@ export async function getDecisions(projectId) {
 export async function saveDecision(data) {
   const body = new URLSearchParams({
     [`t${TYPE_IC_DECISIONS}`]: data.name || `ИК ${new Date().toLocaleDateString('ru')}`,
-    t2239: data.votesAgainst || 0,
+    t1161: data.votesAgainst || 0,
     t1162: data.conditions || '',
     t1163: data.meetingDate || new Date().toISOString(),
-    ...(data.projectId  ? { t1186: data.projectId  } : {}),
-    ...(data.decisionId ? { t1188: data.decisionId } : {})
+    ...(data.projectId  ? { t1185: data.projectId  } : {}),
+    ...(data.decisionId ? { t1187: data.decisionId } : {})
   })
   return api(`_m_new/${TYPE_IC_DECISIONS}?JSON_KV`, { method: 'POST', body })
 }
@@ -186,14 +186,14 @@ export async function getDeals(projectId) {
 export async function saveDeal(data) {
   const body = new URLSearchParams({
     [`t${TYPE_DEALS}`]: data.name || `Сделка ${data.companyName}`,
-    t2241: data.sharePercent || 0,
-    t2240: data.spvName || '',
+    t1165: data.sharePercent || 0,
+    t1166: data.spvName || '',
     t1167: data.termSheet || '',
     t1168: data.signDate || new Date().toISOString(),
-    ...(data.projectId  ? { t1189: data.projectId  } : {}),
-    ...(data.decisionId ? { t1191: data.decisionId } : {}),
-    ...(data.finTypeId  ? { t1192: data.finTypeId  } : {}),
-    ...(data.statusId   ? { t1194: data.statusId   } : {})
+    ...(data.projectId  ? { t1185: data.projectId  } : {}),
+    ...(data.decisionId ? { t1190: data.decisionId } : {}),
+    ...(data.finTypeId  ? { t1181: data.finTypeId  } : {}),
+    ...(data.statusId   ? { t1193: data.statusId   } : {})
   })
   return api(`_m_new/${TYPE_DEALS}?JSON_KV`, { method: 'POST', body })
 }
@@ -207,46 +207,24 @@ export const TYPE_PORTFOLIO = 1169
  * Каждый объект содержит: id, name, kpi, aiReport, updatedAt, projectId, dealId, riskStatusId
  */
 export async function getPortfolio() {
-  const data = await api(`object/${TYPE_PORTFOLIO}?JSON_KV`)
+  const data = await api(`_m_list/${TYPE_PORTFOLIO}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
-  return objects.map(obj => {
-    const r = reqs[obj.id] || {}
-    let metrics = {}
-    try { metrics = JSON.parse(r['3521'] || '{}') } catch {}
-    return {
-      id:           obj.id,
-      name:         obj.val,
-      kpi:          Number(r['2242'] || 0),
-      aiReport:     r['3507'] || r['1171'] || '',
-      updatedAt:    cleanDate(r['3508'] || r['1172']) || null,
-      riskStatusId: r['ref_1198']?.split(':')[1] || r['1198'] || null,
-      projectId:    r['ref_1195']?.split(':')[1] || r['1195'] || null,
-      dealId:       r['ref_1197']?.split(':')[1] || r['1197'] || null,
-      // Новые поля (Фаза 1 миграции)
-      invested:     Number(r['3519'] || 0),
-      nav:          Number(r['3520'] || metrics.nav_mln || 0),
-      subfundId:    r['ref_3524']?.split(':')[1] || r['3524'] || null,
-      subfundName:  r['3524'] || null,
-      stageId:      r['ref_3525']?.split(':')[1] || r['3525'] || null,
-      stageName:    r['3525'] || null,
-      // Из JSON метрик
-      health:       metrics.health    || Number(r['2242'] || 0),
-      trl:          metrics.trl       || 0,
-      runway:       metrics.runway    || 0,
-      headcount:    metrics.headcount || 0,
-      revenue:      metrics.revenue   || 0,
-      growth:       metrics.growth    || 0,
-      fstShare:     metrics.fst_share || 0,
-      inn:          metrics.inn       || '',
-      riskLevel:    metrics.risk_level|| 'green',
-    }
-  })
+  return objects.map(obj => ({
+    id:          obj.id,
+    name:        obj.val,
+    kpi:         Number(reqs[obj.id]?.['1170'] || 0),
+    aiReport:    reqs[obj.id]?.['1171'] || '',
+    updatedAt:   reqs[obj.id]?.['1172'] || null,
+    riskStatusId: reqs[obj.id]?.['1183'] || null,
+    projectId:   reqs[obj.id]?.['1185'] || null,
+    dealId:      reqs[obj.id]?.['1196'] || null
+  }))
 }
 
 export async function updatePortfolioCompany(id, { kpi, aiReport }) {
   const body = new URLSearchParams()
-  if (kpi      !== undefined) body.set('t2242', kpi)
+  if (kpi      !== undefined) body.set('t1170', kpi)
   if (aiReport !== undefined) body.set('t1171', aiReport)
   body.set('t1172', new Date().toISOString())
   return api(`_m_set/${id}?JSON_KV`, { method: 'POST', body })

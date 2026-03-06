@@ -482,8 +482,7 @@ import {
   PROJECTS_POOL, SUBFUNDS, SPEED_MULTIPLIERS,
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
-import { saveDecision, createProject, getProjects, STATUSES } from '@/services/fstApi'
-import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
+import { saveDecision, createProject, STATUSES } from '@/services/fstApi'
 
 // ── State ─────────────────────────────────────────────────────
 
@@ -725,7 +724,7 @@ function handleEvent(event) {
 async function saveDecisionToFst(sess) {
   if (!sess) return
   try {
-    const project = projectsPool.value.find(p => p.id === sess.projectId) || {}
+    const project = PROJECTS_POOL.find(p => p.id === sess.projectId) || {}
     const votes = sess.votes || []
     const votesAgainst = votes.filter(v => v.verdict === 'REJECT').length
     const approved = sess.decision?.humanApproval?.verdict === 'APPROVE'
