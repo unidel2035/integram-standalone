@@ -14,10 +14,7 @@
     <!-- Сводная панель LP -->
     <div class="lp-summary-grid">
       <div class="lp-kpi" v-for="kpi in kpiCards" :key="kpi.label">
-        <div class="lp-kpi-val" :class="kpi.color">
-          <span v-if="loading" class="kpi-loading">…</span>
-          <span v-else>{{ kpi.value }}</span>
-        </div>
+        <div class="lp-kpi-val" :class="kpi.color">{{ kpi.value }}</div>
         <div class="lp-kpi-label">{{ kpi.label }}</div>
         <div class="lp-kpi-delta" :class="kpi.delta >= 0 ? 'up' : 'down'">
           {{ kpi.delta >= 0 ? '+' : '' }}{{ kpi.delta }}% к прошлому кварталу
@@ -168,12 +165,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { getPortfolio, getLPPartners } from '@/services/fstApi'
+import { ref, computed } from 'vue'
 
 const activeTab = ref('portfolio')
 const showCapCall = ref(false)
-const loading = ref(true)
 
 const tabs = [
   { id: 'portfolio', label: 'Портфель' },
@@ -182,46 +177,37 @@ const tabs = [
   { id: 'esg',       label: 'ESG' }
 ]
 
-const lpPartners = ref([])
-
-const kpiCards = computed(() => [
-  { label: 'Общий NAV, млн ₽',  value: totalNav.value ? Math.round(totalNav.value).toLocaleString('ru') : '0', color: 'blue',  delta: 0 },
-  { label: 'TVPI',               value: totalContributions.value ? tvpi.value : '—',  color: 'green', delta: 0 },
-  { label: 'Net IRR',            value: '—',    color: 'green', delta: 0 },
-  { label: 'DPI',                value: totalContributions.value ? dpi.value : '—',   color: 'gray',  delta: 0 },
-  { label: 'Взносы, млн ₽',     value: Math.round(totalContributions.value).toLocaleString('ru'), color: 'blue', delta: 0 },
-  { label: 'Портфельных ко.',    value: String(portfolio.value.length), color: 'gray', delta: 0 }
+const kpiCards = ref([
+  { label: 'Общий NAV, млн ₽', value: '2 840', color: 'blue',  delta: +8.4 },
+  { label: 'TVPI',              value: '1.34x', color: 'green', delta: +5.2 },
+  { label: 'Net IRR',           value: '22.7%', color: 'green', delta: +1.8 },
+  { label: 'DPI',               value: '0.18x', color: 'gray',  delta: +12.0 },
+  { label: 'Взносы, млн ₽',    value: '2 120', color: 'blue',  delta: 0 },
+  { label: 'Портфельных ко.',   value: '8',     color: 'gray',  delta: +14.3 }
 ])
 
-const portfolio = ref([])
-
-onMounted(async () => {
-  try {
-    const [portfolioRows, lpRows] = await Promise.all([getPortfolio(), getLPPartners()])
-    portfolio.value = portfolioRows.map(r => ({
-      name: r.name || '—', subfund: 'БАС',
-      entryDate: r.updatedAt ? (() => { const p = r.updatedAt.match(/(\d{2})\.(\d{2})\.(\d{4})/); return p ? `${p[3]}-${p[2]}` : r.updatedAt.slice(0, 7); })() : '—',
-      invested: 0, nav: r.kpi || 0, moic: 1.0,
-      status: (r.riskStatusId && !['1119','1125','Одобрен','В работе'].includes(String(r.riskStatusId))) ? 'watch' : 'active'
-    }))
-    lpPartners.value = lpRows
-    if (lpRows.length) {
-      cashFlows.value = {
-        contributions: lpRows.map(r => ({
-          date: r.joinedAt?.slice(0, 7) || '—',
-          amount: Math.round((r.paid || 0) / 1_000_000),
-          note: r.organization || r.name || '—'
-        })),
-        distributions: []
-      }
-    }
-  } catch (e) { console.warn('LP portfolio load failed', e) }
-  finally { loading.value = false }
-})
+const portfolio = ref([
+  { name: 'АгроДрон',       subfund: 'БАС',  entryDate: '2024-03', invested: 180, nav: 265, moic: 1.47, status: 'active' },
+  { name: 'RoboFarm',       subfund: 'РОБО', entryDate: '2024-06', invested: 120, nav: 198, moic: 1.65, status: 'active' },
+  { name: 'МедТех БПЛА',    subfund: 'БАС',  entryDate: '2024-09', invested: 250, nav: 280, moic: 1.12, status: 'active' },
+  { name: 'DroneLogistics', subfund: 'БАС',  entryDate: '2023-12', invested: 350, nav: 420, moic: 1.20, status: 'active' },
+  { name: 'ЭнергоРобот',    subfund: 'МЭ',   entryDate: '2024-01', invested: 90,  nav:  74, moic: 0.82, status: 'watch'  },
+  { name: 'CyberPilot',     subfund: 'БАС',  entryDate: '2023-06', invested: 200, nav: 310, moic: 1.55, status: 'active' },
+  { name: 'НейроМат',       subfund: 'РОБО', entryDate: '2024-11', invested: 150, nav: 135, moic: 0.90, status: 'watch'  },
+  { name: 'AeroSpace Rус',  subfund: 'БАС',  entryDate: '2024-04', invested: 780, nav: 958, moic: 1.23, status: 'active' }
+])
 
 const cashFlows = ref({
-  contributions: [],
-  distributions: []
+  contributions: [
+    { date: '2023-Q2', amount: 500,  note: 'Первый взнос ГК и частные LP' },
+    { date: '2023-Q4', amount: 420,  note: 'Кэпитал-колл #2' },
+    { date: '2024-Q2', amount: 600,  note: 'Кэпитал-колл #3' },
+    { date: '2024-Q4', amount: 600,  note: 'Кэпитал-колл #4' }
+  ],
+  distributions: [
+    { date: '2024-Q3', amount: 180, note: 'Частичный выход DroneLogistics' },
+    { date: '2024-Q4', amount: 200, note: 'Дивиденды АгроДрон' }
+  ]
 })
 
 const totalContributions = computed(() =>

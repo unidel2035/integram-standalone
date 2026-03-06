@@ -111,19 +111,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { getProjects } from '@/services/fstApi'
+import { ref, computed } from 'vue'
 
-const selectedCo = ref(null)
-const companies = ref([])
-
-onMounted(async () => {
-  try {
-    const rows = await getProjects()
-    companies.value = rows.map(r => ({ id: String(r.id), name: r.name }))
-    selectedCo.value = companies.value[0]?.id || null
-  } catch (e) { console.warn('Sovereignty projects load failed', e) }
-})
+const selectedCo = ref('agrodr')
+const companies = ref([
+  { id: 'agrodr',  name: 'АгроДрон'      },
+  { id: 'robofarm', name: 'RoboFarm'      },
+  { id: 'medtech', name: 'МедТех БПЛА'   }
+])
 
 const dimensions = ref([
   {

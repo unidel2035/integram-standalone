@@ -116,8 +116,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { getGrants } from '@/services/fstApi'
+import { ref, computed } from 'vue'
 
 const showAdd   = ref(false)
 const activeFilter = ref('all')
@@ -130,19 +129,16 @@ const filters = [
   { id: 'approved', label: 'Одобрено' }
 ]
 
-const grants = ref([])
-
-onMounted(async () => {
-  try {
-    const rows = await getGrants()
-    grants.value = rows.map(r => ({
-      id: r.id, name: r.name || r.program || '—', org: r.source || '—',
-      type: 'grant', amount: Math.round((r.amount || 0) / 1_000_000),
-      company: '—', status: 'pending',
-      deadline: r.deadline?.slice(0, 10) || '—', usedPct: 0, report: 'pending'
-    }))
-  } catch (e) { console.warn('Grants load failed', e) }
-})
+const grants = ref([
+  { id: 1,  name: 'НИОКР БАС Минпромторг',    org: 'Минпромторг',   type: 'grant',     amount: 300, company: 'АгроДрон',       status: 'approved', deadline: '2026-12-31', usedPct: 35, report: 'submitted' },
+  { id: 2,  name: 'Сколково IT-грант',         org: 'Сколково',      type: 'grant',     amount: 50,  company: 'RoboFarm',       status: 'approved', deadline: '2026-09-30', usedPct: 68, report: 'submitted' },
+  { id: 3,  name: 'ФРП промышленный',          org: 'ФРП',           type: 'soft_loan', amount: 250, company: 'МедТех БПЛА',    status: 'pending',  deadline: '2026-03-15', usedPct: 0,  report: 'pending' },
+  { id: 4,  name: 'Программа цифровизации',    org: 'Минцифры',      type: 'subsidy',   amount: 80,  company: 'DroneLogistics', status: 'review',   deadline: '2026-04-01', usedPct: 0,  report: 'pending' },
+  { id: 5,  name: 'Экспортный грант РЭЦ',      org: 'РЭЦ',          type: 'subsidy',   amount: 30,  company: 'АгроДрон',       status: 'pending',  deadline: '2026-05-01', usedPct: 0,  report: 'pending' },
+  { id: 6,  name: 'НИОКР Роснано',             org: 'Роснано',       type: 'grant',     amount: 120, company: 'CyberPilot',     status: 'approved', deadline: '2027-01-01', usedPct: 12, report: 'overdue'  },
+  { id: 7,  name: 'Налоговый вычет НИОКР',    org: 'ФНС',           type: 'tax',       amount: 45,  company: 'RoboFarm',       status: 'approved', deadline: '2026-04-30', usedPct: 100,report: 'submitted'},
+  { id: 8,  name: 'Инновационный ваучер МСП',  org: 'АО МСП Банк',  type: 'grant',     amount: 15,  company: 'АгроДрон',       status: 'denied',   deadline: '2026-01-01', usedPct: 0,  report: 'na'       }
+])
 
 const filteredGrants = computed(() => {
   let list = grants.value
@@ -156,7 +152,7 @@ const summary = computed(() => [
   { label: 'Одобрено, млн ₽',    value: grants.value.filter(g => g.status === 'approved').reduce((s, g) => s + g.amount, 0), color: 'green'  },
   { label: 'На рассмотрении',     value: grants.value.filter(g => g.status === 'pending' || g.status === 'review').length,   color: 'orange' },
   { label: 'Просрочен отчёт',    value: grants.value.filter(g => g.report === 'overdue').length,                 color: 'red'    },
-  { label: 'Использовано, %',    value: (() => { const used = grants.value.filter(g => g.usedPct > 0); return used.length ? Math.round(used.reduce((s, g) => s + g.usedPct, 0) / used.length) + '%' : '0%' })(), color: 'blue' }
+  { label: 'Использовано, %',    value: Math.round(grants.value.filter(g => g.usedPct > 0).reduce((s, g) => s + g.usedPct, 0) / grants.value.filter(g => g.usedPct > 0).length) + '%', color: 'blue' }
 ])
 
 const upcomingDeadlines = computed(() => {

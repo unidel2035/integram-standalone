@@ -48,7 +48,4 @@ router.afterEach((to) => {
   document.title = to.meta.title ? `${to.meta.title} | ФСТ НТИ` : 'ФСТ НТИ'
 })
 
-// Compatibility stub — required by axios2.js interceptor
-export function clearUserCache() {}
-
 export default router

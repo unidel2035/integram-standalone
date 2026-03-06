@@ -192,40 +192,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { getPortfolio } from '@/services/fstApi'
+import { ref, computed } from 'vue'
 
-const selectedCo = ref(null)
-const loading = ref(true)
+const selectedCo = ref('agrodr')
 
-const companies = ref([])
-
-onMounted(async () => {
-  try {
-    const rows = await getPortfolio()
-    companies.value = rows
-      .filter(r => r.invested > 0 || r.nav > 0)
-      .map(r => ({
-        id:        String(r.id),
-        name:      r.name,
-        nav:       r.nav || 0,
-        invested:  r.invested ? Math.round(r.invested / 1_000_000) : 0,
-        fstShare:  r.fstShare || 0,
-        revenue:   r.revenue || 0,
-        growth:    r.growth  || 0,
-        entryDate: r.updatedAt ? (() => {
-          const m = r.updatedAt.match(/(\d{2})\.(\d{2})\.(\d{4})/)
-          return m ? `${m[3]}-${m[2]}-${m[1]}` : '2024-01-01'
-        })() : '2024-01-01'
-      }))
-    if (companies.value.length) selectedCo.value = companies.value[0].id
-  } catch (e) { console.warn('FstExit load failed', e) }
-  finally { loading.value = false }
-})
+const companies = ref([
+  { id: 'agrodr', name: 'АгроДрон', nav: 265, invested: 180, fstShare: 20, revenue: 85, growth: 112, entryDate: '2024-03-01' },
+  { id: 'drone',  name: 'DroneLogistics', nav: 420, invested: 350, fstShare: 28, revenue: 320, growth: 64, entryDate: '2023-12-01' },
+  { id: 'cyber',  name: 'CyberPilot', nav: 310, invested: 200, fstShare: 18, revenue: 195, growth: 89, entryDate: '2023-06-01' }
+])
 
 const currentCompany = computed(() => companies.value.find(c => c.id === selectedCo.value))
 
-const params = computed(() => currentCompany.value || { nav: 0, invested: 0, fstShare: 0, entryDate: '2024-01-01', revenue: 0, growth: 0 })
+const params = ref({ nav: 265, invested: 180, fstShare: 20, entryDate: '2024-03-01', revenue: 85, growth: 112 })
 
 const maParams  = ref({ evRevMult: 10, years: 3, prob: 45 })
 const ipoParams = ref({ psMult: 14, lockupMonths: 6, prob: 20 })

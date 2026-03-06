@@ -135,8 +135,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getDDChecks } from '@/services/fstApi'
+import { ref } from 'vue'
 
 const showNewDd  = ref(false)
 const ddActiveTab = ref('legal')
@@ -148,23 +147,21 @@ const ddTabs = [
   { id: 'summary',   label: 'AI-сводка' }
 ]
 
-const activeDds = ref([])
-const selectedDd = ref(null)
+const activeDds = ref([
+  { id: 1, company: 'АгроДрон',      stage: 'complete', progress: 100, daysRunning: 28, verdict: 'proceed',
+    verdictText: 'Компания демонстрирует сильные показатели по всем блокам DD. Рекомендовано к инвестированию.',
+    strengths: ['TRL 7 — реальные коммерческие продажи', 'Патентная защита 4 изобретений', 'Команда с опытом в БПЛА >5 лет'],
+    risks: ['Зависимость от 1 крупного клиента (40% выручки)', 'Требуется локализация ПО с Pixhawk на рос. аналог'] },
+  { id: 2, company: 'НейроМат',       stage: 'in_progress', progress: 65, daysRunning: 12, verdict: 'caution',
+    verdictText: 'Сильная технология, но правовые вопросы по ИС требуют прояснения перед принятием решения.',
+    strengths: ['Уникальный алгоритм нейрокомпозитов', 'Рынок растёт >80% в год'],
+    risks: ['ИС частично не зарегистрирована в РФ', 'Burn rate >12 млн ₽/мес — требуется доп. финансирование'] },
+  { id: 3, company: 'AeroSpace Rus', stage: 'pending', progress: 15, daysRunning: 3, verdict: 'pending',
+    verdictText: 'DD только начата. Предварительные данные позитивные.',
+    strengths: [], risks: [] }
+])
 
-onMounted(async () => {
-  try {
-    const rows = await getDDChecks()
-    activeDds.value = rows.map(r => ({
-      id: r.id, company: r.name || '—',
-      stage: r.progress >= 100 ? 'complete' : r.progress > 0 ? 'in_progress' : 'pending',
-      progress: r.progress || 0, daysRunning: 0,
-      verdict: r.verdict || 'pending',
-      verdictText: r.aiSummary || '',
-      strengths: [], risks: []
-    }))
-    selectedDd.value = activeDds.value[0] || null
-  } catch (e) { console.warn('DD load failed', e) }
-})
+const selectedDd = ref(activeDds.value[0])
 
 function stageLabel(s) { return { complete: 'Завершён', in_progress: 'В работе', pending: 'Начат' }[s] || s }
 function verdictLabel(v) { return { proceed: 'РЕКОМЕНДОВАТЬ к инвестированию', caution: 'УСЛОВНО — устранить замечания', reject: 'ОТКАЗАТЬ', pending: 'Решение не принято' }[v] || v }

@@ -40,7 +40,7 @@
         <!-- Stats strip -->
         <div class="fst-hero-stats">
           <div v-for="s in heroStats" :key="s.label" class="fst-hero-stat">
-            <div class="fst-hero-stat-val">{{ s.val }}</div>
+            <div class="fst-hero-stat-val" :class="{ 'fst-skeleton': statsLoading }">{{ s.val }}</div>
             <div class="fst-hero-stat-label">{{ s.label }}</div>
           </div>
         </div>
@@ -191,8 +191,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useFstData } from '@/composables/useFstData.js'
 
 const router = useRouter()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
@@ -200,12 +201,35 @@ const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 
 function go(path) { router.push(path) }
 function statusLabel(s) { return { live: 'Live', demo: 'Demo', beta: 'Beta' }[s] || s }
 
-const heroStats = [
-  { val: '48 ч', label: 'Среднее время решения' },
-  { val: '6', label: 'AI-агентов ИК' },
-  { val: '100%', label: 'Прозрачность' },
-  { val: '9/9', label: 'Суверенность' },
-]
+// ── Load FST Data from API ─────────────────────────────────────────
+const { stats, statsLoading, loadStats } = useFstData()
+
+// Load stats on component mount
+onMounted(() => {
+  loadStats()
+})
+
+// Computed hero stats based on API data
+const heroStats = computed(() => {
+  if (!stats.value) {
+    // Default skeleton/loading state
+    return [
+      { val: '...', label: 'Среднее время решения' },
+      { val: '...', label: 'AI-агентов ИК' },
+      { val: '...', label: 'Прозрачность' },
+      { val: '...', label: 'Суверенность' },
+    ]
+  }
+
+  const { aum, portfolioCount, subfundCount, avgIRR } = stats.value
+
+  return [
+    { val: '48 ч', label: 'Среднее время решения' },
+    { val: `${portfolioCount}`, label: 'Портфельных компаний' },
+    { val: `${subfundCount}`, label: 'Субфонда' },
+    { val: `${(avgIRR * 100).toFixed(0)}%`, label: 'Средний IRR прогноз' },
+  ]
+})
 
 const beforeSteps = [
   'Стартап шлёт PDF на email',
@@ -242,7 +266,7 @@ const modules = [
     path: '/fst-committee',
     featured: true,
     status: 'live',
-    desc: '6 AI-агентов дебатируют проект: технолог, финансист, суверенность, риск, стратег, критический аналитик. Многораундовые дебаты, голосование, решение ИК.',
+    desc: '6 AI-агентов дебатируют проект: технолог, финансист, суверенность, риск, стратег, адвокат дьявола. Многораундовые дебаты, голосование, решение ИК.',
     tags: ['AI', 'Дебаты', 'Голосование', 'Суверенность', 'TRL/MRL'],
   },
   {
@@ -1010,5 +1034,18 @@ const tools = [
   .fst-pipeline-wrap { padding: 24px 16px; }
   .fst-footer { padding: 14px 16px; }
   .fst-hero-orbit { display: none; }
+}
+
+/* ══════════════════════════════════════════════════ SKELETON LOADER */
+.fst-skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  color: transparent !important;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 </style>

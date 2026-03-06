@@ -36,5 +36,29 @@ export default defineConfig({
         ws: true
       }
     }
+  },
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      include: [
+        'src/**/*.{js,vue}',
+        'src/components/fst-committee/*.js',
+        'src/services/*.js'
+      ],
+      exclude: [
+        'node_modules/',
+        'tests/',
+        'e2e/',
+        'src/**/*.spec.js',
+        'src/**/*.test.js'
+      ],
+      statements: 70,
+      branches: 60,
+      functions: 70,
+      lines: 70
+    }
   }
 })

@@ -147,8 +147,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { getLPPartners } from '@/services/fstApi'
+import { ref, computed } from 'vue'
 
 const showAddLp = ref(false)
 const scanQuery = ref('')
@@ -162,20 +161,17 @@ const kpis = ref([
   { label: 'Соответствие ФЗ-115', value: '100%', color: 'green' }
 ])
 
-const lpList = ref([])
-
-onMounted(async () => {
-  try {
-    const rows = await getLPPartners()
-    lpList.value = rows.map(r => ({
-      name: r.organization || r.name || '—',
-      type: 'LP', kyc: 'pending', risk: 'low',
-      verifiedAt: r.joinedAt?.slice(0, 10) || '—',
-      nextReview: '—',
-      officer: r.contact || '—'
-    }))
-  } catch (e) { console.warn('Compliance LP load failed', e) }
-})
+const lpList = ref([
+  { name: 'Росатом',              type: 'Госкорп.',     kyc: 'verified', risk: 'low',    verifiedAt: '2025-06-01', nextReview: '2026-06-01', officer: 'Иванов А.' },
+  { name: 'ВЭБ.РФ',              type: 'Институциональный', kyc: 'verified', risk: 'low', verifiedAt: '2025-07-15', nextReview: '2026-07-15', officer: 'Петров С.' },
+  { name: 'Сколково',             type: 'Институциональный', kyc: 'verified', risk: 'low', verifiedAt: '2025-08-01', nextReview: '2026-08-01', officer: 'Ким А.' },
+  { name: 'ГК Ростех',           type: 'Госкорп.',     kyc: 'verified', risk: 'low',    verifiedAt: '2025-09-10', nextReview: '2026-04-10', officer: 'Иванов А.' },
+  { name: 'Частный LP #1',       type: 'Частный LP',   kyc: 'verified', risk: 'medium', verifiedAt: '2025-10-01', nextReview: '2026-04-01', officer: 'Захаров А.' },
+  { name: 'Частный LP #2',       type: 'Частный LP',   kyc: 'review',   risk: 'medium', verifiedAt: '2025-11-15', nextReview: '2026-05-15', officer: 'Захаров А.' },
+  { name: 'Ренова (корп.фонд)', type: 'Корп. LP',     kyc: 'verified', risk: 'low',    verifiedAt: '2025-12-01', nextReview: '2026-12-01', officer: 'Петров С.' },
+  { name: 'АФК Система',         type: 'Корп. LP',     kyc: 'verified', risk: 'low',    verifiedAt: '2025-12-15', nextReview: '2026-12-15', officer: 'Петров С.' },
+  { name: 'Новый LP',            type: 'Частный LP',   kyc: 'pending',  risk: 'unknown', verifiedAt: '—',          nextReview: '—',          officer: 'Не назначен' }
+])
 
 function kycLabel(s) { return { verified: 'Верифицирован', review: 'На проверке', pending: 'Ожидает KYC' }[s] || s }
 function riskLabel(s) { return { low: 'Низкий', medium: 'Средний', high: 'Высокий', unknown: 'Н/О' }[s] || s }

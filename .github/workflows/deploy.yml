@@ -1,0 +1,177 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://fst.drondoc.ru' }}
+          NODE_ENV: production
+
+      - name: Install backend dependencies
+        working-directory: backend/monolith
+        run: npm ci --production
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy-package
+          cp -r dist deploy-package/
+          cp -r backend deploy-package/
+          cp package.json deploy-package/
+          cp .env.example deploy-package/
+          tar -czf ventureos-deploy.tar.gz deploy-package/
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-package
+          path: ventureos-deploy.tar.gz
+          retention-days: 7
+
+      - name: Deploy to server
+        if: github.event_name == 'push' || github.event.inputs.environment
+        run: |
+          echo "🚀 Deployment would happen here"
+          echo "Target: ${{ secrets.DEPLOY_HOST || 'fst.drondoc.ru' }}"
+          echo "Environment: ${{ github.event.inputs.environment || 'production' }}"
+          echo ""
+          echo "Deployment steps (to be configured with actual credentials):"
+          echo "1. Transfer ventureos-deploy.tar.gz to server"
+          echo "2. Extract to /var/www/ventureos"
+          echo "3. Restart systemd services:"
+          echo "   - sudo systemctl restart dronedoc-backend"
+          echo "   - sudo systemctl restart dronedoc-frontend"
+          echo "4. Health check"
+
+      # Uncomment and configure when SSH credentials are available
+      # - name: Setup SSH
+      #   uses: webfactory/ssh-agent@v0.8.0
+      #   with:
+      #     ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # - name: Transfer files to server
+      #   run: |
+      #     scp ventureos-deploy.tar.gz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/
+
+      # - name: Deploy on server
+      #   run: |
+      #     ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+      #       cd /var/www/ventureos
+      #       tar -xzf /tmp/ventureos-deploy.tar.gz --strip-components=1
+      #       sudo systemctl restart dronedoc-backend
+      #       sudo systemctl restart dronedoc-frontend
+      #       sleep 5
+      #       curl -f http://localhost:3000/api/health || exit 1
+      #       echo "✅ Deployment successful"
+      #     EOF
+
+  health-check:
+    name: Post-Deployment Health Check
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+
+    steps:
+      - name: Check backend health
+        run: |
+          echo "🏥 Health check would happen here"
+          echo "Backend: ${{ secrets.DEPLOY_HOST || 'fst.drondoc.ru' }}/api/health"
+          echo "Frontend: ${{ secrets.DEPLOY_HOST || 'fst.drondoc.ru' }}"
+
+      # Uncomment when deployment is live
+      # - name: Check backend API
+      #   run: |
+      #     response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.DEPLOY_HOST }}/api/health)
+      #     if [ $response -eq 200 ]; then
+      #       echo "✅ Backend is healthy"
+      #     else
+      #       echo "❌ Backend health check failed (HTTP $response)"
+      #       exit 1
+      #     fi
+
+      # - name: Check frontend
+      #   run: |
+      #     response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.DEPLOY_HOST }})
+      #     if [ $response -eq 200 ]; then
+      #       echo "✅ Frontend is healthy"
+      #     else
+      #       echo "❌ Frontend health check failed (HTTP $response)"
+      #       exit 1
+      #     fi
+
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy, health-check]
+    if: always()
+
+    steps:
+      - name: Deployment summary
+        run: |
+          echo "📊 Deployment Summary"
+          echo "===================="
+          echo "Environment: ${{ github.event.inputs.environment || 'production' }}"
+          echo "Deploy status: ${{ needs.deploy.result }}"
+          echo "Health check: ${{ needs.health-check.result }}"
+          echo ""
+          if [[ "${{ needs.deploy.result }}" == "success" ]] && [[ "${{ needs.health-check.result }}" == "success" ]]; then
+            echo "✅ Deployment completed successfully"
+          else
+            echo "❌ Deployment failed or health check did not pass"
+          fi
+
+      # Uncomment when Telegram bot token is configured
+      # - name: Send Telegram notification
+      #   if: secrets.TELEGRAM_BOT_TOKEN
+      #   run: |
+      #     STATUS="${{ needs.deploy.result }}"
+      #     EMOJI="✅"
+      #     if [[ "$STATUS" != "success" ]]; then
+      #       EMOJI="❌"
+      #     fi
+      #
+      #     MESSAGE="$EMOJI VentureOS Deployment
+      #     Environment: ${{ github.event.inputs.environment || 'production' }}
+      #     Status: $STATUS
+      #     Commit: ${{ github.sha }}
+      #     Branch: ${{ github.ref_name }}
+      #     Author: ${{ github.actor }}"
+      #
+      #     curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+      #       -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+      #       -d text="$MESSAGE"
