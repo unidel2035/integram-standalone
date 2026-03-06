@@ -62,8 +62,8 @@ export async function authenticate() {
   const login = import.meta.env.VITE_FST_LOGIN || 'd'
   const password = import.meta.env.VITE_FST_PASSWORD || 'd'
 
-  // Логинимся в базу my — токен работает для всех баз через X-Authorization
-  const res = await fetch(`${FST_SERVER}/my/auth?JSON_KV`, {
+  // Логинимся напрямую в fst — токен и xsrf в одном ответе
+  const res = await fetch(`${FST_SERVER}/${FST_DB}/auth?JSON_KV`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `login=${encodeURIComponent(login)}&pwd=${encodeURIComponent(password)}`
@@ -72,10 +72,7 @@ export async function authenticate() {
   if (data.error) throw new Error(data.error)
 
   _token = data.token
-  // XSRF получаем отдельно для базы fst
-  const xsrfRes = await fetch(`${FST_SERVER}/${FST_DB}/xsrf`)
-  const xsrfData = await xsrfRes.json()
-  _xsrf = xsrfData._xsrf || xsrfData.xsrf || data._xsrf
+  _xsrf = data._xsrf
 
   return { token: _token, xsrf: _xsrf }
 }
@@ -112,7 +109,7 @@ export const TYPE_PROJECTS = 1155
  * Возвращает нормализованный массив проектов.
  */
 export async function getProjects() {
-  const data = await api(`_m_list/${TYPE_PROJECTS}?JSON_KV`)
+  const data = await api(`object/${TYPE_PROJECTS}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
@@ -156,7 +153,7 @@ export async function updateProject(id, data) {
 export const TYPE_IC_DECISIONS = 1160
 
 export async function getDecisions(projectId) {
-  return api(`_m_list/${TYPE_IC_DECISIONS}?JSON_KV${projectId ? `&ref_1186=${projectId}` : ''}`)
+  return api(`object/${TYPE_IC_DECISIONS}?JSON_KV${projectId ? `&ref_1186=${projectId}` : ''}`)
 }
 
 export async function saveDecision(data) {
@@ -176,7 +173,7 @@ export async function saveDecision(data) {
 export const TYPE_DEALS = 1164
 
 export async function getDeals(projectId) {
-  return api(`_m_list/${TYPE_DEALS}?JSON_KV${projectId ? `&ref_1189=${projectId}` : ''}`)
+  return api(`object/${TYPE_DEALS}?JSON_KV${projectId ? `&ref_1189=${projectId}` : ''}`)
 }
 
 export async function saveDeal(data) {
@@ -203,7 +200,7 @@ export const TYPE_PORTFOLIO = 1169
  * Каждый объект содержит: id, name, kpi, aiReport, updatedAt, projectId, dealId, riskStatusId
  */
 export async function getPortfolio() {
-  const data = await api(`_m_list/${TYPE_PORTFOLIO}?JSON_KV`)
+  const data = await api(`object/${TYPE_PORTFOLIO}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
@@ -231,7 +228,7 @@ export async function updatePortfolioCompany(id, { kpi, aiReport }) {
 export const TYPE_TRANCHES = 1173
 
 export async function getTranches(dealId) {
-  return api(`_m_list/${TYPE_TRANCHES}?JSON_KV${dealId ? `&ref_1199=${dealId}` : ''}`)
+  return api(`object/${TYPE_TRANCHES}?JSON_KV${dealId ? `&ref_1199=${dealId}` : ''}`)
 }
 
 export async function createTranche(data) {
@@ -252,7 +249,7 @@ export const TYPE_DD = 1955
 
 export async function getDDChecks(projectId) {
   const filter = projectId ? `&ref_1968=${projectId}` : ''
-  const data = await api(`_m_list/${TYPE_DD}?JSON_KV${filter}`)
+  const data = await api(`object/${TYPE_DD}?JSON_KV${filter}`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
@@ -297,7 +294,7 @@ export async function updateDDCheck(id, { progress, aiSummary, verdict, statusId
 export const TYPE_APPLICATIONS = 1956
 
 export async function getApplications() {
-  const data = await api(`_m_list/${TYPE_APPLICATIONS}?JSON_KV`)
+  const data = await api(`object/${TYPE_APPLICATIONS}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
@@ -339,7 +336,7 @@ export const TYPE_GRANTS = 1957
 
 export async function getGrants(projectId) {
   const filter = projectId ? `&ref_1969=${projectId}` : ''
-  const data = await api(`_m_list/${TYPE_GRANTS}?JSON_KV${filter}`)
+  const data = await api(`object/${TYPE_GRANTS}?JSON_KV${filter}`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
@@ -374,7 +371,7 @@ export async function createGrant(data) {
 export const TYPE_LP = 1958
 
 export async function getLPPartners() {
-  const data = await api(`_m_list/${TYPE_LP}?JSON_KV`)
+  const data = await api(`object/${TYPE_LP}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
@@ -410,7 +407,7 @@ export const TYPE_ESG = 1959
 
 export async function getESGScores(projectId) {
   const filter = projectId ? `&ref_1976=${projectId}` : ''
-  const data = await api(`_m_list/${TYPE_ESG}?JSON_KV${filter}`)
+  const data = await api(`object/${TYPE_ESG}?JSON_KV${filter}`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
@@ -446,7 +443,7 @@ export const TYPE_SOVEREIGNTY = 1960
 
 export async function getSovereigntyAudits(projectId) {
   const filter = projectId ? `&ref_1977=${projectId}` : ''
-  const data = await api(`_m_list/${TYPE_SOVEREIGNTY}?JSON_KV${filter}`)
+  const data = await api(`object/${TYPE_SOVEREIGNTY}?JSON_KV${filter}`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({
@@ -482,7 +479,7 @@ export const TYPE_COMPLIANCE = 1961
 
 export async function getCompliance(projectId) {
   const filter = projectId ? `&ref_1978=${projectId}` : ''
-  const data = await api(`_m_list/${TYPE_COMPLIANCE}?JSON_KV${filter}`)
+  const data = await api(`object/${TYPE_COMPLIANCE}?JSON_KV${filter}`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   return objects.map(obj => ({

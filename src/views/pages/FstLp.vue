@@ -166,7 +166,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { getPortfolio } from '@/services/fstApi'
+import { getPortfolio, getLPPartners } from '@/services/fstApi'
 
 const activeTab = ref('portfolio')
 const showCapCall = ref(false)
@@ -178,40 +178,45 @@ const tabs = [
   { id: 'esg',       label: 'ESG' }
 ]
 
-const kpiCards = ref([
-  { label: 'Общий NAV, млн ₽', value: '2 840', color: 'blue',  delta: +8.4 },
-  { label: 'TVPI',              value: '1.34x', color: 'green', delta: +5.2 },
-  { label: 'Net IRR',           value: '22.7%', color: 'green', delta: +1.8 },
-  { label: 'DPI',               value: '0.18x', color: 'gray',  delta: +12.0 },
-  { label: 'Взносы, млн ₽',    value: '2 120', color: 'blue',  delta: 0 },
-  { label: 'Портфельных ко.',   value: '8',     color: 'gray',  delta: +14.3 }
+const lpPartners = ref([])
+
+const kpiCards = computed(() => [
+  { label: 'Общий NAV, млн ₽',  value: totalNav.value ? Math.round(totalNav.value).toLocaleString('ru') : '0', color: 'blue',  delta: 0 },
+  { label: 'TVPI',               value: totalContributions.value ? tvpi.value : '—',  color: 'green', delta: 0 },
+  { label: 'Net IRR',            value: '—',    color: 'green', delta: 0 },
+  { label: 'DPI',                value: totalContributions.value ? dpi.value : '—',   color: 'gray',  delta: 0 },
+  { label: 'Взносы, млн ₽',     value: Math.round(totalContributions.value).toLocaleString('ru'), color: 'blue', delta: 0 },
+  { label: 'Портфельных ко.',    value: String(portfolio.value.length), color: 'gray', delta: 0 }
 ])
 
 const portfolio = ref([])
 
 onMounted(async () => {
   try {
-    const rows = await getPortfolio()
-    portfolio.value = rows.map(r => ({
+    const [portfolioRows, lpRows] = await Promise.all([getPortfolio(), getLPPartners()])
+    portfolio.value = portfolioRows.map(r => ({
       name: r.name || '—', subfund: 'БАС',
       entryDate: r.updatedAt?.slice(0, 7) || '—',
       invested: 0, nav: r.kpi || 0, moic: 1.0,
       status: r.riskStatusId ? 'watch' : 'active'
     }))
+    lpPartners.value = lpRows
+    if (lpRows.length) {
+      cashFlows.value = {
+        contributions: lpRows.map(r => ({
+          date: r.joinedAt?.slice(0, 7) || '—',
+          amount: Math.round((r.paid || 0) / 1_000_000),
+          note: r.organization || r.name || '—'
+        })),
+        distributions: []
+      }
+    }
   } catch (e) { console.warn('LP portfolio load failed', e) }
 })
 
 const cashFlows = ref({
-  contributions: [
-    { date: '2023-Q2', amount: 500,  note: 'Первый взнос ГК и частные LP' },
-    { date: '2023-Q4', amount: 420,  note: 'Кэпитал-колл #2' },
-    { date: '2024-Q2', amount: 600,  note: 'Кэпитал-колл #3' },
-    { date: '2024-Q4', amount: 600,  note: 'Кэпитал-колл #4' }
-  ],
-  distributions: [
-    { date: '2024-Q3', amount: 180, note: 'Частичный выход DroneLogistics' },
-    { date: '2024-Q4', amount: 200, note: 'Дивиденды АгроДрон' }
-  ]
+  contributions: [],
+  distributions: []
 })
 
 const totalContributions = computed(() =>
