@@ -1,218 +1,173 @@
-# CLAUDE.md — VentureOS Project Context
+# CLAUDE.md — VentureOS Platform
 
-## Project Overview
+## Что это за репозиторий
 
-This is **VentureOS** — an AI-powered venture fund management platform. The platform covers the full investment lifecycle: deal sourcing → AI committee → deal structuring → post-investment monitoring → exit.
+**VentureOS** — AI-платформа управления венчурным фондом.  
+Покрывает полный цикл: заявка → AI-инвесткомитет → сделка → мониторинг → выход.
 
-**Repository:** https://github.com/unidel2035/found  
-**Live platform:** https://dev.drondoc.ru  
-**Production:** https://drondoc.ru
-
----
-
-## Architecture Summary
-
-### Frontend
-- **Vue 3** + Composition API, **Vite** build
-- **PrimeVue** — UI components (use CSS variables for theming, never hardcode dark/light colors)
-- **Pinia** — state management
-- **vue-router** — routing
-- **HyperFormula** — financial formula engine
-- Main source: `src/views/pages/` (one `.vue` file per route)
-
-### Backend
-- **Node.js ESM monolith** at `backend/monolith/`
-- **Express.js** REST API
-- **Socket.io** WebSocket
-- Services run via **systemd** (NOT pm2):
-  - `dronedoc-backend.service`
-  - `dronedoc-frontend.service`
-  - `dronedoc-telegram-bot.service`
-
-### Data Layer
-- **Integram** — primary database (NoSQL + graph, accessed via MCP tools or REST API)
-  - Server: `ai2o.ru`
-  - Auth: POST `/{db}/auth`, returns `{token, _xsrf}`, use `X-Authorization: {token}` header
-  - `_xsrf` goes in **request BODY**, not header
-- **KAG** — Knowledge Augmented Graph for ontology and semantic search
-- **SQLite** — ephemeral local cache only
-
-### AI
-- **Token router** — all AI calls go through `/api/ai-tokens/chat`
-- **Providers**: DeepSeek (default), Claude, GPT-4o, YandexGPT
-- **MCP** (Model Context Protocol) — agents call 60+ Integram tools
-- Frontend: use `getDefaultToken(userId)` from `@/services/aiTokenService`
+**Live demo:** https://dev.drondoc.ru  
+**Issues / Roadmap:** https://github.com/unidel2035/found/issues
 
 ---
 
-## Key Modules and Routes
+## Режимы работы агента
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/fst` | `FstHub.vue` | Central hub — all FST fund modules |
-| `/fst-committee` | `FstCommittee.vue` | AI investment committee (6 agents, 3-round debate) |
-| `/fst-deal` | `FstDeal.vue` | Deal structuring (Term Sheet, SPV, tranches, KPIs) |
-| `/fst-portfolio` | `FstPortfolio.vue` | Portfolio monitoring (traffic lights, sensors, AI reports) |
-| `/fst-execution` | `FstExecution.vue` | Post-investment (Kanban, KPI tracking, fund interventions) |
-| `/fst-twin` | `FstDigitalTwin.vue` | Company digital twin simulation |
-| `/fst-fund` | `FstFundTwin.vue` | Fund-level simulation (NAV, IRR, sub-funds) |
-| `/nti-simulator` | `NtiSimulator.vue` | NTI agent configuration simulator |
-| `/onto` | `OntologySpace.vue` | Ontology hub (KAG-based) |
+### 1. Инвестор задаёт вопросы о платформе
+→ Читай `INVESTOR_AGENT.md` — там demo-данные, ответы на частые вопросы, маршруты
+
+### 2. Разработчик / директор работает с кодом
+→ Читай ниже (архитектура, правила, команды)
 
 ---
 
-## Development Rules
+## Структура проекта
 
-### MUST follow
-1. **Branch**: always use `dev`
-2. **Services**: restart via systemd, NEVER `npm run dev` manually
-3. **Database**: ONLY Integram MCP for DB operations (no raw SQL, no Postgres/MySQL)
-4. **AI calls**: ALWAYS through token router (`/api/ai-tokens/chat`)
-5. **Theming**: use PrimeVue CSS variables (`var(--p-surface-card)`) — never hardcode colors
-6. **Testing**: every module needs tests (unit + e2e)
-7. **Docs**: update `src/config/routeDescriptions.js` and `src/views/pages/Spaces.vue` for every new route
-
-### New Route Checklist
-- [ ] Add to `src/router/index.js`
-- [ ] Add description to `src/config/routeDescriptions.js`
-- [ ] Add card to `src/views/pages/Spaces.vue`
-- [ ] Create component in `src/views/pages/`
-- [ ] Write unit test in `src/__tests__/`
-
-### Financial Models (TemplateRenderer)
-- Templates: `src/templates/finmodel/*.json`
-- Sheet items: `type: "input"` (user fills) or `type: "formula"` (calculated)
-- Cross-sheet refs: `[ItemName]` resolves globally across all sheets
-- IRR: approximate via nested IF chains (no Newton-Raphson in HyperFormula)
-
-### FST Policy Pattern
-```javascript
-const FST_POLICY_DEFAULTS = { maxCheck: 30, minIrr: 25, ... }
-const FST_POLICY_RANGES = { maxCheck: { min: 10, max: 60 }, ... }
 ```
-Use sliders bound to `fundPolicy` reactive object.
-
-### Digital Twin / Simulation Pattern
-```javascript
-// Tick-based simulation
-const simTimer = ref(null)
-const tickSpeed = ref(1000)
-function toggleRun() { /* setInterval → tick() */ }
-function tick() { /* update metrics, generate events from pool */ }
-```
-Event pool: array of `{ id, label, probability, effect: fn }` objects.
-
----
-
-## Integram API Quick Reference
-
-```javascript
-// Auth
-POST https://ai2o.ru/{db}/auth
-body: login=d&pwd=d
-→ { token, _xsrf }
-
-// Headers for all requests
-X-Authorization: {token}
-
-// XSRF for POST requests — in BODY, not header!
-body: _xsrf={_xsrf}&...
-
-// Create object
-POST /{db}/_m_new/{typeId}
-body: _xsrf={_xsrf}&t{typeId}={name}&r{reqId}={value}
-
-// Update object  
-POST /{db}/_m_set/{objectId}
-body: _xsrf={_xsrf}&t{reqId}={value}
-
-// Get objects
-GET /{db}/_d_req/{typeId}?JSON_KV&l=100&s=0
+found/
+├── src/
+│   ├── views/pages/         # Страницы (Fst*.vue — модули фонда)
+│   │   ├── FstHub.vue       # /fst — хаб всех модулей
+│   │   ├── FstCommittee.vue # /fst-committee — AI инвесткомитет
+│   │   ├── FstDeal.vue      # /fst-deal — сделка + финмодель
+│   │   ├── FstPortfolio.vue # /fst-portfolio — мониторинг портфеля
+│   │   ├── FstExecution.vue # /fst-execution — исполнение/Kanban
+│   │   ├── FstDigitalTwin.vue  # /fst-twin — ЦД компании
+│   │   ├── FstFundTwin.vue  # /fst-fund — ЦД фонда
+│   │   └── FstDirector.vue  # /fst-director — обучение директора
+│   ├── components/          # UI компоненты
+│   │   └── integram/        # DataTable, AI-кнопка, диалоги
+│   ├── services/            # aiTokenService, workspaceAIAgentService
+│   ├── templates/finmodel/  # JSON-шаблоны финмоделей
+│   ├── config/
+│   │   ├── routeDescriptions.js  # SEO и описания маршрутов
+│   │   └── router/index.js       # Vue Router
+│   └── stores/              # Pinia stores
+├── backend/monolith/
+│   ├── src/api/routes/      # Express REST эндпоинты
+│   │   ├── ai-tokens.js     # POST /api/ai-tokens/chat
+│   │   └── mcp.js           # POST /api/mcp/integram/chat
+│   ├── src/core/
+│   │   └── TokenBasedLLMCoordinator.js  # LLM роутер
+│   └── scripts/             # koda-*.cjs — AI QA/review скрипты
+├── docs/
+│   ├── architecture.md      # Полная архитектура
+│   ├── database.md          # Схема Integram БД
+│   └── setup.md             # Деплой и настройка
+├── INVESTOR_AGENT.md        # Контекст для агента-инвестора
+└── CLAUDE.md                # Этот файл
 ```
 
-**Key Integram databases:**
-- `my` — users, tokens, agent categories
-- `kval` — UAV ontology (type 1673250: ~1140 concepts; type 1673287: ~923 relations)
-- `fst` — fund data (deals, portfolio companies, committee sessions)
+---
+
+## Ключевые маршруты
+
+| Маршрут | Файл | Назначение |
+|---------|------|-----------|
+| `/fst` | FstHub.vue | Хаб — все модули фонда |
+| `/fst-committee` | FstCommittee.vue | AI-инвесткомитет (6 агентов) |
+| `/fst-deal` | FstDeal.vue | Сделка: SPV, транши, Term Sheet, финмодель |
+| `/fst-portfolio` | FstPortfolio.vue | Портфель: светофор, датчики, AI-отчёты |
+| `/fst-execution` | FstExecution.vue | Исполнение: Kanban, KPI, действия фонда |
+| `/fst-twin` | FstDigitalTwin.vue | ЦД компании: симуляция tick-engine |
+| `/fst-fund` | FstFundTwin.vue | ЦД фонда: NAV, IRR, субфонды |
+| `/fst-director` | FstDirector.vue | Обучение директора + каталог агентов |
+| `/onto` | OntologySpace.vue | Онтология БПЛА (~1100 концептов) |
+| `/spaces` | Spaces.vue | Каталог всех агентов платформы |
 
 ---
 
-## AI Agent Button (Integram DataTable)
+## Технический стек
 
-BUTTON requisite (type 7) renders as gear+play buttons in each table row.
-
-- **Gear** → `AIAgentConfigDialog` (model, prompt, output field, MCP mode)
-- **Play** → `handleAIAgentExecute` → `/api/ai-tokens/chat` or `/api/mcp/integram/chat`
-- Attrs format: `:ALIAS=Name:ai-agent:o=fieldId:m=0:p=prompt:`
-- Placeholders in prompt: `[ID]`, `[VAL]`, `[ColumnName]`
-
-Key files:
-- `src/components/integram/IntegramDataTableWrapper.vue` — execution logic
-- `src/components/integram/DataTable.vue` — button rendering
-- `src/components/integram/DataTable/dialogs/AIAgentConfigDialog.vue` — config UI
-
----
-
-## KAG Knowledge Graph
-
-KAG stores structured knowledge for the platform:
-
-```javascript
-// Search
-kag_search("UAV regulation certification")
-
-// Ask semantic question  
-kag_ask("What are the key risks for hardware startups?")
-
-// Create entity
-kag_create_entities([{
-  name: "EntityName",
-  entityType: "Technology|Company|Concept|Person",
-  observations: ["fact 1", "fact 2"]
-}])
-
-// Add knowledge
-kag_add_observations([{ entityName: "...", contents: ["..."] }])
+```
+Frontend:  Vue 3 (Composition API) + Vite + PrimeVue + Pinia
+           HyperFormula (финмодели) + Chart.js + vue-i18n
+Backend:   Node.js ESM монолит + Express + Socket.io
+Database:  Integram (NoSQL на ai2o.ru) + SQLite (кеш)
+AI:        DeepSeek (default) / Claude / GPT-4o / YandexGPT
+           → через POST /api/ai-tokens/chat
+           → body: { modelId, prompt, systemPrompt, application }
+Knowledge: KAG (hybrid vector+graph), ~1100 UAV концептов в kval
+Protocol:  MCP (60+ Integram-инструментов для агентов)
+Infra:     systemd (НЕ pm2), SOCKS5:9050, Telegram Bot
 ```
 
-**Ontology data in kval:**
-- Type 1673250: UAV technology concepts (~1140)
-- Type 1673287: Ontology relations (~923)
-- Type 1731380: Drone models (~30)
-- Type 1734484: AeroNet companies (95)
+---
+
+## AI вызовы — как работает
+
+```javascript
+// Стандартный вызов (фронтенд)
+const resp = await fetch('/api/ai-tokens/chat', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    modelId: 'anthropic/claude-sonnet-4-20250514',
+    prompt: userMessage,
+    systemPrompt: 'Ты — ...',
+    application: 'ModuleName'  // для tracking
+  })
+})
+const { response } = await resp.json()
+```
+
+**Доступные модели:**
+- `anthropic/claude-sonnet-4-20250514` — стратегический анализ, длинные тексты
+- `deepseek/deepseek-chat` — быстро, код, структурированные данные
+- `openai/gpt-4o` — мультимодальные задачи
+- `yandex/yandexgpt` — русскоязычный контент
 
 ---
 
-## Koda Scripts (Free AI Automation)
+## Integram API (база данных)
 
-All scripts in `backend/monolith/scripts/`, run from `cd backend/monolith`:
+```
+Server:   ai2o.ru
+Auth:     POST /{db}/auth → { token, _xsrf }
+Header:   X-Authorization: {token}
+XSRF:     в теле запроса, НЕ в заголовке
+
+Создать:  POST /{db}/_m_new/{typeId}  body: t{typeId}=name&r{reqId}=val
+Обновить: POST /{db}/_m_set/{id}      body: t{reqId}=val
+Читать:   GET  /{db}/_d_req/{typeId}?JSON_KV&l=100
+```
+
+**Ключевые базы:**
+- `my` — пользователи, токены AI, категории агентов
+- `kval` — онтология БПЛА (type 1673250: ~1140 концептов)
+- `fst` — данные фонда (сделки, портфель, события ИК)
+
+---
+
+## Правила разработки
+
+1. **Ветка:** `dev` (основная), PR → `dev`
+2. **Сервисы:** systemd, НЕ pm2
+   - `sudo systemctl restart dronedoc-backend`
+   - `sudo systemctl restart dronedoc-frontend`
+3. **Тема:** Только PrimeVue CSS переменные (`var(--p-surface-card)`), никаких хардкод цветов
+4. **БД:** Только Integram MCP — никакого PostgreSQL/MySQL
+5. **AI:** Только через token router `/api/ai-tokens/chat` — никаких прямых API-ключей на фронте
+6. **Новый маршрут → обязательно добавить в:**
+   - `src/router/index.js`
+   - `src/config/routeDescriptions.js`
+   - `src/views/pages/Spaces.vue`
+
+---
+
+## Koda-скрипты (бесплатный AI для QA)
 
 ```bash
-node scripts/koda-site-tester.cjs /route --full      # QA page testing
-node scripts/koda-code-reviewer.cjs --commit HEAD~3..HEAD  # code review
-node scripts/koda-api-tester.cjs --auth              # API testing
-node scripts/koda-deploy-checker.cjs                 # deployment health
-node scripts/koda-deploy-tester.cjs --full           # remote deploy test via SOCKS proxy
-```
+cd backend/monolith
 
-Use Koda for: testing, review, QA, deploy checks. It's FREE (MiniMax-M2.5 via GITHUB_TOKEN).
+node scripts/koda-site-tester.cjs /fst-committee --full   # тест страницы
+node scripts/koda-code-reviewer.cjs --commit HEAD~3..HEAD  # ревью кода
+node scripts/koda-api-tester.cjs --auth                   # тест API
+node scripts/koda-deploy-checker.cjs                      # состояние деплоя
+```
 
 ---
 
-## Commit Convention
-
-```
-feat(module): short description
-fix(module): what was broken
-refactor(module): what changed
-docs: what was documented
-```
-
-Module names: `fst-committee`, `fst-deal`, `fst-portfolio`, `fst-execution`, `fst-twin`, `onto`, `integram`, `kag`, etc.
-
----
-
-## Environment Variables
+## Окружение (.env)
 
 ```env
 # Backend (backend/monolith/.env)
@@ -221,38 +176,26 @@ INTEGRAM_SERVER_URL=ai2o.ru
 INTEGRAM_SYSTEM_USERNAME=d
 INTEGRAM_SYSTEM_PASSWORD=d
 TELEGRAM_BOT_TOKEN=...
-GITHUB_TOKEN=...          # for Koda free AI
-
-# Frontend (src/.env or vite.config)
-VITE_API_URL=http://localhost:3000
+GITHUB_TOKEN=...         # для Koda (бесплатный AI)
+YANDEX_API_KEY=...
+YANDEX_FOLDER_ID=...
 ```
 
 ---
 
-## Testing
+## Roadmap issues
 
-- **Unit**: `src/__tests__/` — Vitest
-- **Integration**: `tests/integration/` — Vitest
-- **E2E**: `e2e/` — Playwright
-- **Test runner UI**: https://drondoc.ru/agents/test-runner
-- **Minimum coverage**: 70% statements, 60% branches, 70% functions
+https://github.com/unidel2035/found/issues — 47+ задач с приоритетами P0/P1/P2/P3
 
-```bash
-npm run test:unit
-npm run test:e2e
-npm run test:coverage
-```
+**P0 (критический путь):**
+- #35 Waterfall & carried interest
+- #40 ILPA LP-отчётность
+- #36 Government relations dashboard
+- #46 Back-office & ФСБУ 4/2023
 
----
-
-## Issue Labels
-
-| Label | Color | Usage |
-|-------|-------|-------|
-| `feature` | #0075ca | New functionality |
-| `ai` | #ab47bc | AI/ML features |
-| `analytics` | #26c6da | Data analytics |
-| `fintech` | #66bb6a | Financial tools |
-| `lp` | #ffa726 | LP/investor features |
-| `infrastructure` | #e4e669 | DevOps, deployment |
-| `ontology` | #d93f0b | Knowledge graph |
+**P1 (следующий квартал):**
+- #33 AML/KYC compliance
+- #34 ESG scoring
+- #38 Нацпроект БАС tracker
+- #41 AI-ускоренный due diligence
+- #45 Реестр БПЛА (Постановление №1726)
