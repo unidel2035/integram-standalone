@@ -18,10 +18,22 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    allowedHosts: ['fst.drondoc.ru', 'localhost'],
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:3000',
-        changeOrigin: true
+        target: 'http://127.0.0.1:8082',
+        changeOrigin: true,
+        ws: true
+      },
+      '/ws': {
+        target: 'http://127.0.0.1:8082',
+        changeOrigin: true,
+        ws: true
+      },
+      '/wsclaude': {
+        target: 'http://127.0.0.1:8082',
+        changeOrigin: true,
+        ws: true
       }
     }
   }

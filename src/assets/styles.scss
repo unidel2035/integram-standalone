@@ -1,0 +1,547 @@
+/* You can add global styles to this file, and also import other style files */
+@use 'primeicons/primeicons.css';
+@use '@/assets/tailwind.css';
+@use '@/assets/layout/layout.scss';
+@use '@/assets/demo/demo.scss';
+
+/* ==========================================================================
+   UX/UI Global Fixes (Issue: UX Audit for /integram module)
+   - Touch targets minimum 44x44px for mobile accessibility
+   - Improved contrast for text and IDs
+   - Better button spacing and positioning
+   - Skeleton loaders for loading states
+   - Consistent container widths
+   - Action button grouping (primary vs destructive)
+   ========================================================================== */
+
+/* Integram Page Container - Consistent Width Across All Pages */
+.integram-main .content {
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem;
+}
+
+/* Integram Card Content - Responsive Width */
+.integram-main .p-card {
+  width: 100%;
+}
+
+/* Touch Target Fixes - Minimum 44x44px for mobile accessibility */
+.integram-touch-friendly {
+  /* All buttons in Integram should have minimum touch target */
+  .p-button {
+    min-height: 44px;
+    min-width: 44px;
+
+    &.p-button-icon-only {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0.5rem;
+    }
+
+    /* Text and outlined buttons still need touch target */
+    &.p-button-text,
+    &.p-button-outlined {
+      min-height: 44px;
+    }
+  }
+
+  /* Icon buttons in toolbar */
+  .p-button-icon-only.p-button-rounded {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Round badges everywhere in Integram */
+  .p-badge {
+    border-radius: 50rem;
+  }
+}
+
+/* Global touch target fixes for mobile */
+@media (max-width: 768px) {
+  /* Ensure all interactive elements meet 44px minimum */
+  .p-button {
+    min-height: 44px;
+
+    &.p-button-sm,
+    &[data-pc-severity] {
+      min-height: 44px;
+    }
+
+    &.p-button-icon-only {
+      min-width: 44px;
+      min-height: 44px;
+    }
+  }
+
+  /* DataTable action buttons */
+  .p-datatable .p-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem;
+  }
+
+  /* Accordion headers */
+  .p-accordion-header-link {
+    min-height: 48px;
+    padding: 1rem !important;
+  }
+
+  /* Tab headers */
+  .p-tabview-nav-link {
+    min-height: 48px;
+    padding: 1rem 1.25rem !important;
+  }
+
+  /* Input fields */
+  .p-inputtext,
+  .p-dropdown,
+  .p-multiselect,
+  .p-calendar .p-inputtext {
+    min-height: 44px;
+  }
+
+  /* Checkbox and radio */
+  .p-checkbox,
+  .p-radiobutton {
+    width: 44px;
+    height: 44px;
+
+    .p-checkbox-box,
+    .p-radiobutton-box {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}
+
+/* Contrast Improvements */
+/* Fix low contrast for IDs and secondary text (WCAG requires 4.5:1 for text) */
+.text-muted,
+.text-secondary,
+.p-text-secondary {
+  color: var(--p-text-muted-color, #6b7280) !important;
+}
+
+/* Better contrast for object IDs */
+.object-id,
+.record-id,
+.integram-id {
+  color: var(--p-text-color-secondary, #4b5563);
+  font-weight: 500;
+}
+
+/* Improved label styling */
+.integram-label {
+  font-weight: 600;
+  color: var(--p-text-color, #111827);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Button Positioning Fixes */
+/* Dangerous actions (delete) should be visually separated */
+.integram-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+
+  /* Separate dangerous actions with margin */
+  .p-button-danger,
+  [data-pc-severity="danger"] {
+    margin-left: auto;
+  }
+
+  /* On mobile, stack buttons */
+  @media (max-width: 576px) {
+    flex-direction: column;
+    width: 100%;
+
+    .p-button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .p-button-danger,
+    [data-pc-severity="danger"] {
+      margin-left: 0;
+      margin-top: 0.5rem;
+      order: 99;
+    }
+  }
+}
+
+/* Form Field Improvements */
+.integram-field {
+  margin-bottom: 1.25rem;
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--p-text-color);
+
+    .required-indicator {
+      color: var(--p-red-500);
+      margin-left: 0.25rem;
+    }
+  }
+
+  .field-description,
+  .field-hint {
+    font-size: 0.875rem;
+    color: var(--p-text-muted-color);
+    margin-top: 0.375rem;
+  }
+
+  /* Ensure input has proper focus ring for accessibility */
+  .p-inputtext:focus,
+  .p-dropdown:focus,
+  .p-multiselect:focus {
+    box-shadow: 0 0 0 2px var(--p-primary-color);
+    outline: none;
+  }
+}
+
+/* Truncated Text with Tooltips */
+.truncate-with-tooltip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+/* Table Name Cards */
+.table-name-card {
+  .table-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+}
+
+/* Skeleton Loader Styles */
+.integram-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-hover) 25%,
+    var(--surface-card) 50%,
+    var(--surface-hover) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Skeleton for list items */
+.skeleton-list-item {
+  height: 48px;
+  margin-bottom: 0.5rem;
+  @extend .integram-skeleton;
+}
+
+/* Skeleton for cards */
+.skeleton-card {
+  height: 120px;
+  @extend .integram-skeleton;
+}
+
+/* Skeleton for table rows */
+.skeleton-table-row {
+  height: 44px;
+  margin-bottom: 2px;
+  @extend .integram-skeleton;
+}
+
+/* Breadcrumb Improvements */
+.integram-breadcrumb {
+  .p-breadcrumb {
+    background: transparent;
+    border: none;
+    padding: 0;
+
+    .p-breadcrumb-list {
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+
+    .p-breadcrumb-item-link {
+      color: var(--p-primary-color);
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: var(--p-surface-100);
+      }
+    }
+
+    .p-breadcrumb-item:last-child .p-breadcrumb-item-link {
+      color: var(--p-text-color);
+      font-weight: 600;
+    }
+  }
+}
+
+/* ==========================================================================
+   DataTable Action Buttons Improvements
+   ========================================================================== */
+
+/* Better spacing and grouping for action buttons in tables */
+.p-datatable {
+  /* Grouped actions pattern */
+  .integram-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    /* Primary action group */
+    > div:first-child {
+      display: flex;
+      gap: 0.125rem;
+    }
+
+    /* Destructive action separated */
+    .p-button-danger {
+      margin-left: auto;
+    }
+  }
+
+  /* Ensure action column buttons have consistent sizing */
+  td:last-child .p-button {
+    flex-shrink: 0;
+  }
+}
+
+/* ==========================================================================
+   Object ID Badge Improvements (Better Contrast)
+   ========================================================================== */
+
+/* Improve ID visibility in lists and tables */
+.integram-object-id,
+.p-datatable code,
+.object-id-badge {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 0.85rem;
+  color: var(--p-text-color-secondary, #374151);
+  background: var(--p-surface-100, #f3f4f6);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Badge Legend Component
+   ========================================================================== */
+
+.integram-badge-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--p-surface-50);
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--p-text-muted-color);
+  }
+
+  .legend-label {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* ==========================================================================
+   Empty State Improvements
+   ========================================================================== */
+
+.integram-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--p-text-muted-color);
+
+  .empty-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+    margin-bottom: 1rem;
+  }
+
+  .empty-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--p-text-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-description {
+    max-width: 24rem;
+    line-height: 1.5;
+  }
+
+  .empty-action {
+    margin-top: 1.5rem;
+  }
+}
+
+/* ==========================================================================
+   Panel Header Action Button
+   ========================================================================== */
+
+.p-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  /* Ensure action buttons in panel headers are properly aligned */
+  .p-button {
+    flex-shrink: 0;
+  }
+}
+
+/* Mobile Responsiveness Improvements */
+@media (max-width: 768px) {
+  /* Grid adjustments for dictionary cards */
+  .integram-dictionary-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    gap: 0.75rem;
+  }
+
+  /* Card padding on mobile */
+  .p-card .p-card-body {
+    padding: 1rem;
+  }
+
+  /* Dialog responsiveness */
+  .p-dialog {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 0.5rem;
+  }
+
+  /* Toolbar stacking */
+  .integram-toolbar {
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .toolbar-left,
+    .toolbar-right {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+
+  /* DataTable adjustments */
+  .p-datatable {
+    .p-datatable-thead > tr > th,
+    .p-datatable-tbody > tr > td {
+      padding: 0.75rem 0.5rem;
+    }
+
+    /* Hide less important columns on mobile */
+    .hide-on-mobile {
+      display: none !important;
+    }
+  }
+}
+
+/* Small mobile (< 576px) */
+@media (max-width: 576px) {
+  .integram-dictionary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Full width inputs on small screens */
+  .p-inputtext,
+  .p-dropdown,
+  .p-multiselect {
+    width: 100% !important;
+  }
+
+  /* Stack form actions vertically */
+  .form-actions,
+  .integram-actions {
+    flex-direction: column;
+
+    .p-button {
+      width: 100%;
+    }
+  }
+}
+
+/* Badge Legend Component */
+.integram-badge-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--p-surface-50);
+  border-radius: 6px;
+  border: 1px solid var(--surface-border);
+  margin-bottom: 1rem;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+
+    .p-badge {
+      font-size: 0.75rem;
+    }
+
+    .legend-label {
+      color: var(--p-text-muted-color);
+    }
+  }
+}
+
+/* Improved Focus States for Accessibility */
+*:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Toast positioning on mobile */
+@media (max-width: 576px) {
+  .p-toast {
+    width: calc(100% - 2rem) !important;
+    left: 1rem !important;
+    right: 1rem !important;
+
+    .p-toast-message {
+      margin-bottom: 0.5rem;
+    }
+  }
+}

@@ -1,0 +1,313 @@
+/**
+ * Token Service
+ *
+ * Unified token management service for all AI models and mini-applications
+ * Handles token generation, consumption tracking, and balance management
+ */
+
+import { getApiUrl } from '../utils/apiConfig'
+
+const API_BASE_URL = getApiUrl('/api')
+
+/**
+ * Get current token balance for the user
+ * @deprecated Use aiTokenService.getUserTokens() instead and extract balance from token object
+ * @returns {Promise<Object>} Token balance information
+ */
+export async function getTokenBalance() {
+  // Note: This endpoint doesn't exist in backend
+  // Backend uses /api/ai-tokens/tokens which returns full token objects with balance
+  // Frontend should use aiTokenService.getUserTokens() and extract token_balance from results
+  throw new Error('DEPRECATED: Use aiTokenService.getUserTokens() to get token balance from token objects')
+}
+
+/**
+ * Get token usage statistics
+ * @param {string} period - Period for statistics (daily, monthly, all)
+ * @param {string} userId - User identifier
+ * @param {string} application - Optional application filter
+ * @returns {Promise<Object>} Usage statistics
+ */
+export async function getTokenUsage(period = 'monthly', userId = null, application = null) {
+  // Fixed: Use correct endpoint /api/ai-tokens/usage
+  let url = `${API_BASE_URL}/ai-tokens/usage?period=${period}`
+
+  if (userId) {
+    url += `&userId=${encodeURIComponent(userId)}`
+  }
+
+  if (application) {
+    url += `&application=${encodeURIComponent(application)}`
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAuthToken()}`
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to fetch token usage' }))
+    throw new Error(error.detail || error.error || 'Failed to fetch token usage')
+  }
+
+  const result = await response.json()
+  return result.data || result
+}
+
+/**
+ * Get token usage history
+ * @param {number} limit - Number of records to fetch
+ * @param {number} offset - Offset for pagination
+ * @param {string} userId - User identifier
+ * @returns {Promise<Object>} Usage history
+ */
+export async function getTokenUsageHistory(limit = 100, offset = 0, userId = null) {
+  // Fixed: Use correct endpoint /api/ai-tokens/usage with pagination
+  let url = `${API_BASE_URL}/ai-tokens/usage?limit=${limit}&offset=${offset}&groupBy=none`
+
+  if (userId) {
+    url += `&userId=${encodeURIComponent(userId)}`
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAuthToken()}`
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to fetch usage history' }))
+    throw new Error(error.detail || error.error || 'Failed to fetch usage history')
+  }
+
+  const result = await response.json()
+  return result.data || result
+}
+
+/**
+ * Purchase token package
+ * @deprecated Feature not implemented yet
+ * @param {Object} packageInfo - Package information
+ * @returns {Promise<Object>} Purchase result with payment URL
+ */
+export async function purchaseTokenPackage(packageInfo) {
+  // Note: Token purchase feature not implemented yet
+  // Backend doesn't have /api/tokens/purchase endpoint
+  // Future implementation should integrate with payment gateway
+  throw new Error('NOT_IMPLEMENTED: Token purchase feature is not available yet. Please contact support for token top-ups.')
+}
+
+/**
+ * Consume tokens for an AI operation (record usage)
+ * @param {Object} consumptionData - Token consumption data
+ * @returns {Promise<Object>} Consumption result
+ */
+export async function consumeTokens(consumptionData) {
+  // Fixed: Use correct endpoint /api/ai-tokens/usage/record
+  const response = await fetch(`${API_BASE_URL}/ai-tokens/usage/record`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAuthToken()}`
+    },
+    body: JSON.stringify(consumptionData)
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to consume tokens' }))
+    throw new Error(error.detail || error.error || 'Failed to consume tokens')
+  }
+
+  const result = await response.json()
+  return result.data || result
+}
+
+/**
+ * Update token limits
+ * @param {string} tokenId - Token ID to update
+ * @param {Object} updates - Token updates including limits
+ * @returns {Promise<Object>} Updated token
+ */
+export async function updateTokenLimits(tokenId, updates) {
+  // Fixed: Use correct endpoint /api/ai-tokens/tokens/:id (PUT)
+  const response = await fetch(`${API_BASE_URL}/ai-tokens/tokens/${tokenId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAuthToken()}`
+    },
+    body: JSON.stringify(updates)
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to update token' }))
+    throw new Error(error.detail || error.error || 'Failed to update token limits')
+  }
+
+  const result = await response.json()
+  return result.data || result
+}
+
+/**
+ * Get token limits
+ * @deprecated Use aiTokenService.getUserTokens() and extract limits from token objects
+ * @returns {Promise<Object>} Current token limits
+ */
+export async function getTokenLimits() {
+  // Note: There's no separate /tokens/limits endpoint
+  // Token limits are part of the token object returned by /api/ai-tokens/tokens
+  // Frontend should use aiTokenService.getUserTokens() and extract daily_limit, monthly_limit from tokens
+  throw new Error('DEPRECATED: Use aiTokenService.getUserTokens() to get token limits from token objects')
+}
+
+/**
+ * Get token packages available for purchase
+ * @deprecated Feature not implemented yet
+ * @returns {Promise<Array>} Available packages
+ */
+export async function getTokenPackages() {
+  // Note: Token package/pricing feature not implemented yet
+  // Backend doesn't have /api/tokens/packages endpoint
+  // Return empty array for now to avoid breaking UI
+  return []
+}
+
+/**
+ * Generate API token for external integrations
+ * @param {Object} tokenConfig - Token configuration (name, scopes, expiration)
+ * @returns {Promise<Object>} Generated token
+ */
+export async function generateApiToken(tokenConfig) {
+  // Fixed: Use correct endpoint /api/ai-tokens/tokens (POST)
+  const response = await fetch(`${API_BASE_URL}/ai-tokens/tokens`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAuthToken()}`
+    },
+    body: JSON.stringify(tokenConfig)
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to generate API token' }))
+    throw new Error(error.detail || error.error || 'Failed to generate API token')
+  }
+
+  const result = await response.json()
+  return result.data || result
+}
+
+/**
+ * List all API tokens for a user
+ * @param {string} userId - User identifier
+ * @returns {Promise<Array>} List of API tokens
+ */
+export async function listApiTokens(userId) {
+  // Fixed: Use correct endpoint /api/ai-tokens/tokens
+  const url = userId
+    ? `${API_BASE_URL}/ai-tokens/tokens?userId=${encodeURIComponent(userId)}`
+    : `${API_BASE_URL}/ai-tokens/tokens`
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAuthToken()}`
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to list API tokens' }))
+    throw new Error(error.detail || error.error || 'Failed to list API tokens')
+  }
+
+  const result = await response.json()
+  return result.data || result
+}
+
+/**
+ * Revoke (delete) API token
+ * @param {string} tokenId - Token ID to revoke
+ * @returns {Promise<Object>} Revocation result
+ */
+export async function revokeApiToken(tokenId) {
+  // Fixed: Use correct endpoint /api/ai-tokens/tokens/:id (DELETE)
+  const response = await fetch(`${API_BASE_URL}/ai-tokens/tokens/${tokenId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAuthToken()}`
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to revoke API token' }))
+    throw new Error(error.detail || error.error || 'Failed to revoke API token')
+  }
+
+  const result = await response.json()
+  return result.data || result
+}
+
+/**
+ * Get auth token from storage
+ * @private
+ * @returns {string} Auth token
+ */
+function getAuthToken() {
+  return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || ''
+}
+
+/**
+ * Estimate tokens required for operation
+ * @deprecated Feature not implemented yet - use model pricing for rough estimates
+ * @param {Object} operation - Operation details (model, input_length, etc.)
+ * @returns {Promise<Object>} Token estimation
+ */
+export async function estimateTokens(operation) {
+  // Note: Token estimation feature not implemented yet
+  // Backend doesn't have /api/tokens/estimate endpoint
+  // For now, use rough estimates: ~1 token per 4 characters
+  const estimatedInputTokens = Math.ceil((operation.input_length || 0) / 4)
+  const estimatedOutputTokens = Math.ceil((operation.expected_output_length || 1000) / 4)
+
+  return {
+    estimated_input_tokens: estimatedInputTokens,
+    estimated_output_tokens: estimatedOutputTokens,
+    estimated_total_tokens: estimatedInputTokens + estimatedOutputTokens,
+    estimated_cost: 0, // Would need model pricing to calculate
+    note: 'This is a rough client-side estimation. Actual token count may vary.'
+  }
+}
+
+/**
+ * Get model pricing information
+ * Issue #1540 - Now fetches from DronDoc API via ai-tokens/models endpoint
+ * @param {string} [provider] - Optional provider filter
+ * @returns {Promise<Array>} List of models with pricing information
+ */
+export async function getModelPricing(provider = null) {
+  const url = provider
+    ? `${API_BASE_URL}/ai-tokens/models?provider=${encodeURIComponent(provider)}`
+    : `${API_BASE_URL}/ai-tokens/models`
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to fetch models' }))
+    throw new Error(error.error || error.detail || 'Failed to fetch models')
+  }
+
+  const result = await response.json()
+  return result.data || result
+}
