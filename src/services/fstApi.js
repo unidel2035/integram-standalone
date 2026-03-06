@@ -166,6 +166,118 @@ export async function saveDecision(data) {
   return api(`_m_new/${TYPE_IC_DECISIONS}?JSON_KV`, { method: 'POST', body })
 }
 
+/**
+ * Сохранить полный протокол заседания инвесткомитета с AI-агентами
+ *
+ * @param {Object} session - Объект сессии из FstCommitteeEngine
+ * @param {string} projectId - ID проекта в fst
+ * @returns {Promise<Object>} Созданная запись решения ИК
+ */
+export async function saveCommitteeSession(session, projectId) {
+  // Формируем полный JSON протокола
+  const protocol = {
+    sessionId: session.id || `session-${Date.now()}`,
+    projectId: session.projectId,
+    timestamp: new Date().toISOString(),
+
+    // Решение комитета
+    decision: {
+      recommendation: session.decision?.recommendation || 'DEFER',
+      aggregatedScore: session.decision?.aggregatedScore || 0,
+      voteCounts: session.decision?.voteCounts || {},
+      conditions: session.decision?.conditions || [],
+      risks: session.decision?.risks || []
+    },
+
+    // Голоса агентов
+    votes: (session.votes || []).map(v => ({
+      agentId: v.agentId,
+      verdict: v.verdict,
+      score: v.score,
+      confidence: v.confidence,
+      reasoning: v.reasoning || ''
+    })),
+
+    // Аргументы дебатов
+    arguments: (session.arguments || []).map(arg => ({
+      id: arg.id,
+      agentId: arg.agentId,
+      type: arg.type,
+      dimension: arg.dimension,
+      text: arg.text,
+      targetArgId: arg.targetArgId || null,
+      timestamp: arg.timestamp || new Date().toISOString()
+    })),
+
+    // Параметры политики ФСТ на момент сессии
+    policy: session.policy || {},
+
+    // Утверждение человеком
+    humanApproval: session.decision?.humanApproval || null,
+
+    // Скоры по измерениям
+    dimScores: session.dimScores || {}
+  }
+
+  // Определяем итоговое решение ИК
+  const finalVerdict = session.decision?.humanApproval?.verdict || session.decision?.recommendation || 'DEFER'
+  const decisionIdMap = {
+    'APPROVE': 1129,           // Одобрен
+    'APPROVE_CONDITIONAL': 1131, // Одобрен с условиями
+    'REJECT': 1133,            // Отклонён
+    'DEFER': 1135              // На доработку
+  }
+
+  const votesAgainst = (session.votes || []).filter(v => v.verdict === 'REJECT').length
+  const hasConditions = (session.decision?.conditions || []).length > 0
+
+  // Если APPROVE с условиями, меняем статус
+  const decisionId = (finalVerdict === 'APPROVE' && hasConditions)
+    ? decisionIdMap['APPROVE_CONDITIONAL']
+    : decisionIdMap[finalVerdict]
+
+  // Создаём запись в БД
+  const body = new URLSearchParams({
+    [`t${TYPE_IC_DECISIONS}`]: `ИК: ${session.project?.title || session.projectId} — ${new Date().toLocaleDateString('ru')}`,
+    t1161: votesAgainst,
+    t1162: JSON.stringify(protocol, null, 2), // Полный JSON протокола
+    t1163: new Date().toISOString(),
+    ...(projectId ? { t1185: projectId } : {}),
+    ...(decisionId ? { t1187: decisionId } : {})
+  })
+
+  return api(`_m_new/${TYPE_IC_DECISIONS}?JSON_KV`, { method: 'POST', body })
+}
+
+/**
+ * Получить все протоколы ИК (с парсингом JSON)
+ */
+export async function getCommitteeSessions() {
+  const data = await api(`_m_list/${TYPE_IC_DECISIONS}?JSON_KV`)
+  const objects = data.object || []
+  const reqs = data.reqs || {}
+
+  return objects.map(obj => {
+    let protocol = null
+    try {
+      const jsonStr = reqs[obj.id]?.['1162'] || '{}'
+      protocol = JSON.parse(jsonStr)
+    } catch (e) {
+      console.warn(`Failed to parse protocol for decision ${obj.id}:`, e)
+    }
+
+    return {
+      id: obj.id,
+      name: obj.val,
+      votesAgainst: Number(reqs[obj.id]?.['1161'] || 0),
+      protocol: protocol,
+      meetingDate: reqs[obj.id]?.['1163'] || null,
+      projectId: reqs[obj.id]?.['1185'] || null,
+      decisionId: reqs[obj.id]?.['1187'] || null
+    }
+  })
+}
+
 // ── Deals ─────────────────────────────────────────────────────────────────
 
 export const TYPE_DEALS = 1164

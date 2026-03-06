@@ -474,7 +474,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onUnmounted, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import Slider from 'primevue/slider'
 import { FstCommitteeEngine, createSession } from '@/components/fst-committee/FstCommitteeEngine.js'
 import {
@@ -482,7 +482,7 @@ import {
   SPEED_MULTIPLIERS,
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
-import { saveDecision, createProject, STATUSES } from '@/services/fstApi'
+import { saveDecision, createProject, saveCommitteeSession, STATUSES } from '@/services/fstApi'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import { useFstData } from '@/composables/useFstData.js'
 
@@ -719,10 +719,7 @@ async function saveDecisionToFst(sess) {
   if (!sess) return
   try {
     const project = PROJECTS_POOL.value.find(p => p.id === sess.projectId) || {}
-    const votes = sess.votes || []
-    const votesAgainst = votes.filter(v => v.verdict === 'REJECT').length
     const approved = sess.decision?.humanApproval?.verdict === 'APPROVE'
-    const decisionName = `ИК: ${project.name || sess.projectId} — ${new Date().toLocaleDateString('ru')}`
 
     // Создать проект в fst если его ещё нет
     let fstProjectId = null
@@ -736,17 +733,18 @@ async function saveDecisionToFst(sess) {
       fstProjectId = created?.id
     } catch { /* проект уже может существовать */ }
 
-    // Сохранить решение ИК
-    await saveDecision({
-      name: decisionName,
-      votesAgainst,
-      conditions: sess.conclusion || '',
-      meetingDate: new Date().toISOString(),
-      projectId: fstProjectId,
-      decisionId: approved ? 1129 : 1133  // Одобрено / Отклонено (справочник 1090)
+    // Сохранить ПОЛНЫЙ протокол заседания инвесткомитета
+    await saveCommitteeSession(sess, fstProjectId)
+
+    console.log('✅ Протокол ИК сохранён в fst:', {
+      project: project.name || sess.projectId,
+      decision: sess.decision?.recommendation,
+      score: sess.decision?.aggregatedScore,
+      votes: sess.votes?.length,
+      arguments: sess.arguments?.length
     })
   } catch (err) {
-    console.warn('saveDecisionToFst failed:', err.message)
+    console.error('❌ saveDecisionToFst failed:', err)
   }
 }
 
