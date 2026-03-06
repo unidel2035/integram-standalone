@@ -16,9 +16,9 @@ export function getOrchestratorUrl() {
   const protocol = window.location.protocol
   const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
 
-  // In development mode on LOCALHOST, return empty string to use Vite proxy
-  // This avoids CORS issues when running locally
-  if (import.meta.env.DEV && isLocalhost) {
+  // In development mode on LOCALHOST or remote dev IP, use relative paths (Vite proxy)
+  const isRemoteDevServer = import.meta.env.DEV && !isLocalhost
+  if (import.meta.env.DEV && (isLocalhost || isRemoteDevServer)) {
     // If explicitly set to use direct URL (e.g., for testing without proxy)
     if (import.meta.env.VITE_ORCHESTRATOR_DIRECT === 'true' && import.meta.env.VITE_ORCHESTRATOR_URL) {
       return import.meta.env.VITE_ORCHESTRATOR_URL
@@ -72,8 +72,8 @@ export function getBaseApiUrl() {
     return import.meta.env.VITE_API_URL
   }
 
-  // In dev mode on LOCALHOST, use relative path for Vite proxy
-  if (import.meta.env.DEV && isLocalhost) {
+  // In dev mode (localhost or remote dev server), use relative path for Vite proxy
+  if (import.meta.env.DEV) {
     return '/api'
   }
 
