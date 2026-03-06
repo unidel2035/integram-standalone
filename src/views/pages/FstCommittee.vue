@@ -479,17 +479,32 @@ import Slider from 'primevue/slider'
 import { FstCommitteeEngine, createSession } from '@/components/fst-committee/FstCommitteeEngine.js'
 import {
   AGENTS, SCORING_DIMS, PHASES, PHASE_ORDER, VERDICTS,
-  PROJECTS_POOL, SUBFUNDS, SPEED_MULTIPLIERS,
+  SPEED_MULTIPLIERS,
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
 import { saveDecision, createProject, STATUSES } from '@/services/fstApi'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
+import { useFstData } from '@/composables/useFstData.js'
+
+// ── Load FST Data ─────────────────────────────────────────────────
+
+const { projects: PROJECTS_POOL, subfunds: SUBFUNDS, loadProjects, loadSubfunds } = useFstData()
+
+// Load data on component mount
+onMounted(async () => {
+  await loadProjects()
+  await loadSubfunds()
+  // Set initial project after data loads
+  if (PROJECTS_POOL.value.length > 0 && !selectedProjectId.value) {
+    selectedProjectId.value = PROJECTS_POOL.value[0].id
+  }
+})
 
 // ── State ─────────────────────────────────────────────────────
 
 const lobbyVisible = ref(true)
 const conclusionVisible = ref(false)
-const selectedProjectId = ref(PROJECTS_POOL[0].id)
+const selectedProjectId = ref(null)
 const selectedSpeed = ref('normal')
 const policyExpanded = ref(true)
 const humanComment = ref('')
@@ -501,7 +516,7 @@ const fstPolicy = ref({ ...FST_POLICY_DEFAULTS })
 
 // Финансовый калькулятор
 const finMetrics = ref({ npv: null, irr: null, pi: null, gatePass: false })
-const currentProject = computed(() => PROJECTS_POOL.find(p => p.id === selectedProjectId.value))
+const currentProject = computed(() => PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value))
 
 function onFinMetrics(m) {
   finMetrics.value = m
@@ -638,7 +653,7 @@ function resetPolicy() {
 // ── Session Management ────────────────────────────────────────
 
 function startSession() {
-  const project = PROJECTS_POOL.find(p => p.id === selectedProjectId.value)
+  const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
   if (!project) return
   lobbyVisible.value = false
 
@@ -703,7 +718,7 @@ function handleEvent(event) {
 async function saveDecisionToFst(sess) {
   if (!sess) return
   try {
-    const project = PROJECTS_POOL.find(p => p.id === sess.projectId) || {}
+    const project = PROJECTS_POOL.value.find(p => p.id === sess.projectId) || {}
     const votes = sess.votes || []
     const votesAgainst = votes.filter(v => v.verdict === 'REJECT').length
     const approved = sess.decision?.humanApproval?.verdict === 'APPROVE'

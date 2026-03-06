@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "seed:fst": "node scripts/seed-fst-demo-data.js"
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
