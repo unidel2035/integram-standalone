@@ -221,6 +221,7 @@ import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
+import { getPortfolio, getProjects } from '@/services/fstApi'
 
 const toast = useToast()
 
@@ -230,11 +231,51 @@ const lastUpdate = ref(new Date().toLocaleTimeString('ru-RU'))
 const monitoringStatus = ref('активен')
 let liveTimer = null
 
+// ─── Загрузка из fst API ──────────────────────────────────────────────────────
+const portfolioLoading = ref(false)
+
+async function loadPortfolioFromDb() {
+  portfolioLoading.value = true
+  try {
+    const [portfolioRows, projectRows] = await Promise.all([getPortfolio(), getProjects()])
+    const projectMap = Object.fromEntries(projectRows.map(p => [p.id, p]))
+
+    if (portfolioRows.length === 0) return  // оставить дефолтные моковые данные
+
+    companies.value = portfolioRows.map((row, idx) => {
+      const project = projectMap[row.projectId] || {}
+      const subfundName = { 1096: 'БАС', 1098: 'РОБО', 1100: 'МЭ' }[project.subfundId] || 'БАС'
+      const stageName   = { 1102: 'Pre-seed', 1103: 'Посевная', 1104: 'Раунд A', 1105: 'Раунд B', 1106: 'Раунд C' }[project.stageId] || '—'
+      const riskLevel   = { 1117: 'red', 1125: 'green', 1127: 'red' }[row.riskStatusId] || 'green'
+
+      // Дополняем дефолтными значениями для полей, которых нет в БД
+      const defaultCompany = companies.value.find(c => c.name === row.name) || companies.value[idx % companies.value.length] || {}
+      return {
+        ...defaultCompany,
+        id:       row.id,
+        name:     row.name,
+        subfund:  subfundName,
+        stage:    stageName,
+        health:   row.kpi,
+        riskLevel,
+        aiReport: row.aiReport
+      }
+    })
+    lastUpdate.value = new Date().toLocaleTimeString('ru-RU')
+    toast.add({ severity: 'success', summary: 'Данные загружены из fst', life: 2000 })
+  } catch (err) {
+    console.warn('fstApi.getPortfolio failed, using mock data:', err.message)
+  } finally {
+    portfolioLoading.value = false
+  }
+}
+
 onMounted(() => {
   liveTimer = setInterval(() => {
     liveColor.value = liveColor.value === '#66bb6a' ? '#388e3c' : '#66bb6a'
     lastUpdate.value = new Date().toLocaleTimeString('ru-RU')
   }, 3000)
+  loadPortfolioFromDb()
 })
 onUnmounted(() => clearInterval(liveTimer))
 
