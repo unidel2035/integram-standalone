@@ -1,1075 +1,956 @@
 <template>
-  <div class="fst-hub">
+  <div class="hub-root">
 
-    <!-- ══════════════════════════════════════════════════════════ HERO -->
-    <div class="fst-hero">
-      <div class="fst-hero-grid"></div>
-      <div class="fst-hero-glow fst-hero-glow--1"></div>
-      <div class="fst-hero-glow fst-hero-glow--2"></div>
-      <div class="fst-hero-glow fst-hero-glow--3"></div>
+    <!-- Атмосферный фон -->
+    <div class="hub-bg">
+      <div class="hub-bg-grid"></div>
+      <div class="hub-glow hub-glow--1"></div>
+      <div class="hub-glow hub-glow--2"></div>
+      <div class="hub-glow hub-glow--3"></div>
+    </div>
 
-      <div class="fst-hero-inner">
-        <div class="fst-hero-eyebrow">
-          <span class="fst-live-dot"></span>
-          <span>Система активна</span>
-          <span class="fst-eyebrow-sep">·</span>
-          <span>{{ now }}</span>
-        </div>
-
-        <h1 class="fst-hero-title">
-          <span class="fst-hero-title-line">Фонд Суверенных</span>
-          <span class="fst-hero-title-line fst-hero-title-line--accent">Технологий НТИ</span>
-        </h1>
-
-        <p class="fst-hero-sub">
-          Инвесткомитет нового поколения.<br>
-          <strong>48 часов</strong> от заявки до решения вместо 3–6 месяцев.
-        </p>
-
-        <div class="fst-hero-actions">
-          <button class="fst-btn-primary" @click="go('/fst-apply')">
-            <i class="pi pi-file-plus"></i>
-            Подать заявку
-          </button>
-          <button class="fst-btn-ghost" @click="go('/fst-committee')">
-            <i class="pi pi-play-circle"></i>
-            Запустить инвесткомитет
-          </button>
-        </div>
-
-        <!-- Stats strip -->
-        <div class="fst-hero-stats">
-          <div v-for="s in heroStats" :key="s.label" class="fst-hero-stat">
-            <div class="fst-hero-stat-val" :class="{ 'fst-skeleton': statsLoading }">{{ s.val }}</div>
-            <div class="fst-hero-stat-label">{{ s.label }}</div>
-          </div>
+    <!-- ═══════════════════════════════════════ COMMAND BAR -->
+    <div class="hub-bar">
+      <div class="hub-bar-brand">
+        <div class="hub-brand-mark"><i class="pi pi-shield"></i></div>
+        <div class="hub-brand-text">
+          <span class="hub-brand-name">ФСТ НТИ</span>
+          <span class="hub-brand-sub">Центр управления</span>
         </div>
       </div>
-
-      <!-- Floating orbit decoration -->
-      <div class="fst-hero-orbit">
-        <div class="fst-orbit-ring fst-orbit-ring--1">
-          <div class="fst-orbit-dot" style="--angle:0deg"><i class="pi pi-users"></i></div>
-          <div class="fst-orbit-dot" style="--angle:120deg"><i class="pi pi-chart-line"></i></div>
-          <div class="fst-orbit-dot" style="--angle:240deg"><i class="pi pi-shield"></i></div>
-        </div>
-        <div class="fst-orbit-ring fst-orbit-ring--2">
-          <div class="fst-orbit-dot" style="--angle:60deg"><i class="pi pi-bolt"></i></div>
-          <div class="fst-orbit-dot" style="--angle:180deg"><i class="pi pi-desktop"></i></div>
-        </div>
-        <div class="fst-orbit-core">
-          <i class="pi pi-building"></i>
-        </div>
+      <div class="hub-bar-center">
+        <span class="hub-live-dot"></span>
+        <span class="hub-bar-time">{{ now }}</span>
+        <span class="hub-bar-sep">·</span>
+        <span class="hub-bar-status">Система активна</span>
+      </div>
+      <div class="hub-bar-actions">
+        <button class="hub-action-btn hub-action-btn--ghost" @click="go('/fst-apply')">
+          <i class="pi pi-file-plus"></i> Заявка
+        </button>
+        <button class="hub-action-btn hub-action-btn--primary" @click="go('/fst-committee')">
+          <i class="pi pi-play-circle"></i> Инвесткомитет
+        </button>
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════ PIPELINE -->
-    <div class="fst-pipeline-wrap">
-      <div class="fst-section-label">Жизненный цикл инвестиции</div>
-      <div class="fst-pipeline">
-        <div
-          v-for="(step, idx) in pipeline"
-          :key="step.id"
-          class="fst-pipe-step"
-          :style="{ '--c': step.color }"
-          @click="go(step.path)"
-        >
-          <div v-if="idx > 0" class="fst-pipe-connector">
-            <svg width="40" height="2" viewBox="0 0 40 2"><line x1="0" y1="1" x2="40" y2="1" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+    <!-- ═══════════════════════════════════════ KPI STRIP -->
+    <div class="hub-kpi-strip">
+      <div v-for="k in kpis" :key="k.label" class="hub-kpi" :style="{ '--kc': k.color }">
+        <div class="hub-kpi-icon"><i :class="k.icon"></i></div>
+        <div class="hub-kpi-body">
+          <div class="hub-kpi-val">
+            <span v-if="loading" class="hub-skel hub-skel--val"></span>
+            <span v-else>{{ k.val }}</span>
           </div>
-          <div class="fst-pipe-card">
-            <div class="fst-pipe-num">{{ String(idx + 1).padStart(2, '0') }}</div>
-            <div class="fst-pipe-icon"><i :class="step.icon"></i></div>
-            <div class="fst-pipe-name">{{ step.name }}</div>
-            <div class="fst-pipe-sub">{{ step.sub }}</div>
-          </div>
+          <div class="hub-kpi-label">{{ k.label }}</div>
         </div>
+        <div v-if="k.badge" class="hub-kpi-badge" :class="k.badgeClass">{{ k.badge }}</div>
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════ BEFORE/AFTER -->
-    <div class="fst-transform">
-      <div class="fst-section-label" style="padding:0 32px">Как мы перестроили процесс</div>
-      <div class="fst-transform-grid">
+    <!-- ═══════════════════════════════════════ MAIN GRID -->
+    <div class="hub-main">
 
-        <div class="fst-transform-col fst-transform-col--before">
-          <div class="fst-transform-header">
-            <div class="fst-transform-icon fst-transform-icon--bad"><i class="pi pi-times"></i></div>
-            <span>Традиционный фонд</span>
+      <!-- ── Левая колонка: Воронка + Быстрые действия ── -->
+      <div class="hub-col hub-col--left">
+
+        <!-- Воронка проектов -->
+        <div class="hub-card">
+          <div class="hub-card-title">
+            <i class="pi pi-filter" style="color:#a78bfa"></i>
+            Воронка проектов
           </div>
-          <ul class="fst-transform-list">
-            <li v-for="s in beforeSteps" :key="s">{{ s }}</li>
-          </ul>
-          <div class="fst-transform-result fst-transform-result--bad">
-            <i class="pi pi-clock"></i>
-            3–6 месяцев · решение без объяснений
+          <div class="hub-funnel">
+            <div
+              v-for="stage in funnel"
+              :key="stage.status"
+              class="hub-funnel-row"
+              :style="{ '--fc': stage.color }"
+              @click="go('/fst-dealflow')"
+            >
+              <div class="hub-funnel-dot"></div>
+              <div class="hub-funnel-label">{{ stage.status }}</div>
+              <div class="hub-funnel-bar-wrap">
+                <div
+                  class="hub-funnel-bar"
+                  :style="{ width: funnelBarWidth(stage.count) + '%' }"
+                ></div>
+              </div>
+              <div class="hub-funnel-count">{{ stage.count }}</div>
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            Всего проектов: <strong>{{ totalProjects }}</strong>
+            <span class="hub-link" @click="go('/fst-dealflow')">
+              Воронка → <i class="pi pi-arrow-up-right"></i>
+            </span>
           </div>
         </div>
 
-        <div class="fst-transform-arrow">
-          <div class="fst-arrow-line"></div>
-          <i class="pi pi-arrow-right"></i>
+        <!-- Последние решения ИК -->
+        <div class="hub-card">
+          <div class="hub-card-title">
+            <i class="pi pi-file-check" style="color:#ffa726"></i>
+            Последние решения ИК
+          </div>
+          <div v-if="loading" class="hub-skeleton-list">
+            <div v-for="i in 3" :key="i" class="hub-skel hub-skel--row"></div>
+          </div>
+          <div v-else-if="recentDecisions.length === 0" class="hub-empty">
+            <i class="pi pi-inbox"></i> Заседаний пока не проводилось
+          </div>
+          <div v-else class="hub-decisions">
+            <div v-for="d in recentDecisions" :key="d.id" class="hub-decision-row">
+              <div class="hub-dec-verdict" :style="{ background: verdictColor(d.verdict) }">
+                <i :class="verdictIcon(d.verdict)"></i>
+              </div>
+              <div class="hub-dec-body">
+                <div class="hub-dec-name">{{ d.projectName }}</div>
+                <div class="hub-dec-meta">{{ d.verdict }} · {{ d.date }}</div>
+              </div>
+              <div class="hub-dec-score" v-if="d.score">{{ d.score }}/100</div>
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            <span class="hub-link" @click="go('/fst-protocol')">
+              Все протоколы → <i class="pi pi-arrow-up-right"></i>
+            </span>
+          </div>
         </div>
 
-        <div class="fst-transform-col fst-transform-col--after">
-          <div class="fst-transform-header">
-            <div class="fst-transform-icon fst-transform-icon--good"><i class="pi pi-check"></i></div>
-            <span>ФСТ НТИ</span>
+      </div>
+
+      <!-- ── Правая колонка: Портфель + Тревоги ── -->
+      <div class="hub-col hub-col--right">
+
+        <!-- Портфельные компании -->
+        <div class="hub-card hub-card--wide">
+          <div class="hub-card-title">
+            <i class="pi pi-building" style="color:#22d3ee"></i>
+            Портфель — здоровье компаний
           </div>
-          <ul class="fst-transform-list">
-            <li v-for="s in afterSteps" :key="s">{{ s }}</li>
-          </ul>
-          <div class="fst-transform-result fst-transform-result--good">
-            <i class="pi pi-bolt"></i>
-            48 часов · протокол дебатов доступен стартапу
+          <div v-if="loading" class="hub-skeleton-list">
+            <div v-for="i in 3" :key="i" class="hub-skel hub-skel--company"></div>
+          </div>
+          <div v-else-if="portfolio.length === 0" class="hub-empty">
+            <i class="pi pi-briefcase"></i> Портфельных компаний нет
+          </div>
+          <div v-else class="hub-companies">
+            <div
+              v-for="co in portfolio"
+              :key="co.id"
+              class="hub-company-row"
+              :style="{ '--hs': healthColor(co.health) }"
+              @click="go('/fst-portfolio')"
+            >
+              <div class="hub-co-indicator"></div>
+              <div class="hub-co-body">
+                <div class="hub-co-name">{{ co.name }}</div>
+                <div class="hub-co-meta">
+                  <span>{{ co.subfund }}</span>
+                  <span class="hub-co-dot">·</span>
+                  <span>{{ co.stage }}</span>
+                  <span v-if="co.runway" class="hub-co-dot">·</span>
+                  <span v-if="co.runway" :class="['hub-runway', co.runway < 4 ? 'hub-runway--red' : co.runway < 7 ? 'hub-runway--yellow' : '']">
+                    Runway: {{ co.runway }}м
+                  </span>
+                </div>
+              </div>
+              <div class="hub-co-kpi">
+                <div class="hub-co-kpi-bar">
+                  <div class="hub-co-kpi-fill" :style="{ width: co.kpi + '%' }"></div>
+                </div>
+                <div class="hub-co-kpi-val">{{ co.kpi }}%</div>
+              </div>
+              <div class="hub-co-health" :title="healthLabel(co.health)">
+                <i :class="healthIcon(co.health)"></i>
+              </div>
+            </div>
+          </div>
+          <div class="hub-card-footer">
+            <span class="hub-link" @click="go('/fst-portfolio')">
+              Портфельный монитор → <i class="pi pi-arrow-up-right"></i>
+            </span>
+            <span class="hub-link" @click="go('/fst-fund')">
+              Цифровой двойник фонда → <i class="pi pi-arrow-up-right"></i>
+            </span>
           </div>
         </div>
+
+        <!-- Тревоги и уведомления -->
+        <div class="hub-card" v-if="alerts.length > 0">
+          <div class="hub-card-title">
+            <i class="pi pi-exclamation-triangle" style="color:#ef5350"></i>
+            Требуют внимания
+          </div>
+          <div class="hub-alerts">
+            <div v-for="a in alerts" :key="a.id" class="hub-alert-row" :class="`hub-alert--${a.level}`" @click="go(a.path)">
+              <i :class="a.icon"></i>
+              <div class="hub-alert-text">
+                <strong>{{ a.company }}</strong> — {{ a.text }}
+              </div>
+              <i class="pi pi-chevron-right hub-alert-arrow"></i>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════ KEY MODULES -->
-    <div class="fst-modules">
-      <div class="fst-section-label" style="padding: 0 32px">Ключевые модули</div>
-      <div class="fst-modules-grid">
+    <!-- ═══════════════════════════════════════ MODULE GRID -->
+    <div class="hub-modules">
+      <div class="hub-modules-title">Все модули платформы</div>
+      <div class="hub-modules-grid">
         <div
           v-for="mod in modules"
-          :key="mod.id"
-          class="fst-mod-card"
-          :class="{ 'fst-mod-card--hero': mod.featured }"
+          :key="mod.path"
+          class="hub-mod"
           :style="{ '--mc': mod.color }"
           @click="go(mod.path)"
         >
-          <div class="fst-mod-glow"></div>
-          <div class="fst-mod-top">
-            <div class="fst-mod-icon"><i :class="mod.icon"></i></div>
-            <div class="fst-mod-badges">
-              <span v-if="mod.featured" class="fst-badge fst-badge--key">Ключевой</span>
-              <span class="fst-badge fst-badge--live">{{ statusLabel(mod.status) }}</span>
-            </div>
-          </div>
-          <div class="fst-mod-phase">{{ mod.phase }}</div>
-          <div class="fst-mod-name">{{ mod.name }}</div>
-          <div class="fst-mod-desc">{{ mod.desc }}</div>
-          <div class="fst-mod-tags">
-            <span v-for="t in mod.tags" :key="t" class="fst-tag">{{ t }}</span>
-          </div>
-          <div class="fst-mod-footer">
-            <code class="fst-mod-path">{{ mod.path }}</code>
-            <i class="pi pi-arrow-up-right fst-mod-arrow"></i>
-          </div>
+          <div class="hub-mod-icon"><i :class="mod.icon"></i></div>
+          <div class="hub-mod-name">{{ mod.name }}</div>
+          <div class="hub-mod-sub">{{ mod.sub }}</div>
         </div>
       </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════ TOOLS -->
-    <div class="fst-tools-wrap">
-      <div class="fst-section-label" style="padding: 0 32px">Экосистема</div>
-      <div class="fst-tools">
-        <div v-for="tool in tools" :key="tool.id" class="fst-tool" @click="go(tool.path)">
-          <div class="fst-tool-icon" :style="{ color: tool.color }"><i :class="tool.icon"></i></div>
-          <div class="fst-tool-body">
-            <div class="fst-tool-name">{{ tool.name }}</div>
-            <div class="fst-tool-desc">{{ tool.desc }}</div>
-          </div>
-          <i class="pi pi-arrow-up-right fst-tool-arrow"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════════ FOOTER -->
-    <div class="fst-footer">
-      <div class="fst-footer-brand">
-        <i class="pi pi-shield"></i>
-        <span>ФСТ НТИ</span>
-        <span class="fst-footer-sep">·</span>
-        <span class="fst-footer-motto">Перестраиваем процессы, а не автоматизируем их</span>
-      </div>
-      <div class="fst-footer-right">Powered by DronDoc Platform · v2026.03</div>
     </div>
 
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useFstData } from '@/composables/useFstData.js'
+import { getProjects, getPortfolio, getCommitteeSessions, STATUSES } from '@/services/fstApi.js'
 
 const router = useRouter()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
 
 function go(path) { router.push(path) }
-function statusLabel(s) { return { live: 'Live', demo: 'Demo', beta: 'Beta' }[s] || s }
 
-// ── Load FST Data from API ─────────────────────────────────────────
-const { stats, statsLoading, loadStats } = useFstData()
+// ── Data ───────────────────────────────────────────────────────────────────
+const loading = ref(true)
+const projects = ref([])
+const portfolio = ref([])
+const decisions = ref([])
 
-// Load stats on component mount
-onMounted(() => {
-  loadStats()
+onMounted(async () => {
+  try {
+    const [proj, port, sess] = await Promise.all([
+      getProjects().catch(() => []),
+      getPortfolio().catch(() => []),
+      getCommitteeSessions().catch(() => []),
+    ])
+    projects.value = proj
+    portfolio.value = port
+    decisions.value = sess
+  } finally {
+    loading.value = false
+  }
 })
 
-// Computed hero stats based on API data
-const heroStats = computed(() => {
-  if (!stats.value) {
-    // Default skeleton/loading state
-    return [
-      { val: '...', label: 'Среднее время решения' },
-      { val: '...', label: 'AI-агентов ИК' },
-      { val: '...', label: 'Прозрачность' },
-      { val: '...', label: 'Суверенность' },
-    ]
-  }
-
-  const { aum, portfolioCount, subfundCount, avgIRR } = stats.value
+// ── KPI strip ──────────────────────────────────────────────────────────────
+const kpis = computed(() => {
+  const totalAum = portfolio.value.reduce((s, c) => s + (c.nav || 0), 0)
+  const totalInvested = portfolio.value.reduce((s, c) => s + (c.invested || 0), 0)
+  const onIc = projects.value.filter(p =>
+    ['На рассмотрении ИК', String(STATUSES['На рассмотрении ИК'])].includes(String(p.statusId))
+  ).length
+  const approved = portfolio.value.length
 
   return [
-    { val: '48 ч', label: 'Среднее время решения' },
-    { val: `${portfolioCount}`, label: 'Портфельных компаний' },
-    { val: `${subfundCount}`, label: 'Субфонда' },
-    { val: `${(avgIRR * 100).toFixed(0)}%`, label: 'Средний IRR прогноз' },
+    {
+      label: 'NAV портфеля',
+      val: totalAum > 0 ? `${(totalAum / 1e6).toFixed(0)} млн ₽` : '—',
+      icon: 'pi pi-chart-line',
+      color: '#22d3ee',
+    },
+    {
+      label: 'Инвестировано',
+      val: totalInvested > 0 ? `${(totalInvested / 1e6).toFixed(0)} млн ₽` : '—',
+      icon: 'pi pi-dollar',
+      color: '#34d399',
+    },
+    {
+      label: 'Портфельных компаний',
+      val: approved || '—',
+      icon: 'pi pi-building',
+      color: '#a78bfa',
+    },
+    {
+      label: 'На рассмотрении ИК',
+      val: onIc || '—',
+      icon: 'pi pi-users',
+      color: '#ffa726',
+      badge: onIc > 0 ? 'Ожидают' : null,
+      badgeClass: 'hub-badge--warn',
+    },
+    {
+      label: 'Всего заявок',
+      val: projects.value.length || '—',
+      icon: 'pi pi-file-plus',
+      color: '#f87171',
+    },
+    {
+      label: 'Решений ИК',
+      val: decisions.value.length || '—',
+      icon: 'pi pi-file-check',
+      color: '#fb923c',
+    },
   ]
 })
 
-const beforeSteps = [
-  'Стартап шлёт PDF на email',
-  'Менеджер вручную вносит в Excel',
-  'Скоринг по чужому шаблону',
-  'Закрытое совещание без фиксации',
-  'Решение: «одобрено» или «отказано»',
+// ── Funnel ─────────────────────────────────────────────────────────────────
+const FUNNEL_STAGES = [
+  { status: 'Новые заявки',       match: ['Новый'],                   color: '#38bdf8' },
+  { status: 'На рассмотрении ИК', match: ['На рассмотрении ИК'],      color: '#a78bfa' },
+  { status: 'Одобрены',           match: ['Одобрен'],                  color: '#34d399' },
+  { status: 'В работе',           match: ['В работе'],                 color: '#ffa726' },
+  { status: 'Закрыты',            match: ['Закрыт'],                   color: '#ef5350' },
 ]
 
-const afterSteps = [
-  'Стартап заполняет структурированную форму',
-  'AI строит карту проекта по онтологии',
-  'Инвесткомитет: 6 AI-агентов дебатируют',
-  'Протокол с аргументами каждого агента',
-  'Решение + обоснование доступны стартапу',
-]
+const funnel = computed(() => {
+  return FUNNEL_STAGES.map(s => {
+    const count = projects.value.filter(p =>
+      s.match.some(m => String(p.statusId) === String(STATUSES[m]) || p.statusName === m)
+    ).length
+    return { ...s, count }
+  })
+})
 
-const pipeline = [
-  { id: 1, name: 'Заявка', sub: 'Компания подаёт проект', icon: 'pi pi-file-plus', color: '#38bdf8', path: '/fst-apply' },
-  { id: 2, name: 'Инвесткомитет', sub: '6 AI-агентов дебатируют', icon: 'pi pi-users', color: '#a78bfa', path: '/fst-committee' },
-  { id: 3, name: 'Сделка', sub: 'Term Sheet · SPV · Транши', icon: 'pi pi-file-edit', color: '#fb923c', path: '/fst-deal' },
-  { id: 4, name: 'Исполнение', sub: 'Задачи · KPI · Транши', icon: 'pi pi-list-check', color: '#34d399', path: '/fst-execution' },
-  { id: 5, name: 'Мониторинг', sub: 'Онлайн-риски · Светофор', icon: 'pi pi-chart-scatter', color: '#22d3ee', path: '/fst-portfolio' },
-  { id: 6, name: 'Выход', sub: 'MOIC · IRR · DPI', icon: 'pi pi-flag', color: '#f87171', path: '/fst-fund' },
-]
+const totalProjects = computed(() => projects.value.length)
 
+function funnelBarWidth(count) {
+  const max = Math.max(...funnel.value.map(s => s.count), 1)
+  return Math.round((count / max) * 100)
+}
+
+// ── Recent IC decisions ────────────────────────────────────────────────────
+const recentDecisions = computed(() =>
+  [...decisions.value]
+    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+    .slice(0, 5)
+    .map(d => ({
+      id:          d.id,
+      projectName: d.projectName || d.name || 'Проект',
+      verdict:     d.recommendation || d.decision || 'Неизвестно',
+      date:        d.date ? new Date(d.date).toLocaleDateString('ru-RU') : '',
+      score:       d.aggregatedScore ? Math.round(d.aggregatedScore) : null,
+    }))
+)
+
+function verdictColor(v) {
+  if (!v) return '#78909c'
+  const u = v.toUpperCase()
+  if (u.includes('ОДОБР') || u.includes('INVEST') || u.includes('APPROVE')) return '#43a047'
+  if (u.includes('ОТКЛО') || u.includes('REJECT') || u.includes('PASS'))   return '#ef5350'
+  return '#ffa726'
+}
+function verdictIcon(v) {
+  if (!v) return 'pi pi-minus'
+  const u = v.toUpperCase()
+  if (u.includes('ОДОБР') || u.includes('INVEST') || u.includes('APPROVE')) return 'pi pi-check'
+  if (u.includes('ОТКЛО') || u.includes('REJECT') || u.includes('PASS'))   return 'pi pi-times'
+  return 'pi pi-clock'
+}
+
+// ── Portfolio health ───────────────────────────────────────────────────────
+function healthColor(h) {
+  if (!h || h === 'unknown') return '#78909c'
+  if (h === 'green')  return '#43a047'
+  if (h === 'yellow') return '#ffa726'
+  if (h === 'red')    return '#ef5350'
+  // numeric 0-1
+  const n = parseFloat(h)
+  if (!isNaN(n)) return n >= 0.7 ? '#43a047' : n >= 0.4 ? '#ffa726' : '#ef5350'
+  return '#78909c'
+}
+function healthIcon(h) {
+  const c = healthColor(h)
+  if (c === '#43a047') return 'pi pi-check-circle'
+  if (c === '#ef5350') return 'pi pi-times-circle'
+  if (c === '#ffa726') return 'pi pi-exclamation-circle'
+  return 'pi pi-minus-circle'
+}
+function healthLabel(h) {
+  const c = healthColor(h)
+  if (c === '#43a047') return 'Норма'
+  if (c === '#ef5350') return 'Критично'
+  if (c === '#ffa726') return 'Требует внимания'
+  return 'Нет данных'
+}
+
+// ── Alerts ─────────────────────────────────────────────────────────────────
+const alerts = computed(() => {
+  const list = []
+  for (const co of portfolio.value) {
+    if (co.runway != null && co.runway < 4) {
+      list.push({
+        id:      `runway-${co.id}`,
+        level:   'error',
+        icon:    'pi pi-exclamation-triangle',
+        company: co.name,
+        text:    `Runway < 4 мес (${co.runway} мес) — срочно`,
+        path:    '/fst-portfolio',
+      })
+    } else if (co.health === 'red' || (typeof co.riskLevel === 'string' && co.riskLevel.toLowerCase().includes('критич'))) {
+      list.push({
+        id:      `health-${co.id}`,
+        level:   'error',
+        icon:    'pi pi-exclamation-triangle',
+        company: co.name,
+        text:    'Критический риск — созыв ИК',
+        path:    '/fst-portfolio',
+      })
+    } else if (co.health === 'yellow' || co.kpi < 50) {
+      list.push({
+        id:      `kpi-${co.id}`,
+        level:   'warn',
+        icon:    'pi pi-exclamation-circle',
+        company: co.name,
+        text:    `KPI прогресс ${co.kpi}% — ниже нормы`,
+        path:    '/fst-execution',
+      })
+    }
+  }
+  return list.slice(0, 5)
+})
+
+// ── Module nav grid ────────────────────────────────────────────────────────
 const modules = [
-  {
-    id: 'sourcing',
-    name: 'AI Deal Sourcing',
-    phase: 'Фаза 0 — Поиск стартапов',
-    icon: 'pi pi-search',
-    color: '#667eea',
-    path: '/fst-sourcing',
-    featured: true,
-    status: 'live',
-    desc: 'Автоматический мониторинг открытых источников: Telegram, HH.ru, ЕГРЮЛ, ФИПС, Сколково, GitHub, СМИ. AI-скоринг релевантности, суверенности, сигналов роста. Быстрое добавление в воронку.',
-    tags: ['AI', 'Парсинг', 'Автоматизация', 'Скоринг', 'Sourcing'],
-  },
-  {
-    id: 'committee',
-    name: 'AI Инвесткомитет',
-    phase: 'Фаза 1 — Оценка проекта',
-    icon: 'pi pi-users',
-    color: '#a78bfa',
-    path: '/fst-committee',
-    featured: true,
-    status: 'live',
-    desc: '6 AI-агентов дебатируют проект: технолог, финансист, суверенность, риск, стратег, адвокат дьявола. Многораундовые дебаты, голосование, решение ИК.',
-    tags: ['AI', 'Дебаты', 'Голосование', 'Суверенность', 'TRL/MRL'],
-  },
-  {
-    id: 'protocol',
-    name: 'Протоколы ИК',
-    phase: 'Фаза 1 — Оценка проекта',
-    icon: 'pi pi-file-check',
-    color: '#ffa726',
-    path: '/fst-protocol',
-    featured: false,
-    status: 'live',
-    desc: 'История всех заседаний инвесткомитета с полными протоколами дебатов AI-агентов. Прозрачные, сохранённые, воспроизводимые решения.',
-    tags: ['Протокол', 'История', 'Прозрачность', 'AI', 'Дебаты'],
-  },
-  {
-    id: 'deal',
-    name: 'Доведение сделки',
-    phase: 'Фаза 2 — Структурирование',
-    icon: 'pi pi-file-edit',
-    color: '#fb923c',
-    path: '/fst-deal',
-    featured: true,
-    status: 'live',
-    desc: 'Параметры equity/CLN/грант, SPV, транши с KPI-триггерами, права инвестора, автогенерация Term Sheet. Встроенная финмодель с NPV / MOIC / IRR.',
-    tags: ['Term Sheet', 'SPV', 'Транши', 'Финмодель', 'AI'],
-  },
-  {
-    id: 'execution',
-    name: 'Исполнение сделки',
-    phase: 'Фаза 3 — Постинвестиционная',
-    icon: 'pi pi-list-check',
-    color: '#34d399',
-    path: '/fst-execution',
-    featured: true,
-    status: 'live',
-    desc: 'Kanban задач компании по 6 категориям, KPI-прогресс по месяцам, условия разблокировки транша 2, действия ФСТ (предупреждение, ментор, блокировка).',
-    tags: ['Задачи', 'KPI', 'Транши', 'Симуляция', 'Мониторинг'],
-  },
-  {
-    id: 'portfolio',
-    name: 'Портфельный монитор',
-    phase: 'Фаза 4 — Онлайн-мониторинг',
-    icon: 'pi pi-chart-scatter',
-    color: '#22d3ee',
-    path: '/fst-portfolio',
-    featured: true,
-    status: 'live',
-    desc: 'Светофор рисков по всем компаниям, датчики ЕГРЮЛ / Роспатент / HH.ru, прогресс KPI, AI-еженедельный отчёт, созыв ИК при критических рисках.',
-    tags: ['Светофор', 'ЕГРЮЛ', 'AI-отчёт', 'Runway', 'Риски'],
-  },
-  {
-    id: 'fund',
-    name: 'Цифровой двойник фонда',
-    phase: 'Фаза 5 — Фонд-индекс',
-    icon: 'pi pi-building',
-    color: '#38bdf8',
-    path: '/fst-fund',
-    featured: false,
-    status: 'live',
-    desc: 'NAV · ROI · матрица здоровья · квартальные чарты · AI-прогноз IRR/DPI 2026–2027. 3 субфонда: БАС, РОБО, МЭ.',
-    tags: ['NAV', 'IRR', 'DPI', 'Субфонды', 'ЦД'],
-  },
-  {
-    id: 'twin',
-    name: 'Цифровой двойник компании',
-    phase: 'Фаза 3 — Микро-мониторинг',
-    icon: 'pi pi-desktop',
-    color: '#f87171',
-    path: '/fst-twin',
-    featured: false,
-    status: 'live',
-    desc: 'Live-симуляция АвиаЛогик: выручка, burn rate, TRL/MRL/суверенность, датчики рисков, смарт-контракт с траншами, AI-прогноз выживаемости.',
-    tags: ['Симуляция', 'Tick-engine', 'Смарт-контракт', 'AI'],
-  },
-]
-
-const tools = [
-  { id: 'simulator', name: 'НТИ Фонд Симулятор', desc: 'Стратегическая игра: 9 рынков НТИ, Wright\'s Law, Леонтьев, фонд-индекс', icon: 'pi pi-server', color: '#a78bfa', path: '/nti-simulator' },
-  { id: 'presentation', name: 'НТИ Презентация', desc: 'Инвестиционная презентация для Малкова и Пескова', icon: 'pi pi-bookmark', color: '#38bdf8', path: '/nti-presentation' },
-  { id: 'finmodel', name: 'Редактор финмоделей', desc: 'Полный блочный редактор с HyperFormula (389 Excel-функций)', icon: 'pi pi-table', color: '#34d399', path: '/finmodel' },
-  { id: 'onto', name: 'Онтология БПЛА', desc: '~1140 концептов, граф связей, SKOS, импорт OWL', icon: 'pi pi-sitemap', color: '#fb923c', path: '/onto' },
+  { name: 'Сорсинг',             sub: 'AI-поиск стартапов',         icon: 'pi pi-search',             color: '#667eea', path: '/fst-sourcing' },
+  { name: 'Заявки',              sub: 'Подача и статус',             icon: 'pi pi-file-plus',           color: '#38bdf8', path: '/fst-apply' },
+  { name: 'Воронка',             sub: 'CRM сделок',                  icon: 'pi pi-filter',              color: '#a78bfa', path: '/fst-dealflow' },
+  { name: 'Инвесткомитет',       sub: '6 AI-агентов',                icon: 'pi pi-users',               color: '#a78bfa', path: '/fst-committee' },
+  { name: 'Протоколы ИК',        sub: 'История решений',             icon: 'pi pi-file-check',          color: '#ffa726', path: '/fst-protocol' },
+  { name: 'Due Diligence',       sub: 'Проверка проектов',           icon: 'pi pi-list-check',          color: '#fb923c', path: '/fst-duediligence' },
+  { name: 'Сделка',              sub: 'Term Sheet · SPV · Транши',   icon: 'pi pi-file-edit',           color: '#fb923c', path: '/fst-deal' },
+  { name: 'Cap Table',           sub: 'Структура капитала',          icon: 'pi pi-sitemap',             color: '#7e57c2', path: '/fst-captable' },
+  { name: 'Исполнение',          sub: 'KPI · Kanban · Транши',       icon: 'pi pi-list-check',          color: '#34d399', path: '/fst-execution' },
+  { name: 'Портфель',            sub: 'Светофор рисков',             icon: 'pi pi-chart-scatter',       color: '#22d3ee', path: '/fst-portfolio' },
+  { name: 'Цифровой двойник',    sub: 'Live-данные компании',        icon: 'pi pi-desktop',             color: '#f87171', path: '/fst-twin' },
+  { name: 'Фонд (NAV/IRR)',      sub: '3 субфонда · DPI',            icon: 'pi pi-building-columns',    color: '#38bdf8', path: '/fst-fund' },
+  { name: 'Выход',               sub: 'MOIC · Waterfall',            icon: 'pi pi-flag',                color: '#f87171', path: '/fst-exit' },
+  { name: 'Бенчмарки',           sub: 'Отраслевые сравнения',        icon: 'pi pi-chart-bar',           color: '#26c6da', path: '/fst-benchmark' },
+  { name: 'ESG',                 sub: 'Устойчивое развитие',         icon: 'pi pi-leaf',                color: '#4caf50', path: '/fst-esg' },
+  { name: 'Compliance',          sub: 'Регуляторный контроль',       icon: 'pi pi-shield',              color: '#ab47bc', path: '/fst-compliance' },
+  { name: 'Синдикация',          sub: 'Со-инвесторы',                icon: 'pi pi-share-alt',           color: '#ff7043', path: '/fst-syndication' },
+  { name: 'LP-кабинет',          sub: 'Отчётность LP',               icon: 'pi pi-briefcase',           color: '#26a69a', path: '/fst-lp' },
+  { name: 'Господдержка',        sub: 'Гранты и субсидии',           icon: 'pi pi-gift',                color: '#66bb6a', path: '/fst-grants' },
+  { name: 'Нацпроекты',          sub: 'Интеграция с НП',             icon: 'pi pi-globe',               color: '#42a5f5', path: '/fst-natproject' },
+  { name: 'Суверенность 9D',     sub: 'Матрица суверенности',        icon: 'pi pi-lock',                color: '#ffa726', path: '/fst-sovereignty' },
+  { name: 'Юридика',             sub: 'Документы и СПВ',             icon: 'pi pi-book',                color: '#8d6e63', path: '/fst-legal' },
+  { name: 'Госуправление',       sub: 'KPI фонда',                   icon: 'pi pi-building',            color: '#5c6bc0', path: '/fst-gov' },
+  { name: 'Меморандум',          sub: 'Инвест-меморандум',           icon: 'pi pi-align-left',          color: '#78909c', path: '/fst-memo' },
 ]
 </script>
 
 <style scoped>
-/* ═══════════════════════════════════════════════════════════ BASE */
-.fst-hub {
+/* ═══════════════════════════════════════════ BASE */
+.hub-root {
   min-height: 100vh;
   background: var(--p-surface-ground);
   color: var(--p-text-color);
   font-family: var(--p-font-family, 'Inter', sans-serif);
-}
-
-/* ═══════════════════════════════════════════════════════════ HERO */
-.fst-hero {
   position: relative;
-  min-height: 560px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  padding: 64px 48px 56px;
-  border-bottom: 1px solid var(--fst-glass-xs);
 }
 
-/* Animated grid */
-.fst-hero-grid {
+/* ═══════════════════════════════════════════ BG */
+.hub-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.hub-bg-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, black 30%, transparent 100%);
+    linear-gradient(var(--fst-glass-xs) 1px, transparent 1px),
+    linear-gradient(90deg, var(--fst-glass-xs) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 100%);
 }
-
-/* Glow blobs */
-.fst-hero-glow {
+.hub-glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
+  filter: blur(100px);
+  animation: hubGlowFloat 12s ease-in-out infinite;
 }
-.fst-hero-glow--1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(167,139,250,0.18) 0%, transparent 70%);
-  top: -100px; left: -100px;
-  animation: glowFloat 8s ease-in-out infinite;
+.hub-glow--1 {
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(167,139,250,0.12) 0%, transparent 70%);
+  top: -100px; left: -80px;
 }
-.fst-hero-glow--2 {
+.hub-glow--2 {
   width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(56,189,248,0.14) 0%, transparent 70%);
-  bottom: -80px; left: 200px;
-  animation: glowFloat 10s ease-in-out infinite reverse;
+  background: radial-gradient(ellipse, rgba(56,189,248,0.10) 0%, transparent 70%);
+  top: -60px; right: 100px;
+  animation-delay: -5s;
 }
-.fst-hero-glow--3 {
+.hub-glow--3 {
   width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(251,146,60,0.12) 0%, transparent 70%);
-  top: 50px; right: 200px;
-  animation: glowFloat 12s ease-in-out infinite 2s;
+  background: radial-gradient(ellipse, rgba(255,167,38,0.08) 0%, transparent 70%);
+  top: 200px; left: 40%;
+  animation-delay: -9s;
 }
-@keyframes glowFloat {
+@keyframes hubGlowFloat {
   0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-30px) scale(1.05); }
+  50%       { transform: translateY(-20px) scale(1.04); }
 }
 
-/* Hero inner */
-.fst-hero-inner {
-  position: relative;
-  z-index: 2;
-  max-width: 680px;
+/* ═══════════════════════════════════════════ COMMAND BAR */
+.hub-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  background: var(--fst-nav-backdrop);
+  border-bottom: 1px solid var(--p-surface-border);
+  backdrop-filter: blur(12px);
 }
-
-.fst-hero-eyebrow {
-  display: inline-flex;
+.hub-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.hub-brand-mark {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.hub-brand-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  line-height: 1.1;
+  display: block;
+}
+.hub-brand-sub {
+  font-size: 0.6875rem;
+  color: var(--p-text-muted-color);
+  display: block;
+}
+.hub-bar-center {
+  display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
-  background: var(--fst-glass-xs);
-  border: 1px solid var(--fst-glass-md);
-  border-radius: 20px;
-  padding: 5px 16px;
-  margin-bottom: 28px;
-  backdrop-filter: blur(8px);
+  flex: 1;
+  justify-content: center;
 }
-.fst-live-dot {
+.hub-bar-sep { opacity: 0.3; }
+.hub-bar-status { color: #34d399; font-weight: 500; }
+.hub-live-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
   background: #34d399;
   box-shadow: 0 0 8px #34d399;
-  animation: livePulse 2s infinite;
+  animation: livePulse 2.5s infinite;
+  flex-shrink: 0;
 }
 @keyframes livePulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 8px #34d399; }
-  50% { opacity: 0.6; box-shadow: 0 0 16px #34d399; }
+  0%, 100% { box-shadow: 0 0 8px #34d399; }
+  50%       { box-shadow: 0 0 18px #34d399; }
 }
-.fst-eyebrow-sep { opacity: 0.3; }
-
-.fst-hero-title {
+.hub-bar-actions {
   display: flex;
-  flex-direction: column;
-  margin: 0 0 20px;
-  line-height: 1.1;
+  gap: 8px;
+  flex-shrink: 0;
 }
-.fst-hero-title-line {
-  font-size: clamp(32px, 4vw, 52px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--p-text-color);
-}
-.fst-hero-title-line--accent {
-  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #34d399 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.fst-hero-sub {
-  font-size: 17px;
-  color: var(--p-text-muted-color);
-  line-height: 1.7;
-  margin: 0 0 32px;
-}
-.fst-hero-sub strong { color: #f59e0b; font-weight: 700; }
-
-/* CTA buttons */
-.fst-hero-actions {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
-}
-.fst-btn-primary {
+.hub-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 28px;
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 24px rgba(124,58,237,0.4);
-}
-.fst-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(124,58,237,0.6);
-}
-.fst-btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 13px 28px;
-  background: var(--fst-glass-xs);
-  color: var(--p-text-color);
-  border: 1px solid var(--fst-glass-md);
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  backdrop-filter: blur(8px);
-}
-.fst-btn-ghost:hover {
-  background: var(--fst-glass-md);
-  border-color: rgba(167,139,250,0.5);
-  transform: translateY(-2px);
-}
-
-/* Hero stats */
-.fst-hero-stats {
-  display: flex;
-  gap: 32px;
-  flex-wrap: wrap;
-}
-.fst-hero-stat-val {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--p-text-color);
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-.fst-hero-stat-label {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-  margin-top: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* Orbit decoration */
-.fst-hero-orbit {
-  position: absolute;
-  right: 80px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 300px;
-  height: 300px;
-  z-index: 1;
-  display: none;
-}
-@media (min-width: 1100px) { .fst-hero-orbit { display: block; } }
-
-.fst-orbit-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid var(--fst-glass-sm);
-}
-.fst-orbit-ring--1 {
-  inset: 0;
-  animation: orbitSpin 20s linear infinite;
-}
-.fst-orbit-ring--2 {
-  inset: 50px;
-  animation: orbitSpin 14s linear infinite reverse;
-}
-@keyframes orbitSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.fst-orbit-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--fst-glass-sm);
-  border: 1px solid var(--fst-glass-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: var(--p-text-muted-color);
-  transform:
-    rotate(var(--angle))
-    translateX(135px)
-    rotate(calc(-1 * var(--angle)));
-  backdrop-filter: blur(4px);
-}
-.fst-orbit-ring--2 .fst-orbit-dot {
-  transform:
-    rotate(var(--angle))
-    translateX(85px)
-    rotate(calc(-1 * var(--angle)));
-}
-.fst-orbit-core {
-  position: absolute;
-  inset: 105px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(56,189,248,0.2));
-  border: 1px solid rgba(167,139,250,0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  color: #a78bfa;
-  box-shadow:
-    0 0 30px rgba(167,139,250,0.2),
-    inset 0 0 30px rgba(167,139,250,0.05);
-}
-
-/* ═════════════════════════════════════════════════ SHARED LABELS */
-.fst-section-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--p-text-muted-color);
-  margin-bottom: 20px;
-}
-
-/* ═══════════════════════════════════════════════════════ PIPELINE */
-.fst-pipeline-wrap {
-  padding: 40px 32px 36px;
-  border-bottom: 1px solid var(--fst-glass-xs);
-  background: rgba(255,255,255,0.015);
-}
-.fst-pipeline {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-.fst-pipe-step {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex-shrink: 0;
-}
-.fst-pipe-connector {
-  color: var(--fst-glass-lg);
-  padding: 0 4px;
-  margin-top: -24px;
-  flex-shrink: 0;
-}
-.fst-pipe-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 20px 14px;
-  background: var(--fst-glass-xs);
-  border: 1px solid var(--fst-glass-sm);
-  border-top: 2px solid var(--c);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 120px;
-  position: relative;
-  text-align: center;
-}
-.fst-pipe-card:hover {
-  background: var(--fst-glass-sm);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 20px color-mix(in srgb, var(--c) 20%, transparent);
-}
-.fst-pipe-num {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--c);
-  opacity: 0.7;
-  font-variant-numeric: tabular-nums;
-}
-.fst-pipe-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--c) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 17px;
-  color: var(--c);
-  margin-bottom: 8px;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--c) 25%, transparent);
-}
-.fst-pipe-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--p-text-color);
-}
-.fst-pipe-sub {
-  font-size: 10px;
-  color: var(--p-text-muted-color);
-  margin-top: 3px;
-  line-height: 1.3;
-}
-
-/* ════════════════════════════════════════════════ BEFORE / AFTER */
-.fst-transform {
-  padding: 40px 0 40px;
-  border-bottom: 1px solid var(--fst-glass-xs);
-}
-.fst-transform-grid {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  padding: 0 32px;
-  margin-top: 4px;
-}
-.fst-transform-col {
-  flex: 1;
-  min-width: 0;
-  padding: 24px;
-  border-radius: 12px;
-}
-.fst-transform-col--before {
-  background: rgba(239,68,68,0.04);
-  border: 1px solid rgba(239,68,68,0.12);
-}
-.fst-transform-col--after {
-  background: rgba(52,211,153,0.04);
-  border: 1px solid rgba(52,211,153,0.12);
-}
-.fst-transform-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  color: var(--p-text-muted-color);
-  gap: 4px;
-  flex-shrink: 0;
-}
-.fst-arrow-line {
-  width: 1px;
-  flex: 1;
-  background: linear-gradient(to bottom, transparent, var(--fst-glass-md), transparent);
-  margin-bottom: 4px;
-}
-.fst-transform-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 16px;
-}
-.fst-transform-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-.fst-transform-icon--bad { background: rgba(239,68,68,0.15); color: #f87171; }
-.fst-transform-icon--good { background: rgba(52,211,153,0.15); color: #34d399; }
-.fst-transform-col--before .fst-transform-header { color: #f87171; }
-.fst-transform-col--after .fst-transform-header { color: #34d399; }
-
-.fst-transform-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.fst-transform-list li {
-  font-size: 13px;
-  color: var(--p-text-muted-color);
-  padding: 8px 12px;
-  border-radius: 6px;
-  line-height: 1.4;
-}
-.fst-transform-col--before li {
-  background: rgba(239,68,68,0.05);
-  border-left: 2px solid rgba(239,68,68,0.25);
-}
-.fst-transform-col--after li {
-  background: rgba(52,211,153,0.05);
-  border-left: 2px solid rgba(52,211,153,0.3);
-  color: var(--p-text-color);
-}
-.fst-transform-result {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 10px 14px;
+  gap: 6px;
+  padding: 7px 16px;
   border-radius: 8px;
+  border: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
-.fst-transform-result--bad {
-  background: rgba(239,68,68,0.1);
-  color: #f87171;
-  border: 1px solid rgba(239,68,68,0.2);
+.hub-action-btn--ghost {
+  background: var(--fst-glass-sm);
+  border: 1px solid var(--p-surface-border);
+  color: var(--p-text-color);
 }
-.fst-transform-result--good {
-  background: rgba(52,211,153,0.1);
-  color: #34d399;
-  border: 1px solid rgba(52,211,153,0.2);
+.hub-action-btn--ghost:hover { background: var(--fst-glass-md); }
+.hub-action-btn--primary {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: #fff;
+  box-shadow: 0 2px 16px rgba(124,58,237,0.35);
+}
+.hub-action-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(124,58,237,0.55);
 }
 
-/* ═══════════════════════════════════════════════════════ MODULES */
-.fst-modules {
-  padding: 40px 0 36px;
-  border-bottom: 1px solid var(--fst-glass-xs);
-}
-.fst-modules-grid {
+/* ═══════════════════════════════════════════ KPI STRIP */
+.hub-kpi-strip {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
-  padding: 0 32px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  background: var(--p-surface-border);
+  border-bottom: 1px solid var(--p-surface-border);
 }
-.fst-mod-card {
+.hub-kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--p-surface-ground);
+  transition: background 0.15s;
+  cursor: default;
   position: relative;
   overflow: hidden;
-  background: rgba(255,255,255,0.025);
-  border: 1px solid var(--fst-glass-sm);
-  border-radius: 14px;
-  padding: 22px;
-  cursor: pointer;
-  transition: all 0.25s;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
-.fst-mod-card--hero {
-  border-color: var(--fst-glass-md);
-  background: var(--fst-glass-xs);
-}
-.fst-mod-card:hover {
-  border-color: color-mix(in srgb, var(--mc) 40%, transparent);
-  transform: translateY(-4px);
-  box-shadow:
-    0 12px 40px rgba(0,0,0,0.4),
-    0 0 0 1px color-mix(in srgb, var(--mc) 20%, transparent),
-    0 0 40px color-mix(in srgb, var(--mc) 8%, transparent);
-}
-.fst-mod-glow {
+.hub-kpi::after {
+  content: '';
   position: absolute;
-  top: 0; right: 0;
-  width: 120px; height: 120px;
-  background: radial-gradient(circle at top right, color-mix(in srgb, var(--mc) 12%, transparent), transparent 70%);
-  pointer-events: none;
-  transition: opacity 0.25s;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--kc, #ffa726);
+  opacity: 0.4;
 }
-.fst-mod-card:hover .fst-mod-glow { opacity: 1.5; }
-
-.fst-mod-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-.fst-mod-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--mc) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--mc) 25%, transparent);
+.hub-kpi:hover { background: var(--p-surface-card); }
+.hub-kpi-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  background: var(--fst-glass-sm);
+  border: 1px solid var(--p-surface-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  color: var(--mc);
+  color: var(--kc, #ffa726);
+  font-size: 15px;
+  flex-shrink: 0;
 }
-.fst-mod-badges {
+.hub-kpi-val {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.hub-kpi-label {
+  font-size: 0.7rem;
+  color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 3px;
+  font-weight: 500;
+}
+.hub-kpi-badge {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.hub-badge--warn { background: rgba(255,167,38,0.18); color: #ffa726; }
+
+/* ═══════════════════════════════════════════ SKELETON */
+.hub-skel {
+  background: var(--fst-glass-md);
+  border-radius: 6px;
+  animation: skelPulse 1.6s ease-in-out infinite;
+}
+@keyframes skelPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.hub-skel--val { display: inline-block; width: 60px; height: 22px; }
+.hub-skel--row { height: 48px; margin-bottom: 6px; }
+.hub-skel--company { height: 56px; margin-bottom: 8px; }
+.hub-skeleton-list { display: flex; flex-direction: column; }
+
+/* ═══════════════════════════════════════════ MAIN GRID */
+.hub-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  padding: 20px 24px;
+}
+@media (max-width: 900px) {
+  .hub-main { grid-template-columns: 1fr; }
+  .hub-kpi-strip { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  .hub-kpi-strip { grid-template-columns: repeat(2, 1fr); }
+}
+.hub-col { display: flex; flex-direction: column; gap: 16px; }
+
+/* ═══════════════════════════════════════════ CARD */
+.hub-card {
+  background: var(--p-content-background);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 14px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
+  gap: 14px;
 }
-.fst-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 9px;
-  border-radius: 10px;
+.hub-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.fst-badge--key {
-  background: rgba(167,139,250,0.15);
+.hub-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+  padding-top: 4px;
+  border-top: 1px solid var(--p-surface-border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hub-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: #a78bfa;
-  border: 1px solid rgba(167,139,250,0.25);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: opacity 0.15s;
 }
-.fst-badge--live {
-  background: rgba(52,211,153,0.12);
-  color: #34d399;
-  border: 1px solid rgba(52,211,153,0.2);
+.hub-link:hover { opacity: 0.75; }
+.hub-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+  padding: 12px 0;
 }
-.fst-mod-phase {
-  font-size: 10px;
+
+/* ═══════════════════════════════════════════ FUNNEL */
+.hub-funnel { display: flex; flex-direction: column; gap: 6px; }
+.hub-funnel-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 7px;
+  transition: background 0.1s;
+}
+.hub-funnel-row:hover { background: var(--fst-glass-xs); }
+.hub-funnel-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--fc, #78909c);
+  flex-shrink: 0;
+}
+.hub-funnel-label { font-size: 0.8rem; color: var(--p-text-color); width: 160px; flex-shrink: 0; }
+.hub-funnel-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: var(--fst-glass-sm);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.hub-funnel-bar {
+  height: 100%;
+  background: var(--fc, #78909c);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.hub-funnel-count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--fc, #78909c);
+  width: 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════ DECISIONS */
+.hub-decisions { display: flex; flex-direction: column; gap: 6px; }
+.hub-decision-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--fst-glass-xs);
+  border-radius: 9px;
+  border: 1px solid var(--p-surface-border);
+}
+.hub-dec-verdict {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.hub-dec-name { font-size: 0.8375rem; font-weight: 600; color: var(--p-text-color); }
+.hub-dec-meta { font-size: 0.75rem; color: var(--p-text-muted-color); }
+.hub-dec-score {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--p-text-muted-color);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════ COMPANIES */
+.hub-companies { display: flex; flex-direction: column; gap: 8px; }
+.hub-company-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--p-surface-border);
+  border-left: 3px solid var(--hs, #78909c);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.hub-company-row:hover { background: var(--fst-glass-sm); }
+.hub-co-indicator {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--hs, #78909c);
+  flex-shrink: 0;
+}
+.hub-co-body { flex: 1; min-width: 0; }
+.hub-co-name { font-size: 0.875rem; font-weight: 600; color: var(--p-text-color); }
+.hub-co-meta {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.hub-co-dot { opacity: 0.4; }
+.hub-runway { font-weight: 600; }
+.hub-runway--red    { color: #ef5350; }
+.hub-runway--yellow { color: #ffa726; }
+.hub-co-kpi { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; flex-shrink: 0; }
+.hub-co-kpi-bar {
+  width: 60px; height: 4px;
+  background: var(--fst-glass-md);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.hub-co-kpi-fill {
+  height: 100%;
+  background: var(--hs, #78909c);
+  border-radius: 2px;
+  transition: width 0.6s;
+}
+.hub-co-kpi-val { font-size: 0.7rem; color: var(--p-text-muted-color); }
+.hub-co-health { font-size: 16px; color: var(--hs, #78909c); flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════ ALERTS */
+.hub-alerts { display: flex; flex-direction: column; gap: 6px; }
+.hub-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border-left: 3px solid;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition: opacity 0.15s;
+}
+.hub-alert-row:hover { opacity: 0.8; }
+.hub-alert--error { background: rgba(239,83,80,0.1); border-color: #ef5350; color: var(--p-text-color); }
+.hub-alert--warn  { background: rgba(255,167,38,0.1); border-color: #ffa726; color: var(--p-text-color); }
+.hub-alert-text { flex: 1; }
+.hub-alert-arrow { font-size: 10px; color: var(--p-text-muted-color); }
+
+/* ═══════════════════════════════════════════ MODULE GRID */
+.hub-modules {
+  position: relative;
+  z-index: 1;
+  padding: 4px 24px 32px;
+}
+.hub-modules-title {
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--p-text-muted-color);
+  margin-bottom: 12px;
 }
-.fst-mod-name {
+.hub-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+.hub-mod {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--p-content-background);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.hub-mod::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--mc, #ffa726);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.hub-mod:hover {
+  background: var(--p-surface-card);
+  border-color: var(--mc, #ffa726);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px var(--fst-glass-md);
+}
+.hub-mod:hover::before { opacity: 1; }
+.hub-mod-icon {
   font-size: 18px;
-  font-weight: 700;
+  color: var(--mc, #ffa726);
+  margin-bottom: 2px;
+}
+.hub-mod-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--p-text-color);
   line-height: 1.2;
 }
-.fst-mod-desc {
-  font-size: 12px;
+.hub-mod-sub {
+  font-size: 0.7rem;
   color: var(--p-text-muted-color);
-  line-height: 1.65;
-  flex: 1;
-}
-.fst-mod-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.fst-tag {
-  font-size: 10px;
-  padding: 3px 9px;
-  border-radius: 20px;
-  background: var(--fst-glass-xs);
-  border: 1px solid var(--fst-glass-md);
-  color: var(--p-text-muted-color);
-}
-.fst-mod-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid var(--fst-glass-xs);
-}
-.fst-mod-path {
-  font-size: 11px;
-  color: color-mix(in srgb, var(--mc) 80%, #94a3b8);
-  font-family: monospace;
-}
-.fst-mod-arrow {
-  font-size: 12px;
-  color: var(--p-text-muted-color);
-  transition: color 0.2s, transform 0.2s;
-}
-.fst-mod-card:hover .fst-mod-arrow {
-  color: var(--mc);
-  transform: translate(2px, -2px);
-}
-
-/* ════════════════════════════════════════════════════════ TOOLS */
-.fst-tools-wrap {
-  padding: 36px 0 32px;
-  border-bottom: 1px solid var(--fst-glass-xs);
-}
-.fst-tools {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 10px;
-  padding: 0 32px;
-}
-.fst-tool {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  background: rgba(255,255,255,0.025);
-  border: 1px solid var(--fst-glass-sm);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.18s;
-}
-.fst-tool:hover {
-  background: var(--fst-glass-xs);
-  border-color: var(--fst-glass-md);
-  transform: translateX(4px);
-}
-.fst-tool-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-  width: 36px;
-  text-align: center;
-}
-.fst-tool-body { flex: 1; min-width: 0; }
-.fst-tool-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--p-text-color);
-}
-.fst-tool-desc {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.fst-tool-arrow {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-  flex-shrink: 0;
-  transition: color 0.15s;
-}
-.fst-tool:hover .fst-tool-arrow { color: var(--p-text-muted-color); }
-
-/* ════════════════════════════════════════════════════════ FOOTER */
-.fst-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 32px;
-  background: var(--fst-glass-xs);
-  border-top: 1px solid var(--fst-glass-xs);
-  font-size: 12px;
-  color: var(--p-text-muted-color);
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.fst-footer-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.fst-footer-brand .pi-shield { color: #a78bfa; }
-.fst-footer-brand span:first-of-type { color: var(--p-text-muted-color); font-weight: 600; }
-.fst-footer-sep { opacity: 0.3; }
-.fst-footer-motto { color: var(--p-text-muted-color); font-style: italic; }
-.fst-footer-right { color: #1e293b; }
-
-/* ══════════════════════════════════════════════════ RESPONSIVE */
-@media (max-width: 768px) {
-  .fst-hero { padding: 40px 20px 40px; min-height: auto; }
-  .fst-hero-title-line { font-size: 28px; }
-  .fst-transform-grid { flex-direction: column; gap: 12px; padding: 0 16px; }
-  .fst-transform-arrow { flex-direction: row; padding: 0; justify-content: center; }
-  .fst-arrow-line { display: none; }
-  .fst-modules { padding: 32px 0; }
-  .fst-modules-grid { padding: 0 16px; gap: 12px; grid-template-columns: 1fr; }
-  .fst-tools { padding: 0 16px; }
-  .fst-pipeline-wrap { padding: 24px 16px; }
-  .fst-footer { padding: 14px 16px; }
-  .fst-hero-orbit { display: none; }
-}
-
-/* ══════════════════════════════════════════════════ SKELETON LOADER */
-.fst-skeleton {
-  background: linear-gradient(90deg, var(--fst-glass-xs) 25%, var(--fst-glass-md) 50%, var(--fst-glass-xs) 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: 4px;
-  color: transparent !important;
-}
-@keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  line-height: 1.3;
 }
 </style>
