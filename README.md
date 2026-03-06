@@ -259,27 +259,99 @@ Real-time monitoring across all portfolio companies with:
 
 ---
 
-## Getting Started
+## Quick Start
+
+### Prerequisites
+
+- **Node.js** 20.0.0+ ([Download](https://nodejs.org))
+- **npm** 9.0.0+
+- **Git**
+
+### Installation
 
 ```bash
-# Clone
+# 1. Clone repository
 git clone https://github.com/unidel2035/found.git
-
-# Install dependencies
 cd found
+
+# 2. Checkout dev branch (main development branch)
+git checkout dev
+
+# 3. Install frontend dependencies
 npm install
 
-# Configure environment
-cp .env.example .env
-# Set: DEEPSEEK_API_KEY, INTEGRAM credentials, TELEGRAM_BOT_TOKEN
+# 4. Install backend dependencies
+cd backend/monolith
+npm install
+cd ../..
 
-# Start development
-npm run dev
+# 5. Configure environment
+cp .env.example .env
 ```
 
+### Configuration
+
+Edit `.env` and set these **required** variables:
+
+```bash
+# AI Provider (at least one)
+DEEPSEEK_API_KEY=sk-your-deepseek-key-here
+
+# Integram Database (required)
+INTEGRAM_SERVER_URL=ai2o.ru
+INTEGRAM_SYSTEM_USERNAME=d
+INTEGRAM_SYSTEM_PASSWORD=d
+
+# Backend
+PORT=3000
+NODE_ENV=development
+
+# Frontend
+VITE_API_URL=http://localhost:3000
+```
+
+**Get API Keys:**
+- DeepSeek: https://platform.deepseek.com (recommended, cost-efficient)
+- OpenAI: https://platform.openai.com (optional)
+- Anthropic: https://console.anthropic.com (optional)
+
+### Run Development Servers
+
+**Terminal 1 - Backend:**
+```bash
+cd backend/monolith
+npm run dev
+# → Backend running on http://localhost:3000
+```
+
+**Terminal 2 - Frontend:**
+```bash
+npm run dev
+# → Frontend running on http://localhost:5173
+```
+
+Open browser: http://localhost:5173
+
+### Verify Setup
+
+```bash
+# Check backend health
+curl http://localhost:3000/api/health
+
+# Check Integram connection
+curl -X POST 'https://ai2o.ru/fst/auth?JSON_KV' -d 'login=d&pwd=d'
+```
+
+### Next Steps
+
+- 📖 Read [Setup Guide](docs/setup.md) for detailed configuration
+- 🏗️ Read [Architecture](docs/architecture.md) to understand the platform
+- 🗄️ Read [Database Schema](docs/database.md) for Integram data model
+- 🤖 Read [CLAUDE.md](CLAUDE.md) for development guidelines
+
 **Required services:**
-- Integram instance (data layer)
-- KAG server (knowledge graph)
+- Integram instance (data layer) — test DB available at `ai2o.ru/fst`
+- KAG server (knowledge graph) — optional for development
 - LLM API keys (DeepSeek recommended for cost efficiency)
 
 ---

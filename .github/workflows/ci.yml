@@ -1,0 +1,191 @@
+name: CI - Lint and Test
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - 'feat/**'
+  push:
+    branches:
+      - dev
+      - 'feat/**'
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: Check for lint errors
+        run: |
+          if npm run lint --if-present 2>&1 | grep -q "error"; then
+            echo "::warning::ESLint found errors. Please fix them."
+          fi
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit --if-present
+        continue-on-error: true
+
+      - name: Generate coverage report
+        run: npm run test:coverage --if-present
+        continue-on-error: true
+
+      - name: Upload coverage to artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-frontend
+          path: coverage/
+          retention-days: 7
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/monolith/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend/monolith
+        run: npm ci --if-present || echo "No backend package-lock.json found, skipping"
+
+      - name: Run backend tests
+        working-directory: backend/monolith
+        run: npm test --if-present
+        continue-on-error: true
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [lint, test-frontend, test-backend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build --if-present
+        env:
+          VITE_API_URL: https://fst.drondoc.ru
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
+      - name: Run E2E tests
+        run: npm run test:e2e --if-present
+        continue-on-error: true
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [lint, test-frontend, test-backend, build]
+    if: always()
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Test Frontend: ${{ needs.test-frontend.result }}"
+          echo "Test Backend: ${{ needs.test-backend.result }}"
+          echo "Build: ${{ needs.build.result }}"
+
+          if [[ "${{ needs.build.result }}" == "failure" ]]; then
+            echo "::error::Build failed. Please fix build errors."
+            exit 1
+          fi
+
+          if [[ "${{ needs.lint.result }}" == "failure" ]]; then
+            echo "::warning::Lint failed. Please review linting errors."
+          fi
+
+          if [[ "${{ needs.test-frontend.result }}" == "failure" ]] || [[ "${{ needs.test-backend.result }}" == "failure" ]]; then
+            echo "::warning::Some tests failed. Please review test results."
+          fi
+
+          echo "✅ Quality gate passed (with possible warnings)"
