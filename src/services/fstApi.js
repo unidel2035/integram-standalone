@@ -141,6 +141,104 @@ export async function createProject(data) {
   return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
 }
 
+/**
+ * Создать проект из заявки стартапа (/fst-apply)
+ * @param {Object} application - Данные формы заявки
+ * @returns {Promise<Object>}
+ */
+export async function createProjectFromApplication(application) {
+  // Определяем субфонд по сфере деятельности
+  let subfundId = null
+  if (application.sector?.includes('БАС') || application.sector?.includes('БПЛА')) {
+    subfundId = SUBFUNDS.БАС
+  } else if (application.sector?.includes('робототехни')) {
+    subfundId = SUBFUNDS.РОБО
+  } else if (application.sector?.includes('энергетик')) {
+    subfundId = SUBFUNDS.МЭ
+  }
+
+  // Определяем стадию
+  let stageId = null
+  if (application.stage?.includes('Pre-Seed')) {
+    stageId = STAGES['Pre-seed']
+  } else if (application.stage?.includes('Seed')) {
+    stageId = STAGES.Seed
+  } else if (application.stage?.includes('A')) {
+    stageId = STAGES['Round A']
+  } else if (application.stage?.includes('B')) {
+    stageId = STAGES['Round B']
+  }
+
+  // Формируем extended data для совместимости с getEnrichedProjects
+  const extended = {
+    title: `${application.companyName} — ${application.description?.substring(0, 50)}`,
+    market: application.sector,
+    trl: application.trl || 5,
+    mrl: Math.floor(application.trl * 1.1) || 5, // Примерная оценка MRL
+    sovereigntyScore: Math.floor(application.sovereignty / 11.11) || 6, // 0-100 → 0-9
+    localizationRatio: (application.sovereignty || 60) / 100,
+    marketSize: (application.tam || 10) * 1_000_000_000, // млрд → руб
+    projectedIRR: 0.25, // Дефолтное значение, будет рассчитано на ИК
+    teamStrength: Math.min(1, (application.teamSize || 5) / 20),
+    employees: application.teamSize || 5,
+    founded: application.foundedYear || new Date().getFullYear(),
+    patents: parseInt(application.patents) || 0,
+    strengths: application.usp ? [application.usp] : [],
+    risks: [],
+    documents: [application.pitchFile, application.modelFile].filter(Boolean)
+  }
+
+  // Храним полную заявку в JSON
+  const fullApplication = {
+    companyName: application.companyName,
+    inn: application.inn,
+    sector: application.sector,
+    stage: application.stage,
+    foundedYear: application.foundedYear,
+    city: application.city,
+    description: application.description,
+    trl: application.trl,
+    patents: application.patents,
+    tam: application.tam,
+    sam: application.sam,
+    competitors: application.competitors,
+    usp: application.usp,
+    sovereignty: application.sovereignty,
+    amount: application.amount,
+    equityOffered: application.equityOffered,
+    preMoney: application.preMoney,
+    arr: application.arr,
+    runway: application.runway,
+    teamSize: application.teamSize,
+    ceoName: application.ceoName,
+    achievements: application.achievements,
+    email: application.email,
+    phone: application.phone,
+    telegram: application.telegram,
+    website: application.website,
+    pitchFile: application.pitchFile,
+    modelFile: application.modelFile,
+    submittedAt: new Date().toISOString()
+  }
+
+  // Формат совместимый с fstExtendedApi.js parseExtendedData
+  const descriptionWithExtended = `${application.description || 'Заявка от стартапа'}
+<!--FST_EXTENDED_DATA:${JSON.stringify(extended)}-->
+<!--FST_FULL_APPLICATION:${JSON.stringify(fullApplication)}-->`
+
+  const body = new URLSearchParams({
+    [`t${TYPE_PROJECTS}`]: application.companyName,
+    t1156: application.inn || '',
+    t1157: (application.amount || 0) * 1_000_000, // Конвертируем млн → руб
+    t1158: descriptionWithExtended,
+    t1159: new Date().toISOString(),
+    ...(subfundId ? { t1177: subfundId } : {}),
+    ...(stageId   ? { t1179: stageId   } : {}),
+    t1183: STATUSES['Новый'] // Новая заявка всегда со статусом "Новый"
+  })
+  return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
+}
+
 export async function updateProject(id, data) {
   const body = new URLSearchParams(data)
   return api(`_m_set/${id}?JSON_KV`, { method: 'POST', body })
