@@ -186,7 +186,6 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { marked } from 'marked'
 import { highlightCode } from '@/utils/lazyLoadPrismJS'
-import 'prismjs/themes/prism-tomorrow.css'
 
 const props = defineProps({
   steps: {
