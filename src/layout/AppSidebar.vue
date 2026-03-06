@@ -126,14 +126,8 @@ onUnmounted(() => {
 
 <template>
     <div class="layout-sidebar" :class="{ 'sidebar-collapsed': layoutState.sidebarCollapsed }">
-        <!-- Sticky header with logo and toggle button (Issue #6934) -->
+        <!-- Sticky header with toggle button only (logo removed) -->
         <div class="sidebar-header">
-            <router-link to="/" class="sidebar-logo" v-if="!layoutState.sidebarCollapsed">
-                <LogoDisplay width="140" height="32" />
-            </router-link>
-            <router-link to="/" class="sidebar-logo-mini" v-else v-tooltip.right="'На главную'">
-                <LogoDisplay :icon-only="true" width="32" height="32" />
-            </router-link>
             <Button
                 :icon="layoutState.sidebarCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'"
                 @click="toggleSidebarCollapse"
