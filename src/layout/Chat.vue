@@ -69,7 +69,9 @@
                 <DynamicScrollerItem :item="msg" :active="active" :data-index="index">
               <div class="message"
                 :class="{ 'user-message': msg.isUser }" data-testid="message-item" :data-message-id="index">
-                <div class="message-content" v-if="!isSystemMessage(msg)">
+                <div class="message-content" v-if="!isSystemMessage(msg)"
+                  :class="{ 'message-selected': isSelected(index) }"
+                  @click="toggleMessageSelection(index, msg)">
                   <div v-if="msg.attachments && msg.attachments.length > 0" class="attachment-info">
                     <div v-for="(attachment, attIndex) in msg.attachments" :key="attIndex" class="attachment-item">
                       <img v-if="isImage(attachment)" :src="attachment.url" class="image-preview" 
@@ -186,7 +188,7 @@
                     </button>
                   </div>
 
-                  <div class="message-actions">
+                  <div class="message-actions" @click.stop>
                     <div class="message-time">{{ msg.time }}</div>
                     <span v-if="!msg.isUser && msg.outputTokens" class="msg-tokens"
                       :title="`Вход: ${msg.inputTokens}т. Выход: ${msg.outputTokens}т.`">
@@ -235,6 +237,19 @@
                 </div>
               </template>
             </DynamicScroller>
+
+            <!-- Telegram-style selection action bar -->
+            <div v-if="selectedMsgIds.length > 0" class="selection-action-bar">
+              <span class="selection-count"><i class="pi pi-check-square"></i> {{ selectedMsgIds.length }} выбрано</span>
+              <div class="selection-bar-actions">
+                <button class="sel-btn sel-btn-copy" @click="copySelectedMessages">
+                  <i class="pi pi-copy"></i> Копировать
+                </button>
+                <button class="sel-btn sel-btn-close" @click="clearSelection" title="Снять выделение">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
 
             <!-- Issue #6832: Context bar — shows active document/table context chips -->
             <ContextBar
@@ -1803,6 +1818,29 @@ const contextBarColor = computed(() => {
   return 'var(--green-500)'
 })
 
+// Telegram-style message selection
+const selectedMsgIds = ref([])
+function isSelected(index) {
+  return selectedMsgIds.value.includes(index)
+}
+function toggleMessageSelection(index, msg) {
+  const i = selectedMsgIds.value.indexOf(index)
+  if (i >= 0) selectedMsgIds.value.splice(i, 1)
+  else selectedMsgIds.value.push(index)
+}
+function clearSelection() {
+  selectedMsgIds.value = []
+}
+function copySelectedMessages() {
+  const sorted = [...selectedMsgIds.value].sort((a, b) => a - b)
+  const texts = sorted.map(idx => {
+    const msg = aiChatMessagesWithIds.value[idx]
+    return msg ? (msg.displayText || msg.text || '') : ''
+  }).filter(Boolean)
+  if (texts.length) copyToClipboard(texts.join('\n\n'))
+  clearSelection()
+}
+
 // Current model display name for the button
 const currentModelDisplayName = computed(() => {
   if (!selectedModel.value) return null
@@ -2404,11 +2442,16 @@ const onExecutionError = (exec) => {
 
 // ========== Lifecycle Hooks ==========
 
+function onKeydownSelection(e) {
+  if (e.key === 'Escape' && selectedMsgIds.value.length > 0) clearSelection()
+}
+
 onMounted(() => {
   // Initialize shared chat logic
   init()
   // Listen for editor plan steps updates from BlockDocumentEditor
   window.addEventListener('editor-plan-steps', onEditorPlanSteps)
+  window.addEventListener('keydown', onKeydownSelection)
 
   // Check admin role — Options button shown only to admins
   const _token = localStorage.getItem('token')
@@ -2437,6 +2480,7 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', handleResize)
   document.removeEventListener('mouseup', stopResize)
   window.removeEventListener('editor-plan-steps', onEditorPlanSteps)
+  window.removeEventListener('keydown', onKeydownSelection)
 })
 </script>
 
@@ -2835,17 +2879,94 @@ onUnmounted(() => {
   }
 }
 
-// Action buttons: hidden by default, visible on bubble hover/focus (both sidebar & modal)
-.message-actions .action-buttons,
-.modal-message-actions .modal-action-buttons {
-  opacity: 0;
-  transition: opacity 0.2s ease;
+// Telegram-style selected message highlight
+.message-content.message-selected {
+  background: rgba(var(--primary-color-rgb, 14, 165, 233), 0.12) !important;
+  border-color: var(--primary-color, #0ea5e9) !important;
+  border-width: 1px;
+  border-style: solid;
+  position: relative;
+
+  &::after {
+    content: '✓';
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    line-height: 1.25rem;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--primary-color, #0ea5e9);
+    color: #fff;
+    font-size: 0.7rem;
+    pointer-events: none;
+  }
 }
 
-.message-content:hover .message-actions .action-buttons,
-.message-content:focus-within .message-actions .action-buttons,
-.modal-message-content:hover .modal-message-actions .modal-action-buttons,
-.modal-message-content:focus-within .modal-message-actions .modal-action-buttons {
+// Floating selection action bar (Telegram-style)
+.selection-action-bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-card, #fff);
+  border-top: 2px solid var(--primary-color, #0ea5e9);
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  z-index: 10;
+  gap: 0.5rem;
+
+  .selection-count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color, #0ea5e9);
+  }
+
+  .selection-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.sel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.sel-btn-copy {
+  background: var(--primary-color, #0ea5e9);
+  color: #fff;
+  &:hover { opacity: 0.9; }
+}
+.sel-btn-close {
+  background: var(--surface-hover, #f1f5f9);
+  color: var(--text-color, #333);
+  padding: 0.4rem 0.6rem;
+  &:hover { background: var(--surface-200, #e2e8f0); }
+}
+
+.selection-bar-enter-active,
+.selection-bar-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.selection-bar-enter-from,
+.selection-bar-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+// Action buttons: always visible
+.message-actions .action-buttons,
+.modal-message-actions .modal-action-buttons {
   opacity: 1;
 }
 

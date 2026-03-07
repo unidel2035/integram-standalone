@@ -211,17 +211,17 @@ function exportGr() {
 <style scoped>
 .gov-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .gov-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.gov-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.gov-subtitle { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.gov-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.gov-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .gov-actions { display: flex; gap: 8px; }
-.gov-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.gov-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .gov-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .gov-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
 
 .gov-kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
 .gov-kpi { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 14px 12px; text-align: center; }
 .gov-kpi-icon { font-size: 1.4rem; margin-bottom: 4px; }
-.gov-kpi-val  { font-size: 1.5rem; font-weight: 700; color: var(--p-primary-color); }
+.gov-kpi-val  { font-size: 2rem; font-weight: 700; color: var(--p-primary-color); }
 .gov-kpi-lbl  { font-size: 0.72rem; color: var(--p-text-muted-color); margin-top: 2px; }
 
 .gov-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }

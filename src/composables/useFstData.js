@@ -12,9 +12,10 @@
 
 import { ref, computed } from 'vue'
 import { getEnrichedProjects, getSubfunds, getSubfundsObject, getStats } from '@/services/fstExtendedApi.js'
+import { SUBFUNDS } from '@/components/fst-committee/FstCommitteeConfig.js'
 
-// Import hardcoded fallbacks
-import { PROJECTS_POOL, SUBFUNDS } from '@/components/fst-committee/FstCommitteeConfig.js'
+// Порядок сортировки статусов: «На рассмотрении ИК» → «Новый» → остальные
+const STATUS_SORT = { '1117': 0, '1115': 1 }
 
 // ── State ─────────────────────────────────────────────────────────
 
@@ -29,8 +30,6 @@ const statsLoading = ref(false)
 const projectsError = ref(null)
 const subfundsError = ref(null)
 const statsError = ref(null)
-
-const useApiData = ref(true) // Toggle between API and hardcoded data
 
 // Cache timestamps
 let projectsCacheTime = 0
@@ -50,23 +49,23 @@ export function useFstData() {
       return projects.value
     }
 
-    if (!useApiData.value) {
-      // Use hardcoded data
-      projects.value = PROJECTS_POOL
-      return projects.value
-    }
-
     projectsLoading.value = true
     projectsError.value = null
 
     try {
       const data = await getEnrichedProjects()
-      projects.value = data.length > 0 ? data : PROJECTS_POOL // Fallback if empty
+      // Сортировка: «На рассмотрении ИК» → «Новый» → остальные
+      data.sort((a, b) => {
+        const ai = STATUS_SORT[String(a.statusId)] ?? 9
+        const bi = STATUS_SORT[String(b.statusId)] ?? 9
+        return ai - bi
+      })
+      projects.value = data
       projectsCacheTime = Date.now()
     } catch (error) {
-      console.warn('[useFstData] Failed to load projects from API, using hardcoded data:', error)
+      console.warn('[useFstData] Failed to load projects from API:', error)
       projectsError.value = error
-      projects.value = PROJECTS_POOL // Fallback on error
+      projects.value = []
     } finally {
       projectsLoading.value = false
     }
@@ -83,21 +82,15 @@ export function useFstData() {
       return subfunds.value
     }
 
-    if (!useApiData.value) {
-      // Use hardcoded data
-      subfunds.value = SUBFUNDS
-      return subfunds.value
-    }
-
     subfundsLoading.value = true
     subfundsError.value = null
 
     try {
-      const data = getSubfundsObject() // This is currently hardcoded metadata
-      subfunds.value = data
+      const data = getSubfundsObject()
+      subfunds.value = Object.keys(data).length > 0 ? data : SUBFUNDS
       subfundsCacheTime = Date.now()
     } catch (error) {
-      console.warn('[useFstData] Failed to load subfunds, using hardcoded data:', error)
+      console.warn('[useFstData] Failed to load subfunds:', error)
       subfundsError.value = error
       subfunds.value = SUBFUNDS
     } finally {
@@ -116,35 +109,28 @@ export function useFstData() {
       return stats.value
     }
 
-    if (!useApiData.value) {
-      // Calculate from hardcoded data
-      stats.value = {
-        aum: 6_400_000_000,
-        portfolioCount: 7,
-        subfundCount: 3,
-        avgIRR: 0.38,
-        projects: PROJECTS_POOL,
-        subfunds: Object.values(SUBFUNDS)
-      }
-      return stats.value
-    }
-
     statsLoading.value = true
     statsError.value = null
 
     try {
       const data = await getStats()
-      stats.value = data
+      // Дополняем реальными данными из презентации ФСТ НТИ март 2025
+      stats.value = {
+        ...data,
+        subfundCount: Math.max(data.subfundCount ?? 0, 6),
+        dealsCount: data.dealsCount ?? 9,
+      }
       statsCacheTime = Date.now()
     } catch (error) {
-      console.warn('[useFstData] Failed to load stats from API, using calculated hardcoded data:', error)
+      console.warn('[useFstData] Failed to load stats from API:', error)
       statsError.value = error
       stats.value = {
-        aum: 6_400_000_000,
-        portfolioCount: 7,
-        subfundCount: 3,
-        avgIRR: 0.38,
-        projects: PROJECTS_POOL,
+        aum: 9_500_000_000,
+        portfolioCount: 6,
+        subfundCount: 6,
+        dealsCount: 9,
+        avgIRR: 0.31,
+        projects: [],
         subfunds: Object.values(SUBFUNDS)
       }
     } finally {
@@ -170,17 +156,6 @@ export function useFstData() {
    */
   async function refresh() {
     return loadAll(true)
-  }
-
-  /**
-   * Toggle between API and hardcoded data
-   */
-  function toggleDataSource() {
-    useApiData.value = !useApiData.value
-    // Clear cache to force reload
-    projectsCacheTime = 0
-    subfundsCacheTime = 0
-    statsCacheTime = 0
   }
 
   // Computed states
@@ -210,15 +185,11 @@ export function useFstData() {
     statsError: computed(() => statsError.value),
     hasError,
 
-    // Data source
-    useApiData: computed(() => useApiData.value),
-
     // Methods
     loadProjects,
     loadSubfunds,
     loadStats,
     loadAll,
     refresh,
-    toggleDataSource
   }
 }

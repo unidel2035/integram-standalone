@@ -1,0 +1,40 @@
+{
+  "name": "fst-portfolio-monitor",
+  "version": "1.0.0",
+  "description": "Автоматический мониторинг портфельных компаний ФСТ НТИ через ЕГРЮЛ, HH.ru, Роспатент и Яндекс.Новости",
+  "type": "module",
+  "main": "src/schedulers/portfolioMonitor.js",
+  "scripts": {
+    "start": "node src/schedulers/portfolioMonitor.js",
+    "monitor:full": "node -e \"import('./src/schedulers/portfolioMonitor.js').then(m => m.runFullMonitoring())\"",
+    "monitor:egrul": "node -e \"import('./src/schedulers/portfolioMonitor.js').then(m => m.runManualMonitoring('egrul'))\"",
+    "monitor:patents": "node -e \"import('./src/schedulers/portfolioMonitor.js').then(m => m.runManualMonitoring('patents'))\"",
+    "monitor:news": "node -e \"import('./src/schedulers/portfolioMonitor.js').then(m => m.runManualMonitoring('news'))\"",
+    "test": "node --test src/**/*.test.js"
+  },
+  "keywords": [
+    "portfolio",
+    "monitoring",
+    "venture",
+    "fund",
+    "fst",
+    "parser",
+    "egrul",
+    "hh.ru",
+    "rospatent"
+  ],
+  "author": "FST NTI",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2",
+    "node-telegram-bot-api": "^0.66.0",
+    "socks-proxy-agent": "^8.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -224,10 +224,10 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 <style scoped>
 .dd-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .dd-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.dd-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.dd-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.dd-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.dd-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .dd-actions { display: flex; gap: 8px; }
-.dd-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.dd-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .dd-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .dd-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
 
@@ -247,7 +247,7 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .dd-detail { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px; }
 .dd-detail h2 { margin: 0 0 14px; font-size: 1.1rem; color: var(--p-text-color); }
 .dd-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-.dd-tab { padding: 7px 14px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.83rem; }
+.dd-tab { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.83rem; }
 .dd-tab.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
 
 .dd-block h3 { margin: 0 0 14px; font-size: 0.95rem; color: var(--p-text-color); }

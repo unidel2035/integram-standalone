@@ -368,7 +368,7 @@ async function submitApplication() {
 .form-field.full { grid-column: 1 / -1; }
 .form-field.required label::after { content: ' *'; color: #ef5350; }
 .form-field label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.form-field input, .form-field select, .form-field textarea { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 7px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; resize: vertical; }
+.form-field input, .form-field select, .form-field textarea { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; resize: vertical; }
 .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--p-primary-color); outline: none; }
 .checkbox-label { display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; color: var(--p-text-color); cursor: pointer; }
 .checkbox-label input { width: auto; margin-top: 2px; accent-color: var(--p-primary-color); }
@@ -390,7 +390,7 @@ async function submitApplication() {
 .score-bar-wrap { flex: 1; height: 8px; background: var(--p-surface-border); border-radius: 4px; overflow: hidden; }
 .score-bar { height: 100%; border-radius: 4px; transition: width 0.4s; }
 .score-num { min-width: 50px; text-align: right; font-weight: 600; color: var(--p-text-color); }
-.gate-result { padding: 8px 12px; border-radius: 7px; font-size: 0.82rem; font-weight: 600; }
+.gate-result { padding: 8px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; }
 .gate-result.pass { background: #66bb6a18; color: #66bb6a; border: 1px solid #66bb6a44; }
 .gate-result.fail { background: #ef535018; color: #ef5350; border: 1px solid #ef535044; }
 

@@ -58,6 +58,29 @@ export const useAuthStore = defineStore('auth', () => {
     myUser.value = localStorage.getItem('my_user')
     myUserId.value = localStorage.getItem('my_id')
     myXsrf.value = localStorage.getItem('my_xsrf')
+
+    // Re-check admin status for existing sessions if not yet determined
+    if (primaryToken.value && localStorage.getItem('is_admin') === null) {
+      const login = primaryUser.value
+      const token = primaryToken.value
+      const id = primaryUserId.value
+      const apiBase = primaryApiBase.value
+      const database = primaryDatabase.value
+      axios.get(
+        `https://${apiBase}/${database}/object/${id}?JSON_KV`,
+        { headers: { 'X-Authorization': token } }
+      ).then(res => {
+        const reqs = res.data?.reqs?.[id] || {}
+        const isAdmin = login === 'd' ||
+          Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
+        localStorage.setItem('is_admin', isAdmin ? 'true' : 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: isAdmin }))
+      }).catch(() => {
+        const fallback = login === 'd'
+        localStorage.setItem('is_admin', fallback ? 'true' : 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: fallback }))
+      })
+    }
   }
 
   /**
@@ -168,6 +191,23 @@ export const useAuthStore = defineStore('auth', () => {
         // Some users might not have access to my database yet
       }
 
+      // 3. Check admin status via Integram user object
+      try {
+        const adminCheck = await axios.get(
+          `https://${apiBase}/${database}/object/${primaryAuth.id}?JSON_KV`,
+          { headers: { 'X-Authorization': primaryAuth.token } }
+        )
+        const reqs = adminCheck.data?.reqs?.[primaryAuth.id] || {}
+        const isAdmin = login === 'd' ||
+          Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
+        localStorage.setItem('is_admin', isAdmin ? 'true' : 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: isAdmin }))
+      } catch {
+        const fallback = login === 'd'
+        localStorage.setItem('is_admin', fallback ? 'true' : 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: fallback }))
+      }
+
       return { success: true, user: primaryAuth.user }
     } catch (err) {
       error.value = err.message || 'Login failed'
@@ -203,6 +243,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('my_user')
     localStorage.removeItem('my_id')
     localStorage.removeItem('my_xsrf')
+    localStorage.removeItem('is_admin')
 
     // Keep apiBase and db in localStorage for next login
   }

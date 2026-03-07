@@ -12,6 +12,8 @@ import {
   PHASES, PHASE_ORDER, VERDICTS, TIMING, SPEED_MULTIPLIERS,
   RECOMMENDATION_TEMPLATES, REVISION_SIMULATION_STEPS, METRIC_FIELD_MAP, METRIC_CLAMP,
 } from './FstCommitteeConfig.js'
+import { generateArgumentAI, fetchKagContext, clearKagCache } from './fstCommitteeAI.js'
+import { annotateArg } from './fstCommitteeOntology.js'
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
 function rand(lo, hi) { return lo + Math.random() * (hi - lo) }
@@ -138,6 +140,10 @@ export function createSession(project, options = {}) {
     phase: 'IDLE',
     phaseIndex: 0,
     speed,
+    useAI: options.useAI !== false,   // по умолчанию включён
+    // Настройки оркестратора моделей
+    speedProfile:   options.speedProfile   || 'fast',
+    modelOverrides: options.modelOverrides || {},  // { [agentId]: modelId }
     roundNumber: project._roundNumber || 1,
     agents: AGENTS,
     arguments: [],
@@ -190,6 +196,14 @@ export class FstCommitteeEngine {
     this._running = true
     this.session.startedAt = Date.now()
     this.emit('SessionStarted', { sessionId: this.session.id })
+
+    // Загружаем KAG-контекст прошлых решений (не блокирует старт)
+    clearKagCache()
+    if (this.session.useAI) {
+      fetchKagContext(this.session.project).then(ctx => {
+        this.session._kagContext = ctx || ''
+      }).catch(() => { this.session._kagContext = '' })
+    }
 
     try {
       await this._phaseLoading()
@@ -265,8 +279,10 @@ export class FstCommitteeEngine {
       const challengers = [...AGENTS].sort(() => Math.random() - 0.5).slice(0, 3)
       for (const agent of challengers) {
         if (!this._running) return
-        // Challenge
-        const arg = await this._agentSpeak(agent, 'CHALLENGE')
+        // Challenge — target a random OPENING from a different agent
+        const openings = this.session.arguments.filter(a => a.type === 'OPENING' && a.agentId !== agent.id)
+        const targetOpening = openings.length ? openings[Math.floor(Math.random() * openings.length)] : null
+        const arg = await this._agentSpeak(agent, 'CHALLENGE', targetOpening?.id || null)
         if (!arg) continue
         await this.delay(TIMING.ARGUMENT_DELAY)
 
@@ -449,20 +465,65 @@ export class FstCommitteeEngine {
 
   async _agentSpeak(agent, type, targetArgId = null) {
     if (!this._running) return null
-    const project = this.session.project
+    const project  = this.session.project
+    const useAI    = this.session.useAI !== false  // default: true
 
-    // Thinking phase
+    // ── Thinking: показываем анимацию пока идёт LLM-вызов ──
     this._setAgentStatus(agent.id, { thinking: true, thinkText: pick(agent.thinkingPhrases) })
-    await this.delay(TIMING.THINKING_DURATION)
+
+    // Меняем фразу в процессе долгого AI-вызова
+    let thinkInterval = null
+    if (useAI) {
+      let phraseIdx = 1
+      thinkInterval = setInterval(() => {
+        if (!this._running) { clearInterval(thinkInterval); return }
+        const phrase = agent.thinkingPhrases[phraseIdx % agent.thinkingPhrases.length]
+        this._setAgentStatus(agent.id, { thinkText: phrase })
+        phraseIdx++
+      }, 2500)
+    } else {
+      await this.delay(TIMING.THINKING_DURATION)
+    }
+
+    let arg = null
+
+    // ── AI-first: реальный LLM-вызов ──
+    if (useAI) {
+      try {
+        const kagCtx = type === 'OPENING' ? (this.session._kagContext || '') : ''
+        arg = await generateArgumentAI(agent, type, project, this.session.arguments, targetArgId, kagCtx, {
+          speedProfile:   this.session.speedProfile,
+          modelOverrides: this.session.modelOverrides,
+        })
+      } catch (e) {
+        console.warn('[FstCommitteeEngine] AI call failed, falling back to template:', e.message)
+      }
+    }
+
+    // ── Fallback: шаблонный аргумент ──
+    if (!arg) {
+      await this.delay(TIMING.THINKING_DURATION)
+      arg = generateArgument(agent, type, project, targetArgId)
+    }
+
+    if (thinkInterval) clearInterval(thinkInterval)
     this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
 
-    const arg = generateArgument(agent, type, project, targetArgId)
     if (!arg) return null
 
-    this.session.arguments.push(arg)
-    this.emit('ArgumentRaised', { argument: arg, agentId: agent.id, argType: type })
+    // ── Аннотируем онтологическими метаданными ──
+    const annotated = annotateArg(arg, this.session.arguments)
+
+    this.session.arguments.push(annotated)
+    this.emit('ArgumentRaised', {
+      argument:    annotated,
+      agentId:     agent.id,
+      argType:     type,
+      aiGenerated: annotated.aiGenerated || false,
+    })
+
     await this.delay(TIMING.ARGUMENT_DELAY)
-    return arg
+    return annotated
   }
 
   _transitionPhase(phase) {

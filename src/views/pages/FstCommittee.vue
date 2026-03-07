@@ -2,117 +2,6 @@
   <div class="fst-committee">
     <Toast position="bottom-center" />
 
-    <!-- ═══ Project Select Dialog ═══ -->
-    <Dialog v-model:visible="lobbyVisible" header="ФСТ НТИ — Инвесткомитет с AI-агентами" modal
-      :style="{ width: '720px', maxWidth: '95vw' }" :closable="false">
-
-      <div class="fst-intro">
-        <div class="fst-intro-badge">
-          <i class="pi pi-building" style="color:#ffa726;font-size:20px"></i>
-          Фонд суверенных технологий НТИ
-        </div>
-        <p class="fst-intro-text">
-          6 AI-агентов разных ролей анализируют проект, вступают в дебаты и приходят к решению.
-          Инвесткомитет работает как BlackRock Aladdin — прозрачно, с аргументами и контраргументами.
-          Люди утверждают итоговое решение.
-        </p>
-        <div class="fst-intro-subfunds">
-          <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
-            :style="{ borderColor: sf.color, color: sf.color }">
-            <i :class="sf.icon"></i> {{ sf.name }}
-            <span class="fst-subfund-budget">{{ (sf.budget / 1e9).toFixed(1) }} млрд</span>
-          </div>
-        </div>
-      </div>
-
-      <Divider />
-
-      <div class="fst-lobby-section">
-        <div class="fst-lobby-label">Выберите проект для рассмотрения:</div>
-        <div class="fst-project-list">
-          <div v-for="p in PROJECTS_POOL" :key="p.id"
-            :class="['fst-project-card', { 'fst-project-card--active': selectedProjectId === p.id }]"
-            @click="selectedProjectId = p.id">
-            <div class="fst-pc-header">
-              <div class="fst-pc-subfund" :style="{ background: SUBFUNDS[p.subFund]?.color || '#666' }">
-                {{ (SUBFUNDS[p.subFund]?.shortName) || p.subFund.toUpperCase() }}
-              </div>
-              <div class="fst-pc-stage">{{ p.stage }}</div>
-              <div class="fst-pc-amount">{{ (p.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
-            </div>
-            <div class="fst-pc-title">{{ p.title }}</div>
-            <div class="fst-pc-company">{{ p.company }}</div>
-            <div class="fst-pc-metrics">
-              <span class="fst-metric" :class="trlClass(p.trl)">TRL {{ p.trl }}</span>
-              <span class="fst-metric" :class="trlClass(p.mrl - 1)">MRL {{ p.mrl }}</span>
-              <span class="fst-metric" :class="sovClass(p.sovereigntyScore)">Суверен. {{ p.sovereigntyScore }}/9</span>
-              <span class="fst-metric" :class="irrClass(p.projectedIRR)">IRR {{ (p.projectedIRR * 100).toFixed(0) }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="fst-lobby-section" style="margin-top:16px">
-        <div class="fst-lobby-label">Скорость симуляции:</div>
-        <div class="fst-speed-row">
-          <div v-for="sp in speedOptions" :key="sp.id"
-            :class="['fst-speed-btn', { active: selectedSpeed === sp.id }]"
-            @click="selectedSpeed = sp.id">
-            {{ sp.label }}
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ FST Policy Settings ═══ -->
-      <div class="fst-lobby-section" style="margin-top:16px">
-        <div class="fst-policy-toggle" @click="policyExpanded = !policyExpanded">
-          <i class="pi pi-sliders-h" style="color:#ffa726"></i>
-          <span class="fst-lobby-label" style="margin:0;cursor:pointer">Параметры оценки ФСТ</span>
-          <span style="font-size:11px;color:var(--p-text-muted-color);margin-left:8px">
-            Сув. ≥ {{ fstPolicy.minSovereignty }}/9 · TRL ≥ {{ fstPolicy.minTRL }} · MRL ≥ {{ fstPolicy.minMRL }}
-          </span>
-          <i :class="policyExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-            style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
-        </div>
-        <div v-if="policyExpanded" class="fst-policy-grid">
-          <div v-for="(range, key) in FST_POLICY_RANGES" :key="key" class="fst-policy-item">
-            <div class="fst-policy-label">
-              {{ range.label }}: <b>{{ formatPolicyValue(key, fstPolicy[key]) }}</b>
-            </div>
-            <Slider
-              :modelValue="policySliderValue(key, fstPolicy[key])"
-              @update:modelValue="v => setPolicyFromSlider(key, v)"
-              :min="range.min * policyMultiplier(key)"
-              :max="range.max * policyMultiplier(key)"
-              :step="range.step * policyMultiplier(key)"
-              class="fst-policy-slider"
-            />
-          </div>
-          <LearnTooltip
-            label="Сброс параметров"
-            what="Возвращает все параметры оценки ФСТ к значениям по умолчанию"
-            when="Когда нужно вернуться к стандартной политике инвестирования фонда"
-            :terms="['Политика фонда', 'Критерии отбора']"
-          >
-            <Button label="Сброс" icon="pi pi-refresh" size="small" severity="secondary" text
-              @click="resetPolicy" style="margin-top:4px" />
-          </LearnTooltip>
-        </div>
-      </div>
-
-      <template #footer>
-        <LearnTooltip
-          label="Запустить инвесткомитет"
-          what="Запускает совещание 6 AI-агентов инвесткомитета по выбранной заявке. Агенты проведут дебаты и придут к решению о финансировании."
-          when="Когда заявка прошла скрининг и готова к комплексной оценке комитетом"
-          :terms="['Инвесткомитет', 'AI-агент', 'Скрининг', 'Due Diligence']"
-          hotkey="Ctrl+Enter"
-        >
-          <Button label="Запустить инвесткомитет" icon="pi pi-play" severity="success"
-            :disabled="!selectedProjectId" @click="startSession" />
-        </LearnTooltip>
-      </template>
-    </Dialog>
 
     <!-- ═══ Conclusion Dialog ═══ -->
     <Dialog v-model:visible="conclusionVisible" :header="conclusionHeader" modal
@@ -149,14 +38,43 @@
         </div>
       </div>
       <template #footer>
-        <LearnTooltip
-          label="Новая сессия"
-          what="Начинает новую сессию инвесткомитета для оценки другого проекта"
-          when="После завершения текущей сессии и просмотра результатов"
-          :terms="['Сессия комитета', 'Инвесткомитет']"
-        >
-          <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession" />
-        </LearnTooltip>
+        <div style="display:flex;align-items:center;gap:8px;width:100%">
+          <LearnTooltip
+            label="Сохранить в базу знаний"
+            what="Сохраняет решение инвесткомитета в граф знаний KAG — для будущего обучения AI-агентов на реальных кейсах"
+            when="После завершения сессии ИК для накопления исторических решений"
+            :terms="['KAG', 'База знаний', 'AI-обучение']"
+          >
+            <Button v-if="!kagSaved" label="Сохранить в базу знаний" icon="pi pi-database"
+              severity="info" size="small" :loading="kagSaving" @click="saveToKag" />
+          </LearnTooltip>
+          <span v-if="kagSaved" class="fst-kag-saved">
+            <i class="pi pi-check-circle" style="color:#4caf50"></i>
+            Сохранено в KAG ({{ kagSavedCount }} сущностей)
+          </span>
+          <LearnTooltip
+            label="Сохранить в СОД"
+            what="Создаёт событие в системе объектных данных Integram — фиксирует решение ИК в корпоративной базе фонда"
+            when="После завершения сессии ИК для официального документирования"
+            :terms="['СОД', 'Integram', 'Протокол ИК']"
+          >
+            <Button v-if="!intSaved" label="Сохранить в СОД" icon="pi pi-sitemap"
+              severity="secondary" size="small" :loading="intSaving" @click="saveToIntegram" />
+          </LearnTooltip>
+          <span v-if="intSaved" class="fst-kag-saved">
+            <i class="pi pi-check-circle" style="color:#7e57c2"></i>
+            СОД #{{ intEventId }}
+          </span>
+          <LearnTooltip
+            label="Новая сессия"
+            what="Сбрасывает текущую сессию и возвращает к выбору проекта для оценки"
+            when="После просмотра результатов текущей сессии инвесткомитета"
+            :terms="['Сессия комитета', 'Инвесткомитет']"
+          >
+            <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession"
+              style="margin-left:auto" />
+          </LearnTooltip>
+        </div>
       </template>
     </Dialog>
 
@@ -188,34 +106,10 @@
         </div>
         <div class="fst-toolbar-right">
           <Tag :value="currentPhase.label" :style="{ background: currentPhase.color }" class="fst-phase-tag" />
-          <LearnTooltip
-            v-if="running"
-            label="Пауза"
-            what="Приостанавливает текущую сессию инвесткомитета"
-            when="Когда нужно временно остановить обработку для анализа промежуточных результатов"
-            :terms="['Сессия комитета']"
-          >
-            <Button icon="pi pi-pause" size="small" text severity="secondary" @click="pauseSession" />
-          </LearnTooltip>
-          <LearnTooltip
-            label="Настройки политики"
-            what="Открывает параметры оценки проектов: минимальные требования по суверенности, TRL, MRL и другие критерии отбора"
-            when="Когда нужно настроить критерии инвестирования под специфику субфонда или изменить приоритеты"
-            :terms="['Политика фонда', 'TRL', 'MRL', 'Суверенность']"
-            hotkey="Ctrl+,"
-          >
-            <Button icon="pi pi-sliders-h" label="Настройки" size="small" text severity="secondary"
-              @click="lobbyVisible = true; policyExpanded = true" title="Параметры оценки ФСТ" />
-          </LearnTooltip>
-          <LearnTooltip
-            label="Завершить сессию"
-            what="Закрывает текущую сессию инвесткомитета и возвращается к выбору проекта"
-            when="Когда нужно прервать обработку или начать оценку другого проекта"
-            :terms="['Сессия комитета']"
-            hotkey="Esc"
-          >
-            <Button icon="pi pi-times" size="small" text severity="secondary" @click="resetSession" />
-          </LearnTooltip>
+          <Button v-if="running" icon="pi pi-pause" size="small" text severity="secondary" @click="pauseSession" />
+          <Button icon="pi pi-sliders-h" label="Настройки" size="small" text severity="secondary"
+            @click="policyExpanded = !policyExpanded" title="Параметры оценки ФСТ" />
+          <Button icon="pi pi-times" size="small" text severity="secondary" @click="resetSession" />
         </div>
       </div>
 
@@ -284,13 +178,26 @@
           </div>
         </div>
 
-        <!-- Center: Debate Timeline -->
+        <!-- Center: Debate Timeline / Graph -->
         <div class="fst-debate-panel">
           <div class="fst-panel-title">
-            Арена дебатов
-            <span class="fst-arg-count">{{ session.arguments.length }} аргументов</span>
+            <div class="fst-debate-tabs">
+              <button :class="['fst-dtab', { 'fst-dtab--active': debateTab === 'timeline' }]"
+                @click="debateTab = 'timeline'">
+                <i class="pi pi-comments"></i> Дебаты
+                <span class="fst-arg-count">{{ session.arguments.length }}</span>
+              </button>
+              <button :class="['fst-dtab', { 'fst-dtab--active': debateTab === 'graph' }]"
+                @click="debateTab = 'graph'">
+                <i class="pi pi-sitemap"></i> Граф событий
+              </button>
+            </div>
           </div>
-          <div class="fst-timeline" ref="timelineEl">
+
+          <!-- Graph Panel -->
+          <DebateGraphPanel v-if="debateTab === 'graph'" :session="session" class="fst-graph-panel" />
+
+          <div v-show="debateTab === 'timeline'" class="fst-timeline" ref="timelineEl">
             <!-- Loading phase -->
             <div v-if="session.phase === 'LOADING'" class="fst-loading-phase">
               <div class="fst-loading-title">
@@ -325,6 +232,13 @@
                   </span>
                   <span class="fst-arg-type-badge">{{ argTypeLabel(arg.type) }}</span>
                   <span class="fst-arg-dim">{{ arg.dimension }}</span>
+                  <span v-if="arg.aiGenerated" class="fst-arg-ai-badge"
+                    :title="arg.model ? `Модель: ${arg.model}` : 'Сгенерировано реальным AI'">
+                    <i class="pi pi-bolt"></i> {{ arg.model ? arg.model.split('/').pop() : 'AI' }}
+                  </span>
+                  <span v-else class="fst-arg-tpl-badge" title="Шаблонный аргумент">
+                    <i class="pi pi-server"></i>
+                  </span>
                 </div>
                 <div class="fst-arg-text">{{ arg.text }}</div>
               </div>
@@ -355,8 +269,8 @@
               <i class="pi pi-comments" style="font-size:40px;color:#444;margin-bottom:12px"></i>
               <div>Сессия готова. Запуск...</div>
             </div>
-          </div>
-        </div>
+          </div><!-- /fst-timeline -->
+        </div><!-- /fst-debate-panel -->
 
         <!-- Right: Scoring + Decision -->
         <div class="fst-score-panel">
@@ -474,28 +388,28 @@
             </div>
             <div class="fst-human-buttons">
               <LearnTooltip
-                label="Утвердить проект"
-                what="Утверждает финансирование проекта согласно рекомендации AI-комитета"
-                when="Когда члены инвесткомитета согласны с положительной рекомендацией AI-агентов"
-                :terms="['Решение комитета', 'Term Sheet', 'Сделка']"
+                label="Утвердить"
+                what="Председатель комитета утверждает рекомендацию AI-агентов. Проект переходит к структурированию сделки."
+                when="Когда согласны с решением агентов и готовы двигаться к Term Sheet"
+                :terms="['Одобрение', 'Term Sheet', 'Инвесткомитет']"
               >
                 <Button label="Утвердить" icon="pi pi-check" severity="success" size="small"
                   @click="humanDecide('APPROVE')" />
               </LearnTooltip>
               <LearnTooltip
-                label="Отложить решение"
-                what="Откладывает решение по проекту для дополнительной проработки или сбора информации"
-                when="Когда требуется дополнительный due diligence или уточнение условий сделки"
-                :terms="['Due Diligence', 'Условия сделки']"
+                label="Отложить"
+                what="Откладывает решение — проект остаётся в воронке для повторного рассмотрения после получения доп. информации"
+                when="Когда нужна дополнительная информация: финмодель, DD, юр. проверка"
+                :terms="['Due Diligence', 'Воронка сделок', 'Скрининг']"
               >
                 <Button label="Отложить" icon="pi pi-clock" severity="warning" size="small"
                   @click="humanDecide('DEFER')" />
               </LearnTooltip>
               <LearnTooltip
-                label="Отклонить проект"
-                what="Отклоняет проект, завершая его рассмотрение без финансирования"
-                when="Когда проект не соответствует критериям фонда или выявлены критические риски"
-                :terms="['Критерии отбора', 'Риски проекта']"
+                label="Отклонить"
+                what="Проект не проходит критерии ФСТ НТИ. Решение фиксируется в протоколе."
+                when="Когда проект не соответствует стратегии фонда или минимальным критериям отбора"
+                :terms="['Критерии отбора', 'Протокол ИК', 'Политика фонда']"
               >
                 <Button label="Отклонить" icon="pi pi-times" severity="danger" size="small"
                   @click="humanDecide('REJECT')" />
@@ -507,40 +421,271 @@
       </div>
     </div>
 
-    <!-- Loading screen before session -->
-    <div v-else class="fst-pre-session">
-      <div class="fst-pre-logo">
-        <i class="pi pi-building" style="font-size:48px;color:#ffa726"></i>
-        <h1>ФСТ НТИ</h1>
-        <h2>AI Инвестиционный Комитет</h2>
-        <p>6 AI-агентов · Полные дебаты · Прозрачное решение</p>
-
-        <!-- Текущие настройки политики -->
-        <div class="fst-pre-policy">
-          <div class="fst-pre-policy-title">
-            <i class="pi pi-sliders-h" style="color:#ffa726"></i>
-            Текущие параметры оценки ФСТ
+    <!-- ═══ Setup Screen ═══ -->
+    <div v-else class="fst-setup">
+      <div class="fst-setup-header">
+        <div class="fst-setup-brand">
+          <i class="pi pi-building"></i>
+          ФСТ НТИ — AI Инвестиционный Комитет
+        </div>
+        <p class="fst-setup-desc">6 AI-агентов анализируют проект, дебатируют и выносят решение с обоснованием</p>
+        <div class="fst-setup-subfunds" v-if="Object.keys(SUBFUNDS).length">
+          <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
+            :style="{ borderColor: sf.color, color: sf.color }">
+            <i :class="sf.icon"></i> {{ sf.name }}
+            <span class="fst-subfund-budget">{{ (sf.budget / 1e9).toFixed(1) }} млрд</span>
           </div>
-          <div class="fst-pre-policy-grid">
-            <div v-for="(range, key) in FST_POLICY_RANGES" :key="key" class="fst-pre-policy-item">
-              <span class="fst-pre-policy-label">{{ range.label }}</span>
-              <span class="fst-pre-policy-val">{{ formatPolicyValue(key, fstPolicy[key]) }}</span>
+        </div>
+      </div>
+
+      <!-- ═══ Project Detail Modal ═══ -->
+      <Dialog v-model:visible="projectModalVisible" modal
+        :style="{ width: '560px', maxWidth: '95vw' }"
+        :header="previewProject?.title || ''"
+        :pt="{ header: { style: 'border-bottom: 3px solid ' + (SUBFUNDS[previewProject?.subFund]?.color || '#ffa726') } }">
+        <div v-if="previewProject" class="fst-pmodal">
+          <div class="fst-pmodal-top">
+            <div class="fst-pmodal-subfund" :style="{ background: SUBFUNDS[previewProject.subFund]?.color || '#666' }">
+              <i :class="SUBFUNDS[previewProject.subFund]?.icon"></i>
+              {{ SUBFUNDS[previewProject.subFund]?.name || previewProject.subFund }}
+            </div>
+            <div class="fst-pmodal-stage">{{ previewProject.stage }}</div>
+          </div>
+
+          <div class="fst-pmodal-company">
+            <i class="pi pi-building"></i> {{ previewProject.company }}
+          </div>
+
+          <div class="fst-pmodal-metrics">
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val">{{ (previewProject.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
+              <div class="fst-pmodal-metric-label">Запрашиваемая сумма</div>
+            </div>
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val" :class="trlClass(previewProject.trl)">TRL {{ previewProject.trl }}</div>
+              <div class="fst-pmodal-metric-label">Готовность технологии</div>
+            </div>
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val" :class="trlClass(previewProject.mrl - 1)">MRL {{ previewProject.mrl }}</div>
+              <div class="fst-pmodal-metric-label">Рыночная готовность</div>
+            </div>
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val" :class="sovClass(previewProject.sovereigntyScore)">{{ previewProject.sovereigntyScore }}/9</div>
+              <div class="fst-pmodal-metric-label">Суверенность</div>
+            </div>
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val" :class="irrClass(previewProject.projectedIRR)">{{ (previewProject.projectedIRR * 100).toFixed(0) }}%</div>
+              <div class="fst-pmodal-metric-label">Прогноз IRR</div>
+            </div>
+            <div class="fst-pmodal-metric" v-if="previewProject.marketSize">
+              <div class="fst-pmodal-metric-val">{{ (previewProject.marketSize / 1e9).toFixed(1) }} млрд</div>
+              <div class="fst-pmodal-metric-label">Объём рынка</div>
+            </div>
+          </div>
+
+          <div v-if="previewProject.description" class="fst-pmodal-desc">
+            {{ previewProject.description }}
+          </div>
+
+          <div v-if="previewProject.tags?.length" class="fst-pmodal-tags">
+            <span v-for="t in previewProject.tags" :key="t" class="fst-pmodal-tag">{{ t }}</span>
+          </div>
+
+          <!-- Policy check -->
+          <div class="fst-pmodal-check">
+            <div :class="['fst-pmodal-check-item', previewProject.trl >= fstPolicy.minTRL ? 'pass' : 'fail']">
+              <i :class="previewProject.trl >= fstPolicy.minTRL ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+              TRL ≥ {{ fstPolicy.minTRL }} (есть {{ previewProject.trl }})
+            </div>
+            <div :class="['fst-pmodal-check-item', previewProject.mrl >= fstPolicy.minMRL ? 'pass' : 'fail']">
+              <i :class="previewProject.mrl >= fstPolicy.minMRL ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+              MRL ≥ {{ fstPolicy.minMRL }} (есть {{ previewProject.mrl }})
+            </div>
+            <div :class="['fst-pmodal-check-item', previewProject.sovereigntyScore >= fstPolicy.minSovereignty ? 'pass' : 'fail']">
+              <i :class="previewProject.sovereigntyScore >= fstPolicy.minSovereignty ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+              Суверенность ≥ {{ fstPolicy.minSovereignty }}/9 (есть {{ previewProject.sovereigntyScore }})
+            </div>
+          </div>
+        </div>
+        <template #footer>
+          <Button label="Отмена" severity="secondary" text @click="projectModalVisible = false" />
+          <Button
+            :label="selectedProjectId === previewProject?.id ? 'Выбран ✓' : 'Выбрать проект'"
+            :severity="selectedProjectId === previewProject?.id ? 'success' : 'primary'"
+            icon="pi pi-check"
+            @click="selectProject(previewProject)"
+          />
+        </template>
+      </Dialog>
+
+      <div class="fst-setup-body">
+        <!-- Projects Grid -->
+        <div class="fst-setup-col fst-setup-col--projects">
+          <div class="fst-setup-section-title">
+            <i class="pi pi-th-large" style="color:#38bdf8"></i>
+            Выберите проект для рассмотрения
+            <span v-if="selectedProjectId" class="fst-selected-badge">
+              <i class="pi pi-check-circle"></i> Выбран
+            </span>
+          </div>
+          <div class="fst-project-grid">
+            <div v-if="PROJECTS_POOL.length === 0" class="fst-setup-empty">
+              <i class="pi pi-spin pi-spinner"></i> Загрузка проектов...
+            </div>
+            <div v-for="p in PROJECTS_POOL" :key="p.id"
+              :class="['fst-pcard', { 'fst-pcard--selected': selectedProjectId === p.id }]"
+              :style="{ '--pc': SUBFUNDS[p.subFund]?.color || '#667eea' }"
+              @click="openProjectModal(p)">
+              <!-- Top stripe -->
+              <div class="fst-pcard-stripe"></div>
+              <!-- Selected indicator -->
+              <div v-if="selectedProjectId === p.id" class="fst-pcard-checkmark">
+                <i class="pi pi-check"></i>
+              </div>
+              <!-- Subfund + Stage -->
+              <div class="fst-pcard-top">
+                <span class="fst-pcard-subfund" :style="{ background: SUBFUNDS[p.subFund]?.color || '#666' }">
+                  {{ SUBFUNDS[p.subFund]?.shortName || p.subFund?.toUpperCase() }}
+                </span>
+                <span class="fst-pcard-stage">{{ p.stage }}</span>
+              </div>
+              <!-- Title -->
+              <div class="fst-pcard-title">{{ p.title }}</div>
+              <!-- Company -->
+              <div class="fst-pcard-company">
+                <i class="pi pi-building"></i> {{ p.company }}
+              </div>
+              <!-- Amount -->
+              <div class="fst-pcard-amount">{{ (p.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
+              <!-- Metrics -->
+              <div class="fst-pcard-metrics">
+                <span class="fst-metric" :class="trlClass(p.trl)">TRL {{ p.trl }}</span>
+                <span class="fst-metric" :class="trlClass(p.mrl - 1)">MRL {{ p.mrl }}</span>
+                <span class="fst-metric" :class="sovClass(p.sovereigntyScore)">{{ p.sovereigntyScore }}/9</span>
+                <span class="fst-metric" :class="irrClass(p.projectedIRR)">IRR {{ (p.projectedIRR * 100).toFixed(0) }}%</span>
+              </div>
+              <!-- Click hint -->
+              <div class="fst-pcard-hint">
+                <i class="pi pi-eye"></i> Подробнее
+              </div>
             </div>
           </div>
         </div>
 
-        <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
-          <Button label="Открыть сессию" icon="pi pi-play" severity="success" size="large"
-            @click="lobbyVisible = true" />
-          <Button label="Настройки" icon="pi pi-sliders-h" severity="secondary"
-            @click="lobbyVisible = true; policyExpanded = true" />
+        <!-- Right: Settings -->
+        <div class="fst-setup-col fst-setup-col--settings">
+          <div class="fst-setup-section-title">
+            <i class="pi pi-gauge" style="color:#a78bfa"></i>
+            Скорость симуляции
+          </div>
+          <div class="fst-speed-row">
+            <div v-for="sp in speedOptions" :key="sp.id"
+              :class="['fst-speed-btn', { active: selectedSpeed === sp.id }]"
+              @click="selectedSpeed = sp.id">
+              {{ sp.label }}
+            </div>
+          </div>
+
+          <div class="fst-setup-section-title" style="margin-top:20px">
+            <i class="pi pi-bolt" style="color:#a78bfa"></i>
+            Режим агентов
+          </div>
+          <div class="fst-ai-mode-row">
+            <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useAI }]" @click="useAI = !useAI">
+              <div class="fst-ai-toggle-knob"></div>
+            </div>
+            <div class="fst-ai-mode-label">
+              <span v-if="useAI">
+                <i class="pi pi-bolt" style="color:#a78bfa"></i>
+                <strong>Реальный AI</strong> — агенты думают и отвечают друг другу
+              </span>
+              <span v-else>
+                <i class="pi pi-server" style="color:#78909c"></i>
+                <strong>Шаблоны</strong> — быстрая симуляция без API-вызовов
+              </span>
+            </div>
+          </div>
+
+          <!-- ═══ Настройки моделей оркестратора ═══ -->
+          <div v-if="useAI" class="fst-setup-section-title" style="margin-top:20px">
+            <div class="fst-policy-toggle" @click="modelPanelExpanded = !modelPanelExpanded">
+              <i class="pi pi-microchip-ai" style="color:#42a5f5"></i>
+              <span>Модели агентов</span>
+              <span class="fst-policy-summary">{{ activeProfileLabel }}</span>
+              <i :class="modelPanelExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
+            </div>
+          </div>
+          <div v-if="useAI && modelPanelExpanded" class="fst-model-panel">
+            <!-- Профили скорости -->
+            <div class="fst-model-profiles">
+              <div v-for="(profile, key) in SPEED_PROFILES" :key="key"
+                :class="['fst-profile-btn', { 'fst-profile-btn--active': selectedSpeedProfile === key }]"
+                @click="applySpeedProfile(key)">
+                {{ profile.label }}
+              </div>
+            </div>
+            <div class="fst-model-profile-desc">{{ SPEED_PROFILES[selectedSpeedProfile]?.description }}</div>
+
+            <!-- Таблица: агент → модель -->
+            <div class="fst-agent-model-grid">
+              <div v-for="agent in AGENTS" :key="agent.id" class="fst-agent-model-row">
+                <span class="fst-am-avatar" :style="{ color: agent.color }">{{ agent.avatar }}</span>
+                <span class="fst-am-name">{{ agent.shortName }}</span>
+                <select class="fst-am-select"
+                  :value="agentModelOverrides[agent.id] || resolvedModels[agent.id]"
+                  @change="e => setAgentModel(agent.id, e.target.value)">
+                  <option v-for="m in COMMITTEE_MODELS" :key="m.id" :value="m.id">
+                    {{ m.label }} · {{ m.description }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <button class="fst-model-reset-btn" @click="resetModelOverrides">
+              <i class="pi pi-refresh"></i> Сбросить к профилю
+            </button>
+          </div>
+
+          <div class="fst-setup-section-title" style="margin-top:20px">
+            <div class="fst-policy-toggle" @click="policyExpanded = !policyExpanded">
+              <i class="pi pi-sliders-h" style="color:#ffa726"></i>
+              <span>Параметры оценки ФСТ</span>
+              <span class="fst-policy-summary">Сув. ≥ {{ fstPolicy.minSovereignty }}/9 · TRL ≥ {{ fstPolicy.minTRL }}</span>
+              <i :class="policyExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
+            </div>
+          </div>
+          <div v-if="policyExpanded" class="fst-policy-grid">
+            <div v-for="(range, key) in FST_POLICY_RANGES" :key="key" class="fst-policy-item">
+              <div class="fst-policy-label">{{ range.label }}: <b>{{ formatPolicyValue(key, fstPolicy[key]) }}</b></div>
+              <Slider
+                :modelValue="policySliderValue(key, fstPolicy[key])"
+                @update:modelValue="v => setPolicyFromSlider(key, v)"
+                :min="range.min * policyMultiplier(key)"
+                :max="range.max * policyMultiplier(key)"
+                :step="range.step * policyMultiplier(key)"
+                class="fst-policy-slider"
+              />
+            </div>
+            <Button label="Сброс" icon="pi pi-refresh" size="small" severity="secondary" text
+              @click="resetPolicy" style="margin-top:4px" />
+          </div>
+
+          <div class="fst-setup-launch">
+            <Button
+              label="Запустить инвесткомитет"
+              icon="pi pi-play"
+              severity="success"
+              size="large"
+              :disabled="!selectedProjectId"
+              @click="startSession"
+              class="fst-launch-btn"
+            />
+            <div v-if="!selectedProjectId" class="fst-launch-hint">Выберите проект слева</div>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- Page Tutor -->
-    <PageTutorButton pageId="fst-committee" :getContext="getPageContext" />
-
   </div>
 </template>
 
@@ -553,11 +698,15 @@ import {
   SPEED_MULTIPLIERS,
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
+import {
+  COMMITTEE_MODELS, SPEED_PROFILES, buildModelMap, getModelSummary, resolveModel
+} from '@/components/fst-committee/fstCommitteeModelOrchestrator.js'
 import { saveDecision, createProject, saveCommitteeSession, STATUSES } from '@/services/fstApi'
+import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-committee/fstCommitteeAI.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
+import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
 import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
-import PageTutorButton from '@/components/PageTutorButton.vue'
 
 // ── Load FST Data ─────────────────────────────────────────────────
 
@@ -573,31 +722,93 @@ onMounted(async () => {
   }
 })
 
-// ── Page Tutor Context ────────────────────────────────────────
-function getPageContext() {
-  const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
-  return {
-    module: 'AI-инвесткомитет',
-    selectedProject: project ? project.title : null,
-    isRunning: running.value,
-    currentPhase: session.value?.phase || null,
-    agents: AGENTS.map(a => a.name)
-  }
-}
-
 // ── State ─────────────────────────────────────────────────────
 
-const lobbyVisible = ref(true)
 const conclusionVisible = ref(false)
+const projectModalVisible = ref(false)
+const previewProject = ref(null)
 const selectedProjectId = ref(null)
 const selectedSpeed = ref('normal')
-const policyExpanded = ref(true)
+const useAI = ref(true)
+const policyExpanded = ref(false)
+
+// ── Оркестратор моделей ────────────────────────────────────────
+const modelPanelExpanded = ref(false)
+const selectedSpeedProfile = ref('fast')
+const agentModelOverrides = ref({})  // { [agentId]: modelId } — переопределения пользователя
+
+const resolvedModels = computed(() =>
+  buildModelMap(AGENTS.map(a => a.id), selectedSpeedProfile.value, agentModelOverrides.value)
+)
+
+const activeProfileLabel = computed(() => {
+  const summary = getModelSummary(resolvedModels.value)
+  return summary || SPEED_PROFILES[selectedSpeedProfile.value]?.label
+})
+
+function applySpeedProfile(profileKey) {
+  selectedSpeedProfile.value = profileKey
+  agentModelOverrides.value = {}  // сбрасываем ручные override при смене профиля
+}
+
+function setAgentModel(agentId, modelId) {
+  agentModelOverrides.value = { ...agentModelOverrides.value, [agentId]: modelId }
+}
+
+function resetModelOverrides() {
+  agentModelOverrides.value = {}
+}
 const humanComment = ref('')
 const session = ref(null)
 const running = ref(false)
 const timelineEl = ref(null)
 
 const fstPolicy = ref({ ...FST_POLICY_DEFAULTS })
+
+// Debate view tab
+const debateTab = ref('timeline')
+
+// KAG save state
+const kagSaving    = ref(false)
+const kagSaved     = ref(false)
+const kagSavedCount = ref(0)
+
+// Integram СОД save state
+const intSaving  = ref(false)
+const intSaved   = ref(false)
+const intEventId = ref(null)
+
+async function saveToIntegram() {
+  if (!session.value || intSaving.value) return
+  intSaving.value = true
+  try {
+    const result = await saveSessionToIntegram(session.value)
+    if (result.eventId) {
+      intEventId.value = result.eventId
+      intSaved.value = true
+    } else {
+      console.error('Integram save error:', result.error)
+    }
+  } catch (e) {
+    console.error('Integram save error:', e)
+  } finally {
+    intSaving.value = false
+  }
+}
+
+async function saveToKag() {
+  if (!session.value || kagSaving.value) return
+  kagSaving.value = true
+  try {
+    const result = await saveSessionToKag(session.value)
+    kagSavedCount.value = result.saved || 0
+    kagSaved.value = true
+  } catch (e) {
+    console.error('KAG save error:', e)
+  } finally {
+    kagSaving.value = false
+  }
+}
 
 // Финансовый калькулятор
 const finMetrics = ref({ npv: null, irr: null, pi: null, gatePass: false })
@@ -731,6 +942,16 @@ function setPolicyFromSlider(key, v) {
   fstPolicy.value[key] = m === 1 ? v : v / 100
 }
 
+function openProjectModal(p) {
+  previewProject.value = p
+  projectModalVisible.value = true
+}
+
+function selectProject(p) {
+  selectedProjectId.value = p.id
+  projectModalVisible.value = false
+}
+
 function resetPolicy() {
   fstPolicy.value = { ...FST_POLICY_DEFAULTS }
 }
@@ -740,9 +961,14 @@ function resetPolicy() {
 function startSession() {
   const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
   if (!project) return
-  lobbyVisible.value = false
 
-  const sess = createSession(project, { speed: selectedSpeed.value, policy: { ...fstPolicy.value } })
+  const sess = createSession(project, {
+    speed:          selectedSpeed.value,
+    policy:         { ...fstPolicy.value },
+    useAI:          useAI.value,
+    speedProfile:   selectedSpeedProfile.value,
+    modelOverrides: { ...agentModelOverrides.value },
+  })
   session.value = sess
 
   engine = new FstCommitteeEngine(sess, handleEvent)
@@ -766,7 +992,11 @@ function resetSession() {
   running.value = false
   conclusionVisible.value = false
   humanComment.value = ''
-  lobbyVisible.value = true
+  debateTab.value = 'timeline'
+  kagSaved.value = false
+  kagSavedCount.value = 0
+  intSaved.value = false
+  intEventId.value = null
 }
 
 function humanDecide(verdict) {
@@ -856,69 +1086,83 @@ onUnmounted(() => {
   font-family: 'Inter', sans-serif;
 }
 
-/* ── Pre-session ──────────────────────────────────────────── */
-.fst-pre-session {
+/* ── Setup Screen ─────────────────────────────────────────── */
+.fst-setup {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   min-height: 100vh;
 }
-.fst-pre-logo {
-  text-align: center;
+.fst-setup-header {
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
 }
-.fst-pre-logo h1 {
-  font-size: 36px;
+.fst-setup-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
   font-weight: 700;
   color: #ffa726;
-  margin: 12px 0 4px;
+  margin-bottom: 5px;
 }
-.fst-pre-logo h2 {
-  font-size: 20px;
-  font-weight: 400;
+.fst-setup-desc {
   color: var(--p-text-muted-color);
+  font-size: 13px;
   margin: 0 0 12px;
 }
-.fst-pre-logo p {
-  color: var(--p-text-muted-color);
-  margin-bottom: 16px;
-}
-
-/* Pre-session policy preview */
-.fst-pre-policy {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin: 0 auto 4px;
-  max-width: 520px;
-  width: 100%;
-  text-align: left;
-}
-.fst-pre-policy-title {
+.fst-setup-subfunds {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--p-text-color);
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--p-surface-border);
 }
-.fst-pre-policy-grid {
+.fst-setup-body {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 16px;
+  grid-template-columns: 1fr 360px;
+  flex: 1;
 }
-.fst-pre-policy-item {
+.fst-setup-col {
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+.fst-setup-col--projects {
+  border-right: 1px solid var(--p-surface-border);
+}
+.fst-setup-section-title {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--p-text-muted-color);
+  margin-bottom: 10px;
+}
+.fst-setup-empty {
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+  padding: 20px 0;
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
-.fst-pre-policy-label { color: var(--p-text-muted-color); }
-.fst-pre-policy-val { font-weight: 600; color: var(--p-text-color); }
+.fst-setup-launch {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--p-surface-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fst-launch-btn { width: 100%; justify-content: center; }
+.fst-launch-hint { text-align: center; font-size: 12px; color: var(--p-text-muted-color); }
+.fst-policy-summary {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  margin-left: 8px;
+  font-weight: 400;
+}
 
 /* ── FST Policy Panel ──────────────────────────────────────── */
 .fst-policy-toggle {
@@ -998,67 +1242,209 @@ onUnmounted(() => {
   margin-bottom: 10px;
   color: var(--p-text-muted-color);
 }
-.fst-project-list {
+/* ── Project Grid Cards ───────────────────────────────────── */
+.fst-selected-badge {
+  margin-left: 10px;
+  font-size: 11px;
+  color: #4caf50;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.fst-project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.fst-pcard {
+  position: relative;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 360px;
-  overflow-y: auto;
+  overflow: hidden;
 }
-.fst-project-card {
-  border: 1px solid var(--p-surface-border);
-  border-radius: 8px;
-  padding: 10px 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: var(--p-surface-card);
+.fst-pcard-stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--pc);
 }
-.fst-project-card:hover {
-  border-color: #42a5f5;
+.fst-pcard:hover {
+  border-color: var(--pc);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 0 0 1px var(--pc);
+}
+.fst-pcard--selected {
+  border-color: var(--pc);
+  box-shadow: 0 0 0 2px var(--pc), 0 4px 16px rgba(0,0,0,0.1);
+}
+.fst-pcard-checkmark {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #4caf50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+}
+.fst-pcard-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.fst-pcard-subfund {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #fff;
+}
+.fst-pcard-stage {
+  font-size: 10px;
+  color: var(--p-text-muted-color);
   background: var(--p-surface-hover);
+  padding: 2px 7px;
+  border-radius: 4px;
 }
-.fst-project-card--active {
-  border-color: #ffa726;
+.fst-pcard-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--p-text-color);
+  line-height: 1.3;
+  flex: 1;
+}
+.fst-pcard-company {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.fst-pcard-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pc);
+}
+.fst-pcard-metrics {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.fst-pcard-hint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.fst-pcard:hover .fst-pcard-hint { opacity: 1; }
+
+/* ── Project Detail Modal ─────────────────────────────────── */
+.fst-pmodal { display: flex; flex-direction: column; gap: 16px; }
+.fst-pmodal-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fst-pmodal-subfund {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+  color: #fff;
+}
+.fst-pmodal-stage {
+  font-size: 12px;
+  color: var(--p-text-muted-color);
   background: var(--p-surface-hover);
+  padding: 4px 10px;
+  border-radius: 6px;
 }
-.fst-pc-header {
+.fst-pmodal-company {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
-}
-.fst-pc-subfund {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
-  color: #fff;
-}
-.fst-pc-stage {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-}
-.fst-pc-amount {
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 600;
-  color: #ffd54f;
-}
-.fst-pc-title {
   font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 3px;
+  color: var(--p-text-color);
 }
-.fst-pc-company {
-  font-size: 11px;
+.fst-pmodal-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  background: var(--p-surface-section, var(--p-surface-hover));
+  border-radius: 10px;
+  padding: 14px;
+}
+.fst-pmodal-metric { text-align: center; }
+.fst-pmodal-metric-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--p-text-color);
+  line-height: 1.2;
+}
+.fst-pmodal-metric-label {
+  font-size: 10px;
   color: var(--p-text-muted-color);
-  margin-bottom: 6px;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-.fst-pc-metrics {
+.fst-pmodal-desc {
+  font-size: 13px;
+  color: var(--p-text-muted-color);
+  line-height: 1.6;
+  padding: 12px;
+  background: var(--p-surface-hover);
+  border-radius: 8px;
+}
+.fst-pmodal-tags {
   display: flex;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
 }
+.fst-pmodal-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--p-surface-hover);
+  border: 1px solid var(--p-surface-border);
+  color: var(--p-text-muted-color);
+}
+.fst-pmodal-check {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--p-surface-border);
+}
+.fst-pmodal-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.fst-pmodal-check-item.pass { color: #4caf50; }
+.fst-pmodal-check-item.fail { color: #ef5350; }
 .fst-metric {
   font-size: 11px;
   padding: 2px 7px;
@@ -1449,6 +1835,27 @@ onUnmounted(() => {
   background: var(--p-surface-border);
   color: var(--p-text-muted-color);
 }
+.fst-arg-ai-badge {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  color: #a78bfa;
+  background: rgba(167,139,250,0.12);
+  border: 1px solid rgba(167,139,250,0.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.fst-arg-tpl-badge {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--p-text-muted-color);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
 .fst-arg-dim {
   font-size: 10px;
   color: var(--p-text-muted-color);
@@ -1750,4 +2157,168 @@ onUnmounted(() => {
   justify-content: center;
 }
 
+/* ── AI mode toggle ── */
+.fst-ai-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 9px;
+}
+.fst-ai-toggle {
+  width: 40px; height: 22px;
+  border-radius: 11px;
+  background: var(--p-surface-border);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.fst-ai-toggle--on { background: #7c3aed; }
+.fst-ai-toggle-knob {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.fst-ai-toggle--on .fst-ai-toggle-knob { transform: translateX(18px); }
+.fst-ai-mode-label { font-size: 0.8125rem; color: var(--p-text-color); }
+.fst-ai-mode-label strong { font-weight: 600; }
+
+/* ── Debate Tabs ───────────────────────────────────────────── */
+.fst-debate-tabs {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+.fst-dtab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--p-text-muted-color);
+  transition: all 0.15s;
+}
+.fst-dtab:hover {
+  background: var(--p-surface-hover);
+  color: var(--p-text-color);
+}
+.fst-dtab--active {
+  background: var(--p-primary-color, #42a5f5);
+  color: #fff;
+  border-color: transparent;
+}
+.fst-dtab--active .fst-arg-count {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+/* ── Graph Panel ───────────────────────────────────────────── */
+.fst-graph-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── KAG saved badge ───────────────────────────────────────── */
+.fst-kag-saved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--p-text-color);
+}
+
+/* ── Оркестратор моделей ───────────────────────────────────── */
+.fst-model-panel {
+  padding: 10px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fst-model-profiles {
+  display: flex;
+  gap: 6px;
+}
+.fst-profile-btn {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fst-profile-btn:hover {
+  background: var(--p-surface-hover);
+}
+.fst-profile-btn--active {
+  background: var(--p-primary-color, #42a5f5);
+  color: #fff;
+  border-color: transparent;
+}
+.fst-model-profile-desc {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  padding: 0 2px;
+}
+.fst-agent-model-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.fst-agent-model-row {
+  display: grid;
+  grid-template-columns: 20px 55px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+.fst-am-avatar { font-size: 14px; }
+.fst-am-name {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fst-am-select {
+  font-size: 10px;
+  padding: 3px 5px;
+  border-radius: 5px;
+  border: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  cursor: pointer;
+  width: 100%;
+  min-width: 0;
+}
+.fst-model-reset-btn {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.fst-model-reset-btn:hover { background: var(--p-surface-hover); }
 </style>

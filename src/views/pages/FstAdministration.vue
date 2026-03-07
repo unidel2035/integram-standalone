@@ -3,146 +3,138 @@
     <div class="admin-header">
       <div>
         <h1>Бэк-офис фонда</h1>
-        <span class="admin-subtitle">Управленческий учёт и соответствие ФСБУ 4/2023</span>
+        <span class="admin-subtitle">Управленческий учёт и ФСБУ 4/2023</span>
       </div>
       <div class="admin-actions">
-        <select v-model="selectedPeriod" class="admin-select" @change="loadPeriodData">
+        <select v-model="selectedPeriod" class="admin-select" @change="loadData">
           <option v-for="p in periods" :key="p" :value="p">{{ p }}</option>
         </select>
-        <button class="admin-btn secondary" @click="exportReport">Экспорт отчёта</button>
-        <button class="admin-btn primary" @click="generateAudit">Аудиторский пакет</button>
+        <button class="admin-btn secondary" @click="exportToExcel">Экспорт в Excel</button>
+        <button class="admin-btn primary" @click="generateAuditPackage">Аудиторский пакет</button>
       </div>
     </div>
 
-    <!-- Навигация табов -->
+    <!-- Статус ФСБУ 4/2023 -->
+    <div class="admin-compliance-bar">
+      <div class="compliance-title">Соответствие ФСБУ 4/2023</div>
+      <div v-for="s in complianceStatus" :key="s.label" class="compliance-item">
+        <div class="compliance-icon" :class="s.status">{{ s.status === 'ok' ? '✓' : s.status === 'warning' ? '!' : '○' }}</div>
+        <div class="compliance-label">{{ s.label }}</div>
+        <div class="compliance-date">{{ s.date }}</div>
+      </div>
+    </div>
+
+    <!-- Навигация по секциям -->
     <div class="admin-tabs">
       <button v-for="t in tabs" :key="t.id" :class="['admin-tab', { active: activeTab === t.id }]" @click="activeTab = t.id">
-        <i :class="t.icon"></i>
         {{ t.label }}
       </button>
     </div>
 
-    <!-- ════════════════════════════════════════════ MANAGEMENT FEE -->
-    <div v-if="activeTab === 'fees'" class="admin-section">
-      <h2>Management Fee & Carried Interest</h2>
-      <p class="admin-note">Расчёт вознаграждения управляющей компании согласно LPA</p>
-
-      <div class="fee-grid">
-        <!-- Management Fee -->
-        <div class="fee-card">
-          <div class="fee-card-header">
-            <h3>Management Fee</h3>
-            <span class="fee-badge">2% годовых</span>
+    <!-- Management Fee -->
+    <div v-if="activeTab === 'mgmt-fee'" class="admin-section">
+      <h2>Management Fee — Вознаграждение УК</h2>
+      <div class="admin-params-card">
+        <h3>Параметры начисления</h3>
+        <div class="params-grid">
+          <div class="param-field">
+            <label>Committed Capital, млн ₽</label>
+            <input v-model.number="mgmtFee.committedCapital" type="number" step="100" @input="calcMgmtFee" />
           </div>
-          <div class="fee-calc">
-            <div class="fee-row">
-              <span class="fee-label">Committed Capital</span>
-              <span class="fee-val">{{ formatCurrency(fundParams.committedCapital) }}</span>
-            </div>
-            <div class="fee-row">
-              <span class="fee-label">Ставка Management Fee</span>
-              <span class="fee-val">{{ fundParams.managementFeeRate }}%</span>
-            </div>
-            <div class="fee-row">
-              <span class="fee-label">Период начисления</span>
-              <span class="fee-val">{{ selectedPeriod }}</span>
-            </div>
-            <div class="fee-separator"></div>
-            <div class="fee-row total">
-              <span class="fee-label">Начислено за квартал</span>
-              <span class="fee-val green">{{ formatCurrency(managementFeeQuarterly) }}</span>
-            </div>
-            <div class="fee-row">
-              <span class="fee-label">Статус оплаты</span>
-              <span class="fee-val"><span class="status-badge paid">Оплачено</span></span>
-            </div>
+          <div class="param-field">
+            <label>Ставка Management Fee, %</label>
+            <input v-model.number="mgmtFee.rate" type="number" step="0.1" @input="calcMgmtFee" />
           </div>
-        </div>
-
-        <!-- Carried Interest -->
-        <div class="fee-card">
-          <div class="fee-card-header">
-            <h3>Carried Interest</h3>
-            <span class="fee-badge orange">20% от прибыли</span>
+          <div class="param-field">
+            <label>Период начисления</label>
+            <select v-model="mgmtFee.period" @change="calcMgmtFee">
+              <option value="annual">Ежегодно</option>
+              <option value="quarterly">Ежеквартально</option>
+              <option value="monthly">Ежемесячно</option>
+            </select>
           </div>
-          <div class="fee-calc">
-            <div class="fee-row">
-              <span class="fee-label">Hurdle Rate</span>
-              <span class="fee-val">{{ fundParams.hurdleRate }}%</span>
-            </div>
-            <div class="fee-row">
-              <span class="fee-label">Прибыль сверх hurdle</span>
-              <span class="fee-val">{{ formatCurrency(profitAboveHurdle) }}</span>
-            </div>
-            <div class="fee-row">
-              <span class="fee-label">Ставка Carry</span>
-              <span class="fee-val">{{ fundParams.carryRate }}%</span>
-            </div>
-            <div class="fee-separator"></div>
-            <div class="fee-row total">
-              <span class="fee-label">Начислено Carry (потенциально)</span>
-              <span class="fee-val orange">{{ formatCurrency(carriedInterest) }}</span>
-            </div>
-            <div class="fee-row">
-              <span class="fee-label">Статус</span>
-              <span class="fee-val"><span class="status-badge accrued">Начислено</span></span>
-            </div>
+          <div class="param-field">
+            <label>Дата начала</label>
+            <input v-model="mgmtFee.startDate" type="date" @change="calcMgmtFee" />
           </div>
         </div>
       </div>
 
-      <!-- История начислений -->
-      <h3 class="subsection-title">История начислений</h3>
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Период</th>
-            <th>Тип</th>
-            <th>Начислено, млн ₽</th>
-            <th>Дата оплаты</th>
-            <th>Статус</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="fee in feeHistory" :key="fee.id">
-            <td>{{ fee.period }}</td>
-            <td><span class="type-badge" :class="fee.type">{{ feeTypeLabel(fee.type) }}</span></td>
-            <td class="num">{{ formatCurrency(fee.amount) }}</td>
-            <td class="gray">{{ fee.paymentDate }}</td>
-            <td><span class="status-badge" :class="fee.status">{{ statusLabel(fee.status) }}</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="admin-result-card">
+        <h3>Расчёт Management Fee</h3>
+        <div class="mgmt-fee-calc">
+          <div class="calc-item">
+            <span class="calc-label">Committed Capital:</span>
+            <span class="calc-value">{{ formatNum(mgmtFee.committedCapital) }} млн ₽</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">Ставка:</span>
+            <span class="calc-value">{{ mgmtFee.rate }}%</span>
+          </div>
+          <div class="calc-item highlight">
+            <span class="calc-label">Годовое начисление:</span>
+            <span class="calc-value bold">{{ formatNum(mgmtFee.annualAmount) }} млн ₽</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">{{ mgmtFee.period === 'quarterly' ? 'Квартальное' : 'Месячное' }} начисление:</span>
+            <span class="calc-value">{{ formatNum(mgmtFee.periodAmount) }} млн ₽</span>
+          </div>
+        </div>
+
+        <h4>График начислений {{ selectedPeriod }}</h4>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Период</th>
+              <th>Дата начисления</th>
+              <th>Сумма, млн ₽</th>
+              <th>Дата оплаты</th>
+              <th>Оплачено, млн ₽</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in mgmtFeeSchedule" :key="row.period">
+              <td>{{ row.period }}</td>
+              <td>{{ row.accrualDate }}</td>
+              <td class="num">{{ formatNum(row.amount) }}</td>
+              <td>{{ row.paymentDate || '—' }}</td>
+              <td class="num">{{ row.paid ? formatNum(row.amount) : '—' }}</td>
+              <td><span class="status-badge" :class="row.status">{{ statusLabel(row.status) }}</span></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"><strong>Итого за {{ selectedPeriod }}</strong></td>
+              <td class="num bold">{{ formatNum(mgmtFeeTotal.accrued) }}</td>
+              <td></td>
+              <td class="num bold">{{ formatNum(mgmtFeeTotal.paid) }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
 
-    <!-- ══════════════════════════════════════════ FUND EXPENSES -->
+    <!-- Fund Expenses -->
     <div v-if="activeTab === 'expenses'" class="admin-section">
       <h2>Расходы фонда</h2>
-      <p class="admin-note">Операционные расходы: due diligence, legal, travel, admin</p>
-
-      <!-- Добавить расход -->
-      <div class="expense-add-bar">
-        <button class="admin-btn primary small" @click="showAddExpense = true">
-          <i class="pi pi-plus"></i>
-          Добавить расход
-        </button>
-      </div>
-
-      <!-- Категории расходов -->
-      <div class="expense-categories">
-        <div v-for="cat in expenseCategories" :key="cat.id" class="expense-cat-card">
-          <div class="expense-cat-icon" :style="{ background: cat.color + '22', color: cat.color }">
-            <i :class="cat.icon"></i>
-          </div>
-          <div class="expense-cat-body">
-            <div class="expense-cat-label">{{ cat.label }}</div>
-            <div class="expense-cat-amount">{{ formatCurrency(cat.total) }}</div>
-          </div>
-          <div class="expense-cat-pct">{{ cat.pct }}%</div>
+      <div class="admin-actions-bar">
+        <button class="admin-btn primary small" @click="showAddExpense = true">+ Добавить расход</button>
+        <div class="filter-group">
+          <label>Категория:</label>
+          <select v-model="expenseFilter.category">
+            <option value="">Все</option>
+            <option value="due-diligence">Due Diligence</option>
+            <option value="legal">Юридические</option>
+            <option value="travel">Командировки</option>
+            <option value="admin">Административные</option>
+            <option value="audit">Аудит</option>
+            <option value="marketing">Маркетинг</option>
+          </select>
         </div>
       </div>
 
-      <!-- Таблица расходов -->
       <table class="admin-table">
         <thead>
           <tr>
@@ -150,340 +142,643 @@
             <th>Категория</th>
             <th>Описание</th>
             <th>Контрагент</th>
-            <th>Сумма, млн ₽</th>
+            <th>Сумма, ₽</th>
             <th>Статус</th>
+            <th>Документы</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="exp in expenses" :key="exp.id">
-            <td class="gray">{{ exp.date }}</td>
-            <td><span class="cat-badge" :class="exp.category">{{ categoryLabel(exp.category) }}</span></td>
-            <td>{{ exp.description }}</td>
-            <td class="gray">{{ exp.counterparty }}</td>
-            <td class="num">{{ formatCurrency(exp.amount) }}</td>
-            <td><span class="status-badge" :class="exp.status">{{ statusLabel(exp.status) }}</span></td>
+          <tr v-for="e in filteredExpenses" :key="e.id">
+            <td>{{ e.date }}</td>
+            <td><span class="category-badge" :class="e.category">{{ categoryLabel(e.category) }}</span></td>
+            <td>{{ e.description }}</td>
+            <td class="gray">{{ e.counterparty }}</td>
+            <td class="num">{{ formatNum(e.amount) }}</td>
+            <td><span class="status-badge" :class="e.status">{{ statusLabel(e.status) }}</span></td>
+            <td>
+              <button class="link-btn" @click="viewDocs(e.id)">{{ e.docCount }} файл(ов)</button>
+            </td>
+            <td>
+              <button class="action-btn" @click="editExpense(e.id)">✎</button>
+              <button class="action-btn del" @click="deleteExpense(e.id)">✕</button>
+            </td>
           </tr>
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="4"><strong>Итого расходы за {{ selectedPeriod }}</strong></td>
-            <td class="num bold">{{ formatCurrency(totalExpenses) }}</td>
-            <td></td>
+            <td colspan="4"><strong>Итого {{ selectedPeriod }}</strong></td>
+            <td class="num bold">{{ formatNum(expensesTotal) }}</td>
+            <td colspan="3"></td>
           </tr>
         </tfoot>
       </table>
+
+      <div class="expenses-chart-card">
+        <h3>Расходы по категориям</h3>
+        <div class="expenses-breakdown">
+          <div v-for="cat in expensesByCategory" :key="cat.category" class="exp-cat-item">
+            <div class="exp-cat-label">{{ cat.label }}</div>
+            <div class="exp-cat-bar-wrap">
+              <div class="exp-cat-bar" :style="{ width: cat.pct + '%', background: cat.color }"></div>
+            </div>
+            <div class="exp-cat-value">{{ formatNum(cat.amount) }} млн ₽ ({{ cat.pct.toFixed(1) }}%)</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════ NAV CALC -->
-    <div v-if="activeTab === 'nav'" class="admin-section">
-      <h2>Расчёт NAV (Net Asset Value)</h2>
-      <p class="admin-note">Квартальный расчёт чистой стоимости активов фонда</p>
-
-      <div class="nav-summary-grid">
-        <div class="nav-metric-card primary">
-          <div class="nav-metric-label">NAV на конец периода</div>
-          <div class="nav-metric-value">{{ formatCurrency(navCurrent) }}</div>
-          <div class="nav-metric-change green">+{{ navChangePercent }}% за квартал</div>
-        </div>
-        <div class="nav-metric-card">
-          <div class="nav-metric-label">Committed Capital</div>
-          <div class="nav-metric-value">{{ formatCurrency(fundParams.committedCapital) }}</div>
-        </div>
-        <div class="nav-metric-card">
-          <div class="nav-metric-label">Deployed Capital</div>
-          <div class="nav-metric-value">{{ formatCurrency(deployedCapital) }}</div>
-        </div>
-        <div class="nav-metric-card">
-          <div class="nav-metric-label">Unrealized Gains</div>
-          <div class="nav-metric-value green">{{ formatCurrency(unrealizedGains) }}</div>
+    <!-- Carried Interest -->
+    <div v-if="activeTab === 'carry'" class="admin-section">
+      <h2>Carried Interest — Участие УК в прибыли</h2>
+      <div class="admin-params-card">
+        <h3>Параметры Carried Interest</h3>
+        <div class="params-grid">
+          <div class="param-field">
+            <label>Hurdle Rate, %</label>
+            <input v-model.number="carry.hurdleRate" type="number" step="0.5" @input="calcCarry" />
+          </div>
+          <div class="param-field">
+            <label>Carried Interest, %</label>
+            <input v-model.number="carry.carryRate" type="number" step="1" @input="calcCarry" />
+          </div>
+          <div class="param-field">
+            <label>Метод расчёта</label>
+            <select v-model="carry.method" @change="calcCarry">
+              <option value="european">European (по фонду целиком)</option>
+              <option value="american">American (по каждой сделке)</option>
+            </select>
+          </div>
+          <div class="param-field">
+            <label>Clawback provision</label>
+            <input type="checkbox" v-model="carry.clawback" @change="calcCarry" />
+          </div>
         </div>
       </div>
 
-      <!-- Детальный расчёт NAV -->
-      <h3 class="subsection-title">Детальный расчёт NAV — {{ selectedPeriod }}</h3>
-      <table class="admin-table nav-table">
-        <thead>
-          <tr>
-            <th>Статья</th>
-            <th>Начало периода</th>
-            <th>Изменение</th>
-            <th>Конец периода</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in navRows" :key="row.label" :class="{ 'nav-total': row.isTotal, 'nav-subtitle': row.isSubtitle }">
-            <td :class="{ 'bold': row.isTotal, 'subtitle': row.isSubtitle }">{{ row.label }}</td>
-            <td class="num" :class="row.isTotal ? 'bold' : ''">{{ row.begin != null ? formatCurrency(row.begin) : '' }}</td>
-            <td class="num" :class="[row.isTotal ? 'bold' : '', row.change > 0 ? 'green' : row.change < 0 ? 'red' : '']">
-              {{ row.change != null ? formatCurrency(row.change, true) : '' }}
-            </td>
-            <td class="num" :class="row.isTotal ? 'bold' : ''">{{ row.end != null ? formatCurrency(row.end) : '' }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="admin-result-card">
+        <h3>Расчёт Carried Interest</h3>
+        <div class="carry-calc">
+          <div class="carry-step">
+            <div class="carry-step-num">1</div>
+            <div class="carry-step-body">
+              <div class="carry-step-label">Общие взносы LP</div>
+              <div class="carry-step-value">{{ formatNum(carry.totalContributions) }} млн ₽</div>
+            </div>
+          </div>
+          <div class="carry-step">
+            <div class="carry-step-num">2</div>
+            <div class="carry-step-body">
+              <div class="carry-step-label">Preferred Return ({{ carry.hurdleRate }}%)</div>
+              <div class="carry-step-value">{{ formatNum(carry.preferredReturn) }} млн ₽</div>
+            </div>
+          </div>
+          <div class="carry-step">
+            <div class="carry-step-num">3</div>
+            <div class="carry-step-body">
+              <div class="carry-step-label">Текущая стоимость портфеля + реализованная прибыль</div>
+              <div class="carry-step-value">{{ formatNum(carry.currentValue) }} млн ₽</div>
+            </div>
+          </div>
+          <div class="carry-step highlight">
+            <div class="carry-step-num">4</div>
+            <div class="carry-step-body">
+              <div class="carry-step-label">Профит сверх hurdle</div>
+              <div class="carry-step-value bold">{{ formatNum(carry.profitAboveHurdle) }} млн ₽</div>
+            </div>
+          </div>
+          <div class="carry-step final">
+            <div class="carry-step-num">5</div>
+            <div class="carry-step-body">
+              <div class="carry-step-label">Carried Interest ({{ carry.carryRate }}%)</div>
+              <div class="carry-step-value bold green">{{ formatNum(carry.carryAmount) }} млн ₽</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="carry-notice">
+          <strong>Примечание:</strong> Carried Interest начисляется, но не выплачивается до момента реализации портфеля (exit events). Clawback provision {{ carry.clawback ? 'активен' : 'не активен' }}.
+        </div>
+      </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════ BANKING OPS -->
+    <!-- NAV Calculation -->
+    <div v-if="activeTab === 'nav'" class="admin-section">
+      <h2>NAV — Net Asset Value фонда</h2>
+      <div class="nav-period-select">
+        <label>Отчётная дата:</label>
+        <input v-model="nav.reportDate" type="date" @change="calcNav" />
+        <button class="admin-btn secondary small" @click="calcNav">Пересчитать NAV</button>
+      </div>
+
+      <div class="admin-result-card">
+        <h3>Расчёт NAV на {{ nav.reportDate }}</h3>
+        <table class="admin-table nav-table">
+          <thead>
+            <tr>
+              <th>Статья</th>
+              <th>Сумма, млн ₽</th>
+              <th>Комментарий</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="nav-section-header">
+              <td colspan="3"><strong>АКТИВЫ</strong></td>
+            </tr>
+            <tr>
+              <td>Инвестиции в портфельные компании (справедливая стоимость)</td>
+              <td class="num">{{ formatNum(nav.portfolioFairValue) }}</td>
+              <td class="gray">Оценка по ЦБ РФ № 590-П</td>
+            </tr>
+            <tr>
+              <td>Денежные средства на счетах</td>
+              <td class="num">{{ formatNum(nav.cash) }}</td>
+              <td class="gray">{{ nav.accounts.length }} счет(ов)</td>
+            </tr>
+            <tr>
+              <td>Дебиторская задолженность</td>
+              <td class="num">{{ formatNum(nav.receivables) }}</td>
+              <td class="gray">Capital calls к получению</td>
+            </tr>
+            <tr>
+              <td>Прочие активы</td>
+              <td class="num">{{ formatNum(nav.otherAssets) }}</td>
+              <td class="gray"></td>
+            </tr>
+            <tr class="nav-subtotal">
+              <td><strong>Всего активов</strong></td>
+              <td class="num bold">{{ formatNum(nav.totalAssets) }}</td>
+              <td></td>
+            </tr>
+            <tr class="nav-section-header">
+              <td colspan="3"><strong>ОБЯЗАТЕЛЬСТВА</strong></td>
+            </tr>
+            <tr>
+              <td>Кредиторская задолженность</td>
+              <td class="num">{{ formatNum(nav.payables) }}</td>
+              <td class="gray">Неоплаченные расходы</td>
+            </tr>
+            <tr>
+              <td>Начисленный, но не оплаченный Management Fee</td>
+              <td class="num">{{ formatNum(nav.accruedMgmtFee) }}</td>
+              <td class="gray"></td>
+            </tr>
+            <tr>
+              <td>Прочие обязательства</td>
+              <td class="num">{{ formatNum(nav.otherLiabilities) }}</td>
+              <td class="gray"></td>
+            </tr>
+            <tr class="nav-subtotal">
+              <td><strong>Всего обязательств</strong></td>
+              <td class="num bold">{{ formatNum(nav.totalLiabilities) }}</td>
+              <td></td>
+            </tr>
+            <tr class="nav-total">
+              <td><strong>NET ASSET VALUE (NAV)</strong></td>
+              <td class="num bold green">{{ formatNum(nav.netAssetValue) }}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="nav-metrics">
+          <div class="nav-metric">
+            <div class="nav-metric-label">NAV per LP Share</div>
+            <div class="nav-metric-value">{{ formatNum(nav.navPerShare) }} ₽</div>
+          </div>
+          <div class="nav-metric">
+            <div class="nav-metric-label">Изменение NAV за квартал</div>
+            <div class="nav-metric-value" :class="nav.quarterChange >= 0 ? 'green' : 'red'">{{ nav.quarterChange >= 0 ? '+' : '' }}{{ nav.quarterChange.toFixed(2) }}%</div>
+          </div>
+          <div class="nav-metric">
+            <div class="nav-metric-label">Изменение NAV с начала года</div>
+            <div class="nav-metric-value" :class="nav.ytdChange >= 0 ? 'green' : 'red'">{{ nav.ytdChange >= 0 ? '+' : '' }}{{ nav.ytdChange.toFixed(2) }}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bank Operations -->
     <div v-if="activeTab === 'banking'" class="admin-section">
       <h2>Банковские операции</h2>
-      <p class="admin-note">Счета фонда, capital calls, distributions, FX</p>
 
-      <!-- Реестр счетов -->
-      <h3 class="subsection-title">Реестр банковских счетов</h3>
-      <div class="account-cards">
-        <div v-for="acc in bankAccounts" :key="acc.id" class="account-card">
-          <div class="account-header">
-            <div class="account-bank">{{ acc.bank }}</div>
-            <span class="account-currency">{{ acc.currency }}</span>
+      <div class="admin-subsection">
+        <h3>Счета фонда</h3>
+        <div class="bank-accounts">
+          <div v-for="acc in bankAccounts" :key="acc.id" class="bank-account-card">
+            <div class="ba-header">
+              <div class="ba-bank">{{ acc.bank }}</div>
+              <div class="ba-currency">{{ acc.currency }}</div>
+            </div>
+            <div class="ba-number">{{ acc.number }}</div>
+            <div class="ba-balance">{{ formatNum(acc.balance) }} {{ acc.currency }}</div>
+            <div class="ba-updated">Обновлено: {{ acc.lastUpdate }}</div>
           </div>
-          <div class="account-number">{{ acc.accountNumber }}</div>
-          <div class="account-balance">
-            <span class="account-balance-label">Баланс:</span>
-            <span class="account-balance-val">{{ formatAmount(acc.balance, acc.currency) }}</span>
-          </div>
-          <div class="account-status">
-            <span class="status-badge" :class="acc.status">{{ acc.status === 'active' ? 'Активен' : 'Закрыт' }}</span>
+          <div class="bank-account-card add-new" @click="showAddAccount = true">
+            <div class="add-icon">+</div>
+            <div class="add-label">Добавить счёт</div>
           </div>
         </div>
       </div>
 
-      <!-- Capital Calls -->
-      <h3 class="subsection-title">Capital Calls (заявки на взносы)</h3>
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Дата уведомления</th>
-            <th>Инвестор (LP)</th>
-            <th>Запрошено, млн ₽</th>
-            <th>Получено, млн ₽</th>
-            <th>Дата получения</th>
-            <th>Статус</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="cc in capitalCalls" :key="cc.id">
-            <td class="gray">{{ cc.noticeDate }}</td>
-            <td>{{ cc.investor }}</td>
-            <td class="num">{{ formatCurrency(cc.requested) }}</td>
-            <td class="num">{{ formatCurrency(cc.received) }}</td>
-            <td class="gray">{{ cc.receivedDate || '—' }}</td>
-            <td><span class="status-badge" :class="cc.status">{{ capitalCallStatus(cc.status) }}</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="admin-subsection">
+        <h3>Capital Calls — Вызовы капитала</h3>
+        <button class="admin-btn primary small" @click="showCreateCapitalCall = true">+ Создать Capital Call</button>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Дата уведомления</th>
+              <th>Дата платежа</th>
+              <th>Общая сумма, млн ₽</th>
+              <th>Получено, млн ₽</th>
+              <th>Статус</th>
+              <th>LP</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="cc in capitalCalls" :key="cc.id">
+              <td>{{ cc.noticeDate }}</td>
+              <td>{{ cc.dueDate }}</td>
+              <td class="num">{{ formatNum(cc.totalAmount) }}</td>
+              <td class="num">{{ formatNum(cc.receivedAmount) }}</td>
+              <td><span class="status-badge" :class="cc.status">{{ statusLabel(cc.status) }}</span></td>
+              <td class="gray">{{ cc.lpCount }} LP</td>
+              <td>
+                <button class="link-btn" @click="viewCapitalCallDetails(cc.id)">Детали</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <!-- Distributions -->
-      <h3 class="subsection-title">Distributions (выплаты инвесторам)</h3>
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Дата</th>
-            <th>Инвестор (LP)</th>
-            <th>Тип выплаты</th>
-            <th>Сумма, млн ₽</th>
-            <th>Статус</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="dist in distributions" :key="dist.id">
-            <td class="gray">{{ dist.date }}</td>
-            <td>{{ dist.investor }}</td>
-            <td><span class="type-badge" :class="dist.type">{{ distributionType(dist.type) }}</span></td>
-            <td class="num">{{ formatCurrency(dist.amount) }}</td>
-            <td><span class="status-badge" :class="dist.status">{{ statusLabel(dist.status) }}</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="admin-subsection">
+        <h3>Distributions — Распределения</h3>
+        <button class="admin-btn primary small" @click="showCreateDistribution = true">+ Создать Distribution</button>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Дата уведомления</th>
+              <th>Дата выплаты</th>
+              <th>Общая сумма, млн ₽</th>
+              <th>Выплачено, млн ₽</th>
+              <th>Тип</th>
+              <th>Статус</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="d in distributions" :key="d.id">
+              <td>{{ d.noticeDate }}</td>
+              <td>{{ d.paymentDate }}</td>
+              <td class="num">{{ formatNum(d.totalAmount) }}</td>
+              <td class="num">{{ formatNum(d.paidAmount) }}</td>
+              <td><span class="type-badge" :class="d.type">{{ distributionTypeLabel(d.type) }}</span></td>
+              <td><span class="status-badge" :class="d.status">{{ statusLabel(d.status) }}</span></td>
+              <td>
+                <button class="link-btn" @click="viewDistributionDetails(d.id)">Детали</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════ AUDIT -->
+    <!-- Audit Support -->
     <div v-if="activeTab === 'audit'" class="admin-section">
       <h2>Аудиторская поддержка</h2>
-      <p class="admin-note">Подготовка пакета для внешнего аудитора (Ernst & Young)</p>
 
-      <!-- Аудиторские документы -->
-      <div class="audit-docs-grid">
-        <div v-for="doc in auditDocs" :key="doc.id" class="audit-doc-card" @click="generateDoc(doc.id)">
-          <div class="audit-doc-icon" :style="{ background: doc.color + '22', color: doc.color }">
-            <i :class="doc.icon"></i>
-          </div>
-          <div class="audit-doc-body">
-            <div class="audit-doc-title">{{ doc.title }}</div>
-            <div class="audit-doc-desc">{{ doc.desc }}</div>
-          </div>
-          <div class="audit-doc-status">
-            <span class="status-badge" :class="doc.status">{{ doc.status === 'ready' ? 'Готов' : 'Не готов' }}</span>
+      <div class="audit-package-status">
+        <h3>Статус подготовки аудиторского пакета {{ selectedPeriod }}</h3>
+        <div class="audit-checklist">
+          <div v-for="item in auditChecklist" :key="item.id" class="audit-check-item">
+            <input type="checkbox" :id="'audit-' + item.id" v-model="item.completed" />
+            <label :for="'audit-' + item.id">{{ item.label }}</label>
+            <span class="audit-resp">{{ item.responsible }}</span>
+            <span class="audit-deadline" :class="{ overdue: item.overdue }">{{ item.deadline }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Trial Balance -->
-      <h3 class="subsection-title">Trial Balance (Оборотно-сальдовая ведомость)</h3>
-      <table class="admin-table trial-balance-table">
-        <thead>
-          <tr>
-            <th>Счёт</th>
-            <th>Наименование</th>
-            <th>Дебет начало</th>
-            <th>Кредит начало</th>
-            <th>Оборот Дт</th>
-            <th>Оборот Кт</th>
-            <th>Дебет конец</th>
-            <th>Кредит конец</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="tb in trialBalance" :key="tb.account">
-            <td class="mono">{{ tb.account }}</td>
-            <td>{{ tb.name }}</td>
-            <td class="num">{{ tb.debitBegin > 0 ? formatCurrency(tb.debitBegin) : '—' }}</td>
-            <td class="num">{{ tb.creditBegin > 0 ? formatCurrency(tb.creditBegin) : '—' }}</td>
-            <td class="num">{{ tb.debitTurnover > 0 ? formatCurrency(tb.debitTurnover) : '—' }}</td>
-            <td class="num">{{ tb.creditTurnover > 0 ? formatCurrency(tb.creditTurnover) : '—' }}</td>
-            <td class="num bold">{{ tb.debitEnd > 0 ? formatCurrency(tb.debitEnd) : '—' }}</td>
-            <td class="num bold">{{ tb.creditEnd > 0 ? formatCurrency(tb.creditEnd) : '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Аудит-трейл -->
-      <h3 class="subsection-title">Audit Trail (История операций)</h3>
-      <div class="audit-trail-filters">
-        <input v-model="auditTrailSearch" type="text" placeholder="Поиск по описанию или пользователю..." class="audit-search" />
-        <select v-model="auditTrailType" class="admin-select small">
-          <option value="all">Все типы</option>
-          <option value="capital_call">Capital Call</option>
-          <option value="distribution">Distribution</option>
-          <option value="expense">Expense</option>
-          <option value="fee">Fee</option>
-        </select>
+      <div class="admin-subsection">
+        <h3>Trial Balance (Оборотно-сальдовая ведомость)</h3>
+        <table class="admin-table trial-balance-table">
+          <thead>
+            <tr>
+              <th>Счёт</th>
+              <th>Наименование</th>
+              <th>Дебет начало</th>
+              <th>Кредит начало</th>
+              <th>Дебет оборот</th>
+              <th>Кредит оборот</th>
+              <th>Дебет конец</th>
+              <th>Кредит конец</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in trialBalance" :key="row.account">
+              <td>{{ row.account }}</td>
+              <td>{{ row.name }}</td>
+              <td class="num">{{ formatNum(row.debitBegin) }}</td>
+              <td class="num">{{ formatNum(row.creditBegin) }}</td>
+              <td class="num">{{ formatNum(row.debitTurnover) }}</td>
+              <td class="num">{{ formatNum(row.creditTurnover) }}</td>
+              <td class="num">{{ formatNum(row.debitEnd) }}</td>
+              <td class="num">{{ formatNum(row.creditEnd) }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"><strong>Итого</strong></td>
+              <td class="num bold">{{ formatNum(trialBalanceTotal.debitBegin) }}</td>
+              <td class="num bold">{{ formatNum(trialBalanceTotal.creditBegin) }}</td>
+              <td class="num bold">{{ formatNum(trialBalanceTotal.debitTurnover) }}</td>
+              <td class="num bold">{{ formatNum(trialBalanceTotal.creditTurnover) }}</td>
+              <td class="num bold">{{ formatNum(trialBalanceTotal.debitEnd) }}</td>
+              <td class="num bold">{{ formatNum(trialBalanceTotal.creditEnd) }}</td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
-      <table class="admin-table audit-trail-table">
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Пользователь</th>
-            <th>Тип операции</th>
-            <th>Описание</th>
-            <th>Сумма</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="trail in filteredAuditTrail" :key="trail.id">
-            <td class="mono gray">{{ trail.timestamp }}</td>
-            <td>{{ trail.user }}</td>
-            <td><span class="type-badge" :class="trail.type">{{ trail.type }}</span></td>
-            <td>{{ trail.description }}</td>
-            <td class="num">{{ trail.amount ? formatCurrency(trail.amount) : '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div class="admin-subsection">
+        <h3>LP Account Reconciliation</h3>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>LP</th>
+              <th>Commitment, млн ₽</th>
+              <th>Called Capital, млн ₽</th>
+              <th>Distributions, млн ₽</th>
+              <th>NAV, млн ₽</th>
+              <th>Статус сверки</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="lp in lpReconciliation" :key="lp.id">
+              <td>{{ lp.name }}</td>
+              <td class="num">{{ formatNum(lp.commitment) }}</td>
+              <td class="num">{{ formatNum(lp.called) }}</td>
+              <td class="num">{{ formatNum(lp.distributions) }}</td>
+              <td class="num">{{ formatNum(lp.nav) }}</td>
+              <td><span class="status-badge" :class="lp.reconciled ? 'ok' : 'warning'">{{ lp.reconciled ? 'Сверено' : 'Требует проверки' }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admin-subsection">
+        <h3>Audit Trail — Журнал операций</h3>
+        <div class="audit-trail-filters">
+          <input v-model="auditTrailFilter.search" type="text" placeholder="Поиск по описанию..." />
+          <select v-model="auditTrailFilter.type">
+            <option value="">Все типы</option>
+            <option value="capital-call">Capital Call</option>
+            <option value="distribution">Distribution</option>
+            <option value="investment">Инвестиция</option>
+            <option value="expense">Расход</option>
+            <option value="mgmt-fee">Management Fee</option>
+          </select>
+        </div>
+        <table class="admin-table audit-trail-table">
+          <thead>
+            <tr>
+              <th>Дата/время</th>
+              <th>Тип</th>
+              <th>Описание</th>
+              <th>Сумма, ₽</th>
+              <th>Пользователь</th>
+              <th>Документ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="entry in filteredAuditTrail" :key="entry.id">
+              <td>{{ entry.timestamp }}</td>
+              <td><span class="type-badge" :class="entry.type">{{ entry.type }}</span></td>
+              <td>{{ entry.description }}</td>
+              <td class="num">{{ formatNum(entry.amount) }}</td>
+              <td class="gray">{{ entry.user }}</td>
+              <td><button v-if="entry.docId" class="link-btn" @click="viewDoc(entry.docId)">Просмотр</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════ FSBU 4/2023 -->
+    <!-- FSBU 4/2023 Reports -->
     <div v-if="activeTab === 'fsbu'" class="admin-section">
-      <h2>Отчётность ФСБУ 4/2023</h2>
-      <p class="admin-note">Формы финансовой отчётности в соответствии с новым стандартом (обязателен с 01.01.2025)</p>
+      <h2>ФСБУ 4/2023 — Отчётность</h2>
 
-      <!-- Нормативная база -->
-      <div class="fsbu-info-card">
-        <div class="fsbu-info-icon"><i class="pi pi-book"></i></div>
-        <div class="fsbu-info-body">
-          <div class="fsbu-info-title">Нормативная база</div>
-          <ul class="fsbu-info-list">
-            <li><strong>ФСБУ 4/2023</strong> «Бухгалтерская (финансовая) отчётность» (обязателен с 01.01.2025)</li>
-            <li><strong>ФЗ-402</strong> «О бухгалтерском учёте»</li>
-            <li><strong>ФЗ-156</strong> «Об инвестиционных фондах» — требования к УК ПИФ</li>
-            <li><strong>Положение ЦБ РФ № 590-П</strong> — оценка активов</li>
-          </ul>
-        </div>
+      <div class="fsbu-intro">
+        <p><strong>ФСБУ 4/2023</strong> «Бухгалтерская (финансовая) отчётность» обязателен с 01.01.2025. Фонд обязан предоставлять:</p>
+        <ul>
+          <li>Отчёт о финансовом положении (Баланс)</li>
+          <li>Отчёт о совокупном доходе</li>
+          <li>Отчёт об изменениях капитала</li>
+          <li>Отчёт о движении денежных средств</li>
+          <li>Примечания к финансовой отчётности</li>
+        </ul>
       </div>
 
-      <!-- Формы отчётности -->
-      <h3 class="subsection-title">Формы отчётности</h3>
-      <div class="fsbu-forms-grid">
-        <div v-for="form in fsbuForms" :key="form.id" class="fsbu-form-card" @click="generateFsbuForm(form.id)">
-          <div class="fsbu-form-header">
-            <div class="fsbu-form-code">{{ form.code }}</div>
-            <span class="status-badge" :class="form.status">{{ form.status === 'ready' ? 'Готов' : 'В процессе' }}</span>
+      <div class="admin-subsection">
+        <h3>Отчёт о финансовом положении (Баланс)</h3>
+        <table class="admin-table fsbu-table">
+          <thead>
+            <tr>
+              <th>Актив</th>
+              <th>На {{ nav.reportDate }}</th>
+              <th>На начало года</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="fsbu-section">
+              <td><strong>I. ВНЕОБОРОТНЫЕ АКТИВЫ</strong></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Финансовые вложения (долгосрочные)</td>
+              <td class="num">{{ formatNum(fsbu.balance.longTermInvestments) }}</td>
+              <td class="num">{{ formatNum(fsbu.balance.longTermInvestmentsPrev) }}</td>
+            </tr>
+            <tr class="fsbu-section">
+              <td><strong>II. ОБОРОТНЫЕ АКТИВЫ</strong></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Денежные средства и денежные эквиваленты</td>
+              <td class="num">{{ formatNum(fsbu.balance.cash) }}</td>
+              <td class="num">{{ formatNum(fsbu.balance.cashPrev) }}</td>
+            </tr>
+            <tr>
+              <td>Дебиторская задолженность</td>
+              <td class="num">{{ formatNum(fsbu.balance.receivables) }}</td>
+              <td class="num">{{ formatNum(fsbu.balance.receivablesPrev) }}</td>
+            </tr>
+            <tr class="fsbu-total">
+              <td><strong>БАЛАНС (АКТИВЫ)</strong></td>
+              <td class="num bold">{{ formatNum(fsbu.balance.totalAssets) }}</td>
+              <td class="num bold">{{ formatNum(fsbu.balance.totalAssetsPrev) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="admin-table fsbu-table">
+          <thead>
+            <tr>
+              <th>Пассив</th>
+              <th>На {{ nav.reportDate }}</th>
+              <th>На начало года</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="fsbu-section">
+              <td><strong>III. КАПИТАЛ И РЕЗЕРВЫ</strong></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Уставный капитал (фонды LP)</td>
+              <td class="num">{{ formatNum(fsbu.balance.capital) }}</td>
+              <td class="num">{{ formatNum(fsbu.balance.capitalPrev) }}</td>
+            </tr>
+            <tr>
+              <td>Нераспределённая прибыль (убыток)</td>
+              <td class="num">{{ formatNum(fsbu.balance.retainedEarnings) }}</td>
+              <td class="num">{{ formatNum(fsbu.balance.retainedEarningsPrev) }}</td>
+            </tr>
+            <tr class="fsbu-section">
+              <td><strong>IV. ДОЛГОСРОЧНЫЕ ОБЯЗАТЕЛЬСТВА</strong></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Отложенные обязательства</td>
+              <td class="num">{{ formatNum(fsbu.balance.longTermLiabilities) }}</td>
+              <td class="num">{{ formatNum(fsbu.balance.longTermLiabilitiesPrev) }}</td>
+            </tr>
+            <tr class="fsbu-section">
+              <td><strong>V. КРАТКОСРОЧНЫЕ ОБЯЗАТЕЛЬСТВА</strong></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Кредиторская задолженность</td>
+              <td class="num">{{ formatNum(fsbu.balance.payables) }}</td>
+              <td class="num">{{ formatNum(fsbu.balance.payablesPrev) }}</td>
+            </tr>
+            <tr class="fsbu-total">
+              <td><strong>БАЛАНС (ПАССИВЫ)</strong></td>
+              <td class="num bold">{{ formatNum(fsbu.balance.totalLiabilities) }}</td>
+              <td class="num bold">{{ formatNum(fsbu.balance.totalLiabilitiesPrev) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admin-subsection">
+        <h3>Отчёт о совокупном доходе</h3>
+        <table class="admin-table fsbu-table">
+          <thead>
+            <tr>
+              <th>Показатель</th>
+              <th>За {{ selectedPeriod }}</th>
+              <th>За аналогичный период прошлого года</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Доходы от финансовых вложений</td>
+              <td class="num green">{{ formatNum(fsbu.income.investmentIncome) }}</td>
+              <td class="num">{{ formatNum(fsbu.income.investmentIncomePrev) }}</td>
+            </tr>
+            <tr>
+              <td>Вознаграждение управляющей компании</td>
+              <td class="num red">{{ formatNum(fsbu.income.mgmtFee) }}</td>
+              <td class="num">{{ formatNum(fsbu.income.mgmtFeePrev) }}</td>
+            </tr>
+            <tr>
+              <td>Прочие расходы</td>
+              <td class="num red">{{ formatNum(fsbu.income.otherExpenses) }}</td>
+              <td class="num">{{ formatNum(fsbu.income.otherExpensesPrev) }}</td>
+            </tr>
+            <tr class="fsbu-total">
+              <td><strong>Чистая прибыль (убыток)</strong></td>
+              <td class="num bold" :class="fsbu.income.netIncome >= 0 ? 'green' : 'red'">{{ formatNum(fsbu.income.netIncome) }}</td>
+              <td class="num bold">{{ formatNum(fsbu.income.netIncomePrev) }}</td>
+            </tr>
+            <tr>
+              <td>Прочий совокупный доход</td>
+              <td class="num">{{ formatNum(fsbu.income.otherComprehensiveIncome) }}</td>
+              <td class="num">{{ formatNum(fsbu.income.otherComprehensiveIncomePrev) }}</td>
+            </tr>
+            <tr class="fsbu-total">
+              <td><strong>Совокупный доход (убыток)</strong></td>
+              <td class="num bold" :class="fsbu.income.comprehensiveIncome >= 0 ? 'green' : 'red'">{{ formatNum(fsbu.income.comprehensiveIncome) }}</td>
+              <td class="num bold">{{ formatNum(fsbu.income.comprehensiveIncomePrev) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admin-subsection">
+        <h3>Примечания к финансовой отчётности</h3>
+        <div class="fsbu-notes">
+          <div class="fsbu-note">
+            <div class="note-num">1</div>
+            <div class="note-body">
+              <div class="note-title">Общая информация</div>
+              <div class="note-text">Фонд создан в соответствии с ФЗ-156 «Об инвестиционных фондах». Управляющая компания: {{ fsbu.notes.managementCompany }}. Размер фонда: {{ formatNum(fsbu.notes.fundSize) }} млн ₽.</div>
+            </div>
           </div>
-          <div class="fsbu-form-title">{{ form.title }}</div>
-          <div class="fsbu-form-desc">{{ form.desc }}</div>
-          <button class="fsbu-form-btn">
-            <i class="pi pi-download"></i>
-            Сформировать
-          </button>
+          <div class="fsbu-note">
+            <div class="note-num">2</div>
+            <div class="note-body">
+              <div class="note-title">Учётная политика</div>
+              <div class="note-text">Учёт ведётся в соответствии с ФСБУ 4/2023. Оценка финансовых вложений проводится по справедливой стоимости согласно Положению ЦБ РФ № 590-П.</div>
+            </div>
+          </div>
+          <div class="fsbu-note">
+            <div class="note-num">3</div>
+            <div class="note-body">
+              <div class="note-title">Структура портфеля</div>
+              <div class="note-text">Количество портфельных компаний: {{ fsbu.notes.portfolioCount }}. Средний чек инвестиции: {{ formatNum(fsbu.notes.avgInvestment) }} млн ₽. Сектора: БАС ({{ fsbu.notes.sectors.uas }}%), Робототехника ({{ fsbu.notes.sectors.robotics }}%), Микроэлектроника ({{ fsbu.notes.sectors.micro }}%).</div>
+            </div>
+          </div>
+          <div class="fsbu-note">
+            <div class="note-num">4</div>
+            <div class="note-body">
+              <div class="note-title">Вознаграждение управляющей компании</div>
+              <div class="note-text">Management Fee: {{ fsbu.notes.mgmtFeeRate }}% от committed capital ежегодно. Carried Interest: {{ fsbu.notes.carryRate }}% от прибыли свыше hurdle rate ({{ fsbu.notes.hurdleRate }}%).</div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <!-- Отчёт о финансовом положении (баланс) -->
-      <h3 class="subsection-title">Отчёт о финансовом положении фонда (упрощённая форма)</h3>
-      <table class="admin-table fsbu-balance-table">
-        <thead>
-          <tr>
-            <th>Наименование показателя</th>
-            <th>Код</th>
-            <th>На {{ selectedPeriod }}</th>
-            <th>На предыдущий период</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="fsbu-section-header">
-            <td colspan="4"><strong>АКТИВЫ</strong></td>
-          </tr>
-          <tr v-for="asset in fsbuAssets" :key="asset.code">
-            <td>{{ asset.name }}</td>
-            <td class="mono gray">{{ asset.code }}</td>
-            <td class="num">{{ formatCurrency(asset.current) }}</td>
-            <td class="num gray">{{ formatCurrency(asset.previous) }}</td>
-          </tr>
-          <tr class="fsbu-total">
-            <td><strong>ИТОГО АКТИВЫ</strong></td>
-            <td class="mono gray">1600</td>
-            <td class="num bold">{{ formatCurrency(totalAssets) }}</td>
-            <td class="num gray bold">{{ formatCurrency(totalAssetsPrevious) }}</td>
-          </tr>
-          <tr class="fsbu-section-header">
-            <td colspan="4"><strong>ПАССИВЫ</strong></td>
-          </tr>
-          <tr v-for="liability in fsbuLiabilities" :key="liability.code">
-            <td>{{ liability.name }}</td>
-            <td class="mono gray">{{ liability.code }}</td>
-            <td class="num">{{ formatCurrency(liability.current) }}</td>
-            <td class="num gray">{{ formatCurrency(liability.previous) }}</td>
-          </tr>
-          <tr class="fsbu-total">
-            <td><strong>ИТОГО ПАССИВЫ</strong></td>
-            <td class="mono gray">1700</td>
-            <td class="num bold">{{ formatCurrency(totalLiabilities) }}</td>
-            <td class="num gray bold">{{ formatCurrency(totalLiabilitiesPrevious) }}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
-    <!-- Modal: Add Expense -->
+    <!-- Add Expense Modal -->
     <div v-if="showAddExpense" class="modal-overlay" @click.self="showAddExpense = false">
       <div class="modal-box">
-        <h3>Добавить расход фонда</h3>
+        <h3>Добавить расход</h3>
         <div class="modal-form">
           <label>Дата</label>
           <input v-model="newExpense.date" type="date" />
           <label>Категория</label>
           <select v-model="newExpense.category">
-            <option value="due_diligence">Due Diligence</option>
-            <option value="legal">Legal & Compliance</option>
-            <option value="travel">Travel & Accommodation</option>
-            <option value="admin">Admin & Office</option>
-            <option value="audit">Audit & Tax</option>
-            <option value="other">Other</option>
+            <option value="due-diligence">Due Diligence</option>
+            <option value="legal">Юридические</option>
+            <option value="travel">Командировки</option>
+            <option value="admin">Административные</option>
+            <option value="audit">Аудит</option>
+            <option value="marketing">Маркетинг</option>
           </select>
           <label>Описание</label>
-          <input v-model="newExpense.description" placeholder="Краткое описание расхода" />
+          <input v-model="newExpense.description" type="text" />
           <label>Контрагент</label>
-          <input v-model="newExpense.counterparty" placeholder="Наименование организации" />
-          <label>Сумма, млн ₽</label>
-          <input v-model.number="newExpense.amount" type="number" step="0.1" />
+          <input v-model="newExpense.counterparty" type="text" />
+          <label>Сумма, ₽</label>
+          <input v-model.number="newExpense.amount" type="number" step="1000" />
         </div>
         <div class="modal-actions">
           <button class="admin-btn secondary" @click="showAddExpense = false">Отмена</button>
@@ -497,424 +792,1286 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-const activeTab = ref('fees')
-const selectedPeriod = ref('Q4 2025')
-const showAddExpense = ref(false)
-const auditTrailSearch = ref('')
-const auditTrailType = ref('all')
+const activeTab = ref('mgmt-fee')
+const selectedPeriod = ref('2025')
 
-const periods = ['Q4 2025', 'Q3 2025', 'Q2 2025', 'Q1 2025', 'Q4 2024', 'Q3 2024']
+const periods = ['2025', '2024', '2023']
 
 const tabs = [
-  { id: 'fees',     label: 'Management Fee & Carry', icon: 'pi pi-percentage' },
-  { id: 'expenses', label: 'Расходы фонда',          icon: 'pi pi-money-bill' },
-  { id: 'nav',      label: 'Расчёт NAV',             icon: 'pi pi-calculator' },
-  { id: 'banking',  label: 'Банковские операции',    icon: 'pi pi-building-columns' },
-  { id: 'audit',    label: 'Аудит',                  icon: 'pi pi-file-check' },
-  { id: 'fsbu',     label: 'ФСБУ 4/2023',            icon: 'pi pi-book' },
+  { id: 'mgmt-fee', label: 'Management Fee' },
+  { id: 'expenses', label: 'Расходы фонда' },
+  { id: 'carry', label: 'Carried Interest' },
+  { id: 'nav', label: 'NAV' },
+  { id: 'banking', label: 'Банк. операции' },
+  { id: 'audit', label: 'Аудит' },
+  { id: 'fsbu', label: 'ФСБУ 4/2023' }
 ]
 
-// ══════════════════════════════════════════════════ FUND PARAMS
-const fundParams = ref({
+const complianceStatus = ref([
+  { label: 'Баланс', status: 'ok', date: 'Q4 2025' },
+  { label: 'Отчёт о доходе', status: 'ok', date: 'Q4 2025' },
+  { label: 'Изм. капитала', status: 'ok', date: 'Q4 2025' },
+  { label: 'Движ. ДС', status: 'warning', date: 'В процессе' },
+  { label: 'Примечания', status: 'pending', date: 'Не готово' }
+])
+
+// Management Fee
+const mgmtFee = ref({
   committedCapital: 2120,
-  managementFeeRate: 2.0,
-  hurdleRate: 8.0,
-  carryRate: 20.0,
+  rate: 2.0,
+  period: 'quarterly',
+  startDate: '2023-01-01',
+  annualAmount: 0,
+  periodAmount: 0
 })
 
-const managementFeeQuarterly = computed(() => {
-  return (fundParams.value.committedCapital * fundParams.value.managementFeeRate / 100) / 4
-})
-
-const profitAboveHurdle = computed(() => {
-  // Simplified calculation: unrealized gains above hurdle
-  const hurdle = fundParams.value.committedCapital * (fundParams.value.hurdleRate / 100)
-  return Math.max(0, 350 - hurdle)
-})
-
-const carriedInterest = computed(() => {
-  return profitAboveHurdle.value * (fundParams.value.carryRate / 100)
-})
-
-const feeHistory = ref([
-  { id: 1, period: 'Q4 2025', type: 'mgmt_fee', amount: 10.6, paymentDate: '2025-12-28', status: 'paid' },
-  { id: 2, period: 'Q3 2025', type: 'mgmt_fee', amount: 10.6, paymentDate: '2025-09-30', status: 'paid' },
-  { id: 3, period: 'Q2 2025', type: 'mgmt_fee', amount: 10.6, paymentDate: '2025-06-28', status: 'paid' },
-  { id: 4, period: 'Q1 2025', type: 'mgmt_fee', amount: 10.6, paymentDate: '2025-03-31', status: 'paid' },
-  { id: 5, period: 'Q4 2024', type: 'mgmt_fee', amount: 10.6, paymentDate: '2024-12-30', status: 'paid' },
+const mgmtFeeSchedule = ref([
+  { period: 'Q1 2025', accrualDate: '01.01.2025', amount: 10.6, paymentDate: '15.01.2025', paid: true, status: 'paid' },
+  { period: 'Q2 2025', accrualDate: '01.04.2025', amount: 10.6, paymentDate: '15.04.2025', paid: true, status: 'paid' },
+  { period: 'Q3 2025', accrualDate: '01.07.2025', amount: 10.6, paymentDate: '15.07.2025', paid: true, status: 'paid' },
+  { period: 'Q4 2025', accrualDate: '01.10.2025', amount: 10.6, paymentDate: null, paid: false, status: 'accrued' }
 ])
 
-// ════════════════════════════════════════════════════ EXPENSES
-const expenses = ref([
-  { id: 1, date: '2025-12-15', category: 'due_diligence', description: 'Техническая экспертиза АвиаЛогик', counterparty: 'TechConsult', amount: 1.8, status: 'paid' },
-  { id: 2, date: '2025-12-10', category: 'legal', description: 'Юридическое сопровождение сделки', counterparty: 'Правовед Групп', amount: 2.4, status: 'paid' },
-  { id: 3, date: '2025-11-28', category: 'travel', description: 'Командировка в Казань (визит в портфельную ко.)', counterparty: 'Аэрофлот', amount: 0.3, status: 'paid' },
-  { id: 4, date: '2025-11-20', category: 'audit', description: 'Квартальный аудит E&Y', counterparty: 'Ernst & Young', amount: 4.2, status: 'paid' },
-  { id: 5, date: '2025-11-15', category: 'admin', description: 'Аренда офиса УК', counterparty: 'БЦ Москва-Сити', amount: 1.2, status: 'paid' },
-  { id: 6, date: '2025-10-30', category: 'due_diligence', description: 'Финансовая экспертиза RoboFarm', counterparty: 'PwC', amount: 2.1, status: 'paid' },
-])
-
-const totalExpenses = computed(() => expenses.value.reduce((sum, e) => sum + e.amount, 0))
-
-const expenseCategories = computed(() => {
-  const cats = [
-    { id: 'due_diligence', label: 'Due Diligence', icon: 'pi pi-search', color: '#667eea', total: 0, pct: 0 },
-    { id: 'legal', label: 'Legal & Compliance', icon: 'pi pi-file-check', color: '#fb923c', total: 0, pct: 0 },
-    { id: 'travel', label: 'Travel', icon: 'pi pi-map-marker', color: '#34d399', total: 0, pct: 0 },
-    { id: 'audit', label: 'Audit & Tax', icon: 'pi pi-calculator', color: '#a78bfa', total: 0, pct: 0 },
-    { id: 'admin', label: 'Admin & Office', icon: 'pi pi-building', color: '#22d3ee', total: 0, pct: 0 },
-    { id: 'other', label: 'Other', icon: 'pi pi-ellipsis-h', color: '#9ca3af', total: 0, pct: 0 },
-  ]
-
-  expenses.value.forEach(e => {
-    const cat = cats.find(c => c.id === e.category)
-    if (cat) cat.total += e.amount
-  })
-
-  const total = totalExpenses.value
-  cats.forEach(c => { c.pct = total > 0 ? ((c.total / total) * 100).toFixed(1) : 0 })
-
-  return cats
+const mgmtFeeTotal = computed(() => {
+  const accrued = mgmtFeeSchedule.value.reduce((sum, row) => sum + row.amount, 0)
+  const paid = mgmtFeeSchedule.value.filter(r => r.paid).reduce((sum, row) => sum + row.amount, 0)
+  return { accrued, paid }
 })
 
+function calcMgmtFee() {
+  mgmtFee.value.annualAmount = mgmtFee.value.committedCapital * mgmtFee.value.rate / 100
+  if (mgmtFee.value.period === 'quarterly') {
+    mgmtFee.value.periodAmount = mgmtFee.value.annualAmount / 4
+  } else if (mgmtFee.value.period === 'monthly') {
+    mgmtFee.value.periodAmount = mgmtFee.value.annualAmount / 12
+  } else {
+    mgmtFee.value.periodAmount = mgmtFee.value.annualAmount
+  }
+}
+calcMgmtFee()
+
+// Expenses
+const showAddExpense = ref(false)
+const expenseFilter = ref({ category: '' })
 const newExpense = ref({
-  date: new Date().toISOString().slice(0, 10),
-  category: 'due_diligence',
+  date: '',
+  category: 'due-diligence',
   description: '',
   counterparty: '',
-  amount: 0,
+  amount: 0
+})
+
+const expenses = ref([
+  { id: 1, date: '15.01.2025', category: 'due-diligence', description: 'DD для ДронТех', counterparty: 'EY', amount: 1.2, status: 'paid', docCount: 3 },
+  { id: 2, date: '22.02.2025', category: 'legal', description: 'Юридическое сопровождение сделки', counterparty: 'РСПП Правовед', amount: 0.8, status: 'paid', docCount: 5 },
+  { id: 3, date: '10.03.2025', category: 'travel', description: 'Командировка в Казань', counterparty: 'Аэрофлот', amount: 0.15, status: 'paid', docCount: 2 },
+  { id: 4, date: '05.04.2025', category: 'audit', description: 'Квартальный аудит Q1', counterparty: 'Ernst & Young', amount: 4.2, status: 'paid', docCount: 1 },
+  { id: 5, date: '18.05.2025', category: 'admin', description: 'Аренда офиса', counterparty: 'Москва-Сити', amount: 0.5, status: 'paid', docCount: 1 },
+  { id: 6, date: '01.06.2025', category: 'marketing', description: 'Участие в форуме ПМЭФ', counterparty: 'Росконгресс', amount: 0.3, status: 'accrued', docCount: 0 }
+])
+
+const filteredExpenses = computed(() => {
+  if (!expenseFilter.value.category) return expenses.value
+  return expenses.value.filter(e => e.category === expenseFilter.value.category)
+})
+
+const expensesTotal = computed(() => {
+  return filteredExpenses.value.reduce((sum, e) => sum + e.amount, 0)
+})
+
+const expensesByCategory = computed(() => {
+  const cats = {}
+  expenses.value.forEach(e => {
+    if (!cats[e.category]) cats[e.category] = 0
+    cats[e.category] += e.amount
+  })
+  const total = Object.values(cats).reduce((s, v) => s + v, 0)
+  const result = []
+  const colors = {
+    'due-diligence': '#42A5F5',
+    'legal': '#66BB6A',
+    'travel': '#FFA726',
+    'admin': '#AB47BC',
+    'audit': '#EF5350',
+    'marketing': '#26C6DA'
+  }
+  for (const [cat, amt] of Object.entries(cats)) {
+    result.push({
+      category: cat,
+      label: categoryLabel(cat),
+      amount: amt,
+      pct: (amt / total) * 100,
+      color: colors[cat]
+    })
+  }
+  return result.sort((a, b) => b.amount - a.amount)
 })
 
 function addExpense() {
   expenses.value.push({
     id: Date.now(),
     ...newExpense.value,
-    status: 'pending',
+    status: 'accrued',
+    docCount: 0
   })
   showAddExpense.value = false
-  newExpense.value = {
-    date: new Date().toISOString().slice(0, 10),
-    category: 'due_diligence',
-    description: '',
-    counterparty: '',
-    amount: 0,
-  }
+  newExpense.value = { date: '', category: 'due-diligence', description: '', counterparty: '', amount: 0 }
 }
 
-// ══════════════════════════════════════════════════════ NAV
-const deployedCapital = ref(810)
-const unrealizedGains = ref(350)
-const navCurrent = computed(() => {
-  return fundParams.value.committedCapital - deployedCapital.value + unrealizedGains.value
+function editExpense(id) {
+  console.log('Edit expense', id)
+}
+
+function deleteExpense(id) {
+  expenses.value = expenses.value.filter(e => e.id !== id)
+}
+
+function viewDocs(id) {
+  console.log('View docs', id)
+}
+
+// Carried Interest
+const carry = ref({
+  hurdleRate: 8,
+  carryRate: 20,
+  method: 'european',
+  clawback: true,
+  totalContributions: 2120,
+  preferredReturn: 0,
+  currentValue: 2850,
+  profitAboveHurdle: 0,
+  carryAmount: 0
 })
-const navChangePercent = ref(12.4)
 
-const navRows = ref([
-  { label: 'I. Начальный NAV', begin: 1580, change: null, end: null, isSubtitle: true },
-  { label: 'Взносы LP (Capital Calls)', begin: null, change: 200, end: null },
-  { label: 'Инвестиции в портфельные компании', begin: null, change: -150, end: null },
-  { label: 'Возврат капитала (exits)', begin: null, change: 80, end: null },
-  { label: 'Management Fee', begin: null, change: -10.6, end: null },
-  { label: 'Операционные расходы', begin: null, change: -12.0, end: null },
-  { label: 'II. Изменение стоимости инвестиций', begin: null, change: null, end: null, isSubtitle: true },
-  { label: 'Нереализованная переоценка портфеля', begin: null, change: 250, end: null },
-  { label: 'Реализованная прибыль от выходов', begin: null, change: 42.6, end: null },
-  { label: 'FX переоценка (курсовые разницы)', begin: null, change: -5.0, end: null },
-  { label: 'III. NAV на конец периода', begin: 1580, change: 395, end: 1975, isTotal: true },
-])
+function calcCarry() {
+  const years = 3 // example
+  carry.value.preferredReturn = carry.value.totalContributions * (1 + carry.value.hurdleRate / 100) ** years
+  carry.value.profitAboveHurdle = Math.max(0, carry.value.currentValue - carry.value.preferredReturn)
+  carry.value.carryAmount = carry.value.profitAboveHurdle * carry.value.carryRate / 100
+}
+calcCarry()
 
-// ══════════════════════════════════════════════════ BANKING
+// NAV
+const nav = ref({
+  reportDate: '2025-12-31',
+  portfolioFairValue: 1850,
+  cash: 520,
+  receivables: 180,
+  otherAssets: 12,
+  totalAssets: 0,
+  payables: 28,
+  accruedMgmtFee: 10.6,
+  otherLiabilities: 5,
+  totalLiabilities: 0,
+  netAssetValue: 0,
+  navPerShare: 0,
+  quarterChange: 5.2,
+  ytdChange: 12.8,
+  accounts: [
+    { bank: 'ВТБ', number: '40701...8901', currency: 'RUB' },
+    { bank: 'Сбер', number: '40702...4567', currency: 'RUB' }
+  ]
+})
+
+function calcNav() {
+  nav.value.totalAssets = nav.value.portfolioFairValue + nav.value.cash + nav.value.receivables + nav.value.otherAssets
+  nav.value.totalLiabilities = nav.value.payables + nav.value.accruedMgmtFee + nav.value.otherLiabilities
+  nav.value.netAssetValue = nav.value.totalAssets - nav.value.totalLiabilities
+  nav.value.navPerShare = nav.value.netAssetValue / 2.12 // example: 2.12M shares
+}
+calcNav()
+
+// Banking
+const showAddAccount = ref(false)
+const showCreateCapitalCall = ref(false)
+const showCreateDistribution = ref(false)
+
 const bankAccounts = ref([
-  { id: 1, bank: 'Сбербанк', accountNumber: '40701810100000012345', currency: 'RUB', balance: 450.5, status: 'active' },
-  { id: 2, bank: 'ВТБ', accountNumber: '40701810200000067890', currency: 'RUB', balance: 280.3, status: 'active' },
-  { id: 3, bank: 'Тинькофф Банк', accountNumber: '40701840300000054321', currency: 'USD', balance: 4.2, status: 'active' },
-  { id: 4, bank: 'Альфа-Банк', accountNumber: '40701978400000098765', currency: 'EUR', balance: 1.8, status: 'active' },
+  { id: 1, bank: 'ВТБ', number: '40701810538000008901', currency: 'RUB', balance: 320.5, lastUpdate: '07.01.2026' },
+  { id: 2, bank: 'Сбербанк', number: '40702810238050014567', currency: 'RUB', balance: 199.5, lastUpdate: '07.01.2026' },
+  { id: 3, bank: 'Газпромбанк', number: '40703810538100012345', currency: 'USD', balance: 2.1, lastUpdate: '06.01.2026' }
 ])
 
 const capitalCalls = ref([
-  { id: 1, noticeDate: '2025-11-01', investor: 'Росатом', requested: 300, received: 300, receivedDate: '2025-11-15', status: 'received' },
-  { id: 2, noticeDate: '2025-11-01', investor: 'ВЭБ.РФ', requested: 200, received: 200, receivedDate: '2025-11-18', status: 'received' },
-  { id: 3, noticeDate: '2025-12-10', investor: 'Сколково', requested: 150, received: 0, receivedDate: null, status: 'pending' },
+  { id: 1, noticeDate: '01.12.2024', dueDate: '15.12.2024', totalAmount: 600, receivedAmount: 600, status: 'completed', lpCount: 12 },
+  { id: 2, noticeDate: '15.03.2025', dueDate: '01.04.2025', totalAmount: 450, receivedAmount: 420, status: 'partial', lpCount: 12 },
+  { id: 3, noticeDate: '10.09.2025', dueDate: '25.09.2025', totalAmount: 300, receivedAmount: 0, status: 'pending', lpCount: 12 }
 ])
 
 const distributions = ref([
-  { id: 1, date: '2025-10-15', investor: 'Росатом', type: 'dividend', amount: 25, status: 'paid' },
-  { id: 2, date: '2025-10-15', investor: 'ВЭБ.РФ', type: 'dividend', amount: 18, status: 'paid' },
-  { id: 3, date: '2025-09-20', investor: 'Частные LP', type: 'return_capital', amount: 12, status: 'paid' },
+  { id: 1, noticeDate: '20.06.2025', paymentDate: '05.07.2025', totalAmount: 180, paidAmount: 180, type: 'realized-profit', status: 'completed' },
+  { id: 2, noticeDate: '15.12.2025', paymentDate: '30.12.2025', totalAmount: 25, paidAmount: 0, type: 'return-of-capital', status: 'pending' }
 ])
 
-// ════════════════════════════════════════════════════ AUDIT
-const auditDocs = ref([
-  { id: 'trial_balance', title: 'Trial Balance', desc: 'Оборотно-сальдовая ведомость', icon: 'pi pi-table', color: '#667eea', status: 'ready' },
-  { id: 'reconciliation', title: 'LP Account Reconciliation', desc: 'Сверка счетов инвесторов', icon: 'pi pi-users', color: '#fb923c', status: 'ready' },
-  { id: 'capital_activity', title: 'Capital Activity Statement', desc: 'Отчёт о движении капитала', icon: 'pi pi-chart-line', color: '#34d399', status: 'ready' },
-  { id: 'investment_schedule', title: 'Investment Schedule', desc: 'Расшифровка инвестиций', icon: 'pi pi-list', color: '#22d3ee', status: 'ready' },
-  { id: 'expense_detail', title: 'Expense Detail', desc: 'Детализация расходов фонда', icon: 'pi pi-money-bill', color: '#a78bfa', status: 'ready' },
-  { id: 'valuation_report', title: 'Valuation Report', desc: 'Отчёт об оценке портфеля', icon: 'pi pi-chart-bar', color: '#f87171', status: 'progress' },
+function viewCapitalCallDetails(id) {
+  console.log('Capital call details', id)
+}
+
+function viewDistributionDetails(id) {
+  console.log('Distribution details', id)
+}
+
+// Audit
+const auditChecklist = ref([
+  { id: 1, label: 'Trial Balance готов', completed: true, responsible: 'Бухгалтерия', deadline: '15.01.2026', overdue: false },
+  { id: 2, label: 'LP Account Reconciliation выполнена', completed: true, responsible: 'Бухгалтерия', deadline: '20.01.2026', overdue: false },
+  { id: 3, label: 'Портфельные оценки обновлены', completed: false, responsible: 'Инвест. команда', deadline: '25.01.2026', overdue: false },
+  { id: 4, label: 'Документы по сделкам собраны', completed: false, responsible: 'Юрист', deadline: '30.01.2026', overdue: false },
+  { id: 5, label: 'Финансовая отчётность ФСБУ 4/2023', completed: false, responsible: 'Директор', deadline: '05.02.2026', overdue: false }
 ])
 
 const trialBalance = ref([
-  { account: '01', name: 'Основные средства', debitBegin: 5.2, creditBegin: 0, debitTurnover: 0.8, creditTurnover: 0, debitEnd: 6.0, creditEnd: 0 },
-  { account: '50', name: 'Касса', debitBegin: 0.5, creditBegin: 0, debitTurnover: 2.1, creditTurnover: 2.0, debitEnd: 0.6, creditEnd: 0 },
-  { account: '51', name: 'Расчётные счета', debitBegin: 420.3, creditBegin: 0, debitTurnover: 500, creditTurnover: 410, debitEnd: 510.3, creditEnd: 0 },
-  { account: '58', name: 'Финансовые вложения', debitBegin: 680, creditBegin: 0, debitTurnover: 150, creditTurnover: 80, debitEnd: 750, creditEnd: 0 },
-  { account: '60', name: 'Расчёты с поставщиками', debitBegin: 0, creditBegin: 8.5, debitTurnover: 12, creditTurnover: 10.2, debitEnd: 0, creditEnd: 6.7 },
-  { account: '80', name: 'Уставный капитал', debitBegin: 0, creditBegin: 2120, debitTurnover: 0, creditTurnover: 0, debitEnd: 0, creditEnd: 2120 },
+  { account: '01', name: 'Основные средства', debitBegin: 5.2, creditBegin: 0, debitTurnover: 1.2, creditTurnover: 0, debitEnd: 6.4, creditEnd: 0 },
+  { account: '50', name: 'Касса', debitBegin: 0.05, creditBegin: 0, debitTurnover: 2.1, creditTurnover: 1.8, debitEnd: 0.35, creditEnd: 0 },
+  { account: '51', name: 'Расчётные счета', debitBegin: 480, creditBegin: 0, debitTurnover: 1200, creditTurnover: 1160, debitEnd: 520, creditEnd: 0 },
+  { account: '58', name: 'Финансовые вложения', debitBegin: 1620, creditBegin: 0, debitTurnover: 350, creditTurnover: 120, debitEnd: 1850, creditEnd: 0 },
+  { account: '60', name: 'Расчёты с поставщиками', debitBegin: 0, creditBegin: 18, debitTurnover: 15, creditTurnover: 25, debitEnd: 0, creditEnd: 28 },
+  { account: '80', name: 'Уставный капитал', debitBegin: 0, creditBegin: 2000, debitTurnover: 0, creditTurnover: 120, debitEnd: 0, creditEnd: 2120 }
 ])
 
+const trialBalanceTotal = computed(() => {
+  return trialBalance.value.reduce((acc, row) => ({
+    debitBegin: acc.debitBegin + row.debitBegin,
+    creditBegin: acc.creditBegin + row.creditBegin,
+    debitTurnover: acc.debitTurnover + row.debitTurnover,
+    creditTurnover: acc.creditTurnover + row.creditTurnover,
+    debitEnd: acc.debitEnd + row.debitEnd,
+    creditEnd: acc.creditEnd + row.creditEnd
+  }), { debitBegin: 0, creditBegin: 0, debitTurnover: 0, creditTurnover: 0, debitEnd: 0, creditEnd: 0 })
+})
+
+const lpReconciliation = ref([
+  { id: 1, name: 'ВЭБ.РФ', commitment: 600, called: 500, distributions: 50, nav: 520, reconciled: true },
+  { id: 2, name: 'РВК', commitment: 400, called: 350, distributions: 30, nav: 360, reconciled: true },
+  { id: 3, name: 'Сколково', commitment: 300, called: 280, distributions: 20, nav: 285, reconciled: false },
+  { id: 4, name: 'ФРП', commitment: 250, called: 220, distributions: 15, nav: 228, reconciled: true }
+])
+
+const auditTrailFilter = ref({ search: '', type: '' })
+
 const auditTrail = ref([
-  { id: 1, timestamp: '2025-12-15 14:32:18', user: 'Иванов А.П.', type: 'capital_call', description: 'Capital call от Сколково: 150 млн ₽', amount: 150 },
-  { id: 2, timestamp: '2025-12-10 09:15:42', user: 'Петрова М.С.', type: 'expense', description: 'Расход: Юридическое сопровождение сделки', amount: 2.4 },
-  { id: 3, timestamp: '2025-11-28 16:48:03', user: 'Сидоров К.В.', type: 'distribution', description: 'Distribution Росатом: дивиденды 25 млн ₽', amount: 25 },
-  { id: 4, timestamp: '2025-11-20 11:22:55', user: 'Иванов А.П.', type: 'fee', description: 'Management Fee Q4 2025: 10.6 млн ₽', amount: 10.6 },
-  { id: 5, timestamp: '2025-11-15 13:07:19', user: 'Кузнецова Е.Н.', type: 'capital_call', description: 'Получение Capital call от ВЭБ.РФ: 200 млн ₽', amount: 200 },
+  { id: 1, timestamp: '2025-12-15 14:30:22', type: 'capital-call', description: 'Capital Call #3 создан', amount: 300, user: 'Иванов А.', docId: 'cc-003' },
+  { id: 2, timestamp: '2025-11-20 10:15:00', type: 'investment', description: 'Инвестиция в ДронТех — транш 2', amount: 150, user: 'Петрова М.', docId: 'inv-045' },
+  { id: 3, timestamp: '2025-10-10 16:45:33', type: 'distribution', description: 'Distribution #1 выполнен', amount: 180, user: 'Сидоров П.', docId: 'dist-001' },
+  { id: 4, timestamp: '2025-09-05 09:20:11', type: 'expense', description: 'Оплата аудита Q3', amount: 4.2, user: 'Иванов А.', docId: 'exp-128' },
+  { id: 5, timestamp: '2025-07-01 11:00:00', type: 'mgmt-fee', description: 'Management Fee Q3 начислен', amount: 10.6, user: 'Система', docId: null }
 ])
 
 const filteredAuditTrail = computed(() => {
-  let filtered = auditTrail.value
-  if (auditTrailType.value !== 'all') {
-    filtered = filtered.filter(t => t.type === auditTrailType.value)
+  let result = auditTrail.value
+  if (auditTrailFilter.value.type) {
+    result = result.filter(e => e.type === auditTrailFilter.value.type)
   }
-  if (auditTrailSearch.value) {
-    const search = auditTrailSearch.value.toLowerCase()
-    filtered = filtered.filter(t =>
-      t.description.toLowerCase().includes(search) ||
-      t.user.toLowerCase().includes(search)
-    )
+  if (auditTrailFilter.value.search) {
+    const s = auditTrailFilter.value.search.toLowerCase()
+    result = result.filter(e => e.description.toLowerCase().includes(s))
   }
-  return filtered
+  return result
 })
 
-// ══════════════════════════════════════════════ FSBU 4/2023
-const fsbuForms = ref([
-  { id: 'balance', code: 'Форма 1', title: 'Отчёт о финансовом положении', desc: 'Бухгалтерский баланс фонда', status: 'ready' },
-  { id: 'income', code: 'Форма 2', title: 'Отчёт о совокупном доходе', desc: 'Отчёт о прибылях и убытках', status: 'ready' },
-  { id: 'equity', code: 'Форма 3', title: 'Отчёт об изменениях капитала', desc: 'Движение собственного капитала', status: 'ready' },
-  { id: 'cash', code: 'Форма 4', title: 'Отчёт о движении денежных средств', desc: 'Cash flow statement', status: 'ready' },
-  { id: 'notes', code: 'Форма 5', title: 'Примечания к финансовой отчётности', desc: 'Пояснения и раскрытия', status: 'progress' },
-])
-
-const fsbuAssets = ref([
-  { code: '1110', name: 'Нематериальные активы', current: 2.4, previous: 2.1 },
-  { code: '1150', name: 'Основные средства', current: 6.0, previous: 5.2 },
-  { code: '1170', name: 'Финансовые вложения', current: 750, previous: 680 },
-  { code: '1210', name: 'Запасы', current: 0.8, previous: 0.6 },
-  { code: '1250', name: 'Денежные средства и денежные эквиваленты', current: 510.9, previous: 420.8 },
-  { code: '1260', name: 'Прочие оборотные активы', current: 8.2, previous: 6.5 },
-])
-
-const fsbuLiabilities = ref([
-  { code: '1410', name: 'Уставный капитал (committed capital)', current: 2120, previous: 2120 },
-  { code: '1420', name: 'Добавочный капитал', current: 0, previous: 0 },
-  { code: '1470', name: 'Нераспределённая прибыль (убыток)', current: -852.7, previous: -1012.2 },
-  { code: '1510', name: 'Долгосрочные обязательства', current: 0, previous: 0 },
-  { code: '1520', name: 'Краткосрочные обязательства', current: 10.9, previous: 8.7 },
-])
-
-const totalAssets = computed(() => fsbuAssets.value.reduce((s, a) => s + a.current, 0))
-const totalAssetsPrevious = computed(() => fsbuAssets.value.reduce((s, a) => s + a.previous, 0))
-const totalLiabilities = computed(() => fsbuLiabilities.value.reduce((s, l) => s + l.current, 0))
-const totalLiabilitiesPrevious = computed(() => fsbuLiabilities.value.reduce((s, l) => s + l.previous, 0))
-
-// ══════════════════════════════════════════════ HELPERS
-function formatCurrency(val, signed = false) {
-  if (val == null) return '—'
-  const prefix = signed && val > 0 ? '+' : ''
-  return prefix + val.toFixed(1) + ' млн ₽'
+function viewDoc(docId) {
+  console.log('View document', docId)
 }
 
-function formatAmount(val, currency) {
-  return val.toFixed(1) + ' млн ' + currency
-}
+// FSBU 4/2023
+const fsbu = ref({
+  balance: {
+    longTermInvestments: 1850,
+    longTermInvestmentsPrev: 1620,
+    cash: 520,
+    cashPrev: 480,
+    receivables: 180,
+    receivablesPrev: 150,
+    totalAssets: 2562,
+    totalAssetsPrev: 2268,
+    capital: 2120,
+    capitalPrev: 2000,
+    retainedEarnings: 398.4,
+    retainedEarningsPrev: 232,
+    longTermLiabilities: 0,
+    longTermLiabilitiesPrev: 0,
+    payables: 28,
+    payablesPrev: 18,
+    totalLiabilities: 2562,
+    totalLiabilitiesPrev: 2268
+  },
+  income: {
+    investmentIncome: 360,
+    investmentIncomePrev: 280,
+    mgmtFee: 42.4,
+    mgmtFeePrev: 40,
+    otherExpenses: 7.2,
+    otherExpensesPrev: 6.8,
+    netIncome: 310.4,
+    netIncomePrev: 233.2,
+    otherComprehensiveIncome: 0,
+    otherComprehensiveIncomePrev: 0,
+    comprehensiveIncome: 310.4,
+    comprehensiveIncomePrev: 233.2
+  },
+  notes: {
+    managementCompany: 'ООО "УК ФСТ НТИ"',
+    fundSize: 2120,
+    portfolioCount: 18,
+    avgInvestment: 102.8,
+    sectors: { uas: 60, robotics: 25, micro: 15 },
+    mgmtFeeRate: 2.0,
+    carryRate: 20,
+    hurdleRate: 8
+  }
+})
 
-function feeTypeLabel(t) {
-  return { mgmt_fee: 'Management Fee', carry: 'Carried Interest' }[t] || t
+// Helper functions
+function formatNum(n) {
+  if (n == null) return '—'
+  return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
 }
 
 function statusLabel(s) {
-  return { paid: 'Оплачено', pending: 'Ожидание', accrued: 'Начислено', received: 'Получено', progress: 'В процессе', ready: 'Готов' }[s] || s
+  const labels = {
+    paid: 'Оплачено',
+    accrued: 'Начислено',
+    pending: 'Ожидается',
+    completed: 'Завершено',
+    partial: 'Частично',
+    ok: 'OK',
+    warning: 'Требует проверки'
+  }
+  return labels[s] || s
 }
 
 function categoryLabel(c) {
-  return {
-    due_diligence: 'Due Diligence',
-    legal: 'Legal',
-    travel: 'Travel',
-    admin: 'Admin',
-    audit: 'Audit',
-    other: 'Other',
-  }[c] || c
+  const labels = {
+    'due-diligence': 'Due Diligence',
+    'legal': 'Юридические',
+    'travel': 'Командировки',
+    'admin': 'Административные',
+    'audit': 'Аудит',
+    'marketing': 'Маркетинг'
+  }
+  return labels[c] || c
 }
 
-function capitalCallStatus(s) {
-  return { received: 'Получено', pending: 'Ожидание', partial: 'Частично' }[s] || s
+function distributionTypeLabel(t) {
+  const labels = {
+    'realized-profit': 'Реализованная прибыль',
+    'return-of-capital': 'Возврат капитала',
+    'income': 'Доход от портфеля'
+  }
+  return labels[t] || t
 }
 
-function distributionType(t) {
-  return { dividend: 'Дивиденды', return_capital: 'Возврат капитала', exit_proceeds: 'Выход' }[t] || t
+function loadData() {
+  console.log('Load data for', selectedPeriod.value)
 }
 
-function loadPeriodData() {
-  // Stub: reload data for selected period
+function exportToExcel() {
+  console.log('Export to Excel')
 }
 
-function exportReport() {
-  alert('Экспорт управленческого отчёта за ' + selectedPeriod.value)
-}
-
-function generateAudit() {
-  alert('Генерация полного аудиторского пакета для Ernst & Young')
-}
-
-function generateDoc(docId) {
-  alert('Генерация документа: ' + docId)
-}
-
-function generateFsbuForm(formId) {
-  alert('Формирование отчётности ФСБУ 4/2023: ' + formId)
+function generateAuditPackage() {
+  console.log('Generate audit package')
 }
 </script>
 
 <style scoped>
-.admin-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
-.admin-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.admin-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.admin-subtitle { font-size: 0.85rem; color: var(--p-text-muted-color); }
-.admin-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.admin-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-.admin-btn.primary  { background: var(--p-primary-color); color: #fff; }
-.admin-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
-.admin-btn.small { padding: 5px 10px; font-size: 0.78rem; }
-.admin-select { padding: 7px 10px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
-.admin-select.small { padding: 5px 8px; font-size: 0.78rem; }
+.admin-root {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--p-surface-ground);
+  min-height: 100vh;
+}
 
-.admin-tabs { display: flex; gap: 4px; flex-wrap: wrap; overflow-x: auto; }
-.admin-tab { padding: 9px 16px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-.admin-tab.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
 
-.admin-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px; }
-.admin-section h2 { margin: 0 0 8px; font-size: 1.1rem; color: var(--p-text-color); }
-.admin-note { font-size: 0.8rem; color: var(--p-text-muted-color); margin: 0 0 18px; }
-.subsection-title { font-size: 0.95rem; margin: 20px 0 12px; color: var(--p-text-color); }
+.admin-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  margin: 0 0 0.5rem 0;
+}
 
-/* Fees */
-.fee-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.fee-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 16px; }
-.fee-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.fee-card-header h3 { margin: 0; font-size: 0.95rem; color: var(--p-text-color); }
-.fee-badge { padding: 3px 10px; border-radius: 5px; font-size: 0.72rem; font-weight: 600; background: var(--p-primary-color); color: #fff; }
-.fee-badge.orange { background: #ff9800; }
-.fee-calc { display: flex; flex-direction: column; gap: 8px; }
-.fee-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-.fee-row.total { font-size: 0.9rem; }
-.fee-label { color: var(--p-text-muted-color); }
-.fee-val { color: var(--p-text-color); font-weight: 600; }
-.fee-separator { height: 1px; background: var(--p-surface-border); margin: 6px 0; }
+.admin-subtitle {
+  color: var(--p-text-muted-color);
+  font-size: 1rem;
+}
 
-/* Expenses */
-.expense-add-bar { margin-bottom: 16px; }
-.expense-categories { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.expense-cat-card { display: flex; align-items: center; gap: 12px; background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 12px; }
-.expense-cat-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-.expense-cat-body { flex: 1; }
-.expense-cat-label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.expense-cat-amount { font-size: 0.95rem; font-weight: 700; color: var(--p-text-color); }
-.expense-cat-pct { font-size: 0.8rem; color: var(--p-text-muted-color); }
+.admin-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
 
-/* NAV */
-.nav-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
-.nav-metric-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 14px; }
-.nav-metric-card.primary { background: linear-gradient(135deg, var(--p-primary-color)22 0%, var(--p-surface-ground) 100%); border-color: var(--p-primary-color); }
-.nav-metric-label { font-size: 0.75rem; color: var(--p-text-muted-color); margin-bottom: 6px; }
-.nav-metric-value { font-size: 1.3rem; font-weight: 700; color: var(--p-text-color); margin-bottom: 4px; }
-.nav-metric-change { font-size: 0.78rem; font-weight: 600; }
+.admin-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 6px;
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  font-size: 0.95rem;
+}
 
-/* Tables */
-.admin-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
-.admin-table th { padding: 8px 12px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-surface-border); font-size: 0.75rem; font-weight: 600; }
-.admin-table td { padding: 9px 12px; border-bottom: 1px solid var(--p-surface-border); color: var(--p-text-color); }
-.admin-table tfoot td { border-top: 2px solid var(--p-surface-border); border-bottom: none; background: var(--p-surface-ground); padding-top: 12px; }
-.admin-table tr.nav-total, .admin-table tr.fsbu-total { background: var(--p-surface-ground); }
-.admin-table tr.nav-subtitle td, .admin-table tr.fsbu-section-header td { color: var(--p-text-muted-color); font-style: italic; font-size: 0.8rem; background: var(--p-surface-ground); padding-top: 12px; font-weight: 600; }
-.num { text-align: right; font-variant-numeric: tabular-nums; }
-.mono { font-family: 'Courier New', monospace; font-size: 0.8rem; }
-.bold { font-weight: 700; }
-.gray { color: var(--p-text-muted-color); }
-.green { color: #66bb6a; }
-.red { color: #ef5350; }
-.orange { color: #ff9800; }
-.blue { color: #42a5f5; }
+.admin-btn {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-/* Badges */
-.status-badge, .type-badge, .cat-badge { padding: 3px 9px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
-.status-badge.paid, .status-badge.received, .status-badge.ready { background: #66bb6a22; color: #66bb6a; }
-.status-badge.pending { background: #ff980022; color: #ff9800; }
-.status-badge.accrued, .status-badge.progress { background: #42a5f522; color: #42a5f5; }
-.status-badge.active { background: #66bb6a22; color: #66bb6a; }
-.type-badge.mgmt_fee { background: #667eea22; color: #667eea; }
-.type-badge.carry { background: #ff980022; color: #ff9800; }
-.type-badge.dividend { background: #66bb6a22; color: #66bb6a; }
-.type-badge.return_capital { background: #42a5f522; color: #42a5f5; }
-.type-badge.capital_call { background: #667eea22; color: #667eea; }
-.type-badge.distribution { background: #66bb6a22; color: #66bb6a; }
-.type-badge.expense { background: #ef535022; color: #ef5350; }
-.type-badge.fee { background: #ff980022; color: #ff9800; }
-.cat-badge.due_diligence { background: #667eea22; color: #667eea; }
-.cat-badge.legal { background: #fb923c22; color: #fb923c; }
-.cat-badge.travel { background: #34d39922; color: #34d399; }
-.cat-badge.audit { background: #a78bfa22; color: #a78bfa; }
-.cat-badge.admin { background: #22d3ee22; color: #22d3ee; }
-.cat-badge.other { background: #9ca3af22; color: #9ca3af; }
+.admin-btn.primary {
+  background: var(--p-primary-color);
+  color: white;
+}
 
-/* Banking */
-.account-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 24px; }
-.account-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 14px; }
-.account-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.account-bank { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); }
-.account-currency { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; background: var(--p-primary-color); color: #fff; }
-.account-number { font-family: 'Courier New', monospace; font-size: 0.75rem; color: var(--p-text-muted-color); margin-bottom: 10px; }
-.account-balance { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.account-balance-label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.account-balance-val { font-size: 1.1rem; font-weight: 700; color: var(--p-text-color); }
-.account-status { margin-top: 8px; }
+.admin-btn.primary:hover {
+  background: var(--p-primary-600);
+}
 
-/* Audit */
-.audit-docs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 24px; }
-.audit-doc-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 14px; cursor: pointer; transition: all 0.2s; }
-.audit-doc-card:hover { border-color: var(--p-primary-color); transform: translateY(-2px); }
-.audit-doc-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 10px; }
-.audit-doc-body { margin-bottom: 12px; }
-.audit-doc-title { font-size: 0.9rem; font-weight: 700; color: var(--p-text-color); margin-bottom: 4px; }
-.audit-doc-desc { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.audit-doc-status { margin-bottom: 8px; }
+.admin-btn.secondary {
+  background: var(--p-surface-200);
+  color: var(--p-text-color);
+}
 
-.audit-trail-filters { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-.audit-search { flex: 1; min-width: 200px; padding: 7px 12px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.admin-btn.secondary:hover {
+  background: var(--p-surface-300);
+}
 
-/* FSBU */
-.fsbu-info-card { display: flex; gap: 16px; background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 16px; margin-bottom: 24px; }
-.fsbu-info-icon { font-size: 2rem; color: var(--p-primary-color); }
-.fsbu-info-body { flex: 1; }
-.fsbu-info-title { font-size: 0.95rem; font-weight: 700; color: var(--p-text-color); margin-bottom: 8px; }
-.fsbu-info-list { margin: 0; padding-left: 20px; font-size: 0.8rem; color: var(--p-text-muted-color); }
-.fsbu-info-list li { margin-bottom: 4px; }
+.admin-btn.small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+}
 
-.fsbu-forms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 24px; }
-.fsbu-form-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s; }
-.fsbu-form-card:hover { border-color: var(--p-primary-color); transform: translateY(-2px); }
-.fsbu-form-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.fsbu-form-code { font-family: 'Courier New', monospace; font-size: 0.75rem; font-weight: 700; color: var(--p-primary-color); }
-.fsbu-form-title { font-size: 0.9rem; font-weight: 700; color: var(--p-text-color); margin-bottom: 6px; }
-.fsbu-form-desc { font-size: 0.75rem; color: var(--p-text-muted-color); margin-bottom: 12px; }
-.fsbu-form-btn { width: 100%; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.fsbu-form-btn:hover { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
+.admin-compliance-bar {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: var(--p-surface-card);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  align-items: center;
+  border: 1px solid var(--p-surface-border);
+}
 
-/* Modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-box { background: var(--p-content-background); border-radius: 12px; padding: 24px; width: 450px; max-width: 95vw; }
-.modal-box h3 { margin: 0 0 16px; font-size: 1rem; color: var(--p-text-color); }
-.modal-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-.modal-form label { font-size: 0.78rem; color: var(--p-text-muted-color); font-weight: 600; }
-.modal-form input, .modal-form select { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 6px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
-.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.compliance-title {
+  font-weight: 600;
+  color: var(--p-text-color);
+  font-size: 0.95rem;
+}
+
+.compliance-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.compliance-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.compliance-icon.ok {
+  background: #66bb6a;
+  color: white;
+}
+
+.compliance-icon.warning {
+  background: #ffa726;
+  color: white;
+}
+
+.compliance-icon.pending {
+  background: var(--p-surface-300);
+  color: var(--p-text-muted-color);
+}
+
+.compliance-label {
+  font-size: 0.9rem;
+  color: var(--p-text-color);
+}
+
+.compliance-date {
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--p-surface-border);
+}
+
+.admin-tab {
+  padding: 0.75rem 1.25rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--p-text-muted-color);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-tab:hover {
+  color: var(--p-text-color);
+  background: var(--p-surface-50);
+}
+
+.admin-tab.active {
+  color: var(--p-primary-color);
+  border-bottom-color: var(--p-primary-color);
+}
+
+.admin-section {
+  background: var(--p-surface-card);
+  border-radius: 8px;
+  padding: 2rem;
+  border: 1px solid var(--p-surface-border);
+}
+
+.admin-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  margin: 0 0 1.5rem 0;
+}
+
+.admin-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  margin: 0 0 1rem 0;
+}
+
+.admin-section h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  margin: 1.5rem 0 1rem 0;
+}
+
+.admin-params-card, .admin-result-card, .admin-subsection {
+  background: var(--p-surface-50);
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.param-field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--p-text-color);
+  margin-bottom: 0.5rem;
+}
+
+.param-field input, .param-field select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 4px;
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  font-size: 0.95rem;
+}
+
+.mgmt-fee-calc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.calc-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.calc-item.highlight {
+  background: var(--p-primary-50);
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+
+.calc-label {
+  color: var(--p-text-muted-color);
+  font-size: 0.95rem;
+}
+
+.calc-value {
+  color: var(--p-text-color);
+  font-size: 0.95rem;
+}
+
+.calc-value.bold {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--p-surface-card);
+  font-size: 0.9rem;
+}
+
+.admin-table th {
+  background: var(--p-surface-100);
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--p-text-color);
+  border-bottom: 2px solid var(--p-surface-border);
+}
+
+.admin-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--p-surface-border);
+  color: var(--p-text-color);
+}
+
+.admin-table tbody tr:hover {
+  background: var(--p-surface-50);
+}
+
+.admin-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-table .bold {
+  font-weight: 700;
+}
+
+.admin-table .gray {
+  color: var(--p-text-muted-color);
+}
+
+.admin-table .green {
+  color: #66bb6a;
+}
+
+.admin-table .red {
+  color: #ef5350;
+}
+
+.admin-table tfoot {
+  background: var(--p-surface-100);
+  font-weight: 600;
+}
+
+.status-badge, .category-badge, .type-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-badge.paid, .status-badge.completed, .status-badge.ok {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.accrued, .status-badge.partial {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status-badge.pending {
+  background: var(--p-surface-200);
+  color: var(--p-text-muted-color);
+}
+
+.status-badge.warning {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.category-badge.due-diligence {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.category-badge.legal {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.category-badge.travel {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.category-badge.admin {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.category-badge.audit {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.category-badge.marketing {
+  background: #e0f2f1;
+  color: #00695c;
+}
+
+.type-badge.realized-profit {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.type-badge.return-of-capital {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.type-badge.income {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.link-btn, .action-btn {
+  background: none;
+  border: none;
+  color: var(--p-primary-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.action-btn {
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.action-btn.del {
+  color: #ef5350;
+}
+
+.admin-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.9rem;
+  color: var(--p-text-muted-color);
+}
+
+.filter-group select {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 4px;
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  font-size: 0.9rem;
+}
+
+.expenses-chart-card {
+  margin-top: 1.5rem;
+}
+
+.expenses-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.exp-cat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.exp-cat-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--p-text-color);
+}
+
+.exp-cat-bar-wrap {
+  width: 100%;
+  height: 24px;
+  background: var(--p-surface-100);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.exp-cat-bar {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.3s;
+}
+
+.exp-cat-value {
+  font-size: 0.9rem;
+  color: var(--p-text-muted-color);
+}
+
+.carry-calc {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.carry-step {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: var(--p-surface-card);
+  border-radius: 6px;
+  border: 1px solid var(--p-surface-border);
+}
+
+.carry-step.highlight {
+  background: var(--p-primary-50);
+  border-color: var(--p-primary-200);
+}
+
+.carry-step.final {
+  background: #e8f5e9;
+  border-color: #66bb6a;
+}
+
+.carry-step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--p-primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.carry-step-body {
+  flex: 1;
+}
+
+.carry-step-label {
+  font-size: 0.9rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 0.25rem;
+}
+
+.carry-step-value {
+  font-size: 1.1rem;
+  color: var(--p-text-color);
+}
+
+.carry-step-value.bold {
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.carry-notice {
+  padding: 1rem;
+  background: var(--p-surface-100);
+  border-left: 4px solid var(--p-primary-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--p-text-color);
+}
+
+.nav-period-select {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.nav-period-select label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--p-text-color);
+}
+
+.nav-period-select input {
+  padding: 0.5rem;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 4px;
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+}
+
+.nav-table .nav-section-header td {
+  background: var(--p-surface-100);
+  font-weight: 600;
+  padding: 0.75rem;
+}
+
+.nav-table .nav-subtotal td {
+  background: var(--p-surface-50);
+  font-weight: 600;
+  border-top: 2px solid var(--p-surface-border);
+}
+
+.nav-table .nav-total td {
+  background: #e8f5e9;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-top: 3px solid #66bb6a;
+  color: #2e7d32;
+}
+
+.nav-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.nav-metric {
+  padding: 1rem;
+  background: var(--p-surface-card);
+  border-radius: 6px;
+  border: 1px solid var(--p-surface-border);
+  text-align: center;
+}
+
+.nav-metric-label {
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 0.5rem;
+}
+
+.nav-metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+}
+
+.bank-accounts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bank-account-card {
+  padding: 1rem;
+  background: var(--p-surface-card);
+  border-radius: 6px;
+  border: 1px solid var(--p-surface-border);
+}
+
+.bank-account-card.add-new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  min-height: 120px;
+  border-style: dashed;
+  transition: all 0.2s;
+}
+
+.bank-account-card.add-new:hover {
+  background: var(--p-surface-50);
+  border-color: var(--p-primary-color);
+}
+
+.add-icon {
+  font-size: 2rem;
+  color: var(--p-primary-color);
+}
+
+.add-label {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--p-text-muted-color);
+}
+
+.ba-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.ba-bank {
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+
+.ba-currency {
+  padding: 0.25rem 0.5rem;
+  background: var(--p-surface-100);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ba-number {
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+  font-family: monospace;
+  margin-bottom: 0.5rem;
+}
+
+.ba-balance {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  margin-bottom: 0.25rem;
+}
+
+.ba-updated {
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+}
+
+.audit-package-status {
+  margin-bottom: 1.5rem;
+}
+
+.audit-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.audit-check-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--p-surface-card);
+  border-radius: 4px;
+  border: 1px solid var(--p-surface-border);
+}
+
+.audit-check-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.audit-check-item label {
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--p-text-color);
+  cursor: pointer;
+}
+
+.audit-resp {
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+  padding: 0.25rem 0.75rem;
+  background: var(--p-surface-100);
+  border-radius: 12px;
+}
+
+.audit-deadline {
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+  min-width: 80px;
+  text-align: right;
+}
+
+.audit-deadline.overdue {
+  color: #ef5350;
+  font-weight: 600;
+}
+
+.audit-trail-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.audit-trail-filters input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 4px;
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+}
+
+.audit-trail-filters select {
+  padding: 0.5rem;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 4px;
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+}
+
+.fsbu-intro {
+  padding: 1rem;
+  background: var(--p-surface-50);
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--p-text-color);
+}
+
+.fsbu-intro ul {
+  margin: 0.5rem 0 0 1.5rem;
+}
+
+.fsbu-intro li {
+  margin: 0.25rem 0;
+}
+
+.fsbu-table .fsbu-section td {
+  background: var(--p-surface-100);
+  font-weight: 600;
+  padding: 0.75rem;
+  border-top: 2px solid var(--p-surface-border);
+}
+
+.fsbu-table .fsbu-total td {
+  background: var(--p-surface-100);
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-top: 3px solid var(--p-text-color);
+  padding: 1rem 0.75rem;
+}
+
+.fsbu-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fsbu-note {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--p-surface-card);
+  border-radius: 6px;
+  border: 1px solid var(--p-surface-border);
+}
+
+.note-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--p-primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.note-body {
+  flex: 1;
+}
+
+.note-title {
+  font-weight: 600;
+  color: var(--p-text-color);
+  margin-bottom: 0.5rem;
+}
+
+.note-text {
+  font-size: 0.9rem;
+  color: var(--p-text-muted-color);
+  line-height: 1.5;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: var(--p-surface-card);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-box h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-form label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--p-text-color);
+  margin-bottom: -0.5rem;
+}
+
+.modal-form input, .modal-form select {
+  padding: 0.6rem;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 4px;
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
+  font-size: 0.95rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
 </style>

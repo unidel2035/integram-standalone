@@ -18,8 +18,16 @@ export default defineConfig({
   },
   server: {
     port: 5174,
-    allowedHosts: ['fst.drondoc.ru', 'localhost'],
+    allowedHosts: ['fst.drondoc.ru', 'localhost', '173.249.2.184', 'all'],
     proxy: {
+      '/fst-api': {
+        target: 'https://ai2o.ru',
+        changeOrigin: true,
+        secure: true,
+        cookieDomainRewrite: '',
+        rewrite: (path) => path.replace(/^\/fst-api/, '/fst'),
+        headers: { 'Origin': 'https://ai2o.ru' }
+      },
       '/api': {
         target: 'http://127.0.0.1:8082',
         changeOrigin: true,
@@ -36,6 +44,24 @@ export default defineConfig({
         ws: true
       }
     }
+  },
+  optimizeDeps: {
+    include: [
+      'vue-virtual-scroller',
+      'primevue/checkbox',
+      'primevue/password',
+      'primevue/inputswitch',
+      'primevue/inputnumber',
+      'primevue/textarea',
+      'primevue/tabview',
+      'primevue/tabpanel',
+      'primevue/toast',
+      'primevue/progressspinner',
+      'primevue/slider',
+      'primevue/selectbutton',
+      'primevue/multiselect',
+      'primevue/dropdown',
+    ]
   },
   test: {
     globals: true,

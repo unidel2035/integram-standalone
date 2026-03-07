@@ -202,12 +202,12 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 <style scoped>
 .esg-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .esg-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.esg-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.esg-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.esg-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.esg-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .esg-actions { display: flex; gap: 8px; align-items: center; }
-.esg-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.esg-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .esg-btn.primary { background: var(--p-primary-color); color: #fff; }
-.esg-select { padding: 7px 10px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.esg-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
 .esg-portfolio-score { display: flex; align-items: center; gap: 16px; background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px; flex-wrap: wrap; }
 .esg-cat-block { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 80px; border-right: 1px solid var(--p-surface-border); padding-right: 16px; }

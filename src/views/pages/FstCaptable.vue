@@ -321,13 +321,13 @@ function exportCsv() {
 <style scoped>
 .ct-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .ct-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.ct-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.ct-subtitle { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.ct-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.ct-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .ct-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.ct-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.ct-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .ct-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .ct-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
-.ct-select { padding: 7px 10px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.ct-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
 .ct-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 .ct-sum-card { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 14px; }
@@ -335,7 +335,7 @@ function exportCsv() {
 .ct-sum-lbl { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 2px; }
 
 .ct-tabs { display: flex; gap: 4px; }
-.ct-tab { padding: 7px 16px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
+.ct-tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
 .ct-tab.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
 
 .ct-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px; overflow-x: auto; }

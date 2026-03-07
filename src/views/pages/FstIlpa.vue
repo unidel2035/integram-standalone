@@ -242,13 +242,13 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 <style scoped>
 .ilpa-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .ilpa-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.ilpa-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.ilpa-subtitle { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.ilpa-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.ilpa-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .ilpa-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.ilpa-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.ilpa-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .ilpa-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .ilpa-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
-.ilpa-select { padding: 7px 10px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.ilpa-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
 .ilpa-status-bar { display: flex; gap: 0; overflow-x: auto; background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; }
 .ilpa-status-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 16px; border-right: 1px solid var(--p-surface-border); flex: 1; min-width: 90px; }
@@ -261,7 +261,7 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .status-date  { font-size: 0.65rem; color: var(--p-text-muted-color); }
 
 .ilpa-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-.ilpa-tab { padding: 7px 16px; border-radius: 7px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
+.ilpa-tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
 .ilpa-tab.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
 
 .ilpa-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px; overflow-x: auto; }

@@ -44,6 +44,7 @@ const routes = [
       { path: 'fst-transparency', component: () => import('@/views/pages/FstTransparency.vue'), meta: { title: 'Публичная витрина фонда' } },
       { path: 'fst-administration', component: () => import('@/views/pages/FstAdministration.vue'), meta: { title: 'Бэк-офис фонда' } },
       { path: 'fst-glossary', component: () => import('@/views/pages/FstGlossary.vue'), meta: { title: 'Глоссарий венчурных терминов' } },
+      { path: 'fst-quiz', component: () => import('@/views/pages/FstQuizDemo.vue'), meta: { title: 'Мини-квизы — закрепление знаний' } },
       { path: 'fst-dev-guide', component: () => import('@/views/pages/FstDevGuide.vue'), meta: { title: 'Путь обучения VentureOS' } },
     ]
   },
@@ -59,5 +60,10 @@ const router = createRouter({
 router.afterEach((to) => {
   document.title = to.meta.title ? `${to.meta.title} | ФСТ НТИ` : 'ФСТ НТИ'
 })
+
+export function clearUserCache() {
+  // Placeholder for clearing router-level user cache
+  // Called on session expiry (Issue #3700)
+}
 
 export default router

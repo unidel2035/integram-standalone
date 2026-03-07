@@ -36,6 +36,9 @@ const parsedMarkdown = computed(() => {
     return ''
   }
 
+  // Collapse 3+ consecutive blank lines to 2 (prevents excessive whitespace from models)
+  contentStr = contentStr.replace(/\n{3,}/g, '\n\n').trim()
+
   try {
     return marked(contentStr)
   } catch (error) {
@@ -52,6 +55,34 @@ const parsedMarkdown = computed(() => {
 :deep(.markdown-content) {
   width: 100%;
   overflow: hidden;
+}
+
+:deep(.markdown-content p) {
+  margin: 0.25em 0;
+}
+
+:deep(.markdown-content p + p) {
+  margin-top: 0.5em;
+}
+
+:deep(.markdown-content ul),
+:deep(.markdown-content ol) {
+  margin: 0.3em 0;
+  padding-left: 1.4em;
+}
+
+:deep(.markdown-content li) {
+  margin: 0.1em 0;
+}
+
+:deep(.markdown-content h1),
+:deep(.markdown-content h2),
+:deep(.markdown-content h3) {
+  margin: 0.6em 0 0.3em;
+}
+
+:deep(.markdown-content blockquote) {
+  margin: 0.4em 0;
 }
 
 /* Жесткое ограничение для блоков кода */

@@ -107,8 +107,10 @@ function confirmSelection() {
     isVisible.value = false
     emit('role-selected', selectedRole.value)
 
-    // Перенаправить на страницу обучения
-    router.push('/fst-dev-guide')
+    // Перенаправить на первый шаг пути обучения выбранной роли
+    const path = LEARNING_PATHS[selectedRole.value]
+    const firstRoute = path?.steps?.[0]?.route || '/fst-hub'
+    router.push(firstRoute)
   }
 }
 
@@ -188,13 +190,13 @@ defineExpose({
 .role-card:hover {
   border-color: var(--p-primary-color);
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px var(--p-surface-shadow, rgba(0, 0, 0, 0.12));
 }
 
 .role-card.selected {
   border-color: var(--p-primary-color);
-  background: var(--p-primary-50);
-  box-shadow: 0 0 0 3px var(--p-primary-100);
+  background: color-mix(in srgb, var(--p-primary-color) 10%, var(--p-surface-card));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-primary-color) 20%, transparent);
 }
 
 .role-icon {

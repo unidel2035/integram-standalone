@@ -18,7 +18,16 @@ watch(() => props.searchQuery, (newQuery) => {
   searchDebounceTimer = setTimeout(() => { debouncedSearchQuery.value = newQuery || '' }, delay)
 }, { flush: 'post' })
 
-const model = computed(() => fstMenuConfig)
+const isAdmin = ref(localStorage.getItem('is_admin') === 'true')
+window.addEventListener('admin-status-changed', (e) => {
+  isAdmin.value = e.detail === true
+})
+
+const model = computed(() =>
+  fstMenuConfig
+    .filter(s => !s.adminOnly || isAdmin.value)
+    .map(s => ({ ...s, items: (s.items || []).filter(i => !i.adminOnly || isAdmin.value) }))
+)
 
 const filteredModel = computed(() => {
   if (!debouncedSearchQuery.value) return model.value

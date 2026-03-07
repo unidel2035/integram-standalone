@@ -25,9 +25,30 @@
         </div>
       </div>
       <div class="fsp-header-right">
-        <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="refreshAll" :loading="refreshing" />
-        <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="showAddDialog = true" />
-        <Button icon="pi pi-building" label="ЦД Фонда" size="small" severity="secondary" text @click="$router.push('/fst-fund')" />
+        <LearnTooltip
+          label="Обновить данные"
+          what="Загружает актуальные данные по портфелю: KPI компаний, финансовые показатели, статусы рисков"
+          when="Для получения последних данных от портфельных компаний"
+          :terms="['Портфель', 'KPI', 'Мониторинг']"
+        >
+          <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="refreshAll" :loading="refreshing" />
+        </LearnTooltip>
+        <LearnTooltip
+          label="Добавить компанию"
+          what="Добавляет новую портфельную компанию для мониторинга после закрытия сделки"
+          when="После подписания Term Sheet и получения первого транша"
+          :terms="['Портфельная компания', 'Транш', 'Постинвест-мониторинг']"
+        >
+          <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="showAddDialog = true" />
+        </LearnTooltip>
+        <LearnTooltip
+          label="Цифровой двойник фонда"
+          what="Переход к макро-симуляции всего фонда: NAV, IRR, субфонды, сценарии"
+          when="Для оценки общего состояния и прогнозирования портфеля"
+          :terms="['NAV', 'IRR', 'Цифровой двойник', 'Субфонд']"
+        >
+          <Button icon="pi pi-building" label="ЦД Фонда" size="small" severity="secondary" text @click="$router.push('/fst-fund')" />
+        </LearnTooltip>
       </div>
     </div>
 
@@ -227,6 +248,7 @@ import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { getPortfolio, getProjects } from '@/services/fstApi'
 import PageTutorButton from '@/components/PageTutorButton.vue'
+import LearnTooltip from '@/components/LearnTooltip.vue'
 
 const toast = useToast()
 
@@ -258,23 +280,48 @@ async function loadPortfolioFromDb() {
 
     if (portfolioRows.length === 0) return  // оставить дефолтные моковые данные
 
-    companies.value = portfolioRows.map((row, idx) => {
-      const project = projectMap[row.projectId] || {}
-      const subfundName = { 1096: 'БАС', 1098: 'РОБО', 1100: 'МЭ' }[project.subfundId] || 'БАС'
-      const stageName   = { 1102: 'Pre-seed', 1103: 'Посевная', 1104: 'Раунд A', 1105: 'Раунд B', 1106: 'Раунд C' }[project.stageId] || '—'
-      const riskLevel   = { 1117: 'red', 1125: 'green', 1127: 'red' }[row.riskStatusId] || 'green'
+    // Статус проекта → цвет риска (fst/1088: 1115=Новый, 1117=На рассмотрении ИК, 1119=Одобрен, 1125=В работе, 1127=Закрыт)
+    const riskByStatus = { '1119': 'green', '1125': 'green', '1117': 'yellow', '1115': 'yellow', '1127': 'red' }
+    const subfundById  = { '1096': 'БАС', '1098': 'РОБО', '1100': 'МЭ' }
+    const stageById    = { '1102': 'Pre-seed', '1103': 'Посевная', '1104': 'Раунд A', '1105': 'Раунд B', '1106': 'Раунд C' }
 
-      // Дополняем дефолтными значениями для полей, которых нет в БД
-      const defaultCompany = companies.value.find(c => c.name === row.name) || companies.value[idx % companies.value.length] || {}
+    companies.value = portfolioRows.map((row, idx) => {
+      const project   = projectMap[row.projectId] || {}
+      // Субфонд: сначала из портфельной записи, потом из проекта
+      const subfund   = row.subfund || subfundById[String(project.subfundId)] || 'БАС'
+      const stage     = row.stage  || stageById[String(project.stageId)]    || '—'
+      // riskLevel: из JSON метрик (приоритет) → из статуса проекта
+      const riskLevel = row.riskLevel || riskByStatus[String(row.riskStatusId)] || 'green'
+
+      // Базовые KPI из метрик (уже распарсены в getPortfolio())
+      const kpis = [
+        { name: 'Выручка',    actual: row.revenue    || 0,  target: Math.round((row.revenue    || 0) * 1.3), unit: 'млн ₽' },
+        { name: 'TRL',        actual: row.trl        || 0,  target: (row.trl || 0) + 1,                     unit: 'уровень' },
+        { name: 'Сотрудники', actual: row.headcount  || 0,  target: Math.round((row.headcount  || 0) * 1.2), unit: 'чел.' },
+        { name: 'Runway',     actual: row.runway     || 0,  target: 12,                                     unit: 'мес.' },
+      ]
+
+      // Дополняем моковыми данными для полей, которых нет в БД (alerts, sensors, events)
+      const mockBase = companies.value.find(c => c.name === row.name) || companies.value[idx % companies.value.length] || {}
       return {
-        ...defaultCompany,
+        ...mockBase,
         id:       row.id,
         name:     row.name,
-        subfund:  subfundName,
-        stage:    stageName,
-        health:   row.kpi,
+        inn:      row.inn      || mockBase.inn      || '',
+        subfund,
+        stage,
+        health:   row.health   || row.kpi || mockBase.health || 50,
         riskLevel,
-        aiReport: row.aiReport
+        revenue:  row.revenue  || mockBase.revenue  || 0,
+        runway:   row.runway   || mockBase.runway   || 0,
+        trl:      row.trl      || mockBase.trl      || 0,
+        headcount: row.headcount || mockBase.headcount || 0,
+        invested: row.invested || 0,
+        nav:      row.nav      || 0,
+        fstShare: row.fstShare || 0,
+        kpis:     kpis,
+        aiReport: row.aiReport || mockBase.aiReport || null,
+        updatedAt: row.updatedAt || null,
       }
     })
     lastUpdate.value = new Date().toLocaleTimeString('ru-RU')

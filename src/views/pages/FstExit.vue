@@ -281,13 +281,13 @@ function exportExitAnalysis() {
 <style scoped>
 .exit-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .exit-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.exit-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.exit-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
-.exit-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
+.exit-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
+.exit-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.exit-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .exit-btn.primary { background: var(--p-primary-color); color: #fff; }
 
 .exit-company-bar { display: flex; gap: 6px; flex-wrap: wrap; }
-.co-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.83rem; }
+.co-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.875rem; }
 .co-btn.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
 
 .exit-params-card { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 18px; }
