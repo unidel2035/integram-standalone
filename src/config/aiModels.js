@@ -365,6 +365,60 @@ export const AI_MODELS = {
     maxOutputTokens: '4096',
     costPer1kInput: 0.00,
     costPer1kOutput: 0.00
+  },
+
+  // ⚡ FAST & CHEAP MODELS via Polza.ai
+  'polza/qwen-turbo': {
+    id: 'qwen/qwen-turbo',
+    modelId: 'qwen/qwen-turbo',
+    provider: AI_PROVIDERS.POLZA,
+    displayName: '⚡ Qwen Turbo (быстрый)',
+    description: 'Самый быстрый — 1.5с ответ, 131K контекст, самый дешёвый',
+    contextWindow: '131K',
+    maxOutputTokens: '8192',
+    costPer1kInput: 0.009,
+    costPer1kOutput: 0.011,
+    fast: true,
+    recommended: false
+  },
+  'polza/gemini-2.0-flash-lite': {
+    id: 'google/gemini-2.0-flash-lite-001',
+    modelId: 'google/gemini-2.0-flash-lite-001',
+    provider: AI_PROVIDERS.POLZA,
+    displayName: '⚡ Gemini 2.0 Flash Lite',
+    description: 'Google Flash Lite — 3.8с, 1М токен контекст',
+    contextWindow: '1M',
+    maxOutputTokens: '8192',
+    costPer1kInput: 0.022,
+    costPer1kOutput: 0.026,
+    fast: true,
+    recommended: false
+  },
+  'polza/gemini-2.5-flash-lite': {
+    id: 'google/gemini-2.5-flash-lite',
+    modelId: 'google/gemini-2.5-flash-lite',
+    provider: AI_PROVIDERS.POLZA,
+    displayName: '⚡ Gemini 2.5 Flash Lite',
+    description: 'Google Gemini 2.5 Flash Lite — 1.9с, 1М контекст',
+    contextWindow: '1M',
+    maxOutputTokens: '8192',
+    costPer1kInput: 0.029,
+    costPer1kOutput: 0.034,
+    fast: true,
+    recommended: false
+  },
+  'polza/ministral-3b': {
+    id: 'mistralai/ministral-3b-2512',
+    modelId: 'mistralai/ministral-3b-2512',
+    provider: AI_PROVIDERS.POLZA,
+    displayName: '⚡ Ministral 3B (ультралёгкий)',
+    description: 'Самая дешёвая модель Mistral — 131K контекст',
+    contextWindow: '131K',
+    maxOutputTokens: '4096',
+    costPer1kInput: 0.006,
+    costPer1kOutput: 0.009,
+    fast: true,
+    recommended: false
   }
 }
 

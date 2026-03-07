@@ -1,7 +1,7 @@
 // FST Platform — меню навигации
 export const fstMenuConfig = [
   {
-    label: 'Администрирование',
+    label: 'Обучение',
     adminOnly: true,
     items: [
       { label: 'Урок для команды', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide', adminOnly: true },

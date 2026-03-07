@@ -211,8 +211,9 @@
                   </span>
                   <span class="fst-arg-type-badge">{{ argTypeLabel(arg.type) }}</span>
                   <span class="fst-arg-dim">{{ arg.dimension }}</span>
-                  <span v-if="arg.aiGenerated" class="fst-arg-ai-badge" title="Сгенерировано реальным AI">
-                    <i class="pi pi-bolt"></i> AI
+                  <span v-if="arg.aiGenerated" class="fst-arg-ai-badge"
+                    :title="arg.model ? `Модель: ${arg.model}` : 'Сгенерировано реальным AI'">
+                    <i class="pi pi-bolt"></i> {{ arg.model ? arg.model.split('/').pop() : 'AI' }}
                   </span>
                   <span v-else class="fst-arg-tpl-badge" title="Шаблонный аргумент">
                     <i class="pi pi-server"></i>
@@ -563,6 +564,46 @@
             </div>
           </div>
 
+          <!-- ═══ Настройки моделей оркестратора ═══ -->
+          <div v-if="useAI" class="fst-setup-section-title" style="margin-top:20px">
+            <div class="fst-policy-toggle" @click="modelPanelExpanded = !modelPanelExpanded">
+              <i class="pi pi-microchip-ai" style="color:#42a5f5"></i>
+              <span>Модели агентов</span>
+              <span class="fst-policy-summary">{{ activeProfileLabel }}</span>
+              <i :class="modelPanelExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
+            </div>
+          </div>
+          <div v-if="useAI && modelPanelExpanded" class="fst-model-panel">
+            <!-- Профили скорости -->
+            <div class="fst-model-profiles">
+              <div v-for="(profile, key) in SPEED_PROFILES" :key="key"
+                :class="['fst-profile-btn', { 'fst-profile-btn--active': selectedSpeedProfile === key }]"
+                @click="applySpeedProfile(key)">
+                {{ profile.label }}
+              </div>
+            </div>
+            <div class="fst-model-profile-desc">{{ SPEED_PROFILES[selectedSpeedProfile]?.description }}</div>
+
+            <!-- Таблица: агент → модель -->
+            <div class="fst-agent-model-grid">
+              <div v-for="agent in AGENTS" :key="agent.id" class="fst-agent-model-row">
+                <span class="fst-am-avatar" :style="{ color: agent.color }">{{ agent.avatar }}</span>
+                <span class="fst-am-name">{{ agent.shortName }}</span>
+                <select class="fst-am-select"
+                  :value="agentModelOverrides[agent.id] || resolvedModels[agent.id]"
+                  @change="e => setAgentModel(agent.id, e.target.value)">
+                  <option v-for="m in COMMITTEE_MODELS" :key="m.id" :value="m.id">
+                    {{ m.label }} · {{ m.description }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <button class="fst-model-reset-btn" @click="resetModelOverrides">
+              <i class="pi pi-refresh"></i> Сбросить к профилю
+            </button>
+          </div>
+
           <div class="fst-setup-section-title" style="margin-top:20px">
             <div class="fst-policy-toggle" @click="policyExpanded = !policyExpanded">
               <i class="pi pi-sliders-h" style="color:#ffa726"></i>
@@ -615,6 +656,9 @@ import {
   SPEED_MULTIPLIERS,
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
+import {
+  COMMITTEE_MODELS, SPEED_PROFILES, buildModelMap, getModelSummary, resolveModel
+} from '@/components/fst-committee/fstCommitteeModelOrchestrator.js'
 import { saveDecision, createProject, saveCommitteeSession, STATUSES } from '@/services/fstApi'
 import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-committee/fstCommitteeAI.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
@@ -644,6 +688,33 @@ const selectedProjectId = ref(null)
 const selectedSpeed = ref('normal')
 const useAI = ref(true)
 const policyExpanded = ref(false)
+
+// ── Оркестратор моделей ────────────────────────────────────────
+const modelPanelExpanded = ref(false)
+const selectedSpeedProfile = ref('fast')
+const agentModelOverrides = ref({})  // { [agentId]: modelId } — переопределения пользователя
+
+const resolvedModels = computed(() =>
+  buildModelMap(AGENTS.map(a => a.id), selectedSpeedProfile.value, agentModelOverrides.value)
+)
+
+const activeProfileLabel = computed(() => {
+  const summary = getModelSummary(resolvedModels.value)
+  return summary || SPEED_PROFILES[selectedSpeedProfile.value]?.label
+})
+
+function applySpeedProfile(profileKey) {
+  selectedSpeedProfile.value = profileKey
+  agentModelOverrides.value = {}  // сбрасываем ручные override при смене профиля
+}
+
+function setAgentModel(agentId, modelId) {
+  agentModelOverrides.value = { ...agentModelOverrides.value, [agentId]: modelId }
+}
+
+function resetModelOverrides() {
+  agentModelOverrides.value = {}
+}
 const humanComment = ref('')
 const session = ref(null)
 const running = ref(false)
@@ -848,7 +919,13 @@ function startSession() {
   const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
   if (!project) return
 
-  const sess = createSession(project, { speed: selectedSpeed.value, policy: { ...fstPolicy.value }, useAI: useAI.value })
+  const sess = createSession(project, {
+    speed:          selectedSpeed.value,
+    policy:         { ...fstPolicy.value },
+    useAI:          useAI.value,
+    speedProfile:   selectedSpeedProfile.value,
+    modelOverrides: { ...agentModelOverrides.value },
+  })
   session.value = sess
 
   engine = new FstCommitteeEngine(sess, handleEvent)
@@ -2120,4 +2197,85 @@ onUnmounted(() => {
   font-size: 12px;
   color: var(--p-text-color);
 }
+
+/* ── Оркестратор моделей ───────────────────────────────────── */
+.fst-model-panel {
+  padding: 10px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fst-model-profiles {
+  display: flex;
+  gap: 6px;
+}
+.fst-profile-btn {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fst-profile-btn:hover {
+  background: var(--p-surface-hover);
+}
+.fst-profile-btn--active {
+  background: var(--p-primary-color, #42a5f5);
+  color: #fff;
+  border-color: transparent;
+}
+.fst-model-profile-desc {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  padding: 0 2px;
+}
+.fst-agent-model-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.fst-agent-model-row {
+  display: grid;
+  grid-template-columns: 20px 55px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+.fst-am-avatar { font-size: 14px; }
+.fst-am-name {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fst-am-select {
+  font-size: 10px;
+  padding: 3px 5px;
+  border-radius: 5px;
+  border: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  cursor: pointer;
+  width: 100%;
+  min-width: 0;
+}
+.fst-model-reset-btn {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.fst-model-reset-btn:hover { background: var(--p-surface-hover); }
 </style>

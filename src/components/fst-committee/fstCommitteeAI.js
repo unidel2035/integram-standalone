@@ -11,11 +11,12 @@
  */
 
 import { getCurrentUserId } from '@/services/aiTokenService.js'
+import { resolveModel } from './fstCommitteeModelOrchestrator.js'
 
 const API_BASE = ''  // всегда относительный URL → Vite proxy → порт 8082
-const COMMITTEE_MODEL = 'deepseek-chat'       // надёжная модель, поддерживает несколько запросов
-const CONTEXT_ARGS = 6                        // аргументов в контексте
-const TIMEOUT_MS   = 60_000                   // таймаут LLM-вызова (deepseek через polza ~30-50с)
+const COMMITTEE_MODEL = 'polza/qwen/qwen-turbo' // дефолт: самый быстрый (~1.5с)
+const CONTEXT_ARGS = 6                          // аргументов в контексте
+const TIMEOUT_MS   = 30_000                     // таймаут (qwen-turbo быстрый)
 
 // ── KAG: поиск прошлых решений ИК ─────────────────────────────────────────────
 
@@ -381,13 +382,25 @@ function parseAgentResponse(rawText) {
 
 // ── Основная функция генерации ────────────────────────────────────────────────
 
-export async function generateArgumentAI(agent, type, project, prevArgs = [], targetArgId = null, kagContext = '') {
+/**
+ * @param {Object} opts.modelOverrides  — { [agentId]: modelId } пользовательские переопределения
+ * @param {string} opts.speedProfile    — 'fast' | 'balanced' | 'quality'
+ */
+export async function generateArgumentAI(agent, type, project, prevArgs = [], targetArgId = null, kagContext = '', opts = {}) {
   const targetArg = targetArgId ? prevArgs.find(a => a.id === targetArgId) : null
   const systemPrompt = AGENT_SYSTEM_PROMPTS[agent.id]
 
   if (!systemPrompt) return null
 
   const userPrompt = buildUserPrompt(agent, type, project, prevArgs, targetArg, kagContext)
+
+  // Оркестратор выбирает оптимальную модель для агента + задачи
+  const modelId = resolveModel(
+    agent.id,
+    type,
+    opts.speedProfile || 'fast',
+    opts.modelOverrides || {}
+  )
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -405,7 +418,7 @@ export async function generateArgumentAI(agent, type, project, prevArgs = [], ta
       },
       signal:  controller.signal,
       body: JSON.stringify({
-        modelId:      COMMITTEE_MODEL,
+        modelId,
         prompt:       userPrompt,
         systemPrompt: systemPrompt,
         application:  'FstCommittee',
@@ -435,6 +448,7 @@ export async function generateArgumentAI(agent, type, project, prevArgs = [], ta
       confidence:  parsed.confidence,
       stance:      parsed.stance,
       aiGenerated: true,
+      model:       modelId,  // какая модель сгенерировала аргумент
     }
   } catch (err) {
     clearTimeout(timeoutId)
@@ -445,9 +459,9 @@ export async function generateArgumentAI(agent, type, project, prevArgs = [], ta
 
 // ── Параллельная генерация (для PRIMARY_POSITIONS) ────────────────────────────
 
-export async function generateAllOpenings(agents, project) {
+export async function generateAllOpenings(agents, project, opts = {}) {
   return Promise.all(
-    agents.map(agent => generateArgumentAI(agent, 'OPENING', project, [], null))
+    agents.map(agent => generateArgumentAI(agent, 'OPENING', project, [], null, '', opts))
   )
 }
 
