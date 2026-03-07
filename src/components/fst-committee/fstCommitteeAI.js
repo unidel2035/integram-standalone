@@ -12,7 +12,7 @@
 
 import { getDefaultToken, getCurrentUserId } from '@/services/aiTokenService.js'
 
-const API_BASE = import.meta.env.VITE_API_URL || ''
+const API_BASE = ''  // всегда относительный URL → Vite proxy → порт 8082
 const COMMITTEE_MODEL = 'KodaAgent'          // бесплатно через GITHUB_TOKEN
 const CONTEXT_ARGS = 6                        // аргументов в контексте
 const TIMEOUT_MS   = 25_000                   // таймаут LLM-вызова
