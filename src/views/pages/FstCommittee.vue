@@ -88,14 +88,29 @@
               class="fst-policy-slider"
             />
           </div>
-          <Button label="Сброс" icon="pi pi-refresh" size="small" severity="secondary" text
-            @click="resetPolicy" style="margin-top:4px" />
+          <LearnTooltip
+            label="Сброс параметров"
+            what="Возвращает все параметры оценки ФСТ к значениям по умолчанию"
+            when="Когда нужно вернуться к стандартной политике инвестирования фонда"
+            :terms="['Политика фонда', 'Критерии отбора']"
+          >
+            <Button label="Сброс" icon="pi pi-refresh" size="small" severity="secondary" text
+              @click="resetPolicy" style="margin-top:4px" />
+          </LearnTooltip>
         </div>
       </div>
 
       <template #footer>
-        <Button label="Запустить инвесткомитет" icon="pi pi-play" severity="success"
-          :disabled="!selectedProjectId" @click="startSession" />
+        <LearnTooltip
+          label="Запустить инвесткомитет"
+          what="Запускает совещание 6 AI-агентов инвесткомитета по выбранной заявке. Агенты проведут дебаты и придут к решению о финансировании."
+          when="Когда заявка прошла скрининг и готова к комплексной оценке комитетом"
+          :terms="['Инвесткомитет', 'AI-агент', 'Скрининг', 'Due Diligence']"
+          hotkey="Ctrl+Enter"
+        >
+          <Button label="Запустить инвесткомитет" icon="pi pi-play" severity="success"
+            :disabled="!selectedProjectId" @click="startSession" />
+        </LearnTooltip>
       </template>
     </Dialog>
 
@@ -134,7 +149,14 @@
         </div>
       </div>
       <template #footer>
-        <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession" />
+        <LearnTooltip
+          label="Новая сессия"
+          what="Начинает новую сессию инвесткомитета для оценки другого проекта"
+          when="После завершения текущей сессии и просмотра результатов"
+          :terms="['Сессия комитета', 'Инвесткомитет']"
+        >
+          <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession" />
+        </LearnTooltip>
       </template>
     </Dialog>
 
@@ -166,10 +188,34 @@
         </div>
         <div class="fst-toolbar-right">
           <Tag :value="currentPhase.label" :style="{ background: currentPhase.color }" class="fst-phase-tag" />
-          <Button v-if="running" icon="pi pi-pause" size="small" text severity="secondary" @click="pauseSession" />
-          <Button icon="pi pi-sliders-h" label="Настройки" size="small" text severity="secondary"
-            @click="lobbyVisible = true; policyExpanded = true" title="Параметры оценки ФСТ" />
-          <Button icon="pi pi-times" size="small" text severity="secondary" @click="resetSession" />
+          <LearnTooltip
+            v-if="running"
+            label="Пауза"
+            what="Приостанавливает текущую сессию инвесткомитета"
+            when="Когда нужно временно остановить обработку для анализа промежуточных результатов"
+            :terms="['Сессия комитета']"
+          >
+            <Button icon="pi pi-pause" size="small" text severity="secondary" @click="pauseSession" />
+          </LearnTooltip>
+          <LearnTooltip
+            label="Настройки политики"
+            what="Открывает параметры оценки проектов: минимальные требования по суверенности, TRL, MRL и другие критерии отбора"
+            when="Когда нужно настроить критерии инвестирования под специфику субфонда или изменить приоритеты"
+            :terms="['Политика фонда', 'TRL', 'MRL', 'Суверенность']"
+            hotkey="Ctrl+,"
+          >
+            <Button icon="pi pi-sliders-h" label="Настройки" size="small" text severity="secondary"
+              @click="lobbyVisible = true; policyExpanded = true" title="Параметры оценки ФСТ" />
+          </LearnTooltip>
+          <LearnTooltip
+            label="Завершить сессию"
+            what="Закрывает текущую сессию инвесткомитета и возвращается к выбору проекта"
+            when="Когда нужно прервать обработку или начать оценку другого проекта"
+            :terms="['Сессия комитета']"
+            hotkey="Esc"
+          >
+            <Button icon="pi pi-times" size="small" text severity="secondary" @click="resetSession" />
+          </LearnTooltip>
         </div>
       </div>
 
@@ -427,12 +473,33 @@
               <InputText v-model="humanComment" placeholder="Комментарий (опционально)" class="fst-human-comment" size="small" />
             </div>
             <div class="fst-human-buttons">
-              <Button label="Утвердить" icon="pi pi-check" severity="success" size="small"
-                @click="humanDecide('APPROVE')" />
-              <Button label="Отложить" icon="pi pi-clock" severity="warning" size="small"
-                @click="humanDecide('DEFER')" />
-              <Button label="Отклонить" icon="pi pi-times" severity="danger" size="small"
-                @click="humanDecide('REJECT')" />
+              <LearnTooltip
+                label="Утвердить проект"
+                what="Утверждает финансирование проекта согласно рекомендации AI-комитета"
+                when="Когда члены инвесткомитета согласны с положительной рекомендацией AI-агентов"
+                :terms="['Решение комитета', 'Term Sheet', 'Сделка']"
+              >
+                <Button label="Утвердить" icon="pi pi-check" severity="success" size="small"
+                  @click="humanDecide('APPROVE')" />
+              </LearnTooltip>
+              <LearnTooltip
+                label="Отложить решение"
+                what="Откладывает решение по проекту для дополнительной проработки или сбора информации"
+                when="Когда требуется дополнительный due diligence или уточнение условий сделки"
+                :terms="['Due Diligence', 'Условия сделки']"
+              >
+                <Button label="Отложить" icon="pi pi-clock" severity="warning" size="small"
+                  @click="humanDecide('DEFER')" />
+              </LearnTooltip>
+              <LearnTooltip
+                label="Отклонить проект"
+                what="Отклоняет проект, завершая его рассмотрение без финансирования"
+                when="Когда проект не соответствует критериям фонда или выявлены критические риски"
+                :terms="['Критерии отбора', 'Риски проекта']"
+              >
+                <Button label="Отклонить" icon="pi pi-times" severity="danger" size="small"
+                  @click="humanDecide('REJECT')" />
+              </LearnTooltip>
             </div>
           </div>
 
@@ -485,6 +552,7 @@ import {
 import { saveDecision, createProject, saveCommitteeSession, STATUSES } from '@/services/fstApi'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import { useFstData } from '@/composables/useFstData.js'
+import LearnTooltip from '@/components/LearnTooltip.vue'
 
 // ── Load FST Data ─────────────────────────────────────────────────
 

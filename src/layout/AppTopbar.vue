@@ -19,6 +19,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { useNotifications } from '@/composables/notifications'
 import { usePwaInstall } from '@/composables/usePwaInstall'
 import { useWorkspaceAgentStore } from '@/stores/workspaceAgentStore'
+import { useLearnModeStore } from '@/stores/learnModeStore'
 import { useI18n } from 'vue-i18n'
 import { onMounted, onBeforeUnmount, ref, watch, computed, nextTick } from 'vue'
 
@@ -28,6 +29,7 @@ const route = useRoute()
 const { t } = useI18n()
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout()
 const { unreadCount } = useNotifications()
+const learnModeStore = useLearnModeStore()
 // Issue #7230: PWA install prompt
 const { canInstall, isInstalled, promptInstall } = usePwaInstall()
 
@@ -216,6 +218,12 @@ const agentsTooltip = computed(() => {
   return t('agents.running', 'Запущено агентов') + `: ${count}`
 })
 
+const learnModeTooltip = computed(() => {
+  return learnModeStore.isLearningMode
+    ? t('learn.disable', 'Выключить режим обучения')
+    : t('learn.enable', 'Включить режим обучения')
+})
+
 watch(isDarkTheme, updateFavicon)
 
 // Listen for userPhoto updates from Profile.vue
@@ -350,6 +358,17 @@ onBeforeUnmount(() => {
     <div class="layout-topbar-actions">
       <div class="layout-config-menu">
         <LanguageSwitcher />
+
+        <!-- Issue #109: Learning mode toggle -->
+        <button
+          type="button"
+          class="layout-topbar-action"
+          :class="{ 'layout-topbar-action-highlight': learnModeStore.isLearningMode }"
+          @click="learnModeStore.toggleLearningMode"
+          v-tooltip.bottom="learnModeTooltip"
+        >
+          <i class="pi pi-lightbulb"></i>
+        </button>
 
         <!-- Issue #7230: PWA install button — only on /welcome -->
         <button
@@ -603,5 +622,16 @@ onBeforeUnmount(() => {
 
 .pwa-install-btn:hover {
   background: var(--p-primary-50, rgba(99, 102, 241, 0.1));
+}
+
+/* Issue #109: Learning mode button highlight */
+.layout-topbar-action-highlight {
+  background: var(--p-yellow-50, rgba(255, 193, 7, 0.1));
+  color: var(--p-yellow-600, #f59e0b);
+}
+
+:root.dark .layout-topbar-action-highlight {
+  background: rgba(255, 193, 7, 0.15);
+  color: var(--p-yellow-400, #fbbf24);
 }
 </style>
