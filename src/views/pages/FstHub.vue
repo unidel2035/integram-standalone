@@ -27,22 +27,49 @@
         </p>
 
         <div class="fst-hero-actions" data-tour="hero-actions">
-          <button class="fst-btn-primary" @click="go('/fst-apply')">
-            <i class="pi pi-file-plus"></i>
-            Подать заявку
-          </button>
-          <button class="fst-btn-ghost" @click="go('/fst-committee')">
-            <i class="pi pi-play-circle"></i>
-            Запустить инвесткомитет
-          </button>
+          <LearnTooltip
+            label="Подать заявку"
+            what="Переход на форму подачи заявки в ФСТ НТИ для стартапов и компаний"
+            when="Для подачи проекта на рассмотрение фондом"
+            :terms="['Заявка', 'Application', 'Скрининг']"
+            position="bottom"
+          >
+            <button class="fst-btn-primary" @click="go('/fst-apply')">
+              <i class="pi pi-file-plus"></i>
+              Подать заявку
+            </button>
+          </LearnTooltip>
+          <LearnTooltip
+            label="Запустить инвесткомитет"
+            what="Запуск симуляции заседания AI-инвесткомитета из 6 агентов для оценки проекта"
+            when="Для демонстрации процесса оценки заявок или реального анализа проекта"
+            :terms="['Инвесткомитет', 'AI-агенты', 'Дебаты', 'Решение']"
+            hotkey="Ctrl+K"
+            position="bottom"
+          >
+            <button class="fst-btn-ghost" @click="go('/fst-committee')">
+              <i class="pi pi-play-circle"></i>
+              Запустить инвесткомитет
+            </button>
+          </LearnTooltip>
         </div>
 
         <!-- Stats strip -->
         <div class="fst-hero-stats" data-tour="hero-stats">
-          <div v-for="s in heroStats" :key="s.label" class="fst-hero-stat">
-            <div class="fst-hero-stat-val" :class="{ 'fst-skeleton': statsLoading }">{{ s.val }}</div>
-            <div class="fst-hero-stat-label">{{ s.label }}</div>
-          </div>
+          <LearnTooltip
+            v-for="s in heroStats"
+            :key="s.label"
+            :label="s.label"
+            :what="s.tooltip?.what"
+            :when="s.tooltip?.when"
+            :terms="s.tooltip?.terms"
+            position="bottom"
+          >
+            <div class="fst-hero-stat">
+              <div class="fst-hero-stat-val" :class="{ 'fst-skeleton': statsLoading }">{{ s.val }}</div>
+              <div class="fst-hero-stat-label">{{ s.label }}</div>
+            </div>
+          </LearnTooltip>
         </div>
       </div>
 
@@ -67,23 +94,31 @@
     <div class="fst-pipeline-wrap">
       <div class="fst-section-label">Жизненный цикл инвестиции</div>
       <div class="fst-pipeline" data-tour="pipeline">
-        <div
+        <LearnTooltip
           v-for="(step, idx) in pipeline"
           :key="step.id"
-          class="fst-pipe-step"
-          :style="{ '--c': step.color }"
-          @click="go(step.path)"
+          :label="step.name"
+          :what="step.tooltip?.what"
+          :when="step.tooltip?.when"
+          :terms="step.tooltip?.terms"
+          position="top"
         >
-          <div v-if="idx > 0" class="fst-pipe-connector">
-            <svg width="40" height="2" viewBox="0 0 40 2"><line x1="0" y1="1" x2="40" y2="1" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+          <div
+            class="fst-pipe-step"
+            :style="{ '--c': step.color }"
+            @click="go(step.path)"
+          >
+            <div v-if="idx > 0" class="fst-pipe-connector">
+              <svg width="40" height="2" viewBox="0 0 40 2"><line x1="0" y1="1" x2="40" y2="1" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+            </div>
+            <div class="fst-pipe-card">
+              <div class="fst-pipe-num">{{ String(idx + 1).padStart(2, '0') }}</div>
+              <div class="fst-pipe-icon"><i :class="step.icon"></i></div>
+              <div class="fst-pipe-name">{{ step.name }}</div>
+              <div class="fst-pipe-sub">{{ step.sub }}</div>
+            </div>
           </div>
-          <div class="fst-pipe-card">
-            <div class="fst-pipe-num">{{ String(idx + 1).padStart(2, '0') }}</div>
-            <div class="fst-pipe-icon"><i :class="step.icon"></i></div>
-            <div class="fst-pipe-name">{{ step.name }}</div>
-            <div class="fst-pipe-sub">{{ step.sub }}</div>
-          </div>
-        </div>
+        </LearnTooltip>
       </div>
     </div>
 
@@ -196,6 +231,7 @@ import { useRouter } from 'vue-router'
 import { useFstData } from '@/composables/useFstData.js'
 import { useProductTour } from '@/composables/useProductTour'
 import { useOnboardingStore } from '@/stores/onboardingStore'
+import LearnTooltip from '@/components/LearnTooltip.vue'
 
 const router = useRouter()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
@@ -227,20 +263,52 @@ const heroStats = computed(() => {
   if (!stats.value) {
     // Default skeleton/loading state
     return [
-      { val: '...', label: 'Среднее время решения' },
-      { val: '...', label: 'AI-агентов ИК' },
-      { val: '...', label: 'Прозрачность' },
-      { val: '...', label: 'Суверенность' },
+      { val: '...', label: 'Среднее время решения', tooltip: null },
+      { val: '...', label: 'AI-агентов ИК', tooltip: null },
+      { val: '...', label: 'Прозрачность', tooltip: null },
+      { val: '...', label: 'Суверенность', tooltip: null },
     ]
   }
 
   const { aum, portfolioCount, subfundCount, avgIRR } = stats.value
 
   return [
-    { val: '48 ч', label: 'Среднее время решения' },
-    { val: `${portfolioCount}`, label: 'Портфельных компаний' },
-    { val: `${subfundCount}`, label: 'Субфонда' },
-    { val: `${(avgIRR * 100).toFixed(0)}%`, label: 'Средний IRR прогноз' },
+    {
+      val: '48 ч',
+      label: 'Среднее время решения',
+      tooltip: {
+        what: 'Среднее время от подачи заявки до решения инвесткомитета',
+        when: 'Показывает скорость принятия решений по сравнению с традиционными фондами (3-6 месяцев)',
+        terms: ['Инвесткомитет', 'Due Diligence', 'AI-агенты']
+      }
+    },
+    {
+      val: `${portfolioCount}`,
+      label: 'Портфельных компаний',
+      tooltip: {
+        what: 'Количество активных проектов в портфеле фонда',
+        when: 'Для понимания размера и диверсификации портфеля',
+        terms: ['Портфель', 'Диверсификация', 'Портфельные компании']
+      }
+    },
+    {
+      val: `${subfundCount}`,
+      label: 'Субфонда',
+      tooltip: {
+        what: 'Количество специализированных субфондов (БАС, РОБО, МЭ)',
+        when: 'Для выбора правильного субфонда при подаче заявки',
+        terms: ['Субфонд', 'БАС', 'РОБО', 'МЭ']
+      }
+    },
+    {
+      val: `${(avgIRR * 100).toFixed(0)}%`,
+      label: 'Средний IRR прогноз',
+      tooltip: {
+        what: 'IRR (Internal Rate of Return) — годовая доходность инвестиций с учетом времени',
+        when: 'Ключевая метрика эффективности венчурного фонда',
+        terms: ['IRR', 'Доходность', 'ROI', 'Метрики фонда']
+      }
+    },
   ]
 })
 
@@ -261,12 +329,34 @@ const afterSteps = [
 ]
 
 const pipeline = [
-  { id: 1, name: 'Заявка', sub: 'Компания подаёт проект', icon: 'pi pi-file-plus', color: '#38bdf8', path: '/fst-apply' },
-  { id: 2, name: 'Инвесткомитет', sub: '6 AI-агентов дебатируют', icon: 'pi pi-users', color: '#a78bfa', path: '/fst-committee' },
-  { id: 3, name: 'Сделка', sub: 'Term Sheet · SPV · Транши', icon: 'pi pi-file-edit', color: '#fb923c', path: '/fst-deal' },
-  { id: 4, name: 'Исполнение', sub: 'Задачи · KPI · Транши', icon: 'pi pi-list-check', color: '#34d399', path: '/fst-execution' },
-  { id: 5, name: 'Мониторинг', sub: 'Онлайн-риски · Светофор', icon: 'pi pi-chart-scatter', color: '#22d3ee', path: '/fst-portfolio' },
-  { id: 6, name: 'Выход', sub: 'MOIC · IRR · DPI', icon: 'pi pi-flag', color: '#f87171', path: '/fst-fund' },
+  {
+    id: 1, name: 'Заявка', sub: 'Компания подаёт проект', icon: 'pi pi-file-plus', color: '#38bdf8', path: '/fst-apply',
+    tooltip: { what: 'Стартап заполняет структурированную заявку на финансирование', when: 'Первый этап взаимодействия с фондом', terms: ['Application', 'Заявка', 'Intake'] }
+  },
+  {
+    id: 2, name: 'Инвесткомитет', sub: '6 AI-агентов дебатируют', icon: 'pi pi-users', color: '#a78bfa', path: '/fst-committee',
+    tooltip: { what: '6 специализированных AI-агентов проводят многораундовые дебаты и выносят решение', when: 'После первичного скрининга заявки', terms: ['IC', 'AI-агенты', 'Дебаты', 'Due Diligence'] }
+  },
+  {
+    id: 3, name: 'Сделка', sub: 'Term Sheet · SPV · Транши', icon: 'pi pi-file-edit', color: '#fb923c', path: '/fst-deal',
+    tooltip: { what: 'Оформление юридических документов и структуры сделки', when: 'После одобрения проекта инвесткомитетом', terms: ['Term Sheet', 'SPV', 'Транши', 'Legal'] }
+  },
+  {
+    id: 4, name: 'Исполнение', sub: 'Задачи · KPI · Транши', icon: 'pi pi-list-check', color: '#34d399', path: '/fst-execution',
+    tooltip: { what: 'Управление задачами и отслеживание выполнения условий траншей', when: 'После закрытия сделки, в процессе реализации проекта', terms: ['Execution', 'KPI', 'Milestones'] }
+  },
+  {
+    id: 5, name: 'Мониторинг', sub: 'Онлайн-риски · Светофор', icon: 'pi pi-chart-scatter', color: '#22d3ee', path: '/fst-portfolio',
+    tooltip: { what: 'Система мониторинга портфеля в режиме реального времени', when: 'Постоянный процесс отслеживания здоровья портфельных компаний', terms: ['Portfolio monitoring', 'Risk management', 'Dashboard'] }
+  },
+  {
+    id: 6, name: 'Выход', sub: 'MOIC · IRR · DPI', icon: 'pi pi-flag', color: '#f87171', path: '/fst-fund',
+    tooltip: {
+      what: 'Планирование и реализация выхода из инвестиций с расчетом финальной доходности',
+      when: 'На этапе зрелости компании или достижения целевых показателей',
+      terms: ['MOIC (Multiple on Invested Capital)', 'IRR (Internal Rate of Return)', 'DPI (Distribution to Paid-In)', 'Exit']
+    }
+  },
 ]
 
 const modules = [
