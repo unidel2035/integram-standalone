@@ -42,7 +42,7 @@ export async function ensureKvalProxy() {
         token: resp.token,
         xsrfToken: resp._xsrf || resp.xsrf || '',
         userId: resp.id || '',
-        userName: 'd',
+        userName: resp.user || '',
         userRole: 'admin',
         ownedDatabases: []
       }

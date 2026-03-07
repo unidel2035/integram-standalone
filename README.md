@@ -299,8 +299,8 @@ DEEPSEEK_API_KEY=sk-your-deepseek-key-here
 
 # Integram Database (required)
 INTEGRAM_SERVER_URL=ai2o.ru
-INTEGRAM_SYSTEM_USERNAME=d
-INTEGRAM_SYSTEM_PASSWORD=d
+INTEGRAM_SYSTEM_USERNAME=your-integram-login
+INTEGRAM_SYSTEM_PASSWORD=your-integram-password
 
 # Backend
 PORT=3000

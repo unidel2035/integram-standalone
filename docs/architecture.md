@@ -477,7 +477,7 @@ A: Через KAG API (`kag_create_entities`, `kag_add_observations`) либо �
 A: JSON-шаблоны в `src/templates/finmodel/`, рендеринг через `TemplateRenderer.vue`.
 
 **Q: Можно ли запустить локально без Integram?**
-A: Нет, Integram — критичная зависимость. Но можно использовать тестовую БД `ai2o.ru/fst` с логином `d/d`.
+A: Нет, Integram — критичная зависимость. Но можно использовать тестовую БД `ai2o.ru/fst` (кредентиалы через переменные окружения).
 
 ---
 

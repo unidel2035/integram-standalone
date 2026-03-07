@@ -13,7 +13,7 @@
  * Database: Integram fst, TrainingData table (typeId: 1250)
  */
 
-import { integramApiClient } from './integramApiClient'
+import integramApiClient from './integramApiClient'
 import { AGENTS, SCORING_DIMS } from '@/components/fst-committee/FstCommitteeConfig.js'
 
 const DATABASE = 'fst'

@@ -5,7 +5,7 @@
 **VentureOS** — AI-платформа управления венчурным фондом.  
 Покрывает полный цикл: заявка → AI-инвесткомитет → сделка → мониторинг → выход.
 
-**Live demo:** https://dev.drondoc.ru  
+**Live demo:** https://ai2fund.ru
 **Issues / Roadmap:** https://github.com/unidel2035/found/issues
 
 ---
@@ -173,8 +173,8 @@ node scripts/koda-deploy-checker.cjs                      # состояние �
 # Backend (backend/monolith/.env)
 DEEPSEEK_API_KEY=sk-...
 INTEGRAM_SERVER_URL=ai2o.ru
-INTEGRAM_SYSTEM_USERNAME=d
-INTEGRAM_SYSTEM_PASSWORD=d
+INTEGRAM_SYSTEM_USERNAME=your-integram-login
+INTEGRAM_SYSTEM_PASSWORD=your-integram-password
 TELEGRAM_BOT_TOKEN=...
 GITHUB_TOKEN=...         # для Koda (бесплатный AI)
 YANDEX_API_KEY=...

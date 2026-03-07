@@ -1416,7 +1416,7 @@ DronDoc — платформа-конструктор приложений с И
         combined += '\nДля чтения строк: integram_get_object_list(typeId, { limit: 10 })'
         combined += '\nДля поиска: integram_search_objects(typeId, query)'
         combined += '\nДля запросов: integram_smart_query("найди все таблицы с полем Дата")'
-        combined += '\nАутентификация: integram_authenticate({ serverURL: "ai2o.ru", database: "kval", login: "d", password: "d" })'
+        combined += '\nАутентификация: integram_authenticate({ serverURL: "ai2o.ru", database: "kval", login: "...", password: "..." })'
         combined += '\nПосле аутентификации все integram_* операции доступны.'
 
         combined += '\n\n## WORKFLOW: "загугли и вставь в документ"'
@@ -1443,7 +1443,7 @@ DronDoc — платформа-конструктор приложений с И
         // Integram DB context for MCP tools
         combined += `\n\n## INTEGRAM`
         combined += `\nБД по умолчанию: "${_db}" на ai2o.ru`
-        combined += `\nДля поиска/вставки таблиц: integram_authenticate({ serverURL: "ai2o.ru", database: "${_db}", login: "d", password: "d" }) → integram_get_dictionary() → editor_insert_integram_table(...)`
+        combined += `\nДля поиска/вставки таблиц: integram_authenticate({ serverURL: "ai2o.ru", database: "${_db}", login: "...", password: "..." }) → integram_get_dictionary() → editor_insert_integram_table(...)`
 
         // Issue #7057: FinModel context — include when a FinModel block is active
         const _fmCtx = finmodelContext.value || window.__finmodelContext

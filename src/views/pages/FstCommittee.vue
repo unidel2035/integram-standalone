@@ -5,7 +5,8 @@
 
     <!-- ═══ Conclusion Dialog ═══ -->
     <Dialog v-model:visible="conclusionVisible" :header="conclusionHeader" modal
-      :style="{ width: '560px' }">
+      :closable="true" :dismissable-mask="true"
+      :style="{ width: 'min(94vw, 1100px)' }">
       <div v-if="session?.decision" class="fst-conclusion">
         <div class="fst-conclusion-score" :style="{ color: scoreColor(session.decision.aggregatedScore) }">
           {{ session.decision.aggregatedScore }}/100
@@ -31,6 +32,20 @@
             <li v-for="c in session.decision.conditions" :key="c">{{ c }}</li>
           </ul>
         </div>
+        <!-- Цифровой двойник контракта — матрица сценариев -->
+        <div class="fst-conclusion-section fst-scenario-section">
+          <div class="fst-conclusion-label">Сценарии сделки (Цифровой двойник контракта):</div>
+          <ScenarioNodesPanel
+            :decision="session.decision"
+            :project="session.project"
+            :contract-nodes="session.contractNodes || null"
+            :node-proposals="session.nodeProposals || []"
+            :node-votes="session.nodeVotes || []"
+            :negotiating="['NODE_NEGOTIATION','NODE_VOTING'].includes(session.phase)"
+            :approved="(session.contractNodes || []).length > 0"
+          />
+        </div>
+
         <div v-if="session.decision.humanApproval" class="fst-human-result">
           <i class="pi pi-check-circle" style="color:#4caf50"></i>
           Решение комитета утверждено:
@@ -192,11 +207,31 @@
                 @click="debateTab = 'graph'">
                 <i class="pi pi-sitemap"></i> Граф событий
               </button>
+              <button :class="['fst-dtab', { 'fst-dtab--active': debateTab === 'links' }]"
+                @click="debateTab = 'links'">
+                <i class="pi pi-share-alt"></i> Граф связей
+                <span v-if="portfolioOverlaps.length" class="fst-arg-count" style="background:#ef4444">
+                  {{ portfolioOverlaps.length }}
+                </span>
+              </button>
             </div>
+          </div>
+
+          <!-- Portfolio overlap alert -->
+          <div v-if="portfolioOverlaps.length && debateTab !== 'links'" class="fst-overlap-alert">
+            <i class="pi pi-exclamation-triangle" style="color:#ffa726" />
+            <span>Пересечение с портфелем:</span>
+            <span v-for="(o, i) in portfolioOverlaps.slice(0,3)" :key="i" class="fst-overlap-pill">
+              {{ o.companyName }} → {{ o.conceptName }}
+            </span>
+            <button class="fst-overlap-link" @click="debateTab = 'links'">Граф →</button>
           </div>
 
           <!-- Graph Panel -->
           <DebateGraphPanel v-if="debateTab === 'graph'" :session="session" class="fst-graph-panel" />
+
+          <!-- Links Graph Panel -->
+          <LinksGraphViz v-if="debateTab === 'links'" class="fst-graph-panel" />
 
           <div v-show="debateTab === 'timeline'" class="fst-timeline" ref="timelineEl">
             <!-- Loading phase -->
@@ -239,6 +274,17 @@
                   </span>
                   <span v-else class="fst-arg-tpl-badge" title="Шаблонный аргумент">
                     <i class="pi pi-server"></i>
+                  </span>
+                </div>
+                <!-- Reply-to quote -->
+                <div v-if="arg.targetArgId" class="fst-arg-reply">
+                  <span class="fst-arg-reply-arrow">↩</span>
+                  <span class="fst-arg-reply-who"
+                    :style="{ color: agentById(session.arguments.find(a => a.id === arg.targetArgId)?.agentId)?.color }">
+                    {{ agentById(session.arguments.find(a => a.id === arg.targetArgId)?.agentId)?.shortName || '?' }}:
+                  </span>
+                  <span class="fst-arg-reply-text">
+                    {{ (session.arguments.find(a => a.id === arg.targetArgId)?.text || '').slice(0, 90) }}{{ (session.arguments.find(a => a.id === arg.targetArgId)?.text || '').length > 90 ? '…' : '' }}
                   </span>
                 </div>
                 <div class="fst-arg-text">{{ arg.text }}</div>
@@ -441,6 +487,7 @@
 
       <!-- ═══ Project Detail Modal ═══ -->
       <Dialog v-model:visible="projectModalVisible" modal
+        :closable="true" :dismissable-mask="true"
         :style="{ width: '560px', maxWidth: '95vw' }"
         :header="previewProject?.title || ''"
         :pt="{ header: { style: 'border-bottom: 3px solid ' + (SUBFUNDS[previewProject?.subFund]?.color || '#ffa726') } }">
@@ -705,10 +752,12 @@ import {
 import {
   COMMITTEE_MODELS, SPEED_PROFILES, buildModelMap, getModelSummary, resolveModel
 } from '@/components/fst-committee/fstCommitteeModelOrchestrator.js'
-import { saveDecision, createProject, saveCommitteeSession, STATUSES } from '@/services/fstApi'
+import { saveDecision, createProject, saveCommitteeSession, authenticate, STATUSES } from '@/services/fstApi'
 import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-committee/fstCommitteeAI.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
+import ScenarioNodesPanel from '@/components/fst-committee/ScenarioNodesPanel.vue'
+import LinksGraphViz from '@/components/links/LinksGraphViz.vue'
 import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
@@ -776,6 +825,7 @@ const fstPolicy = ref({ ...FST_POLICY_DEFAULTS })
 
 // Debate view tab
 const debateTab = ref('timeline')
+const portfolioOverlaps = ref([])
 
 // KAG save state
 const kagSaving    = ref(false)
@@ -1017,9 +1067,28 @@ function humanDecide(verdict) {
 // ── Event Handler ─────────────────────────────────────────────
 
 function handleEvent(event) {
-  // Force reactivity update
-  if (session.value) {
-    session.value = { ...session.value }
+  // Синхронизируем примитивные поля из engine.session для реактивности
+  if (session.value && engine?.session) {
+    const s = engine.session
+    session.value.phase = s.phase
+    session.value.phaseIndex = s.phaseIndex
+    session.value.decision = s.decision
+    session.value.agentScores = s.agentScores
+    session.value.revisionProgress = s.revisionProgress
+    session.value.revisionStep = s.revisionStep
+    session.value.revisedProject = s.revisedProject
+    session.value.concludedAt = s.concludedAt
+    session.value.nodeProposals = s.nodeProposals
+    session.value.contractNodes = s.contractNodes
+    session.value.nodeVotes = s.nodeVotes
+  }
+
+  if (event.type === 'PortfolioOverlapDetected') {
+    portfolioOverlaps.value = event.overlaps || []
+  }
+
+  if (event.type === 'ContractNodesApproved') {
+    saveContractNodes(session.value)
   }
 
   if (event.type === 'ArgumentRaised') {
@@ -1069,6 +1138,78 @@ async function saveDecisionToFst(sess) {
     })
   } catch (err) {
     console.error('❌ saveDecisionToFst failed:', err)
+  }
+}
+
+async function saveContractNodes(sess) {
+  if (!sess?.contractNodes?.length) return
+  try {
+    const { token, xsrf } = await authenticate()
+    const db = import.meta.env.VITE_FST_DB || 'fst-api'
+    const project = PROJECTS_POOL.value.find(p => p.id === sess.projectId) || {}
+
+    async function post(path, fields) {
+      const body = new URLSearchParams()
+      for (const [k, v] of Object.entries(fields)) {
+        if (v != null && v !== '') body.set(k, String(v))
+      }
+      body.set('_xsrf', xsrf)
+      const r = await fetch(`/${db}/${path}?JSON_KV`, {
+        method: 'POST',
+        headers: { 'X-Authorization': token, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      })
+      return r.json()
+    }
+
+    // Создаём Смарт контракт (3995)
+    const cData = await post('_m_new/3995', {
+      t3995: `Смарт контракт — ${project.title || project.company || sess.projectId}`,
+    })
+    const contractId = cData.obj || cData.id
+    if (!contractId) { console.warn('[saveContractNodes] no contractId'); return }
+
+    // Создаём ноды (3996) под контрактом
+    for (const node of sess.contractNodes) {
+      const cf = node.cashflows || []
+      const nData = await post('_m_new/3996', {
+        t3996:  node.label || node.scenario,
+        t4008:  node.scenario,
+        t4010:  node.ic,
+        t4012:  node.wacc,
+        t4014:  node.n || cf.length,
+        t4016:  cf[0] ?? 0,
+        t4018:  cf[1] ?? 0,
+        t4020:  cf[2] ?? 0,
+        t4022:  cf[3] ?? 0,
+        t4024:  cf[4] ?? 0,
+        t4026:  node.npv ?? 0,
+        t4028:  node.irr != null ? +(node.irr * 100).toFixed(1) : 0,
+        t4030:  node.roi ?? 0,
+        t4032:  node.dpp ?? 0,
+        t4034:  node.pi ?? 0,
+        t4036:  node.probability ?? 33,
+        t4038:  'approved',
+        up: contractId,
+      })
+      const nodeId = nData.obj || nData.id
+      if (!nodeId) continue
+
+      // Требования из условий decision (3999)
+      const conditions = sess.decision?.conditions || []
+      for (const cond of conditions) {
+        await post('_m_new/3999', {
+          t3999: typeof cond === 'string' ? cond : cond.text || String(cond),
+          t4044: 'MEDIUM',
+          t4046: 'PROPOSED',
+          up: nodeId,
+        })
+      }
+    }
+
+    console.log('✅ Ноды контракта сохранены в БД. Contract ID:', contractId)
+  } catch (err) {
+    console.error('❌ saveContractNodes failed:', err)
   }
 }
 
@@ -1464,6 +1605,32 @@ onUnmounted(() => {
 .metric--warn { background: rgba(255,167,38,0.15); color: #ffa726; }
 .metric--bad  { background: rgba(239,83,80,0.15);  color: #ef5350; }
 
+.fst-overlap-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 12px;
+  background: rgba(255,167,38,0.08);
+  border-bottom: 1px solid rgba(255,167,38,0.25);
+  font-size: 0.78rem;
+}
+.fst-overlap-pill {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.73rem;
+}
+.fst-overlap-link {
+  background: none;
+  border: none;
+  color: #42a5f5;
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 0 4px;
+  text-decoration: underline;
+}
 .fst-speed-row {
   display: flex;
   gap: 8px;
@@ -1870,6 +2037,30 @@ onUnmounted(() => {
   color: var(--p-text-muted-color);
   margin-left: auto;
 }
+.fst-arg-reply {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 10px;
+  background: var(--p-surface-ground);
+  border-left: 2px solid var(--p-surface-border);
+  border-radius: 0 4px 4px 0;
+  padding: 4px 8px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.fst-arg-reply-arrow {
+  color: var(--p-text-muted-color);
+  flex-shrink: 0;
+}
+.fst-arg-reply-who {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.fst-arg-reply-text {
+  color: var(--p-text-muted-color);
+  font-style: italic;
+}
 .fst-arg-text {
   font-size: 12px;
   line-height: 1.6;
@@ -2156,6 +2347,7 @@ onUnmounted(() => {
   padding-left: 16px;
 }
 .fst-conditions-list li { margin-bottom: 4px; }
+.fst-scenario-section { margin-top: 16px; }
 .fst-human-result {
   display: flex;
   align-items: center;

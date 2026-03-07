@@ -32,8 +32,8 @@ npm install
 ```env
 # Integram (база данных)
 INTEGRAM_SERVER_URL=https://ai2o.ru
-INTEGRAM_SYSTEM_USERNAME=d
-INTEGRAM_SYSTEM_PASSWORD=d
+INTEGRAM_SYSTEM_USERNAME=your-integram-login
+INTEGRAM_SYSTEM_PASSWORD=your-integram-password
 
 # API Server
 FST_API_PORT=3100

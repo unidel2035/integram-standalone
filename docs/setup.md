@@ -129,8 +129,8 @@ DEEPSEEK_API_KEY=sk-your-deepseek-key-here
 
 # Integram Database (обязательно)
 INTEGRAM_SERVER_URL=ai2o.ru
-INTEGRAM_SYSTEM_USERNAME=d
-INTEGRAM_SYSTEM_PASSWORD=d
+INTEGRAM_SYSTEM_USERNAME=your-integram-login
+INTEGRAM_SYSTEM_PASSWORD=your-integram-password
 
 # Backend
 PORT=3000
@@ -179,7 +179,7 @@ KAG_SERVER_URL=http://localhost:8000
 4. Скопировать в `.env` → `ANTHROPIC_API_KEY`
 
 **Integram:**
-- Тестовая БД: `ai2o.ru/fst` с логином `d/d` (уже в `.env.example`)
+- Тестовая БД: `ai2o.ru/fst` (логин/пароль задаются в `.env` через `INTEGRAM_SYSTEM_USERNAME` / `INTEGRAM_SYSTEM_PASSWORD`)
 - Для production: запросить кредентиалы у администратора
 
 **Telegram Bot:**

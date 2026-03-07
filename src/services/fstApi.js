@@ -60,8 +60,8 @@ let _xsrf = null
 export async function authenticate() {
   if (_token) return { token: _token, xsrf: _xsrf }
 
-  const login = import.meta.env.VITE_FST_LOGIN || 'd'
-  const password = import.meta.env.VITE_FST_PASSWORD || 'd'
+  const login = import.meta.env.VITE_FST_LOGIN || import.meta.env.VITE_INTEGRAM_LOGIN || ''
+  const password = import.meta.env.VITE_FST_PASSWORD || import.meta.env.VITE_INTEGRAM_PASSWORD || ''
 
   const res = await fetch(`${FST_SERVER}/${FST_DB}/auth?JSON_KV`, {
     method: 'POST',

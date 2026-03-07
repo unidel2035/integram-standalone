@@ -46,6 +46,7 @@ const routes = [
       { path: 'fst-glossary', component: () => import('@/views/pages/FstGlossary.vue'), meta: { title: 'Глоссарий венчурных терминов' } },
       { path: 'fst-quiz', component: () => import('@/views/pages/FstQuizDemo.vue'), meta: { title: 'Мини-квизы — закрепление знаний' } },
       { path: 'fst-dev-guide', component: () => import('@/views/pages/FstDevGuide.vue'), meta: { title: 'Путь обучения VentureOS' } },
+      { path: 'fst-school', component: () => import('@/views/pages/FstAgentSchool.vue'), meta: { title: 'Школа агентов ИК' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },

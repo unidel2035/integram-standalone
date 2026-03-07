@@ -105,11 +105,13 @@ class IntegramSessionManager {
    *
    * @param {string} database - Имя базы данных (по умолчанию 'my')
    * @param {string} serverURL - URL сервера (по умолчанию https://ai2o.ru)
-   * @param {string} login - Логин (по умолчанию 'd')
-   * @param {string} password - Пароль (по умолчанию 'd')
+   * @param {string} login - Логин
+   * @param {string} password - Пароль
    * @returns {Promise<Object>} Результат авторизации
    */
-  async authenticateOnce(database = 'my', serverURL = null, login = 'd', password = 'd') {
+  async authenticateOnce(database = 'my', serverURL = null, login = null, password = null) {
+    if (!login) login = (typeof import.meta !== 'undefined' ? import.meta.env?.VITE_INTEGRAM_LOGIN : '') || ''
+    if (!password) password = (typeof import.meta !== 'undefined' ? import.meta.env?.VITE_INTEGRAM_PASSWORD : '') || ''
     // Use config if serverURL not provided
     if (!serverURL) {
       serverURL = getIntegramApiBaseUrl();

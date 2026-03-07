@@ -27,8 +27,8 @@ const KVAL_SERVER = 'https://ai2o.ru'
 const FST_SERVER  = 'https://ai2o.ru'
 const KVAL_DB     = 'kval'
 const FST_DB      = 'fst'
-const LOGIN       = 'd'
-const PASSWORD    = 'd'
+const LOGIN       = process.env.INTEGRAM_SYSTEM_USERNAME || ''
+const PASSWORD    = process.env.INTEGRAM_SYSTEM_PASSWORD || ''
 
 // FST DB concrete typeIds (resolved from edit_types)
 const FST_TYPES = {

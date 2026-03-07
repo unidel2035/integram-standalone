@@ -20,11 +20,14 @@ export const PHASES = {
   RECOMMENDATIONS:  { id: 'RECOMMENDATIONS',  label: 'Рекомендации',        icon: 'pi pi-list-check',     color: '#ab47bc' },
   REVISION:         { id: 'REVISION',         label: 'Доработка проекта',   icon: 'pi pi-cog',            color: '#26a69a' },
   READY_NEXT:       { id: 'READY_NEXT',       label: 'Готов к след. раунду',icon: 'pi pi-forward',        color: '#42a5f5' },
+  NODE_NEGOTIATION: { id: 'NODE_NEGOTIATION', label: 'Согласование нод',    icon: 'pi pi-sitemap',        color: '#ab47bc' },
+  NODE_VOTING:      { id: 'NODE_VOTING',      label: 'Голосование по нодам',icon: 'pi pi-check-square',   color: '#26a69a' },
 }
 
 export const PHASE_ORDER = [
   'IDLE', 'LOADING', 'PRIMARY_POSITIONS', 'CROSS_DEBATE',
-  'FINAL_POSITIONS', 'VOTING', 'SYNTHESIS', 'HUMAN_APPROVAL', 'CONCLUDED',
+  'FINAL_POSITIONS', 'VOTING', 'SYNTHESIS', 'HUMAN_APPROVAL',
+  'NODE_NEGOTIATION', 'NODE_VOTING', 'CONCLUDED',
 ]
 
 // Phases shown in progress bar for each round
@@ -150,18 +153,147 @@ export const AGENTS = [
       'Анализирую конкурентный ландшафт критически...',
     ],
   },
+
+  // ── Новые агенты: нетривиальные венчурные фреймворки ─────────
+
+  {
+    id: 'monte_carlo',
+    name: 'Квантовый риск-аналитик',
+    shortName: 'MC',
+    role: 'QUANTITATIVE_RISK_ANALYST',
+    avatar: '🎲',
+    color: '#26c6da',
+    bias: 'neutral',
+    weight: 0.10,
+    focus: ['probabilityDistribution', 'valueAtRisk', 'scenarioSimulation'],
+    description: 'Применяет Монте-Карло: P(NPV>0), VaR 95%, распределение MOIC через 1000+ симуляций',
+    scoringWeights: { trl: 0.10, mrl: 0.08, sovereignty: 0.07, market: 0.20, finance: 0.35, risk: 0.15, team: 0.05 },
+    thinkingPhrases: [
+      'Запускаю 1000 симуляций Монте-Карло...',
+      'Строю распределение вероятностей NPV...',
+      'Вычисляю Value at Risk (VaR 95%)...',
+      'Анализирую хвостовые риски...',
+    ],
+  },
+  {
+    id: 'real_options',
+    name: 'Аналитик реальных опционов',
+    shortName: 'ROV',
+    role: 'REAL_OPTIONS_ANALYST',
+    avatar: '⚡',
+    color: '#ab47bc',
+    bias: 'optimist',
+    weight: 0.09,
+    focus: ['optionValue', 'stageGate', 'flexibility', 'exitOptions'],
+    description: 'Каждый транш — реальный опцион. Black-Scholes + биномиальное дерево для оценки гибкости инвестиции',
+    scoringWeights: { trl: 0.15, mrl: 0.12, sovereignty: 0.08, market: 0.22, finance: 0.25, risk: 0.12, team: 0.06 },
+    thinkingPhrases: [
+      'Оцениваю транши как реальные опционы...',
+      'Строю биномиальное дерево решений...',
+      'Рассчитываю опционную премию за гибкость...',
+      'Анализирую ценность отказа от инвестиции...',
+    ],
+  },
+  {
+    id: 'market_timing',
+    name: 'Аналитик рыночного цикла',
+    shortName: 'Timing',
+    role: 'MARKET_TIMING_ANALYST',
+    avatar: '🕰️',
+    color: '#ff7043',
+    bias: 'neutral',
+    weight: 0.09,
+    focus: ['marketCycle', 'whyNow', 'competitiveWindow', 'howardMarks'],
+    description: 'Теория циклов Говарда Маркса. "Почему именно сейчас?" Оценивает зрелость рынка и конкурентное окно',
+    scoringWeights: { trl: 0.05, mrl: 0.05, sovereignty: 0.10, market: 0.45, finance: 0.15, risk: 0.15, team: 0.05 },
+    thinkingPhrases: [
+      'Анализирую позицию рынка в цикле...',
+      'Оцениваю "Почему именно сейчас?"...',
+      'Изучаю конкурентное окно возможностей...',
+      'Проверяю зрелость рынка по Говарду Марксу...',
+    ],
+  },
+  {
+    id: 'bayesian',
+    name: 'Байесовский аналитик',
+    shortName: 'Байес',
+    role: 'BAYESIAN_ANALYST',
+    avatar: '🧮',
+    color: '#78909c',
+    bias: 'neutral',
+    weight: 0.09,
+    focus: ['priorProbability', 'bayesianUpdate', 'referenceClass', 'baseRate'],
+    description: 'Теорема Байеса: априорные вероятности из базовых ставок + обновление по доказательствам. Reference class против planning fallacy',
+    scoringWeights: { trl: 0.12, mrl: 0.10, sovereignty: 0.10, market: 0.18, finance: 0.20, risk: 0.20, team: 0.10 },
+    thinkingPhrases: [
+      'Выбираю референсный класс...',
+      'Вычисляю априорную вероятность успеха...',
+      'Обновляю оценку по теореме Байеса...',
+      'Проверяю против planning fallacy...',
+    ],
+  },
+  {
+    id: 'power_score',
+    name: 'Аналитик стратегического моата',
+    shortName: '7P',
+    role: 'MOAT_ANALYST',
+    avatar: '🏰',
+    color: '#ffd54f',
+    bias: 'optimist',
+    weight: 0.09,
+    focus: ['sevenPowers', 'powerLaw', 'unicornPotential', 'competitiveMoat'],
+    description: '7 Powers (Hamilton Helmer): Scale, Network, Counter-Position, Switching, Branding, Cornered Resource, Process. Power Law: может дать 50x?',
+    scoringWeights: { trl: 0.05, mrl: 0.05, sovereignty: 0.15, market: 0.30, finance: 0.10, risk: 0.10, team: 0.25 },
+    thinkingPhrases: [
+      'Оцениваю 7 источников конкурентного моата...',
+      'Проверяю потенциал Power Law (50x?)...',
+      'Анализирую сетевые эффекты и switching costs...',
+      'Оцениваю вероятность стать единорогом...',
+    ],
+  },
+
+  // ── Теория игр: мета-агент ─────────────────────────────────────
+  {
+    id: 'game_theory',
+    name: 'Теоретик игр',
+    shortName: 'ТИ',
+    role: 'GAME_THEORY_ANALYST',
+    avatar: '♟️',
+    color: '#4db6ac',
+    bias: 'neutral',
+    weight: 0.08,
+    focus: ['nashEquilibrium', 'shapleyValue', 'mechanism', 'repeatedGame', 'titForTat'],
+    description: 'Nash Equilibrium, Shapley Value, Tit-for-Tat в повторяющихся раундах. Мета-агент: оценивает ПРОЦЕСС ИК, а не проект напрямую. Адаптирует веса агентов после каждого раунда.',
+    scoringWeights: { trl: 0.08, mrl: 0.08, sovereignty: 0.12, market: 0.15, finance: 0.20, risk: 0.22, team: 0.15 },
+    thinkingPhrases: [
+      'Анализирую Nash Equilibrium позиций агентов...',
+      'Вычисляю Shapley Value каждого агента...',
+      'Моделирую повторяющуюся игру раундов...',
+      'Выявляю оптимальные коалиции...',
+    ],
+    gameTheory: {
+      nashType: 'cooperative',
+      shapleyPriority: 'critical',
+      nashStrategy: 'Я мета-агент. Вычисляю Nash Equilibrium и Shapley Value. Tit-for-Tat: агенты с точными прогнозами получают больший вес в следующем раунде.',
+      utilityFunction: 'U = Nash_stability(positions) + Shapley_fairness(weights) - groupthink_penalty',
+    },
+  },
 ]
 
 // ── Scoring Dimensions ────────────────────────────────────────
 
 export const SCORING_DIMS = {
-  trl:         { label: 'TRL',          weight: 0.12, unit: '1-9',  color: '#42a5f5', description: 'Уровень технологической готовности' },
-  mrl:         { label: 'MRL',          weight: 0.10, unit: '1-10', color: '#26c6da', description: 'Уровень производственной готовности' },
-  sovereignty: { label: 'Суверенность', weight: 0.20, unit: '0-9',  color: '#ffa726', description: 'Степень технологического суверенитета' },
-  market:      { label: 'Рынок',        weight: 0.12, unit: 'млрд', color: '#66bb6a', description: 'Размер и доступность целевого рынка' },
-  finance:     { label: 'Финансы',      weight: 0.18, unit: 'IRR%', color: '#7e57c2', description: 'Финансовая привлекательность (IRR/NPV)' },
-  risk:        { label: 'Риски',        weight: 0.15, unit: '0-10', color: '#ef5350', description: 'Комплексная оценка рисков (инверс.)' },
-  team:        { label: 'Команда',      weight: 0.13, unit: '0-10', color: '#ffd54f', description: 'Качество команды и трек-рекорд' },
+  trl:         { label: 'TRL',           weight: 0.10, unit: '1-9',  color: '#42a5f5', description: 'Уровень технологической готовности (NASA)' },
+  mrl:         { label: 'MRL',           weight: 0.08, unit: '1-10', color: '#26c6da', description: 'Уровень производственной готовности' },
+  sovereignty: { label: 'Суверенность',  weight: 0.15, unit: '0-9',  color: '#ffa726', description: 'Степень технологического суверенитета' },
+  market:      { label: 'Рынок',         weight: 0.10, unit: 'млрд', color: '#66bb6a', description: 'Размер и доступность целевого рынка' },
+  finance:     { label: 'Финансы',       weight: 0.15, unit: 'IRR%', color: '#7e57c2', description: 'Финансовая привлекательность (IRR/NPV/MOIC)' },
+  risk:        { label: 'Риски',         weight: 0.12, unit: '0-10', color: '#ef5350', description: 'Комплексная оценка рисков (инверс.)' },
+  team:        { label: 'Команда',       weight: 0.10, unit: '0-10', color: '#ffd54f', description: 'Качество команды и трек-рекорд основателей' },
+  moat:        { label: 'Моат (7P)',     weight: 0.10, unit: '0-70', color: '#ab47bc', description: '7 Powers: Scale, Network, Counter, Switching, Brand, Cornered, Process' },
+  timing:      { label: 'Тайминг',      weight: 0.08, unit: '0-10', color: '#ff7043', description: 'Зрелость рынка и своевременность — "Почему сейчас?"' },
+  powerlaw:    { label: 'Power Law',     weight: 0.07, unit: '0-10', color: '#26c6da', description: 'Потенциал стать единорогом (50x MOIC за 7 лет)' },
+  bayesian_p:  { label: 'P(успех)%',    weight: 0.05, unit: '%',    color: '#78909c', description: 'Байесовская апостериорная вероятность положительного выхода' },
 }
 
 // ── SubFunds ──────────────────────────────────────────────────
@@ -555,6 +687,103 @@ export const ARGUMENT_TEMPLATES = {
     ],
     SUMMARY: [
       (p) => `Резюме скептика: ${p.trl >= 6 && p.sovereigntyScore >= 6 && p.projectedIRR >= 0.28 ? 'несмотря на мои вопросы, метрики проекта выдерживают критику. Условно поддержу при наличии KPI.' : 'слишком много красных флагов. Рекомендую отклонить или существенно переработать.'}`,
+    ],
+  },
+
+  monte_carlo: {
+    OPENING: [
+      (p) => `Монте-Карло по «${p.title}» (N=1000 симуляций, σ_CF=30%): P(NPV>0) ≈ ${p.projectedIRR >= 0.35 ? 68 : p.projectedIRR >= 0.25 ? 52 : 35}%. Медианный MOIC = ${(1 + p.projectedIRR * 3.2).toFixed(1)}x. VaR(95%) = ${(((p.askRub || 100e6) / 1e6) * 0.72).toFixed(0)} млн руб.`,
+      (p) => `Стохастический профиль «${p.company}»: 5-й перцентиль MOIC = ${(Math.max(0.05, 1 + p.projectedIRR * 0.3)).toFixed(2)}x (потеря), 95-й = ${(1 + p.projectedIRR * 7).toFixed(1)}x. Распределение ${p.projectedIRR >= 0.30 ? 'скошено вправо — признак венчурного профиля' : 'симметричное — недостаточный апсайд'}.`,
+    ],
+    CHALLENGE: [
+      (p) => `Стресс-тест −40% CF: IRR падает до ${Math.max(3, Math.round(p.projectedIRR * 100 * 0.5))}%, NPV уходит в минус. P(полной потери) ≈ ${p.trl < 5 ? 38 : 20}%. Нет достаточного буфера безопасности.`,
+    ],
+    COUNTER: [
+      (p) => `E[MOIC] = ${(1 + p.projectedIRR * 4.1).toFixed(1)}x по всему распределению — положительное матожидание. На уровне портфеля закон больших чисел работает в нашу пользу.`,
+    ],
+    SUMMARY: [
+      (p) => `Вероятностная финальная оценка: P(успех) = ${p.projectedIRR >= 0.35 && p.trl >= 6 ? 62 : 41}%, E[MOIC] = ${(1 + p.projectedIRR * 3.5).toFixed(1)}x, Kelly-доля = ${Math.min(25, Math.round(p.projectedIRR * 100 * 0.6))}% от венчурного кармана. ${p.projectedIRR >= 0.28 ? 'Рекомендую.' : 'На грани — нужны улучшения.'}`,
+    ],
+  },
+
+  real_options: {
+    OPENING: [
+      (p) => `Реальные опционы «${p.title}»: Транш A — колл-опцион на Транш B при TRL=${p.trl + 1}. Опционная стоимость ROV = DCF + Flexibility Premium. При σ_рынка=45% (типично для БПЛА) premium значительная — не учитывать её в оценке ошибочно.`,
+      (p) => `ROV-анализ «${p.company}»: (1) Опцион масштабирования в смежные рынки, (2) Опцион продажи стратегу, (3) Опцион отказа при провале вех. Совокупная гибкость добавляет 15-25% к чистому DCF. Традиционный NPV занижает ценность.`,
+    ],
+    CHALLENGE: [
+      (p) => `Структура траншей неоптимальна: первый транш слишком большой — снижает опциональность. Нужен маленький Транш A с жёсткими KPI-триггерами (TRL, ARR, LOI). Это снизит risk exposure и сохранит апсайд.`,
+    ],
+    COUNTER: [
+      (p) => `Высокая волатильность рынка БПЛА — это аргумент ЗА инвестицию. В теории реальных опционов σ↑ → стоимость опциона↑. Неопределённость — наш союзник, не враг.`,
+    ],
+    SUMMARY: [
+      (p) => `ROV итог: DCF = стандартный NPV, плюс Flexibility Premium ≈ ${(((p.askRub || 100e6) / 1e6) * 0.18).toFixed(0)} млн руб. Рекомендую стейдж-гейт: 3 транша по вехам. Это максимизирует опционную ценность для фонда.`,
+    ],
+  },
+
+  market_timing: {
+    OPENING: [
+      (p) => `"Почему именно сейчас?" — «${p.title}». По шкале Маркса: рынок БПЛА РФ в фазе ${p.marketSize >= 50e9 ? '4/10 — ранний рост, оптимально' : p.marketSize >= 20e9 ? '3/10 — формирование, приемлемо' : '2/10 — зарождение, риск преждевременности'}. Три катализатора сошлись: Постановление 1726, нацпроект БАС, санкции на импорт.`,
+      (p) => `Конкурентное окно для «${p.company}»: 18-24 месяца до появления сильного конкурента. ${p.trl >= 7 ? 'TRL 7+ даёт техническое преимущество первопроходца.' : 'TRL ' + p.trl + ' — конкурент с ресурсами может догнать быстро.'}`,
+    ],
+    CHALLENGE: [
+      (p) => `Тайминг под вопросом: ${p.marketSize < 10e9 ? 'рынок слишком мал — может не дорасти до нужного масштаба за 7 лет' : 'рынок уже привлекает крупных игроков — окно закрывается'}. Конкурентная динамика недооценена в заявке.`,
+    ],
+    COUNTER: [
+      (p) => `Позиция "подождать" = потерять окно. Паттерн аналогичен GPS-навигации (2004) и LiDAR (2016) — первые инвесторы получили 20-50x, остальные — нормальную доходность. Действуем сейчас.`,
+    ],
+    SUMMARY: [
+      (p) => `Тайминг: ${p.marketSize >= 20e9 ? 'БЛАГОПРИЯТНЫЙ — ранний рост, до консолидации рынка' : 'НЕЙТРАЛЬНЫЙ — рынок формируется'}. "Почему сейчас?" — три катализатора + отсутствие доминанта. Поддерживаю.`,
+    ],
+  },
+
+  bayesian: {
+    OPENING: [
+      (p) => `Байесовский анализ «${p.title}». Базовая ставка: ${p.trl >= 7 ? 22 : p.trl >= 5 ? 12 : 5}% стартапов TRL=${p.trl} в авиатехе дают положительный выход. Апдейт: команда с трек-рекордом +8%, господдержка +5%, рынок>${(p.marketSize / 1e9).toFixed(0)}млрд +4%. Апостериорное P(успех) = ${p.trl >= 7 ? 39 : p.trl >= 5 ? 29 : 18}%.`,
+      (p) => `Reference class forecasting: из 100 схожих проектов в РФ (2018-2024) — 12 достигли Series B, 5 прибыльны, 2 выход. Базовая ставка = 2%. Корректирую: TRL ${p.trl} → ×${p.trl >= 6 ? 3 : 1.5}, рынок ${(p.marketSize/1e9).toFixed(0)}млрд → ×${p.marketSize >= 20e9 ? 2 : 1}. Апостериорная P ≈ ${Math.min(45, Math.round(2 * (p.trl >= 6 ? 3 : 1.5) * (p.marketSize >= 20e9 ? 2 : 1)))}%.`,
+    ],
+    CHALLENGE: [
+      (p) => `Planning fallacy! Команда прогнозирует IRR ${(p.projectedIRR*100).toFixed(0)}%, но 82% фаундеров переоценивают выручку в 2-3x. Байесовский прогноз: скорректированный IRR = ${Math.max(8, Math.round(p.projectedIRR*100*0.55))}-${Math.round(p.projectedIRR*100*0.80)}%. Нужна внешняя валидация модели.`,
+    ],
+    COUNTER: [
+      (p) => `Принимаю аргумент, обновляю: новый сигнал (LOI, патент, гос.контракт) сдвигает P(успех) +7%. Апостериорная теперь ${p.trl >= 6 ? 46 : 35}%. Байесовское обновление в пользу проекта.`,
+    ],
+    SUMMARY: [
+      (p) => `Финальная байесовская оценка: P(положительный выход) = ${p.projectedIRR >= 0.35 && p.trl >= 6 ? 41 : 24}%. EMV = ${(((p.projectedIRR >= 0.35 && p.trl >= 6 ? 0.41 : 0.24) * (p.askRub || 100e6) * 3.5 - (1 - (p.projectedIRR >= 0.35 && p.trl >= 6 ? 0.41 : 0.24)) * (p.askRub || 100e6)) / 1e6).toFixed(0)} млн руб. ${(p.projectedIRR >= 0.35 && p.trl >= 6 ? 0.41 : 0.24) >= 0.3 ? 'Рекомендую.' : 'Пограничный случай.'}`,
+    ],
+  },
+
+  power_score: {
+    OPENING: [
+      (p) => `7 Powers скоринг «${p.title}»: Scale ${p.marketSize >= 30e9 ? '8' : '4'}/10, Network ${p.market?.includes('platform') ? '7' : '3'}/10, Counter-Position ${p.trl >= 7 ? '6' : '3'}/10, Switching ${p.industry?.includes('b2g') || p.industry?.includes('gov') ? '8' : '5'}/10, Cornered Resource ${(p.patentsCount || 0) > 3 ? '7' : '4'}/10. Итоговый Power Score: ${p.sovereigntyScore >= 7 && p.trl >= 6 ? '48/70 — сильный моат' : '31/70 — умеренная защита'}.`,
+      (p) => `Power Law тест «${p.company}»: TAM ${(p.marketSize/1e9).toFixed(0)}млрд / инвестиция ${((p.askRub || 100e6)/1e6).toFixed(0)}млн = потенциал ${Math.round(p.marketSize * 0.08 / (p.askRub || 100e6))}x при захвате 8% рынка. ${p.marketSize >= 50e9 ? '✓ Есть потенциал единорога — включаем в Power Law портфель' : '△ Апсайд ограничен — нужны синергии для 50x'}.`,
+    ],
+    CHALLENGE: [
+      (p) => `Критический вопрос по Counter-Positioning (7P #3): что мешает "Ростеху" скопировать продукт за 12 месяцев при неограниченном финансировании? Без этого барьера — первопроходческое преимущество временное.`,
+    ],
+    COUNTER: [
+      (p) => `Cornered Resource (7P #6) здесь ключевой: ${p.employees || 20} специалистов с редкими компетенциями + патентный портфель. Это реальный барьер, сложно воспроизводимый за деньги.`,
+    ],
+    SUMMARY: [
+      (p) => `7 Powers итог: ${p.sovereigntyScore >= 7 && p.trl >= 7 ? '54/70 — сильная стратегическая позиция' : p.sovereigntyScore >= 5 && p.trl >= 5 ? '37/70 — умеренная защита' : '22/70 — слабый моат, риск'}. Power Law потенциал: ${p.marketSize >= 50e9 ? '✓ присутствует' : '△ ограничен'}. ${p.sovereigntyScore >= 6 && p.trl >= 5 ? 'Рекомендую инвестицию.' : 'Требую усиления IP-стратегии.'}`,
+    ],
+  },
+
+  game_theory: {
+    OPENING: [
+      (p) => `Теоретико-игровой анализ «${p.title}». Nash-структура сделки: Фонд vs Стартап — некооперативная игра с неполной информацией. Shapley Value раздела ценности: фонд ≈ 30%, основатели ≈ 55%, рынок ≈ 15%. Stage-gate — механизм правдивых стимулов (Revelation Principle): каждый транш = ступень повторяющейся игры.`,
+      (p) => `Игровой профиль «${p.company}»: TRL ${p.trl} → инвестор имеет информационное преимущество (рыночные benchmarks). Стартап имеет преимущество (технические детали). Асимметрия → сигнализирование. IRR ${(p.projectedIRR*100).toFixed(0)}% — это сигнал уверенности команды или hubris?`,
+    ],
+    CHALLENGE: [
+      (p) => `Текущая позиция агентов ИК НЕ является Nash Equilibrium: финансовый и риск-агенты изолированы от большинства. Неустойчивое голосование → прошу дополнительный раунд дебатов. Folk Theorem: в повторяющейся игре кооперация возможна только через правила, а не принуждение.`,
+      (p) => `Проблема стимулов в milestone-структуре: если KPI слишком лёгкие → стартап не раскрывает проблемы. Если слишком жёсткие → честный стартап отпугнут. Оптимальный механизм Revelation Principle: KPI должны быть труднодостижимы только при плохом менеджменте.`,
+    ],
+    COUNTER: [
+      (p) => `Tit-for-Tat решение: фонд показал честность (прозрачные условия Term Sheet) → стартап ответил честностью (раскрыл проблемы). Это устойчивая cooperative equilibrium в repeated game. Доверие — ценный актив, сохраняем его.`,
+    ],
+    SUMMARY: [
+      (p) => `Game Theory вердикт: Nash Equilibrium ${p.trl >= 6 && p.projectedIRR >= 0.28 ? 'ДОСТИГНУТ — большинство агентов стабилизировались' : 'не достигнут — позиции расходятся, нужен ещё раунд'}. Shapley-справедливая доля фонда: ~${p.projectedIRR >= 0.35 ? 28 : 22}% cap table. Milestone = правдивый механизм. ${p.trl >= 6 ? 'Поддерживаю при stage-gate структуре.' : 'Жду TRL+1 для устойчивого Nash.'}`,
     ],
   },
 }

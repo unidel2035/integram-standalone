@@ -59,9 +59,11 @@ export const fstMenuConfig = [
   {
     label: 'Обучение',
     items: [
+      { label: 'Путь обучения', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide' },
       { label: 'Туры по модулям', icon: 'pi pi-map', action: 'show-tours-menu', special: true },
       { label: 'Глоссарий', icon: 'pi pi-book', to: '/fst-glossary' },
       { label: 'Мини-квизы', icon: 'pi pi-check-circle', to: '/fst-quiz' },
+      { label: 'Школа агентов', icon: 'pi pi-star', to: '/fst-school' },
     ]
   }
 ]

@@ -139,6 +139,16 @@
           </div>
         </div>
 
+        <!-- Links Platform -->
+        <div class="fsp-detail-panel">
+          <EntityLinksPanel
+            :entityId="selectedCompany.id"
+            entityType="company"
+            :labelMap="conceptLabelMap"
+            @link-added="onLinkAdded"
+          />
+        </div>
+
         <!-- Data Sources -->
         <div class="fsp-detail-panel">
           <div class="fsp-detail-panel-title">
@@ -249,8 +259,15 @@ import { useToast } from 'primevue/usetoast'
 import { getPortfolio, getProjects } from '@/services/fstApi'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import EntityLinksPanel from '@/components/links/EntityLinksPanel.vue'
 
 const toast = useToast()
+
+// ── Links Platform ────────────────────────────────────────────
+const conceptLabelMap = ref({})
+function onLinkAdded(link) {
+  toast.add({ severity: 'success', summary: 'Связь добавлена', life: 2000 })
+}
 
 // ── Page Tutor Context ────────────────────────────────────────
 function getPageContext() {

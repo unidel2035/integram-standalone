@@ -14,8 +14,8 @@ global.fetch = vi.fn()
 vi.stubGlobal('import.meta.env', {
   VITE_FST_SERVER: 'https://ai2o.ru',
   VITE_FST_DB: 'fst',
-  VITE_FST_LOGIN: 'd',
-  VITE_FST_PASSWORD: 'd'
+  VITE_FST_LOGIN: '',
+  VITE_FST_PASSWORD: ''
 })
 
 import {
@@ -287,11 +287,11 @@ describe('fstApi — Environment Variables', () => {
     expect(db).toBe('fst')
   })
 
-  it('uses default credentials if not provided', () => {
-    const login = import.meta.env.VITE_FST_LOGIN || 'd'
-    const password = import.meta.env.VITE_FST_PASSWORD || 'd'
+  it('reads credentials from environment variables', () => {
+    const login = import.meta.env.VITE_FST_LOGIN
+    const password = import.meta.env.VITE_FST_PASSWORD
 
-    expect(login).toBe('d')
-    expect(password).toBe('d')
+    expect(typeof login).toBe('string')
+    expect(typeof password).toBe('string')
   })
 })

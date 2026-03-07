@@ -1314,10 +1314,10 @@ export default {
       // Credentials
       adminCredentials: 'Admin Credentials',
       adminLogin: 'Admin Login',
-      adminLoginPlaceholder: 'd',
+      adminLoginPlaceholder: 'login',
       adminLoginHelp: 'Admin login for ddadmin database',
       adminPassword: 'Admin Password',
-      adminPasswordPlaceholder: 'd',
+      adminPasswordPlaceholder: 'password',
       adminPasswordHelp: 'Admin password for ddadmin database',
 
       // Tables

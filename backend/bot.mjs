@@ -13,11 +13,340 @@ try {
 } catch {}
 
 import TelegramBot from 'node-telegram-bot-api'
+import { spawn } from 'child_process'
+import { execFile } from 'child_process'
+import { promisify } from 'util'
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
+import https from 'https'
+
+const execFileAsync = promisify(execFile)
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN
 if (!TOKEN) { console.error('TELEGRAM_BOT_TOKEN not set'); process.exit(1) }
 
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || ''
+const ALLOWED_USERS = (process.env.ALLOWED_USERS || '').split(',').map(s => s.trim()).filter(Boolean)
+const FUND_REPO = 'https://github.com/unidel2035/fund'
+
+// Логи для solve сессий
+const SOLVE_LOGS = path.join(os.tmpdir(), 'fst-solve-logs')
+if (!fs.existsSync(SOLVE_LOGS)) fs.mkdirSync(SOLVE_LOGS, { recursive: true })
+
+const INTEGRAM_URL = process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru'
+const INTEGRAM_DB  = 'fst'
+const TG_REQ_ID    = '4065'  // Requisite "Телеграм" в типе Пользователь (type 18)
+
+// chatId → { userId, userName, isAdmin }
+const sessions = new Map()
+// chatId → { step: 'login'|'password', login?: string }
+const pendingAuth = new Map()
+
+function isAuthenticated(userId) {
+  if (ALLOWED_USERS.includes(String(userId))) return true
+  return sessions.has(String(userId))
+}
+
+function isAdmin(userId) {
+  if (ALLOWED_USERS.includes(String(userId))) return true
+  return sessions.get(String(userId))?.isAdmin === true
+}
+
+// Обратная совместимость — solve/hive требуют isAllowed = isAdmin
+function isAllowed(userId) { return isAdmin(userId) }
+
+// Флаги активных hive-сессий: chatId → true/false
+const hiveActive = new Map()
+
+// Аутентификация пользователя через Integram
+// Возвращает { token, xsrf, userId, userName, isAdmin } или null
+async function authenticateIntegram(login, password) {
+  try {
+    // Шаг 1: аутентификация
+    const res = await fetch(`${INTEGRAM_URL}/${INTEGRAM_DB}/auth?JSON`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `login=${encodeURIComponent(login)}&pwd=${encodeURIComponent(password)}`
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    // Успех: { token, _xsrf, id, msg }; неверный пароль: msg содержит ошибку или нет token
+    if (!data.token) return null
+
+    const { token, _xsrf: xsrf, id: userId } = data
+    let userName = login
+    let isAdmin = false
+
+    // Шаг 2: получить роль и имя пользователя
+    // GET /fst/object/18?JSON_KV&F_I={id} с Cookie: fst={token}
+    try {
+      const uRes = await fetch(
+        `${INTEGRAM_URL}/${INTEGRAM_DB}/object/18?JSON_KV&l=1&F_I=${userId}`,
+        { headers: { Cookie: `${INTEGRAM_DB}=${token}` } }
+      )
+      const uData = await uRes.json()
+      const reqs = uData?.reqs?.[userId] || {}
+      const role = reqs['115'] || ''         // "admin" или пусто
+      userName = reqs['33'] || uData?.object?.[0]?.val || login
+      isAdmin = role === 'admin'
+    } catch {}
+
+    return { token, xsrf, userId, userName, isAdmin }
+  } catch { return null }
+}
+
+// Сохраняет Telegram chat ID в карточку пользователя Integram
+async function saveTelegramId(userId, chatId, token, xsrf) {
+  try {
+    // POST /fst/_m_set/{id} с Cookie: fst={token} и t4065={chatId} в теле
+    await fetch(`${INTEGRAM_URL}/${INTEGRAM_DB}/_m_set/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Authorization': token,
+        'Cookie': `${INTEGRAM_DB}=${token}`,
+      },
+      body: `t${TG_REQ_ID}=${encodeURIComponent(String(chatId))}&_xsrf=${xsrf}`
+    })
+  } catch {}
+}
+
+// Преобразует номер issue или URL в полную ссылку
+function resolveIssue(arg) {
+  if (!arg) return null
+  arg = arg.trim()
+  if (arg.startsWith('https://github.com/')) return arg
+  const num = arg.replace(/^#/, '')
+  if (/^\d+$/.test(num)) return `${FUND_REPO}/issues/${num}`
+  return null
+}
+
+// Извлекает номер/ссылку issue из текста (для голосовых)
+function extractIssue(text) {
+  const urlMatch = text.match(/https:\/\/github\.com\/[\w\-]+\/[\w\-]+\/issues\/\d+/)
+  if (urlMatch) return urlMatch[0]
+  const numMatch = text.match(/(?:issue|задача|проблема|ишью|#)\s*(\d+)/i)
+  if (numMatch) return `${FUND_REPO}/issues/${numMatch[1]}`
+  return null
+}
+
+// Запускает solve в screen-сессии и мониторит вывод (как dronedoc2025)
+// Возвращает Promise, который резолвится когда solve завершится (success: bool)
+async function runSolve(bot, chatId, issueUrl, requester) {
+  const sessionId = `fst-solve-${chatId}-${Date.now()}`
+  const logPath = path.join(SOLVE_LOGS, `${sessionId}.log`)
+
+  const HOME = process.env.HOME || '/home/hive'
+  const NVM_DIR = `${HOME}/.nvm`
+  const env = {
+    ...process.env,
+    NVM_DIR,
+    GH_CONFIG_DIR: `${HOME}/.config/gh`,
+    GIT_TERMINAL_PROMPT: '0',
+    HOME,
+    PATH: `${NVM_DIR}/versions/node/v20.20.0/bin:/usr/local/bin:/usr/bin:/bin:${process.env.PATH || ''}`,
+    CLAUDECODE: undefined,  // allow nested claude invocation from solve
+  }
+  delete env.CLAUDECODE
+  if (GITHUB_TOKEN) { env.GH_TOKEN = GITHUB_TOKEN; env.GITHUB_TOKEN = GITHUB_TOKEN }
+
+  const cmd = [
+    `export NVM_DIR="${NVM_DIR}"`,
+    '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"',
+    `solve "${issueUrl}"`,
+  ].join(' && ')
+  const screenArgs = ['-dmS', sessionId, '-L', '-Logfile', logPath, 'bash', '-c', cmd]
+
+  try {
+    await new Promise((res, rej) => {
+      const p = spawn('screen', screenArgs, { env, detached: true, stdio: 'ignore' })
+      p.on('close', code => (code === 0 || code === null ? res() : rej(new Error(`screen code ${code}`))))
+      p.on('error', rej)
+    })
+  } catch (err) {
+    await bot.sendMessage(chatId, `❌ Не удалось запустить solve: ${err.message}`)
+    return { success: false }
+  }
+
+  const startMsg = await bot.sendMessage(chatId,
+    `⏳ *Solve запущен*\n\n🔗 Issue: ${issueUrl}\n👤 ${requester}\n🕐 Начат: ${new Date().toLocaleTimeString('ru-RU')}`,
+    { parse_mode: 'Markdown' }
+  )
+  const statusMsgId = startMsg.message_id
+
+  const editStatus = async (text) => {
+    try {
+      await bot.editMessageText(text, { chat_id: chatId, message_id: statusMsgId, parse_mode: 'Markdown' })
+    } catch {}
+  }
+
+  // Мониторинг — возвращает Promise, который резолвится когда сессия завершена
+  return new Promise((resolve) => {
+    let checks = 0
+    const MAX_CHECKS = 120
+    const startTime = Date.now()
+
+    const timer = setInterval(async () => {
+      checks++
+      const mins = Math.round((Date.now() - startTime) / 60000)
+
+      if (checks > MAX_CHECKS) {
+        clearInterval(timer)
+        await editStatus(`⏰ *Таймаут solve* (2 ч)\n\n🔗 Issue: ${issueUrl}\n\`screen -r ${sessionId}\``)
+        resolve({ success: false, timeout: true })
+        return
+      }
+
+      // Проверяем, жива ли screen-сессия
+      let running = false
+      try {
+        const { stdout } = await execFileAsync('screen', ['-list'])
+        running = stdout.includes(sessionId)
+      } catch { running = false }
+
+      if (!running) {
+        clearInterval(timer)
+
+        // Читаем лог и определяем статус
+        let logContent = ''
+        try {
+          if (fs.existsSync(logPath)) logContent = fs.readFileSync(logPath, 'utf8')
+        } catch {}
+
+        const logLower = logContent.toLowerCase()
+        const success = logLower.includes('pr is ready') || logLower.includes('pull request') || logLower.includes('completed successfully')
+        const failed = logLower.includes('system checks failed') || logLower.includes('insufficient disk space') || logLower.includes('❌')
+
+        const statusLine = success ? '✅ Готово!' : failed ? '❌ Ошибка' : '🏁 Завершён'
+        await editStatus(`${statusLine}\n\n🔗 Issue: ${issueUrl}\n👤 ${requester}\n⏱ Время: ${mins} мин`)
+
+        // Отправляем лог как документ
+        if (logContent && fs.existsSync(logPath)) {
+          try {
+            await bot.sendDocument(chatId, logPath, {
+              caption: `📄 Лог: ${sessionId}`,
+            }, { filename: `${sessionId}.log`, contentType: 'text/plain' })
+          } catch (docErr) {
+            console.error('[FST Bot] sendDocument error:', docErr.message)
+          }
+        }
+
+        resolve({ success })
+        return
+      }
+
+      // Сессия жива — обновляем статус в том же сообщении
+      await editStatus(`⏳ *Solve в процессе...* (${mins} мин)\n\n🔗 Issue: ${issueUrl}\n👤 ${requester}`)
+    }, 60000)
+  })
+}
+
+// Автомерж PR связанного с issue
+async function autoMergePR(bot, chatId, issueNumber, repo = 'unidel2035/fund') {
+  const ghEnv = { ...process.env, GH_TOKEN: GITHUB_TOKEN }
+  try {
+    const { stdout } = await execFileAsync('gh', [
+      'pr', 'list', '--repo', repo,
+      '--search', `${issueNumber} in:title`,
+      '--json', 'number,title,isDraft,headRefName',
+      '--limit', '5'
+    ], { env: ghEnv })
+    const prs = JSON.parse(stdout || '[]')
+    if (prs.length === 0) {
+      await bot.sendMessage(chatId, `ℹ️ Issue #${issueNumber}: PR не найден для автомержа.`)
+      return
+    }
+    const pr = prs[0]
+    if (pr.isDraft) {
+      await execFileAsync('gh', ['pr', 'ready', String(pr.number), '--repo', repo], { env: ghEnv })
+      await new Promise(r => setTimeout(r, 2000))
+    }
+    await execFileAsync('gh', ['pr', 'merge', String(pr.number), '--squash', '--delete-branch', '--repo', repo], { env: ghEnv })
+    await bot.sendMessage(chatId,
+      `🎉 *PR слит*\n\n#${pr.number} — ${pr.title}\n✅ Автомерж выполнен (squash)`,
+      { parse_mode: 'Markdown' }
+    )
+  } catch (err) {
+    await bot.sendMessage(chatId, `⚠️ Автомерж #${issueNumber}: ${err.message}`)
+  }
+}
+
 const bot = new TelegramBot(TOKEN, { polling: true })
+
+// Глобальный перехват — auth-диалог для незарегистрированных пользователей
+const _origProcessUpdate = bot.processUpdate.bind(bot)
+bot.processUpdate = (update) => {
+  const userId = String(
+    update.message?.from?.id
+    || update.callback_query?.from?.id
+    || update.edited_message?.from?.id
+    || ''
+  )
+  const chatId = update.message?.chat?.id || update.callback_query?.message?.chat?.id
+  const text = (update.message?.text || '').trim()
+
+  if (!userId || !chatId) return _origProcessUpdate(update)
+
+  // Уже аутентифицирован — пропускаем дальше
+  if (isAuthenticated(userId)) return _origProcessUpdate(update)
+
+  // Идёт диалог авторизации
+  if (pendingAuth.has(userId)) {
+    const state = pendingAuth.get(userId)
+
+    if (state.step === 'login') {
+      if (!text || text.startsWith('/')) {
+        bot.sendMessage(chatId, '👤 Введите ваш логин в системе ФСТ:')
+        return
+      }
+      pendingAuth.set(userId, { step: 'password', login: text })
+      bot.sendMessage(chatId, 'Введите пароль:')
+      return
+    }
+
+    if (state.step === 'password') {
+      const { login } = state
+      pendingAuth.delete(userId)
+      authenticateIntegram(login, text).then(async authData => {
+        if (!authData) {
+          bot.sendMessage(chatId, '❌ Неверный логин или пароль.\n\nНапишите /start — попробовать снова.')
+          return
+        }
+        const isAdminUser = authData.userRole === 'admin' || authData.userRole === 'Администратор'
+        sessions.set(userId, { userId: authData.userId, userName: authData.userName, isAdmin: isAdminUser })
+        await saveTelegramId(authData.userId, chatId, authData.token, authData.xsrf)
+
+        const roleText = isAdminUser ? '👑 Администратор — все функции доступны.' : '👤 Участник — базовые функции доступны.'
+        await bot.sendMessage(chatId,
+          `✅ *Добро пожаловать, ${authData.userName}!*\n\n${roleText}\n\nВаш Telegram привязан к аккаунту в системе ФСТ.\n\n📋 Используйте кнопки меню ниже 👇`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: {
+              keyboard: [
+                ['📊 Портфель', '⚠️ Алерты'],
+                ['🏦 Фонд', '📈 Аналитика'],
+                ['🤝 Сделки', '📋 Протоколы ИК'],
+                ['🌐 Открыть платформу', '❓ Помощь'],
+              ],
+              resize_keyboard: true,
+              persistent: true,
+            }
+          }
+        )
+      })
+      return
+    }
+  }
+
+  // Начинаем диалог авторизации
+  pendingAuth.set(userId, { step: 'login' })
+  bot.sendMessage(chatId,
+    `🔐 *Вход в систему ФСТ НТИ*\n\nВведите логин:`,
+    { parse_mode: 'Markdown' }
+  )
+}
+
 const URL = 'https://fst.drondoc.ru'
 
 const PORTFOLIO = [
@@ -131,7 +460,7 @@ async function sendHelp(chatId) {
 }
 
 // Commands
-bot.onText(/\/start/, async (msg) => {
+bot.onText(/^\/start(@\w+)?$/, async (msg) => {
   await bot.sendMessage(msg.chat.id,
     `🛡️ *Фонд суверенных технологий НТИ*\n\nДобро пожаловать, ${msg.from.first_name || 'коллега'}!\n\n` +
     `Я помогу вам:\n📊 Следить за портфелем БПЛА-компаний\n⚠️ Получать алерты по рискам\n📋 Смотреть решения инвесткомитета\n🤝 Контролировать сделки\n📈 Анализировать метрики фонда\n\n` +
@@ -139,23 +468,39 @@ bot.onText(/\/start/, async (msg) => {
     { parse_mode:'Markdown', ...MENU }
   )
 })
-bot.onText(/\/portfolio/, (msg) => sendPortfolio(msg.chat.id))
-bot.onText(/\/alerts/,   (msg) => sendAlerts(msg.chat.id))
-bot.onText(/\/fund/,     (msg) => sendFund(msg.chat.id))
-bot.onText(/\/deals/,    (msg) => sendDeals(msg.chat.id))
-bot.onText(/\/analytics/,(msg) => sendAnalytics(msg.chat.id))
-bot.onText(/\/help/,     (msg) => sendHelp(msg.chat.id))
-bot.onText(/\/status/,   async (msg) => {
+bot.onText(/^\/portfolio(@\w+)?$/, (msg) => sendPortfolio(msg.chat.id))
+bot.onText(/^\/alerts(@\w+)?$/,   (msg) => sendAlerts(msg.chat.id))
+bot.onText(/^\/fund(@\w+)?$/,     (msg) => sendFund(msg.chat.id))
+bot.onText(/^\/deals(@\w+)?$/,    (msg) => sendDeals(msg.chat.id))
+bot.onText(/^\/analytics(@\w+)?$/,(msg) => sendAnalytics(msg.chat.id))
+bot.onText(/^\/help(@\w+)?$/,     (msg) => sendHelp(msg.chat.id))
+bot.onText(/^\/status(@\w+)?$/,   async (msg) => {
   await bot.sendMessage(msg.chat.id,
     `✅ *Платформа ФСТ НТИ активна*\n\n🌐 fst.drondoc.ru\n🟢 Frontend: порт 5174\n🟢 Backend: порт 8082\n🟢 Bot: @fund_st_bot\n\n📊 Компаний: ${PORTFOLIO.length} | NAV: 6.4 млрд ₽`,
     { parse_mode:'Markdown', ...MENU }
   )
 })
 
-// Reply keyboard
+// Reply keyboard + автоматическое распознавание ссылок GitHub issues
 bot.on('message', async (msg) => {
   const t = msg.text || ''
   if (t.startsWith('/')) return
+  if (msg.voice) return // голосовые обрабатываются отдельно
+
+  // Распознавание ссылки на GitHub issue → предложить solve
+  const ghIssueMatch = t.match(/https:\/\/github\.com\/[\w\-]+\/[\w\-]+\/issues\/(\d+)/)
+  if (ghIssueMatch && isAllowed(msg.from.id)) {
+    const issueUrl = ghIssueMatch[0]
+    return bot.sendMessage(msg.chat.id,
+      `🔍 Обнаружен GitHub issue:\n${issueUrl}\n\nЗапустить solve (создать PR)?`,
+      { reply_markup: { inline_keyboard: [[
+        { text: '🔧 Запустить solve', callback_data: `solve_${issueUrl}` },
+        { text: '❌ Отмена', callback_data: 'cancel' }
+      ]] }}
+    )
+  }
+
+  // Кнопки клавиатуры
   if (t === '📊 Портфель')     return sendPortfolio(msg.chat.id)
   if (t === '⚠️ Алерты')       return sendAlerts(msg.chat.id)
   if (t === '🏦 Фонд')         return sendFund(msg.chat.id)
@@ -169,9 +514,15 @@ bot.on('message', async (msg) => {
 // Inline callbacks
 bot.on('callback_query', async (q) => {
   await bot.answerCallbackQuery(q.id)
-  const d = q.data, chatId = q.message.chat.id
+  const d = q.data, chatId = q.message.chat.id, userId = q.from.id
   if (d === 'portfolio') return sendPortfolio(chatId)
   if (d === 'settings')  return bot.sendMessage(chatId, '🔔 Настройки уведомлений — в разработке.')
+  if (d === 'cancel') return bot.sendMessage(chatId, '❌ Отменено.')
+  if (d.startsWith('solve_') && isAllowed(userId)) {
+    const issueUrl = d.slice(6)
+    const requester = q.from.username ? `@${q.from.username}` : q.from.first_name
+    return runSolve(bot, chatId, issueUrl, requester)
+  }
   if (d.startsWith('co_')) {
     const c = PORTFOLIO.find(p => p.name === d.slice(3))
     if (!c) return
@@ -185,7 +536,269 @@ bot.on('callback_query', async (q) => {
   }
 })
 
-bot.on('polling_error', (err) => console.error('[FST Bot]', err.message))
+// ─── /solve — запустить hive-mind для issue фонда ────────────────────────────
+bot.onText(/^\/solve/, async (msg) => {
+  const chatId = msg.chat.id
+  const userId = msg.from.id
+  if (!isAllowed(userId)) return bot.sendMessage(chatId, '❌ У вас нет доступа к этой команде.')
+  if (!GITHUB_TOKEN) return bot.sendMessage(chatId, '❌ GITHUB_TOKEN не настроен.\nДобавьте в backend/.env:\nGITHUB_TOKEN=ваш_токен')
+
+  // Извлекаем аргумент из текста сообщения (после /solve)
+  const arg = (msg.text || '').replace(/^\/solve\S*\s*/, '').trim()
+  const issueUrl = resolveIssue(arg)
+  if (!issueUrl) {
+    return bot.sendMessage(chatId,
+      `❌ Укажите номер или ссылку на issue.\n\nПримеры:\n/solve 42\n/solve https://github.com/unidel2035/fund/issues/42`,
+      { parse_mode: 'Markdown' }
+    )
+  }
+
+  const requester = msg.from.username ? `@${msg.from.username}` : msg.from.first_name
+  await runSolve(bot, chatId, issueUrl, requester)
+})
+
+// ─── Получить открытые issues без черновых PR ────────────────────────────────
+async function getOpenIssuesWithoutDrafts(owner, repo) {
+  const headers = {
+    'Authorization': `token ${GITHUB_TOKEN}`,
+    'Accept': 'application/vnd.github+json',
+    'User-Agent': 'fst-fund-bot'
+  }
+
+  async function ghFetch(url, retries = 3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const res = await fetch(url, { headers, signal: AbortSignal.timeout(15000) })
+        if (!res.ok) throw new Error(`GitHub API ${res.status}: ${url}`)
+        return res.json()
+      } catch (err) {
+        if (attempt === retries) throw err
+        await new Promise(r => setTimeout(r, 2000 * attempt))
+      }
+    }
+  }
+
+  // Получаем все открытые issues (постранично, до 500)
+  let issues = []
+  for (let page = 1; page <= 5; page++) {
+    const batch = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/issues?state=open&per_page=100&page=${page}`)
+    const realIssues = batch.filter(i => !i.pull_request) // убираем PR из списка
+    issues.push(...realIssues)
+    if (batch.length < 100) break
+  }
+
+  // Получаем все открытые PR (включая черновики)
+  let drafts = new Set()
+  for (let page = 1; page <= 5; page++) {
+    const prs = await ghFetch(`https://api.github.com/repos/${owner}/${repo}/pulls?state=open&per_page=100&page=${page}`)
+    for (const pr of prs) {
+      if (pr.draft) {
+        // Парсим номер issue из тела PR
+        const body = (pr.body || '') + (pr.title || '')
+        const refs = body.match(/(?:close[sd]?|fix(?:es|ed)?|resolve[sd]?)[:\s#]+(\d+)/gi) || []
+        for (const ref of refs) {
+          const num = ref.match(/(\d+)/)
+          if (num) drafts.add(parseInt(num[1]))
+        }
+        // Также ищем в head branch названии (issue-123-...)
+        const branchMatch = (pr.head?.ref || '').match(/issue-(\d+)/)
+        if (branchMatch) drafts.add(parseInt(branchMatch[1]))
+      }
+    }
+    if (prs.length < 100) break
+  }
+
+  // Фильтруем: только те issues, у которых нет черновика
+  const filtered = issues.filter(i => !drafts.has(i.number))
+
+  // Сортируем по приоритету P0→P1→P2→P3→без метки, внутри — по номеру (старые первые)
+  const priority = label => {
+    if (label === 'P0') return 0
+    if (label === 'P1') return 1
+    if (label === 'P2') return 2
+    if (label === 'P3') return 3
+    return 4
+  }
+  const issueP = issue => {
+    const labels = (issue.labels || []).map(l => l.name)
+    return Math.min(...labels.map(priority), 4)
+  }
+  filtered.sort((a, b) => {
+    const pd = issueP(a) - issueP(b)
+    return pd !== 0 ? pd : a.number - b.number
+  })
+
+  return filtered
+}
+
+// ─── /hive — найти все открытые issues без черновых PR и запустить solve ─────
+bot.onText(/^\/hive(?:\s+(.+))?/, async (msg, match) => {
+  const chatId = msg.chat.id
+  const userId = msg.from.id
+  if (!isAllowed(userId)) return bot.sendMessage(chatId, '❌ У вас нет доступа к этой команде.')
+
+  const arg = (match[1] || '').trim().toLowerCase()
+
+  // /hive stop — остановить текущую сессию
+  if (arg === 'stop') {
+    if (hiveActive.get(chatId)) {
+      hiveActive.set(chatId, false)
+      return bot.sendMessage(chatId, '🛑 Hive остановлен. Текущая solve-сессия доработает до конца, следующая не запустится.')
+    } else {
+      return bot.sendMessage(chatId, 'ℹ️ Hive не запущен.')
+    }
+  }
+
+  if (hiveActive.get(chatId)) {
+    return bot.sendMessage(chatId, '⚠️ Hive уже запущен. Отправьте /hive stop чтобы остановить.')
+  }
+
+  if (!GITHUB_TOKEN) return bot.sendMessage(chatId, '❌ GITHUB_TOKEN не настроен.')
+
+  await bot.sendMessage(chatId, `🐝 *Hive запускается...*\nПолучаю список открытых issues без черновых PR...\n${FUND_REPO}`, { parse_mode: 'Markdown' })
+
+  let issues
+  try {
+    issues = await getOpenIssuesWithoutDrafts('unidel2035', 'fund')
+  } catch (err) {
+    return bot.sendMessage(chatId, `❌ Ошибка GitHub API: ${err.message}`)
+  }
+
+  if (issues.length === 0) {
+    return bot.sendMessage(chatId, '✅ Нет открытых issues без черновых PR. Всё уже в работе!')
+  }
+
+  const requester = msg.from.username ? `@${msg.from.username}` : msg.from.first_name
+  const priorityLabel = i => {
+    const labels = (i.labels || []).map(l => l.name)
+    const p = labels.find(l => /^P\d$/.test(l))
+    return p ? `[${p}] ` : ''
+  }
+  await bot.sendMessage(chatId,
+    `🐝 *Hive-сессия запущена*\n\n📋 Найдено issues: *${issues.length}* (сортировка P0→P3→#)\n\n` +
+    issues.slice(0, 20).map(i => `${priorityLabel(i)}#${i.number} — ${i.title.slice(0, 55)}`).join('\n') +
+    (issues.length > 20 ? `\n...и ещё ${issues.length - 20}` : '') +
+    '\n\n⚙️ Запускаю по одному. Остановить: /hive stop',
+    { parse_mode: 'Markdown' }
+  )
+
+  hiveActive.set(chatId, true)
+  let done = 0, merged = 0, failed = 0
+
+  for (let i = 0; i < issues.length; i++) {
+    if (!hiveActive.get(chatId)) {
+      await bot.sendMessage(chatId, `🛑 *Hive остановлен* после ${i} задач.`, { parse_mode: 'Markdown' })
+      break
+    }
+
+    const issue = issues[i]
+    const issueUrl = issue.html_url
+    await bot.sendMessage(chatId,
+      `🔄 *Задача ${i+1}/${issues.length}*: ${priorityLabel(issue)}#${issue.number} — ${issue.title.slice(0, 55)}`,
+      { parse_mode: 'Markdown' }
+    )
+    try {
+      const result = await runSolve(bot, chatId, issueUrl, `${requester} (hive ${i+1}/${issues.length})`)
+      done++
+      if (result?.success) {
+        await autoMergePR(bot, chatId, issue.number)
+        merged++
+      } else {
+        failed++
+      }
+    } catch (err) {
+      failed++
+      await bot.sendMessage(chatId, `⚠️ Issue #${issue.number}: ${err.message}`)
+    }
+  }
+
+  hiveActive.delete(chatId)
+  await bot.sendMessage(chatId,
+    `🏁 *Hive завершён*\n\n✅ Успешно: ${done - failed}\n🎉 Слито PR: ${merged}\n❌ Ошибок: ${failed}\n📋 Всего: ${issues.length}`,
+    { parse_mode: 'Markdown' }
+  )
+})
+
+// ─── Голосовые сообщения — расшифровка + /solve ───────────────────────────────
+bot.on('voice', async (msg) => {
+  const chatId = msg.chat.id
+  const userId = msg.from.id
+  if (!isAllowed(userId)) return
+
+  await bot.sendMessage(chatId, '🎙 Получено голосовое сообщение. Обрабатываю...')
+
+  try {
+    // Скачиваем файл
+    const fileInfo = await bot.getFile(msg.voice.file_id)
+    const fileUrl = `https://api.telegram.org/file/bot${TOKEN}/${fileInfo.file_path}`
+    const tmpPath = path.join(os.tmpdir(), `fst-voice-${Date.now()}.ogg`)
+
+    await new Promise((res, rej) => {
+      const file = fs.createWriteStream(tmpPath)
+      https.get(fileUrl, r => { r.pipe(file); file.on('finish', () => { file.close(); res() }) }).on('error', rej)
+    })
+
+    // Пробуем расшифровать через Python Whisper
+    const pyScript = `
+import sys
+try:
+    import whisper
+    m = whisper.load_model("base")
+    r = m.transcribe(sys.argv[1], language="ru")
+    print(r["text"])
+except ImportError:
+    print("__NO_WHISPER__")
+except Exception as e:
+    print(f"__ERR__: {e}")
+`
+    const scriptPath = path.join(os.tmpdir(), 'fst_whisper.py')
+    fs.writeFileSync(scriptPath, pyScript)
+
+    let transcription = null
+    try {
+      const { stdout } = await execFileAsync('python3', [scriptPath, tmpPath], { timeout: 60000 })
+      const text = stdout.trim()
+      if (text && !text.startsWith('__')) transcription = text
+    } catch {}
+
+    fs.unlink(tmpPath, () => {})
+
+    if (!transcription) {
+      return bot.sendMessage(chatId,
+        '⚠️ Расшифровка недоступна (нужен Whisper: pip install openai-whisper).\n\n' +
+        'Используйте текстовые команды:\n/solve <номер> — запустить solve\n/hive — запустить мониторинг'
+      )
+    }
+
+    await bot.sendMessage(chatId, `📝 Распознано: _${transcription}_`, { parse_mode: 'Markdown' })
+
+    // Ищем ссылку/номер issue в тексте
+    const issueUrl = extractIssue(transcription)
+    if (issueUrl && isAllowed(userId)) {
+      await bot.sendMessage(chatId,
+        `🔍 Обнаружен issue: ${issueUrl}\n\nЗапустить solve?`,
+        { reply_markup: { inline_keyboard: [[
+          { text: '✅ Запустить solve', callback_data: `solve_${issueUrl}` },
+          { text: '❌ Отмена', callback_data: 'cancel' }
+        ]] }}
+      )
+    }
+  } catch (err) {
+    bot.sendMessage(chatId, `❌ Ошибка: ${err.message}`)
+  }
+})
+
+bot.on('polling_error', (err) => {
+  console.error('[FST Bot] polling_error:', err.code, err.message)
+  if (err.code === 'EFATAL' || err.code === 'ECONNRESET' || err.code === 'ETIMEDOUT') {
+    console.log('[FST Bot] Restarting polling in 5s...')
+    setTimeout(() => {
+      bot.startPolling().catch(e => console.error('[FST Bot] restart failed:', e.message))
+    }, 5000)
+  }
+})
+process.on('uncaughtException', (err) => console.error('[FST Bot] uncaughtException:', err.message))
+process.on('unhandledRejection', (err) => console.error('[FST Bot] unhandledRejection:', err?.message || err))
 process.on('SIGINT', () => { bot.stopPolling(); process.exit(0) })
 process.on('SIGTERM', () => { bot.stopPolling(); process.exit(0) })
 
@@ -215,7 +828,7 @@ console.log('[FST Bot] ✅ @fund_st_bot ready')
 
 // ─── Mini App кнопка в /start (добавить WebApp) ───────────────────────────────
 // Уже обработан выше, но добавляем inline кнопку с WebApp
-bot.onText(/\/app/, async (msg) => {
+bot.onText(/^\/app(@\w+)?$/, async (msg) => {
   await bot.sendMessage(msg.chat.id,
     `📱 *Мини-приложение ФСТ НТИ*\n\nОткройте полный дашборд прямо в Telegram:\n• 📊 Портфель с деталями компаний\n• ⚠️ Алерты в реальном времени\n• 🤖 История решений ИК\n• 💬 AI-ассистент фонда`,
     {
@@ -263,7 +876,7 @@ async function askAI(chatId, question) {
   }
 }
 
-bot.onText(/\/ask (.+)/, async (msg, match) => {
+bot.onText(/^\/ask (.+)/, async (msg, match) => {
   const q = match[1]
   const typing = bot.sendChatAction(msg.chat.id, 'typing')
   const answer = await askAI(msg.chat.id, q)
@@ -287,9 +900,11 @@ setTimeout(() => {
     { command:'fund',      description:'🏦 Показатели фонда' },
     { command:'deals',     description:'🤝 Сделки и транши' },
     { command:'analytics', description:'📈 Аналитика' },
+    { command:'solve',     description:'🔧 Запустить solve для issue (пример: /solve 42)' },
+    { command:'hive',      description:'🐝 Запустить hive для репозитория фонда' },
     { command:'app',       description:'📱 Мини-приложение' },
     { command:'ask',       description:'🤖 AI-вопрос (пример: /ask IRR портфеля?)' },
     { command:'status',    description:'✅ Статус платформы' },
     { command:'help',      description:'❓ Справка' },
-  ]).then(() => console.log('[FST Bot] ✅ Commands updated with /app and /ask'))
+  ]).then(() => console.log('[FST Bot] ✅ Команды обновлены'))
 }, 2000)

@@ -1,6 +1,6 @@
 <template>
   <Dialog
-    v-model:visible="visible"
+    v-model:visible="localVisible"
     :header="quizTitle"
     :modal="true"
     :closable="!quizInProgress"
@@ -303,6 +303,11 @@ const emit = defineEmits(['update:visible', 'quiz-completed', 'generate-ai-quest
 
 const toast = useToast()
 const gamificationStore = useGamificationStore()
+
+// Local ref for v-model:visible (can't bind prop directly)
+const localVisible = ref(props.visible)
+watch(() => props.visible, (val) => { localVisible.value = val })
+watch(localVisible, (val) => { emit('update:visible', val) })
 
 // State
 const quizStarted = ref(false)

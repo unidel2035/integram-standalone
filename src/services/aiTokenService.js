@@ -201,8 +201,8 @@ async function authenticateIntegram() {
       },
       body: JSON.stringify({
         database: 'my',
-        login: 'd',
-        password: 'd'
+        login: import.meta.env.VITE_INTEGRAM_LOGIN || '',
+        password: import.meta.env.VITE_INTEGRAM_PASSWORD || ''
       })
     })
 

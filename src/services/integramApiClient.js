@@ -981,8 +981,8 @@ class IntegramApiClient {
       // Integram auth URL format: {server}/{database}/auth (no /api/ prefix!)
       const url = `${this.baseURL}/my/auth`
       const formData = new URLSearchParams()
-      formData.append('login', 'd')
-      formData.append('pwd', 'd')
+      formData.append('login', import.meta.env.VITE_INTEGRAM_LOGIN || '')
+      formData.append('pwd', import.meta.env.VITE_INTEGRAM_PASSWORD || '')
 
       const response = await axios.post(url, formData, {
         params: { JSON_KV: '' },
@@ -995,7 +995,7 @@ class IntegramApiClient {
           token: response.data.token,
           xsrfToken: response.data._xsrf,
           userId: response.data.id,
-          userName: 'd',
+          userName: import.meta.env.VITE_INTEGRAM_LOGIN || '',
           userRole: response.data.role || 'admin',
           ownedDatabases: []
         }

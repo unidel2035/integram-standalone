@@ -69,6 +69,43 @@
       <span class="fc-gate-icon">{{ gatePass ? '✓' : '✗' }}</span>
       <span>Gate-критерий: NPV {{ gatePass ? '> 0 — проходит ИК' : '≤ 0 — не проходит ИК' }} при базовом сценарии</span>
     </div>
+
+    <!-- Венчурные метрики -->
+    <div class="fc-venture-section">
+      <div class="fc-venture-title">Венчурные метрики</div>
+      <div class="fc-venture-grid">
+        <div class="fc-vm" :class="ventureMetrics.moic >= 2 ? 'ok' : 'warn'">
+          <div class="fc-vm-val">{{ ventureMetrics.moic.toFixed(2) }}x</div>
+          <div class="fc-vm-key">MOIC</div>
+          <div class="fc-vm-hint">Cash-on-cash</div>
+        </div>
+        <div class="fc-vm" :class="ventureMetrics.tvpi >= 1.5 ? 'ok' : 'warn'">
+          <div class="fc-vm-val">{{ ventureMetrics.tvpi.toFixed(2) }}x</div>
+          <div class="fc-vm-key">TVPI</div>
+          <div class="fc-vm-hint">Total Value / Paid-In</div>
+        </div>
+        <div class="fc-vm" :class="ventureMetrics.probNpvPositive >= 0.5 ? 'ok' : 'warn'">
+          <div class="fc-vm-val">{{ (ventureMetrics.probNpvPositive * 100).toFixed(0) }}%</div>
+          <div class="fc-vm-key">P(NPV&gt;0)</div>
+          <div class="fc-vm-hint">Monte Carlo N=500</div>
+        </div>
+        <div class="fc-vm" :class="ventureMetrics.kellyFraction > 0 ? 'ok' : 'warn'">
+          <div class="fc-vm-val">{{ (ventureMetrics.kellyFraction * 100).toFixed(0) }}%</div>
+          <div class="fc-vm-key">Kelly</div>
+          <div class="fc-vm-hint">Оптим. доля портфеля</div>
+        </div>
+        <div class="fc-vm" :class="ventureMetrics.emv > 0 ? 'ok' : 'warn'">
+          <div class="fc-vm-val">{{ ventureMetrics.emv.toFixed(1) }}</div>
+          <div class="fc-vm-key">EMV, млн ₽</div>
+          <div class="fc-vm-hint">Ожидаемая денежная ценность</div>
+        </div>
+        <div class="fc-vm" :class="ventureMetrics.varPct <= 70 ? 'ok' : 'warn'">
+          <div class="fc-vm-val">{{ ventureMetrics.varPct.toFixed(0) }}%</div>
+          <div class="fc-vm-key">VaR 95%</div>
+          <div class="fc-vm-hint">Макс. потеря в 95% сц.</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -226,6 +263,57 @@ const currentMetrics = computed(() => {
       ok: res.pi > 1
     }
   ]
+})
+
+// ── Венчурные метрики (MOIC, TVPI, Monte Carlo, Kelly) ───────────────────────
+
+const ventureMetrics = computed(() => {
+  const { ic, wacc, n, cashflows } = params.value
+  const cf = cashflows.slice(0, n)
+  const r  = wacc / 100
+
+  // MOIC = gross cash multiple (не дисконтированный)
+  const totalCf = cf.reduce((a, b) => a + b, 0)
+  const moic    = ic > 0 ? totalCf / ic : 1
+
+  // TVPI = (NPV + IC) / IC = PI из базового результата
+  const npv  = baseResult.value?.npv ?? 0
+  const tvpi = ic > 0 ? (npv + ic) / ic : 1
+
+  // Monte Carlo: 500 симуляций с σ_CF = 35%
+  const N_SIM = 500
+  const SIGMA = 0.35
+  let positiveCount = 0
+  const moicSim = []
+  for (let s = 0; s < N_SIM; s++) {
+    // Box-Muller нормальное распределение
+    const cfSim = cf.map(c => {
+      const u1 = Math.random() || 1e-10
+      const u2 = Math.random() || 1e-10
+      const z  = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+      return c * (1 + SIGMA * z)
+    })
+    const npvSim = cfSim.reduce((acc, c, t) => acc + c / Math.pow(1 + r, t + 1), -ic)
+    if (npvSim > 0) positiveCount++
+    const totalSim = cfSim.reduce((a, b) => a + b, 0)
+    moicSim.push(ic > 0 ? totalSim / ic : 0)
+  }
+  moicSim.sort((a, b) => a - b)
+  const probNpvPositive = positiveCount / N_SIM
+  const varIdx  = Math.floor(N_SIM * 0.05)  // 5-й перцентиль
+  const varMoic = moicSim[varIdx] ?? 0
+  const varPct  = Math.max(0, (1 - varMoic) * 100)  // потеря в % от IC
+
+  // Kelly Criterion: f* = (p*b - q) / b, b = MOIC
+  const p = probNpvPositive
+  const q = 1 - p
+  const b = Math.max(moic, 1.01)
+  const kellyFraction = Math.max(0, Math.min(0.25, (p * b - q) / b))  // cap 25%
+
+  // EMV = p * (totalCf - ic) - q * ic (в млн руб)
+  const emv = (p * (totalCf - ic) - q * ic)
+
+  return { moic, tvpi, probNpvPositive, kellyFraction, emv, varPct }
 })
 
 // ── Chart ────────────────────────────────────────────────────────────────────
@@ -444,4 +532,39 @@ onMounted(() => {
 .fc-gate-icon { font-size: 1rem; font-weight: 700; }
 .gate-pass       { background: #66bb6a18; color: #66bb6a; border: 1px solid #66bb6a44; }
 .gate-fail-block { background: #ef535018; color: #ef5350; border: 1px solid #ef535044; }
+
+/* Венчурные метрики */
+.fc-venture-section {
+  border-top: 1px solid var(--p-surface-border);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fc-venture-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.fc-venture-grid {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.fc-vm {
+  flex: 1;
+  min-width: 72px;
+  background: var(--p-surface-ground);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 7px;
+  padding: 7px 8px;
+  text-align: center;
+}
+.fc-vm.ok   { border-color: #66bb6a44; }
+.fc-vm.warn { border-color: #ffa72644; }
+.fc-vm-val  { font-size: 1rem; font-weight: 700; color: var(--p-text-color); }
+.fc-vm-key  { font-size: 0.68rem; color: var(--p-text-muted-color); margin-top: 1px; font-weight: 600; }
+.fc-vm-hint { font-size: 0.6rem; color: var(--p-text-muted-color); margin-top: 2px; }
 </style>

@@ -9,8 +9,12 @@ export default defineConfig({
     vue(),
     Components({
       resolvers: [PrimeVueResolver()]
-    })
+    }),
   ],
+  esbuild: {
+    pure: ['console.log', 'console.debug', 'console.info', 'console.verbose'],
+    drop: ['debugger']
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

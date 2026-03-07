@@ -54,8 +54,8 @@ cp ../.env.example ../.env
 ```env
 # Integram (для сохранения результатов)
 INTEGRAM_SERVER_URL=ai2o.ru
-INTEGRAM_SYSTEM_USERNAME=d
-INTEGRAM_SYSTEM_PASSWORD=d
+INTEGRAM_SYSTEM_USERNAME=your-integram-login
+INTEGRAM_SYSTEM_PASSWORD=your-integram-password
 
 # SOCKS proxy для ЕГРЮЛ/Роспатента (если есть)
 SOCKS_PROXY=socks5://127.0.0.1:9050

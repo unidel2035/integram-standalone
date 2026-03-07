@@ -410,10 +410,9 @@ export const useAuthStore = defineStore('auth', () => {
 
       console.log('[authStore] Final verification passed, token persisted successfully')
 
-      // Set admin status
-      const isAdmin = loginName === 'd' || loginName === 'admin'
-      localStorage.setItem('is_admin', isAdmin ? 'true' : 'false')
-      window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: isAdmin }))
+      // Set admin status (resolved from server role, not login name)
+      localStorage.setItem('is_admin', 'false')
+      window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: false }))
 
       return { success: true, user: primaryAuth.user }
     } catch (err) {

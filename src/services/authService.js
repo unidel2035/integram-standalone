@@ -71,14 +71,12 @@ export const useAuthStore = defineStore('auth', () => {
         { headers: { 'X-Authorization': token } }
       ).then(res => {
         const reqs = res.data?.reqs?.[id] || {}
-        const isAdmin = login === 'd' ||
-          Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
+        const isAdmin = Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
         localStorage.setItem('is_admin', isAdmin ? 'true' : 'false')
         window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: isAdmin }))
       }).catch(() => {
-        const fallback = login === 'd'
-        localStorage.setItem('is_admin', fallback ? 'true' : 'false')
-        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: fallback }))
+        localStorage.setItem('is_admin', 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: false }))
       })
     }
   }
@@ -198,14 +196,12 @@ export const useAuthStore = defineStore('auth', () => {
           { headers: { 'X-Authorization': primaryAuth.token } }
         )
         const reqs = adminCheck.data?.reqs?.[primaryAuth.id] || {}
-        const isAdmin = login === 'd' ||
-          Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
+        const isAdmin = Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
         localStorage.setItem('is_admin', isAdmin ? 'true' : 'false')
         window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: isAdmin }))
       } catch {
-        const fallback = login === 'd'
-        localStorage.setItem('is_admin', fallback ? 'true' : 'false')
-        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: fallback }))
+        localStorage.setItem('is_admin', 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: false }))
       }
 
       return { success: true, user: primaryAuth.user }

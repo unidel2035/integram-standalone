@@ -1434,10 +1434,10 @@ export default {
       // Credentials
       adminCredentials: 'Учетные данные администратора',
       adminLogin: 'Логин администратора',
-      adminLoginPlaceholder: 'd',
+      adminLoginPlaceholder: 'логин',
       adminLoginHelp: 'Логин администратора для базы ddadmin',
       adminPassword: 'Пароль администратора',
-      adminPasswordPlaceholder: 'd',
+      adminPasswordPlaceholder: 'пароль',
       adminPasswordHelp: 'Пароль администратора для базы ddadmin',
 
       // Tables

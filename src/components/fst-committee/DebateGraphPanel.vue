@@ -39,6 +39,14 @@
             :stroke-dasharray="edge.dash"
             :opacity="hoveredId && edge.sourceId !== hoveredId && edge.targetId !== hoveredId ? 0.15 : 0.75"
             marker-end="url(#arrow)"/>
+          <!-- Edge label at midpoint -->
+          <text
+            :x="edgeMid(edge).x" :y="edgeMid(edge).y - 4"
+            text-anchor="middle" font-size="8" :fill="edge.color"
+            :opacity="hoveredId && edge.sourceId !== hoveredId && edge.targetId !== hoveredId ? 0.1 : 0.85"
+            style="pointer-events:none;font-weight:600">
+            {{ relLabel(edge.relType) }}
+          </text>
         </g>
 
         <!-- Arrow marker -->
@@ -74,6 +82,62 @@
           <text :x="node.x" :y="node.y + node.r + 10"
             text-anchor="middle" font-size="7"
             :fill="node.color" opacity="0.8">{{ node.typeShort }}</text>
+        </g>
+
+        <!-- ── Concept panel (right side — UAV ontology) ─────────── -->
+        <g v-if="conceptNodes.length">
+          <!-- Separator line -->
+          <line
+            :x1="conceptPanelX - CONCEPT_PAD / 2" y1="8"
+            :x2="conceptPanelX - CONCEPT_PAD / 2" :y2="svgHeight - 8"
+            stroke="var(--p-surface-border, #334155)" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+
+          <!-- Column header -->
+          <text :x="conceptPanelX + CONCEPT_W / 2" y="18"
+            text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="600" opacity="0.9">
+            Онтология БПЛА
+          </text>
+
+          <!-- Concept edges (arg → concept, dashed semantic refs) -->
+          <line v-for="ce in conceptEdges" :key="ce.id"
+            :x1="ce.sx" :y1="ce.sy"
+            :x2="ce.tx" :y2="ce.ty"
+            :stroke="ce.color" stroke-width="1" stroke-dasharray="3,3" opacity="0.35"
+            :class="{ 'dgp-concept-edge--active': hoveredId === ce.argId || hoveredConcept === ce.tx + ',' + ce.ty }"/>
+
+          <!-- Concept nodes -->
+          <g v-for="(cn, idx) in conceptNodes" :key="cn.id"
+            class="dgp-node"
+            @mouseenter="hoveredConcept = String(cn.id)"
+            @mouseleave="hoveredConcept = null">
+            <!-- glow on hover -->
+            <circle v-if="hoveredConcept === String(cn.id)"
+              :cx="conceptPanelX + 16" :cy="conceptY(idx)" r="22"
+              :fill="cn.color + '22'" stroke="none"/>
+            <!-- main circle -->
+            <circle
+              :cx="conceptPanelX + 16" :cy="conceptY(idx)" r="16"
+              :fill="cn.color + '22'"
+              :stroke="cn.color"
+              stroke-width="1.5"/>
+            <!-- icon -->
+            <text :x="conceptPanelX + 16" :y="conceptY(idx) + 5"
+              text-anchor="middle" font-size="12" style="pointer-events:none">
+              {{ cn.icon }}
+            </text>
+            <!-- name label -->
+            <text :x="conceptPanelX + 36" :y="conceptY(idx) - 4"
+              font-size="8" :fill="cn.color" font-weight="600"
+              style="pointer-events:none">
+              {{ cn.name }}
+            </text>
+            <!-- arg count badge -->
+            <text :x="conceptPanelX + 36" :y="conceptY(idx) + 8"
+              font-size="7" fill="#94a3b8"
+              style="pointer-events:none">
+              {{ cn.argIds.length }} аргум.
+            </text>
+          </g>
         </g>
       </svg>
     </div>
@@ -115,13 +179,26 @@ const props = defineProps({
 })
 
 // ── Layout constants ─────────────────────────────────────────────
-const COL_W    = 90
-const NODE_R   = 10
-const ROW_H    = 44
-const TOP_PAD  = 36
-const SIDE_PAD = 20
+const COL_W        = 90
+const NODE_R       = 10
+const ROW_H        = 44
+const TOP_PAD      = 36
+const SIDE_PAD     = 20
+const CONCEPT_PAD  = 24   // правая панель — отступ от агентов
+const CONCEPT_W    = 130  // ширина панели концептов
 
-const svgWidth  = computed(() => AGENTS.length * COL_W + SIDE_PAD * 2)
+// ── Ontology concept mapping (dimension → UAV ontology) ──────────
+const DIM_CONCEPTS = {
+  trl:         { id: 1692106, name: 'Технологии БПЛА',       color: '#6366f1', icon: '🔬' },
+  market:      { id: 1692153, name: 'Применение БПЛА',       color: '#10b981', icon: '🗺️' },
+  sovereignty: { id: 1692207, name: 'Сертификация',          color: '#f59e0b', icon: '🛡️' },
+  finance:     { id: 1692035, name: 'Объём рынка',           color: '#3b82f6', icon: '📊' },
+  risk:        { id: 1692200, name: 'Регулирование БПЛА',    color: '#ef4444', icon: '⚖️' },
+  team:        { id: 1692067, name: 'Производители БПЛА',    color: '#8b5cf6', icon: '👥' },
+  general:     { id: 1673296, name: 'БПЛА / Дрон',           color: '#6b7280', icon: '🚁' },
+}
+
+const svgWidth  = computed(() => AGENTS.length * COL_W + SIDE_PAD * 2 + CONCEPT_PAD + CONCEPT_W)
 const svgHeight = computed(() => {
   const n = props.session?.arguments?.length || 0
   return Math.max(180, n * ROW_H + TOP_PAD + 30)
@@ -178,19 +255,37 @@ const nodeMap = computed(() => {
 
 // ── Edges ────────────────────────────────────────────────────────
 const RELATION_LEGEND = [
-  { type: 'challenges',    color: '#ef5350', label: 'Вызов',     dash: 'none' },
-  { type: 'isResponseTo',  color: '#42a5f5', label: 'Ответ',     dash: 'none' },
-  { type: 'supports',      color: '#66bb6a', label: 'Поддержка', dash: '4,2' },
-  { type: 'contradicts',   color: '#ff7043', label: 'Противор.', dash: '2,2' },
-  { type: 'synthesizes',   color: '#ab47bc', label: 'Синтез',    dash: '6,2' },
+  // Базовые
+  { type: 'challenges',         color: '#ef5350', label: 'Вызов',          dash: 'none' },
+  { type: 'isResponseTo',       color: '#42a5f5', label: 'Ответ',          dash: 'none' },
+  { type: 'supports',           color: '#66bb6a', label: 'Поддержка',      dash: '4,2' },
+  { type: 'contradicts',        color: '#ff7043', label: 'Противоречие',   dash: '2,2' },
+  { type: 'synthesizes',        color: '#ab47bc', label: 'Синтез',         dash: '6,2' },
+  // Тулминовские атаки (Этап 1)
+  { type: 'challengesWarrant',  color: '#ef5350', label: 'Атака логики',   dash: '3,2' },
+  { type: 'challengesData',     color: '#e53935', label: 'Атака данных',   dash: '3,2' },
+  { type: 'challengesBacking',  color: '#c62828', label: 'Атака источника',dash: '3,2' },
+  // Эпистемические (Этап 2)
+  { type: 'concedesTo',         color: '#26c6da', label: 'Признание',      dash: '4,3' },
+  { type: 'retracts',           color: '#78909c', label: 'Отзыв',          dash: '2,3' },
+  { type: 'commitsOn',          color: '#ffa726', label: 'Обязательство',  dash: '5,2' },
 ]
 
 const REL_COLOR = Object.fromEntries(RELATION_LEGEND.map(r => [r.type, r.color]))
 const REL_DASH  = Object.fromEntries(RELATION_LEGEND.map(r => [r.type, r.dash]))
 
+// Фолбэк для неизвестных типов — транслитерируем camelCase → читаемый вид
+const FALLBACK_LABELS = {
+  votesOn:      'Голос',
+  raisesIssue:  'Поднимает вопрос',
+  takesPosition:'Занимает позицию',
+}
+
 function relColor(type) { return REL_COLOR[type] || '#888' }
 function relLabel(type) {
-  return RELATION_LEGEND.find(r => r.type === type)?.label || type
+  return RELATION_LEGEND.find(r => r.type === type)?.label
+    || FALLBACK_LABELS[type]
+    || type
 }
 
 const edges = computed(() => {
@@ -203,6 +298,7 @@ const edges = computed(() => {
         id:       `${node.id}-${rel.type}-${rel.targetId}`,
         sourceId: node.id,
         targetId: rel.targetId,
+        relType:  rel.type,
         sx: node.x, sy: node.y,
         tx: target.x, ty: target.y,
         color: relColor(rel.type),
@@ -213,26 +309,87 @@ const edges = computed(() => {
   return result
 })
 
-function edgePath(e) {
-  const r = 11 // node radius clearance
-  // Start/end offset from node centers
+function edgePoints(e) {
+  const r = 11
   const dx = e.tx - e.sx
   const dy = e.ty - e.sy
   const dist = Math.sqrt(dx * dx + dy * dy) || 1
   const sx = e.sx + (dx / dist) * r
   const sy = e.sy + (dy / dist) * r
-  const tx = e.tx - (dx / dist) * (r + 4) // extra for arrow
+  const tx = e.tx - (dx / dist) * (r + 4)
   const ty = e.ty - (dy / dist) * (r + 4)
-  // Bezier control point — curve to the side
   const mx = (sx + tx) / 2 + (dy / dist) * 25
   const my = (sy + ty) / 2 - (dx / dist) * 25
+  return { sx, sy, tx, ty, mx, my }
+}
+
+function edgePath(e) {
+  const { sx, sy, tx, ty, mx, my } = edgePoints(e)
   return `M ${sx} ${sy} Q ${mx} ${my} ${tx} ${ty}`
 }
 
+function edgeMid(e) {
+  const { sx, sy, tx, ty, mx, my } = edgePoints(e)
+  // Point at t=0.5 on quadratic bezier
+  const x = 0.25 * sx + 0.5 * mx + 0.25 * tx
+  const y = 0.25 * sy + 0.5 * my + 0.25 * ty
+  return { x, y }
+}
+
+// ── Concept nodes (right panel) ───────────────────────────────────
+const conceptPanelX = computed(() => AGENTS.length * COL_W + SIDE_PAD * 2 + CONCEPT_PAD)
+
+// Уникальные концепты из аргументов текущей сессии
+const conceptNodes = computed(() => {
+  if (!props.session?.arguments) return []
+  const seen = new Set()
+  const result = []
+  for (const arg of props.session.arguments) {
+    const dim = arg.dimension || 'general'
+    const info = DIM_CONCEPTS[dim] || DIM_CONCEPTS.general
+    if (!seen.has(info.id)) {
+      seen.add(info.id)
+      result.push({ ...info, dim, argIds: [] })
+    }
+    result.find(c => c.id === info.id)?.argIds.push(arg.id)
+  }
+  return result
+})
+
+// Позиция концепт-ноды в правой панели
+function conceptY(idx) {
+  return TOP_PAD + idx * 56
+}
+
+// Рёбра: аргумент → концепт (semantic references)
+const conceptEdges = computed(() => {
+  if (!props.session?.arguments) return []
+  const result = []
+  props.session.arguments.forEach((arg, argIdx) => {
+    const dim = arg.dimension || 'general'
+    const info = DIM_CONCEPTS[dim] || DIM_CONCEPTS.general
+    const cIdx = conceptNodes.value.findIndex(c => c.id === info.id)
+    if (cIdx < 0) return
+    const agent = AGENTS.find(a => a.id === arg.agentId)
+    result.push({
+      id:      `ce_${arg.id}`,
+      argId:   arg.id,
+      sx:      colX(arg.agentId),
+      sy:      rowY(argIdx),
+      tx:      conceptPanelX.value,
+      ty:      conceptY(cIdx),
+      color:   info.color,
+      agentColor: agent?.color || '#888',
+    })
+  })
+  return result
+})
+
 // ── Interaction ──────────────────────────────────────────────────
-const hoveredId    = ref(null)
-const selectedNode = ref(null)
-const scrollWrap   = ref(null)
+const hoveredId      = ref(null)
+const hoveredConcept = ref(null)
+const selectedNode   = ref(null)
+const scrollWrap     = ref(null)
 
 const connectedSet = computed(() => {
   if (!hoveredId.value) return new Set()

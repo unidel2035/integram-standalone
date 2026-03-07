@@ -12,8 +12,24 @@ import {
   PHASES, PHASE_ORDER, VERDICTS, TIMING, SPEED_MULTIPLIERS,
   RECOMMENDATION_TEMPLATES, REVISION_SIMULATION_STEPS, METRIC_FIELD_MAP, METRIC_CLAMP,
 } from './FstCommitteeConfig.js'
-import { generateArgumentAI, fetchKagContext, clearKagCache } from './fstCommitteeAI.js'
+import { generateArgumentAI, fetchKagContext, clearKagCache, generateNodeProposalAI, generateNodeVoteAI } from './fstCommitteeAI.js'
 import { annotateArg } from './fstCommitteeOntology.js'
+import {
+  detectPortfolioOverlap,
+  tagSessionWithConcepts,
+  recordSessionDecision,
+  linkArgumentToConcept,
+  LINK_TYPES,
+} from '@/services/fstLinksService.js'
+
+// Концепты онтологии для ключевых измерений (dimension → concept)
+const DIM_CONCEPTS = {
+  trl:         { id: 1692106, name: 'Технологии БПЛА' },
+  market:      { id: 1692153, name: 'Применение БПЛА' },
+  sovereignty: { id: 1692207, name: 'Сертификация и лётная годность' },
+  finance:     { id: 1692035, name: 'Объём рынка' },
+  risk:        { id: 1692200, name: 'Регулирование БПЛА' },
+}
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
 function rand(lo, hi) { return lo + Math.random() * (hi - lo) }
@@ -159,6 +175,9 @@ export function createSession(project, options = {}) {
     events: [],
     startedAt: null,
     concludedAt: null,
+    nodeProposals:  [],   // предложения агентов по нодам
+    contractNodes:  [],   // финальные согласованные ноды
+    nodeVotes:      [],   // протокол голосования по нодам
   }
 }
 
@@ -231,6 +250,21 @@ export class FstCommitteeEngine {
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
 
     const project = this.session.project
+
+    // ── Links: обнаружить пересечения с портфелем ────────────
+    detectPortfolioOverlap(project.subFund || 'БАС').then(overlaps => {
+      this.session._portfolioOverlaps = overlaps
+      if (overlaps.length > 0) {
+        this.emit('PortfolioOverlapDetected', { overlaps })
+      }
+    }).catch(() => { this.session._portfolioOverlaps = [] })
+
+    // ── Links: авто-тег сессии концептами по субфонду ────────
+    tagSessionWithConcepts(this.session.id, project.subFund || 'БАС').then(links => {
+      this.session._conceptLinks = links
+      this.emit('SessionTagged', { concepts: links.map(l => l.targetId) })
+    }).catch(() => {})
+
     // All agents "read documents" in parallel (staggered start)
     const agentPromises = AGENTS.map(async (agent, idx) => {
       await this.delay(idx * 400)
@@ -410,15 +444,54 @@ export class FstCommitteeEngine {
     }
     this.session.decision.humanApproval = approval
     this.emit(`Decision${verdict.charAt(0) + verdict.slice(1).toLowerCase()}d`, { approval })
+
+    if (verdict === 'APPROVE') {
+      // Запускаем согласование нод контракта → голосование → завершение
+      this._phaseNodeNegotiation()
+        .then(() => { if (this._running) return this._phaseNodeVoting() })
+        .then(() => { if (this._running) this._concludeSession(verdict) })
+        .catch(e => { if (this._running) { console.error('[Engine] node phase error:', e); this._concludeSession(verdict) } })
+    } else {
+      this._concludeSession(verdict)
+    }
+  }
+
+  _concludeSession(verdict) {
     this._transitionPhase('CONCLUDED')
     this.session.concludedAt = Date.now()
     this.emit('SessionConcluded', {
-      sessionId: this.session.id,
+      sessionId:    this.session.id,
       finalVerdict: verdict,
-      score: this.session.decision.aggregatedScore,
+      score:        this.session.decision.aggregatedScore,
     })
 
-    // Auto-generate recommendations (always, for any verdict)
+    // ── Links: зафиксировать решение как связь session → company ──
+    const project = this.session.project
+    const score   = this.session.decision?.aggregatedScore || 0
+    if (project.companyId || project.id) {
+      recordSessionDecision(
+        this.session.id,
+        project.companyId || project.id,
+        project.title || project.company || 'Проект',
+        verdict,
+        score,
+      ).then(link => {
+        this.session._decisionLink = link
+        this.emit('DecisionLinked', { link, verdict })
+      }).catch(() => {})
+    }
+
+    // ── Links: связать аргументы с концептами по dimension ───
+    const dimArgs = this.session.arguments.filter(a => a.dimension && DIM_CONCEPTS[a.dimension])
+    for (const arg of dimArgs.slice(0, 10)) {
+      const concept = DIM_CONCEPTS[arg.dimension]
+      if (concept) {
+        linkArgumentToConcept(arg.id, concept.id, concept.name, Math.round((arg.strength || 0.7) * 100))
+          .catch(() => {})
+      }
+    }
+
+    // Auto-generate recommendations
     const recs = generateRecommendations(this.session.decision, this.session.project)
     this.session.recommendations = recs
     this.emit('RecommendationsGenerated', { recommendations: recs, verdict })
@@ -459,6 +532,215 @@ export class FstCommitteeEngine {
     return createSession(this.session.revisedProject, {
       speed: Object.entries(SPEED_MULTIPLIERS).find(([, v]) => v === this.session.speed)?.[0] || 'normal',
     })
+  }
+
+  // ── Phase: NODE_NEGOTIATION ───────────────────────────────
+
+  async _phaseNodeNegotiation() {
+    this._transitionPhase('NODE_NEGOTIATION')
+    await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+    const project = this.session.project
+    this.session.nodeProposals = []
+
+    // Раунд 1: каждый агент предлагает параметры нод
+    for (const agent of AGENTS) {
+      if (!this._running) return
+      this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Формирую ноды контракта...' })
+      let proposal = null
+      try {
+        proposal = await generateNodeProposalAI(agent, project, this.session.nodeProposals, 1)
+      } catch { /* fallback ниже */ }
+
+      if (!proposal) proposal = this._fallbackNodeProposal(agent, project, 1)
+      this.session.nodeProposals.push(proposal)
+      this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
+      this.emit('NodeProposed', { agentId: agent.id, proposal, round: 1 })
+      await this.delay(500)
+    }
+
+    // Раунд 2: 3 агента вносят правки (challenge)
+    const challengers = [...AGENTS].sort(() => Math.random() - 0.5).slice(0, 3)
+    for (const agent of challengers) {
+      if (!this._running) return
+      this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Уточняю параметры...' })
+      let proposal = null
+      try {
+        proposal = await generateNodeProposalAI(agent, project, this.session.nodeProposals, 2)
+      } catch { /* fallback */ }
+
+      if (!proposal) proposal = this._fallbackNodeProposal(agent, project, 2)
+      this.session.nodeProposals.push(proposal)
+      this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
+      this.emit('NodeProposed', { agentId: agent.id, proposal, round: 2, type: 'CHALLENGE' })
+      await this.delay(400)
+    }
+
+    // Синтез: взвешенное среднее предложений → 3 финальных ноды
+    const finalNodes = this._synthesizeNodes(this.session.nodeProposals, project)
+    this.session.contractNodes = finalNodes
+    this.emit('NodesSynthesized', { nodes: finalNodes })
+    await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+  }
+
+  // ── Phase: NODE_VOTING ────────────────────────────────────
+
+  async _phaseNodeVoting() {
+    this._transitionPhase('NODE_VOTING')
+    await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+    this.session.nodeVotes = []
+    const project = this.session.project
+    const MAX_ROUNDS = 2
+
+    for (let round = 1; round <= MAX_ROUNDS; round++) {
+      if (!this._running) return
+      const roundVotes = []
+      for (const agent of AGENTS) {
+        if (!this._running) return
+        this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Голосую по нодам...' })
+        let vote = null
+        try {
+          vote = await generateNodeVoteAI(agent, this.session.contractNodes, project)
+        } catch { /* fallback */ }
+
+        if (!vote) vote = { agentId: agent.id, verdict: 'ACCEPT', comment: '' }
+        vote.round = round
+        roundVotes.push(vote)
+        this.session.nodeVotes.push(vote)
+        this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
+        this.emit('NodeVoteCast', { agentId: agent.id, vote, round })
+        await this.delay(400)
+      }
+
+      const rejects = roundVotes.filter(v => v.verdict === 'REJECT')
+      if (rejects.length === 0) {
+        // Единогласное утверждение!
+        this.emit('ContractNodesApproved', {
+          nodes:     this.session.contractNodes,
+          votes:     this.session.nodeVotes,
+          unanimous: true,
+          round,
+        })
+        return
+      }
+
+      if (round < MAX_ROUNDS) {
+        // Корректируем ноды по замечаниям несогласных
+        this.session.contractNodes = this._adjustNodes(this.session.contractNodes, rejects)
+        this.emit('NodesSynthesized', { nodes: this.session.contractNodes, adjustmentRound: round + 1 })
+        await this.delay(800)
+      }
+    }
+
+    // После max раундов — принудительно утверждаем (большинство приняло)
+    this.emit('ContractNodesApproved', {
+      nodes:     this.session.contractNodes,
+      votes:     this.session.nodeVotes,
+      unanimous: false,
+      round:     MAX_ROUNDS,
+    })
+  }
+
+  // ── Node helpers ──────────────────────────────────────────
+
+  _fallbackNodeProposal(agent, project, round) {
+    const ic  = Math.round((project.askRub || 100_000_000) / 1_000_000)
+    const irr = project.projectedIRR || 0.30
+    const mult = agent.bias === 'optimist' ? 1.15 : agent.bias === 'pessimist' ? 0.85 : 1.0
+    const makeCf = (baseMult) => {
+      const base = ic * irr * baseMult
+      return [1, 2, 3, 4, 5].map(t => +(base * t / 5 * mult).toFixed(1))
+    }
+    return {
+      agentId: agent.id,
+      round,
+      nodes: {
+        pessimistic: { ic: Math.round(ic * 1.2), wacc: 22, cf: makeCf(0.55), expectedIrr: 12, rationale: 'Консервативная оценка' },
+        base:        { ic,                        wacc: 18, cf: makeCf(1.0),  expectedIrr: Math.round(irr * 100), rationale: 'Базовый сценарий' },
+        optimistic:  { ic: Math.round(ic * 0.85), wacc: 14, cf: makeCf(1.45), expectedIrr: Math.round(irr * 100 * 1.4), rationale: 'Оптимистичный' },
+      }
+    }
+  }
+
+  _synthesizeNodes(proposals, project) {
+    const scenarios = ['pessimistic', 'base', 'optimistic']
+    const labels    = { pessimistic: 'Консервативный', base: 'Базовый', optimistic: 'Оптимистичный' }
+    const probs     = { pessimistic: 25, base: 50, optimistic: 25 }
+
+    return scenarios.map(sc => {
+      // Средние по всем предложениям
+      const scProposals = proposals.map(p => p.nodes?.[sc]).filter(Boolean)
+      const n = scProposals.length || 1
+      const ic   = Math.round(scProposals.reduce((s, p) => s + (p.ic || 100), 0) / n)
+      const wacc = +(scProposals.reduce((s, p) => s + (p.wacc || 18), 0) / n).toFixed(1)
+      const cfLen = Math.max(...scProposals.map(p => p.cf?.length || 5))
+      const cf = Array.from({ length: cfLen }, (_, i) => {
+        const vals = scProposals.map(p => p.cf?.[i] ?? 0)
+        return +(vals.reduce((a, b) => a + b, 0) / n).toFixed(1)
+      })
+
+      // Расчёт метрик
+      const r   = wacc / 100
+      const npv = cf.reduce((acc, c, t) => acc + c / Math.pow(1 + r, t + 1), -ic)
+      const irr = this._calcIrr(cf, ic)
+      const roi = ((cf.reduce((a, b) => a + b, 0) - ic) / ic) * 100
+      const pi  = (npv + ic) / ic
+      const dpp = this._calcDpp(cf, ic, r)
+
+      return {
+        id:          `node_${sc}_${Date.now()}`,
+        scenario:    sc,
+        label:       labels[sc],
+        ic, wacc, n: cfLen, cashflows: cf,
+        npv: +npv.toFixed(2),
+        irr,
+        roi: +roi.toFixed(1),
+        pi:  +pi.toFixed(2),
+        dpp,
+        probability: probs[sc],
+        status:      'draft',
+      }
+    })
+  }
+
+  _adjustNodes(nodes, rejects) {
+    // Небольшая коррекция: снижаем IC на 5%, добавляем 10% к CF оптимистичного
+    return nodes.map(n => {
+      const adjusted = { ...n, cashflows: [...n.cashflows] }
+      if (n.scenario === 'pessimistic') {
+        adjusted.ic = Math.round(n.ic * 0.95)
+      } else if (n.scenario === 'optimistic') {
+        adjusted.cashflows = n.cashflows.map(c => +(c * 1.10).toFixed(1))
+      }
+      const r   = adjusted.wacc / 100
+      const cf  = adjusted.cashflows.slice(0, adjusted.n)
+      adjusted.npv = +cf.reduce((acc, c, t) => acc + c / Math.pow(1 + r, t + 1), -adjusted.ic).toFixed(2)
+      adjusted.irr = this._calcIrr(cf, adjusted.ic)
+      adjusted.pi  = +((adjusted.npv + adjusted.ic) / adjusted.ic).toFixed(2)
+      return adjusted
+    })
+  }
+
+  _calcIrr(cf, ic) {
+    let r = 0.1
+    for (let i = 0; i < 200; i++) {
+      const f  = cf.reduce((acc, c, t) => acc + c / Math.pow(1 + r, t + 1), -ic)
+      const df = cf.reduce((acc, c, t) => acc - (t + 1) * c / Math.pow(1 + r, t + 2), 0)
+      if (Math.abs(df) < 1e-12) break
+      const rNew = r - f / df
+      if (Math.abs(rNew - r) < 1e-6) { r = rNew; break }
+      r = Math.max(rNew, -0.99)
+    }
+    return r
+  }
+
+  _calcDpp(cf, ic, r) {
+    let cum = -ic
+    for (let t = 0; t < cf.length; t++) {
+      const disc = cf[t] / Math.pow(1 + r, t + 1)
+      if (cum + disc >= 0) return +(t + 1 - cum / (disc || 1)).toFixed(1)
+      cum += disc
+    }
+    return null
   }
 
   // ── Helpers ───────────────────────────────────────────────
