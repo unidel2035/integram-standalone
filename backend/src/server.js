@@ -22,6 +22,7 @@ import { fileURLToPath } from 'url'
 import portfolioRoutes from './api/routes/portfolio.js'
 import applicationsRoutes from './api/routes/applications.js'
 import webhooksRoutes from './api/routes/webhooks.js'
+import glossaryRoutes from './api/routes/glossary.js'
 import { authenticateApiToken, validateWebhookSecret } from './api/middleware/auth.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -85,6 +86,9 @@ app.use('/api/fst', apiLimiter, authenticateApiToken, applicationsRoutes)
 
 // Webhook endpoints (с webhook secret validation)
 app.use('/api/fst/webhook', validateWebhookSecret, webhooksRoutes)
+
+// Glossary endpoints (public - no auth required for MCP tools)
+app.use('/api/glossary', glossaryRoutes)
 
 // 404 handler
 app.use((req, res) => {
