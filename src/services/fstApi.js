@@ -429,7 +429,7 @@ export async function getPortfolio() {
   const seen = new Map()
   for (const obj of objects) {
     const existing = seen.get(obj.val)
-    if (\!existing || Number(obj.id) > Number(existing.id)) seen.set(obj.val, obj)
+    if (!existing || Number(obj.id) > Number(existing.id)) seen.set(obj.val, obj)
   }
   const deduped = Array.from(seen.values())
 

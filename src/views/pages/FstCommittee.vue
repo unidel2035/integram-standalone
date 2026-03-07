@@ -158,6 +158,12 @@
             <i class="pi pi-check-circle" style="color:#4caf50"></i>
             Сохранено в KAG ({{ kagSavedCount }} сущностей)
           </span>
+          <Button v-if="!intSaved" label="Сохранить в СОД" icon="pi pi-sitemap"
+            severity="secondary" size="small" :loading="intSaving" @click="saveToIntegram" />
+          <span v-else class="fst-kag-saved">
+            <i class="pi pi-check-circle" style="color:#7e57c2"></i>
+            СОД #{{ intEventId }}
+          </span>
           <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession"
             style="margin-left:auto" />
         </div>
@@ -528,7 +534,7 @@ import {
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
 import { saveDecision, createProject, saveCommitteeSession, STATUSES } from '@/services/fstApi'
-import { saveSessionToKag } from '@/components/fst-committee/fstCommitteeAI.js'
+import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-committee/fstCommitteeAI.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
 import { useFstData } from '@/composables/useFstData.js'
@@ -569,6 +575,29 @@ const debateTab = ref('timeline')
 const kagSaving    = ref(false)
 const kagSaved     = ref(false)
 const kagSavedCount = ref(0)
+
+// Integram СОД save state
+const intSaving  = ref(false)
+const intSaved   = ref(false)
+const intEventId = ref(null)
+
+async function saveToIntegram() {
+  if (!session.value || intSaving.value) return
+  intSaving.value = true
+  try {
+    const result = await saveSessionToIntegram(session.value)
+    if (result.eventId) {
+      intEventId.value = result.eventId
+      intSaved.value = true
+    } else {
+      console.error('Integram save error:', result.error)
+    }
+  } catch (e) {
+    console.error('Integram save error:', e)
+  } finally {
+    intSaving.value = false
+  }
+}
 
 async function saveToKag() {
   if (!session.value || kagSaving.value) return
@@ -754,6 +783,8 @@ function resetSession() {
   debateTab.value = 'timeline'
   kagSaved.value = false
   kagSavedCount.value = 0
+  intSaved.value = false
+  intEventId.value = null
   lobbyVisible.value = true
 }
 

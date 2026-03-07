@@ -413,3 +413,86 @@ export async function generateAllOpenings(agents, project) {
     agents.map(agent => generateArgumentAI(agent, 'OPENING', project, [], null))
   )
 }
+
+
+// ── Сохранение сессии в СОД (Предметные события) ─────────────────────────────
+
+const FST_SERVER_AI   = import.meta.env?.VITE_FST_SERVER || 'https://ai2o.ru'
+const FST_DB_AI       = import.meta.env?.VITE_FST_DB     || 'fst'
+const TYPE_SOD_EVENTS = 2451   // СОД Предметные события
+const REQ_SOD_DATE    = 2458   // Дата
+const REQ_SOD_EFFECT  = 2460   // Эффект
+const REQ_SOD_SOURCE  = 2461   // Источник
+const REQ_SOD_ACTORS  = 3007   // Акторы (MULTI ref → 2406)
+const ACTOR_IK_MAIN   = 2527   // "ИИ-инвесткомитет" (общий актор ИК)
+
+/**
+ * Сохраняет результат заседания ИК как Предметное событие в СОД.
+ * Каждый участвовавший агент → его sodActorId привязывается к событию.
+ * Замыкает цикл: Агент ИК (3674) → СОД Актор (2406) → Предметное событие (2451).
+ */
+export async function saveSessionToIntegram(session) {
+  try {
+    const { authenticate } = await import('@/services/fstApi.js')
+    const { loadAgents }   = await import('@/services/fstAgentsService.js')
+
+    const { token, xsrf } = await authenticate()
+    const agents = await loadAgents()
+
+    // Словарь sodActorId по id агента
+    const actorMap = {}
+    if (agents) {
+      for (const a of agents) {
+        if (a.sodActorId) actorMap[a.id] = a.sodActorId
+      }
+    }
+
+    const decision = session.decision || {}
+    const project  = session.project  || {}
+    const rec      = decision.recommendation || 'DEFER'
+    const score    = decision.aggregatedScore != null ? Number(decision.aggregatedScore).toFixed(2) : '—'
+    const now      = new Date().toISOString()
+    const title    = `ИК ФСТ: ${project.title || session.projectId} — ${new Date().toLocaleDateString('ru')}`
+
+    const effect = [
+      `Решение: ${rec}`,
+      `Балл: ${score}`,
+      decision.conditions?.length ? `Условия: ${decision.conditions.slice(0, 2).join('; ')}` : '',
+      decision.risks?.length      ? `Риски: ${decision.risks.slice(0, 2).join('; ')}`         : '',
+    ].filter(Boolean).join('\n')
+
+    // Собираем ID акторов: главный "ИИ-инвесткомитет" + конкретные агенты
+    const participantIds = [String(ACTOR_IK_MAIN)]
+    const participantAgentIds = [...new Set(
+      (session.arguments || []).map(a => a.agentId).filter(Boolean)
+    )]
+    for (const agId of participantAgentIds) {
+      if (actorMap[agId]) participantIds.push(String(actorMap[agId]))
+    }
+
+    // Создаём Предметное событие
+    const body = new URLSearchParams()
+    body.set(`t${TYPE_SOD_EVENTS}`, title)
+    body.set(`t${REQ_SOD_DATE}`,    now)
+    body.set(`t${REQ_SOD_EFFECT}`,  effect)
+    body.set(`t${REQ_SOD_SOURCE}`,  'ИИ-инвесткомитет FST')
+    for (const actorId of participantIds) {
+      body.append(`t${REQ_SOD_ACTORS}`, actorId)
+    }
+    body.set('_xsrf', xsrf)
+
+    const res = await fetch(`${FST_SERVER_AI}/${FST_DB_AI}/_m_new/${TYPE_SOD_EVENTS}?JSON_KV`, {
+      method:  'POST',
+      headers: { 'X-Authorization': token, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    })
+    const data = await res.json()
+    if (data.error) return { error: data.error }
+
+    const eventId = data.obj || data.id
+    return { eventId, actorCount: participantIds.length }
+  } catch (e) {
+    console.warn('[saveSessionToIntegram]', e.message)
+    return { error: e.message }
+  }
+}
