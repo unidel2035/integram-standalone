@@ -425,7 +425,15 @@ export async function getPortfolio() {
   const data = await api(`_m_list/${TYPE_PORTFOLIO}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
-  return objects.map(obj => {
+  // Дедупликация: если есть несколько записей для одного имени, берём с наибольшим ID (самая свежая)
+  const seen = new Map()
+  for (const obj of objects) {
+    const existing = seen.get(obj.val)
+    if (\!existing || Number(obj.id) > Number(existing.id)) seen.set(obj.val, obj)
+  }
+  const deduped = Array.from(seen.values())
+
+  return deduped.map(obj => {
     const r = reqs[obj.id] || {}
 
     // Метрики JSON (реквизит 3521)
@@ -438,12 +446,12 @@ export async function getPortfolio() {
     return {
       id:          obj.id,
       name:        obj.val,
-      kpi:         Number(r['1170'] || 0),
-      aiReport:    r['1171'] || '',
-      updatedAt:   r['1172'] || null,
-      riskStatusId: r['1183'] || null,
-      projectId:   r['1185'] || null,
-      dealId:      r['1196'] || null,
+      kpi:          Number(r['2242'] || 0),     // KPI прогресс, %
+      aiReport:     r['3507'] || '',             // AI отчёт портфельной компании
+      updatedAt:    r['3508'] || null,           // Дата обновления
+      riskStatusId: refId(r['1198']) || null,   // Риск-статус (ref→1088)
+      projectId:    refId(r['1195']) || null,   // Проект (ref→1155)
+      dealId:       refId(r['1197']) || null,   // Сделка (ref→1164)
       // Расширенные поля
       invested:    Number(r['3519'] || 0),
       nav:         Number(r['3520'] || 0),
