@@ -61,6 +61,23 @@
             {{ sp.label }}
           </div>
         </div>
+
+        <!-- AI режим -->
+        <div class="fst-ai-mode-row">
+          <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useAI }]" @click="useAI = !useAI">
+            <div class="fst-ai-toggle-knob"></div>
+          </div>
+          <div class="fst-ai-mode-label">
+            <span v-if="useAI">
+              <i class="pi pi-bolt" style="color:#a78bfa"></i>
+              <strong>Реальный AI</strong> — агенты реально думают и отвечают друг другу
+            </span>
+            <span v-else>
+              <i class="pi pi-server" style="color:#78909c"></i>
+              <strong>Шаблоны</strong> — быстрая симуляция без API-вызовов
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- ═══ FST Policy Settings ═══ -->
@@ -506,6 +523,7 @@ const lobbyVisible = ref(true)
 const conclusionVisible = ref(false)
 const selectedProjectId = ref(null)
 const selectedSpeed = ref('normal')
+const useAI = ref(true)
 const policyExpanded = ref(true)
 const humanComment = ref('')
 const session = ref(null)
@@ -657,7 +675,7 @@ function startSession() {
   if (!project) return
   lobbyVisible.value = false
 
-  const sess = createSession(project, { speed: selectedSpeed.value, policy: { ...fstPolicy.value } })
+  const sess = createSession(project, { speed: selectedSpeed.value, policy: { ...fstPolicy.value }, useAI: useAI.value })
   session.value = sess
 
   engine = new FstCommitteeEngine(sess, handleEvent)
@@ -1664,5 +1682,39 @@ onUnmounted(() => {
   margin-top: 12px;
   justify-content: center;
 }
+
+/* ── AI mode toggle ── */
+.fst-ai-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--fst-glass-xs);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 9px;
+}
+.fst-ai-toggle {
+  width: 40px; height: 22px;
+  border-radius: 11px;
+  background: var(--p-surface-border);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.fst-ai-toggle--on { background: #7c3aed; }
+.fst-ai-toggle-knob {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.fst-ai-toggle--on .fst-ai-toggle-knob { transform: translateX(18px); }
+.fst-ai-mode-label { font-size: 0.8125rem; color: var(--p-text-color); }
+.fst-ai-mode-label strong { font-weight: 600; }
 
 </style>

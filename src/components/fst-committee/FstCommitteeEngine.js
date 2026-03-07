@@ -12,6 +12,8 @@ import {
   PHASES, PHASE_ORDER, VERDICTS, TIMING, SPEED_MULTIPLIERS,
   RECOMMENDATION_TEMPLATES, REVISION_SIMULATION_STEPS, METRIC_FIELD_MAP, METRIC_CLAMP,
 } from './FstCommitteeConfig.js'
+import { generateArgumentAI } from './fstCommitteeAI.js'
+import { annotateArg } from './fstCommitteeOntology.js'
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
 function rand(lo, hi) { return lo + Math.random() * (hi - lo) }
@@ -138,6 +140,7 @@ export function createSession(project, options = {}) {
     phase: 'IDLE',
     phaseIndex: 0,
     speed,
+    useAI: options.useAI !== false,   // по умолчанию включён
     roundNumber: project._roundNumber || 1,
     agents: AGENTS,
     arguments: [],
@@ -449,20 +452,61 @@ export class FstCommitteeEngine {
 
   async _agentSpeak(agent, type, targetArgId = null) {
     if (!this._running) return null
-    const project = this.session.project
+    const project  = this.session.project
+    const useAI    = this.session.useAI !== false  // default: true
 
-    // Thinking phase
+    // ── Thinking: показываем анимацию пока идёт LLM-вызов ──
     this._setAgentStatus(agent.id, { thinking: true, thinkText: pick(agent.thinkingPhrases) })
-    await this.delay(TIMING.THINKING_DURATION)
+
+    // Меняем фразу в процессе долгого AI-вызова
+    let thinkInterval = null
+    if (useAI) {
+      let phraseIdx = 1
+      thinkInterval = setInterval(() => {
+        if (!this._running) { clearInterval(thinkInterval); return }
+        const phrase = agent.thinkingPhrases[phraseIdx % agent.thinkingPhrases.length]
+        this._setAgentStatus(agent.id, { thinkText: phrase })
+        phraseIdx++
+      }, 2500)
+    } else {
+      await this.delay(TIMING.THINKING_DURATION)
+    }
+
+    let arg = null
+
+    // ── AI-first: реальный LLM-вызов ──
+    if (useAI) {
+      try {
+        arg = await generateArgumentAI(agent, type, project, this.session.arguments, targetArgId)
+      } catch (e) {
+        console.warn('[FstCommitteeEngine] AI call failed, falling back to template:', e.message)
+      }
+    }
+
+    // ── Fallback: шаблонный аргумент ──
+    if (!arg) {
+      await this.delay(TIMING.THINKING_DURATION)
+      arg = generateArgument(agent, type, project, targetArgId)
+    }
+
+    if (thinkInterval) clearInterval(thinkInterval)
     this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
 
-    const arg = generateArgument(agent, type, project, targetArgId)
     if (!arg) return null
 
-    this.session.arguments.push(arg)
-    this.emit('ArgumentRaised', { argument: arg, agentId: agent.id, argType: type })
+    // ── Аннотируем онтологическими метаданными ──
+    const annotated = annotateArg(arg, this.session.arguments)
+
+    this.session.arguments.push(annotated)
+    this.emit('ArgumentRaised', {
+      argument:    annotated,
+      agentId:     agent.id,
+      argType:     type,
+      aiGenerated: annotated.aiGenerated || false,
+    })
+
     await this.delay(TIMING.ARGUMENT_DELAY)
-    return arg
+    return annotated
   }
 
   _transitionPhase(phase) {
