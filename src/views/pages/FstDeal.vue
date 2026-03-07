@@ -44,6 +44,7 @@
         >
           <Button icon="pi pi-arrow-left" label="ИК" severity="secondary" size="small" text @click="$router.push('/fst-committee')" />
         </LearnTooltip>
+        <Button icon="pi pi-question-circle" severity="secondary" size="small" text @click="toggleHelp" title="Помощь по странице" />
       </div>
     </div>
 
@@ -385,6 +386,9 @@
     <!-- Page Tutor -->
     <PageTutorButton pageId="fst-deal" :getContext="getPageContext" />
 
+    <!-- Page Help Drawer -->
+    <PageHelpDrawer v-model:visible="helpOpen" :page-help="pageHelp" />
+
   </div>
 </template>
 
@@ -404,9 +408,14 @@ import { useToast } from 'primevue/usetoast'
 import TemplateRenderer from '@/components/finmodel/TemplateRenderer.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import PageTutorButton from '@/components/PageTutorButton.vue'
+import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
+import { usePageHelp } from '@/composables/usePageHelp'
 import fstStartupTemplate from '@/templates/finmodel/fst_startup.json'
 
 const toast = useToast()
+
+// ── Page Help ─────────────────────────────────────────────────
+const { isOpen: helpOpen, pageHelp, toggleHelp } = usePageHelp('fst-deal')
 
 // ── Page Tutor Context ────────────────────────────────────────
 function getPageContext() {

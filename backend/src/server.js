@@ -84,6 +84,9 @@ app.use('/api/fst', apiLimiter, authenticateApiToken, portfolioRoutes)
 // Applications endpoints (public with auth token)
 app.use('/api/fst', apiLimiter, authenticateApiToken, applicationsRoutes)
 
+// Glossary endpoints (public with auth token) - MCP Tool for AI agents
+app.use('/api/fst', apiLimiter, authenticateApiToken, glossaryRoutes)
+
 // Webhook endpoints (с webhook secret validation)
 app.use('/api/fst/webhook', validateWebhookSecret, webhooksRoutes)
 

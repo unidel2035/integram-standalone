@@ -22,10 +22,18 @@
       </div>
       <div class="fex-header-right">
         <SelectButton v-model="viewMode" :options="viewModes" optionLabel="l" optionValue="v" :allowEmpty="false" size="small" />
-        <Button :icon="running ? 'pi pi-pause' : 'pi pi-play'"
-          :label="running ? 'Пауза' : 'Старт'"
-          :severity="running ? 'warn' : 'success'"
-          size="small" @click="toggleRun" />
+        <LearnTooltip
+          label="Симуляция исполнения"
+          what="Запускает симуляцию постинвестиционного периода: KPI растут/падают, события фонда генерируются, транши разблокируются"
+          when="Для понимания как фонд управляет компанией после инвестиции"
+          :terms="['Постинвест', 'Транш', 'KPI', 'Симуляция']"
+          hotkey="Space"
+        >
+          <Button :icon="running ? 'pi pi-pause' : 'pi pi-play'"
+            :label="running ? 'Пауза' : 'Старт'"
+            :severity="running ? 'warn' : 'success'"
+            size="small" @click="toggleRun" />
+        </LearnTooltip>
         <SelectButton v-model="speed" :options="speedOpts" optionLabel="l" optionValue="v" :allowEmpty="false" size="small" />
         <Button icon="pi pi-home" label="ФСТ" size="small" severity="secondary" text @click="$router.push('/fst')" />
         <Button icon="pi pi-arrow-left" label="Портфель" size="small" severity="secondary" text @click="$router.push('/fst-portfolio')" />
@@ -292,6 +300,7 @@ import Tag from 'primevue/tag'
 import SelectButton from 'primevue/selectbutton'
 import { useToast } from 'primevue/usetoast'
 import PageTutorButton from '@/components/PageTutorButton.vue'
+import LearnTooltip from '@/components/LearnTooltip.vue'
 
 const toast = useToast()
 

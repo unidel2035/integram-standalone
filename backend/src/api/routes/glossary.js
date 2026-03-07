@@ -1,165 +1,135 @@
-import express from 'express'
-
-const router = express.Router()
-
 /**
- * Glossary data - synced with frontend src/data/glossary.js
- * This allows MCP tools and AI agents to access term definitions
+ * Glossary API Routes
+ * MCP Tool: get_term_definition(term: string)
+ *
+ * Provides AI agents with access to venture capital glossary
+ * Issue #114 - feat(education): страница /fst-glossary
  */
+
+import { Router } from 'express'
+
+const router = Router()
+
+// Glossary data - synchronized with frontend src/data/glossary.js
+// In production, this could be stored in Integram database
 const glossaryTerms = {
-  // Financial terms
   irr: {
     id: 'irr',
     title: 'IRR — Внутренняя норма доходности',
     category: 'financial',
     definition: 'Ставка дисконтирования, при которой чистая приведённая стоимость (NPV) инвестиции равна нулю. Показывает эффективность инвестиций в % годовых.',
-    formula: 'IRR = 25% означает: ₽1 млн → ₽1.25 млн через год'
+    formula: 'IRR = 25% означает: ₽1 млн → ₽1.25 млн через год',
+    example: 'Фонд инвестировал ₽10 млн в стартап. Через 5 лет фонд получил ₽50 млн. IRR составил 38% годовых, что выше целевого показателя в 25%.',
+    relatedTerms: ['moic', 'dpi', 'tvpi', 'nav'],
+    context: 'Ключевая метрика для оценки доходности фонда и сравнения с альтернативными инвестициями.'
   },
   moic: {
     id: 'moic',
     title: 'MOIC — Множитель инвестиций',
     category: 'financial',
     definition: 'Отношение общей стоимости (выходы + текущая стоимость) к первоначальным инвестициям. Показывает, во сколько раз увеличился капитал.',
-    formula: 'MOIC = (Выходы + Текущая стоимость) / Инвестиции'
+    formula: 'MOIC = (Выходы + Текущая стоимость) / Инвестиции',
+    example: 'Инвестиция ₽5 млн, текущая оценка портфеля ₽15 млн. MOIC = 3.0x — капитал утроился.',
+    relatedTerms: ['irr', 'dpi', 'tvpi'],
+    context: 'Простая метрика для быстрой оценки успешности инвестиции без учёта времени.'
   },
-  dpi: {
-    id: 'dpi',
-    title: 'DPI — Реализованная стоимость',
-    category: 'financial',
-    definition: 'Distributions to Paid-In — отношение распределённых средств к внесённому капиталу. Показывает реальные денежные возвраты.',
-    formula: 'DPI = Распределения / Внесённый капитал'
-  },
-  tvpi: {
-    id: 'tvpi',
-    title: 'TVPI — Общая стоимость',
-    category: 'financial',
-    definition: 'Total Value to Paid-In — сумма распределений и остаточной стоимости портфеля к внесённому капиталу.',
-    formula: 'TVPI = (Распределения + Остаточная стоимость) / Внесённый капитал'
-  },
-  nav: {
-    id: 'nav',
-    title: 'NAV — Чистая стоимость активов',
-    category: 'financial',
-    definition: 'Net Asset Value — оценочная стоимость всех активов фонда за вычетом обязательств.',
-    formula: 'NAV = Активы - Обязательства'
-  }
-  // Note: Full glossary with 65 terms is maintained in frontend src/data/glossary.js
-  // This backend endpoint provides a lightweight API for MCP tool access
+  // Add more terms as needed - this is a simplified version for MCP
+  // Full glossary is in frontend src/data/glossary.js
 }
 
 /**
- * GET /api/glossary/terms
+ * GET /api/fst/glossary/terms
  * Get all glossary terms
  */
-router.get('/terms', (req, res) => {
-  res.json({
-    success: true,
-    count: Object.keys(glossaryTerms).length,
-    terms: glossaryTerms
-  })
+router.get('/glossary/terms', (req, res) => {
+  try {
+    const { category, search } = req.query
+
+    let terms = Object.values(glossaryTerms)
+
+    // Filter by category if provided
+    if (category) {
+      terms = terms.filter(term => term.category === category)
+    }
+
+    // Search if query provided
+    if (search) {
+      const searchLower = search.toLowerCase()
+      terms = terms.filter(term =>
+        term.title.toLowerCase().includes(searchLower) ||
+        term.definition.toLowerCase().includes(searchLower)
+      )
+    }
+
+    res.json({
+      success: true,
+      count: terms.length,
+      terms
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message
+    })
+  }
 })
 
 /**
- * GET /api/glossary/term/:id
- * Get specific term by ID
+ * GET /api/fst/glossary/term/:termId
+ * Get specific term definition (MCP Tool endpoint)
  */
-router.get('/term/:id', (req, res) => {
-  const { id } = req.params
-  const term = glossaryTerms[id]
+router.get('/glossary/term/:termId', (req, res) => {
+  try {
+    const { termId } = req.params
+    const term = glossaryTerms[termId.toLowerCase()]
 
-  if (!term) {
-    return res.status(404).json({
-      success: false,
-      error: 'Term not found',
-      availableTerms: Object.keys(glossaryTerms)
-    })
-  }
-
-  res.json({
-    success: true,
-    term
-  })
-})
-
-/**
- * POST /api/glossary/search
- * Search glossary terms
- */
-router.post('/search', (req, res) => {
-  const { query } = req.body
-
-  if (!query) {
-    return res.status(400).json({
-      success: false,
-      error: 'Query parameter required'
-    })
-  }
-
-  const lowerQuery = query.toLowerCase()
-  const results = Object.values(glossaryTerms).filter(term =>
-    term.title.toLowerCase().includes(lowerQuery) ||
-    term.definition.toLowerCase().includes(lowerQuery) ||
-    term.category.toLowerCase().includes(lowerQuery)
-  )
-
-  res.json({
-    success: true,
-    query,
-    count: results.length,
-    results
-  })
-})
-
-/**
- * MCP Tool: get_term_definition
- * Usage for AI agents: POST /api/glossary/mcp/get_term_definition
- * Body: { term: "irr" }
- */
-router.post('/mcp/get_term_definition', (req, res) => {
-  const { term: termId } = req.body
-
-  if (!termId) {
-    return res.status(400).json({
-      success: false,
-      error: 'term parameter required',
-      usage: 'POST /api/glossary/mcp/get_term_definition with body: { term: "irr" }'
-    })
-  }
-
-  const term = glossaryTerms[termId.toLowerCase()]
-
-  if (!term) {
-    // Try searching by title
-    const searchResult = Object.values(glossaryTerms).find(t =>
-      t.title.toLowerCase().includes(termId.toLowerCase())
-    )
-
-    if (searchResult) {
-      return res.json({
-        success: true,
-        term: searchResult,
-        note: `Found by title search for "${termId}"`
+    if (!term) {
+      return res.status(404).json({
+        success: false,
+        error: 'Term not found',
+        message: `Термин "${termId}" не найден в глоссарии`
       })
     }
 
-    return res.status(404).json({
+    res.json({
+      success: true,
+      term
+    })
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: `Term "${termId}" not found`,
-      suggestion: 'Try searching with /api/glossary/search',
-      availableTerms: Object.keys(glossaryTerms).slice(0, 10)
+      error: 'Internal server error',
+      message: error.message
     })
   }
+})
 
-  res.json({
-    success: true,
-    term: {
-      id: term.id,
-      title: term.title,
-      definition: term.definition,
-      formula: term.formula,
-      category: term.category
-    }
-  })
+/**
+ * GET /api/fst/glossary/categories
+ * Get all categories
+ */
+router.get('/glossary/categories', (req, res) => {
+  try {
+    const categories = [
+      { id: 'financial', label: 'Финансовые метрики', icon: 'pi-chart-line' },
+      { id: 'venture', label: 'Венчурные термины', icon: 'pi-briefcase' },
+      { id: 'ai', label: 'AI & Технологии', icon: 'pi-sparkles' },
+      { id: 'regulation', label: 'Регулирование', icon: 'pi-shield' },
+      { id: 'platform', label: 'Платформа', icon: 'pi-desktop' }
+    ]
+
+    res.json({
+      success: true,
+      categories
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message
+    })
+  }
 })
 
 export default router

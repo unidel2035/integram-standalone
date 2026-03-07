@@ -10,6 +10,15 @@
             <p class="subtitle">Интерактивный справочник с AI-объяснениями для начинающих инвесторов</p>
           </div>
         </div>
+        <div class="header-actions">
+          <Button
+            label="Калькулятор метрик"
+            icon="pi pi-calculator"
+            @click="calculatorVisible = true"
+            outlined
+            severity="primary"
+          />
+        </div>
       </div>
     </div>
 
@@ -119,6 +128,7 @@
         <template #title>
           <div class="stat-title">
             <i class="pi pi-cog"></i>
+            <i class="pi pi-desktop"></i>
             <span>Платформа</span>
           </div>
         </template>
@@ -185,6 +195,9 @@
       :termId="selectedTermId"
       @navigate="navigateToTerm"
     />
+
+    <!-- Financial Calculator -->
+    <FinancialCalculator v-model:visible="calculatorVisible" />
   </div>
 </template>
 
@@ -197,12 +210,14 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Chip from 'primevue/chip'
 import TermModal from '@/components/TermModal.vue'
+import FinancialCalculator from '@/components/FinancialCalculator.vue'
 import { glossaryTerms, searchTerms, getCategories, getTermsByCategory } from '@/data/glossary'
 
 const searchQuery = ref('')
 const selectedCategory = ref(null)
 const modalVisible = ref(false)
 const selectedTermId = ref(null)
+const calculatorVisible = ref(false)
 
 const categories = getCategories()
 
@@ -309,6 +324,12 @@ onMounted(() => {
   margin: 0.5rem 0 0 0;
   color: var(--p-text-muted-color);
   font-size: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .search-card {
