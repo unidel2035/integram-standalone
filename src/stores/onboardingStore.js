@@ -33,6 +33,12 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     { id: 'workspaces', completed: false, name: 'Рабочие пространства' },
     { id: 'agents', completed: false, name: 'Агенты' },
     { id: 'settings', completed: false, name: 'Настройки' },
+    // FST module tours (Issue #108)
+    { id: 'fst-hub', completed: false, name: 'Главная ФСТ' },
+    { id: 'fst-committee', completed: false, name: 'Инвесткомитет' },
+    { id: 'fst-deal', completed: false, name: 'Сделка' },
+    { id: 'fst-portfolio', completed: false, name: 'Портфель' },
+    { id: 'fst-dealflow', completed: false, name: 'Дилфлоу' },
   ])
 
   // User preferences

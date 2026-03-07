@@ -55,5 +55,11 @@ export const fstMenuConfig = [
     items: [
       { label: 'Форма заявки', icon: 'pi pi-send', to: '/fst-apply' },
     ]
+  },
+  {
+    label: 'Обучение',
+    items: [
+      { label: 'Туры по модулям', icon: 'pi pi-map', action: 'show-tours-menu', special: true },
+    ]
   }
 ]
