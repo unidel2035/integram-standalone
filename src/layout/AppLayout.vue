@@ -13,6 +13,8 @@ import packageJson from '../../package.json'
 
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import Toast from 'primevue/toast'
+import RoleSelectionModal from '@/components/RoleSelectionModal.vue'
+import { isRoleSelected } from '@/config/learningPaths'
 
 const route = useRoute()
 const { layoutConfig, layoutState, isSidebarActive } = useLayout()
@@ -21,6 +23,7 @@ const outsideClickListener = ref(null)
 const isChatActive = ref(false)
 const chatWidth = ref(parseInt(localStorage.getItem('chatWidth')) || 320)
 const showReleaseNotes = ref(false)
+const showRoleModal = ref(false)
 
 // Инициализация состояния чата
 const chatWidthInterval = ref(null)
@@ -73,6 +76,13 @@ onMounted(() => {
       showReleaseNotes.value = true
     }
   }, 1000)
+
+  // Show role selection modal if user hasn't selected a role yet
+  setTimeout(() => {
+    if (!isRoleSelected()) {
+      showRoleModal.value = true
+    }
+  }, 2000)
 })
 
 onUnmounted(() => {
@@ -174,6 +184,7 @@ const chatMargin = computed(() => {
   </div>
 
   <Toast />
+  <RoleSelectionModal v-if="showRoleModal" @role-selected="showRoleModal = false" @skipped="showRoleModal = false" />
 </template>
 
 <style>

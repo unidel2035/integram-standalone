@@ -211,6 +211,10 @@
       </div>
 
     </div>
+
+    <!-- Page Tutor -->
+    <PageTutorButton pageId="fst-portfolio" :getContext="getPageContext" />
+
   </div>
 </template>
 
@@ -222,8 +226,20 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { getPortfolio, getProjects } from '@/services/fstApi'
+import PageTutorButton from '@/components/PageTutorButton.vue'
 
 const toast = useToast()
+
+// ── Page Tutor Context ────────────────────────────────────────
+function getPageContext() {
+  const company = PORTFOLIO.find(c => c.id === selectedCompanyId.value)
+  return {
+    module: 'Портфель компаний',
+    selectedCompany: company ? company.name : null,
+    totalCompanies: PORTFOLIO.length,
+    monitoringStatus: monitoringStatus.value
+  }
+}
 
 // ─── Live indicator ───────────────────────────────────────────────────────────
 const liveColor = ref('#66bb6a')

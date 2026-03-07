@@ -19,18 +19,18 @@ import integramApiClient from '@/services/integramApiClient'
  * - 198151: Пользователь (userId) - REFERENCE to User (18)
  */
 
-// Integram table configuration
-const NOTIFICATION_TYPE_ID = 198140
-const NOTIFICATION_DATABASE = 'my'
+// Integram table configuration (fst database, type 3979)
+const NOTIFICATION_TYPE_ID = 3979
+const NOTIFICATION_DATABASE = 'fst'
 const REQUISITES = {
-  TITLE: '198142',
-  MESSAGE: '198143',
-  PRIORITY: '198144',
-  CREATED_AT: '198145',
-  TYPE: '198146',
-  LINK: '198147',
-  READ: '198148',
-  USER_ID: '198151'
+  TITLE: '3981',
+  MESSAGE: '3983',
+  PRIORITY: '3985',
+  CREATED_AT: '3987',
+  TYPE: '3988',
+  LINK: '3990',
+  READ: '3992',
+  USER_ID: '3994'
 }
 
 const API_BASE_URL = getOrchestratorUrl()

@@ -1,0 +1,26 @@
+[Unit]
+Description=FST REST API Server
+Documentation=https://github.com/unidel2035/found
+After=network.target
+
+[Service]
+Type=simple
+User=node
+WorkingDirectory=/opt/found/backend
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fst-api
+
+# Environment
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/found/.env
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

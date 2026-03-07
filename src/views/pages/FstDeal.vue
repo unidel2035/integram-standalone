@@ -11,10 +11,39 @@
         <div class="fst-deal-sub">Смарт-контракт · SPV · Транши · Term Sheet</div>
       </div>
       <div class="fst-deal-header-right">
-        <Button label="Сохранить" icon="pi pi-save" size="small" severity="success" @click="saveDeal" :loading="saving" />
-        <Button label="Term Sheet" icon="pi pi-file-pdf" size="small" severity="secondary" @click="generateTermSheet" :loading="generatingTS" />
-        <Button icon="pi pi-home" label="ФСТ" severity="secondary" size="small" text @click="$router.push('/fst')" />
-        <Button icon="pi pi-arrow-left" label="ИК" severity="secondary" size="small" text @click="$router.push('/fst-committee')" />
+        <LearnTooltip
+          label="Сохранить сделку"
+          what="Сохраняет все параметры сделки: условия инвестиции, структуру SPV, транши и KPI"
+          when="После заполнения или изменения параметров сделки"
+          :terms="['SPV', 'Транши', 'KPI', 'Term Sheet']"
+          hotkey="Ctrl+S"
+        >
+          <Button label="Сохранить" icon="pi pi-save" size="small" severity="success" @click="saveDeal" :loading="saving" />
+        </LearnTooltip>
+        <LearnTooltip
+          label="Генерация Term Sheet"
+          what="Генерирует юридический документ Term Sheet на основе заполненных параметров сделки"
+          when="Когда все ключевые условия сделки согласованы и готовы к оформлению"
+          :terms="['Term Sheet', 'Юридическая документация', 'Условия сделки']"
+        >
+          <Button label="Term Sheet" icon="pi pi-file-pdf" size="small" severity="secondary" @click="generateTermSheet" :loading="generatingTS" />
+        </LearnTooltip>
+        <LearnTooltip
+          label="Вернуться в ФСТ"
+          what="Переход на главную страницу хаба ФСТ НТИ"
+          when="Для навигации к обзору всех модулей фонда"
+          :terms="['ФСТ НТИ', 'Хаб модулей']"
+        >
+          <Button icon="pi pi-home" label="ФСТ" severity="secondary" size="small" text @click="$router.push('/fst')" />
+        </LearnTooltip>
+        <LearnTooltip
+          label="Вернуться в Инвесткомитет"
+          what="Переход к странице инвесткомитета для оценки заявок"
+          when="Для запуска новой сессии оценки проектов"
+          :terms="['Инвесткомитет', 'AI-агенты']"
+        >
+          <Button icon="pi pi-arrow-left" label="ИК" severity="secondary" size="small" text @click="$router.push('/fst-committee')" />
+        </LearnTooltip>
       </div>
     </div>
 
@@ -126,13 +155,27 @@
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
             <i class="pi pi-calendar" style="color:#ffa726"></i> Транши
-            <Button icon="pi pi-plus" size="small" text severity="success" @click="addTranche" style="margin-left:auto" />
+            <LearnTooltip
+              label="Добавить транш"
+              what="Добавляет новый транш финансирования с настраиваемыми условиями выплаты"
+              when="Когда инвестиция разбивается на несколько этапов с разными условиями активации"
+              :terms="['Транш', 'Поэтапное финансирование', 'KPI-триггеры']"
+            >
+              <Button icon="pi pi-plus" size="small" text severity="success" @click="addTranche" style="margin-left:auto" />
+            </LearnTooltip>
           </div>
           <div v-for="(tr, idx) in deal.tranches" :key="idx" class="fst-tranche">
             <div class="fst-tranche-header">
               <span class="fst-tranche-num">Транш {{ idx + 1 }}</span>
               <Tag :value="tr.status" :severity="trancheStatusSeverity(tr.status)" style="font-size:10px" />
-              <Button icon="pi pi-trash" size="small" text severity="danger" @click="removeTranche(idx)" style="margin-left:auto" />
+              <LearnTooltip
+                label="Удалить транш"
+                what="Удаляет транш из структуры финансирования сделки"
+                when="Когда транш больше не требуется в плане финансирования"
+                :terms="['Транш', 'Структура сделки']"
+              >
+                <Button icon="pi pi-trash" size="small" text severity="danger" @click="removeTranche(idx)" style="margin-left:auto" />
+              </LearnTooltip>
             </div>
             <div class="fst-form-row">
               <div class="fst-form-group">
@@ -168,7 +211,14 @@
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
             <i class="pi pi-chart-bar" style="color:#26c6da"></i> KPI-цели проекта
-            <Button icon="pi pi-plus" size="small" text severity="success" @click="addKpi" style="margin-left:auto" />
+            <LearnTooltip
+              label="Добавить KPI"
+              what="Добавляет новую целевую метрику для отслеживания прогресса проекта"
+              when="Для определения измеримых показателей успеха проекта на горизонте инвестирования"
+              :terms="['KPI', 'Целевые показатели', 'Мониторинг портфеля']"
+            >
+              <Button icon="pi pi-plus" size="small" text severity="success" @click="addKpi" style="margin-left:auto" />
+            </LearnTooltip>
           </div>
           <div v-for="(kpi, idx) in deal.kpis" :key="idx" class="fst-kpi-row">
             <div class="fst-kpi-meta">
@@ -179,7 +229,14 @@
               <InputNumber v-model="kpi.target2025" :min="0" placeholder="2025" class="fst-input" style="font-size:12px;width:80px" />
               <InputNumber v-model="kpi.target2026" :min="0" placeholder="2026" class="fst-input" style="font-size:12px;width:80px" />
               <InputNumber v-model="kpi.target2027" :min="0" placeholder="2027" class="fst-input" style="font-size:12px;width:80px" />
-              <Button icon="pi pi-times" size="small" text severity="secondary" @click="removeKpi(idx)" />
+              <LearnTooltip
+                label="Удалить KPI"
+                what="Удаляет метрику из списка целевых показателей проекта"
+                when="Когда метрика больше не актуальна для оценки успеха проекта"
+                :terms="['KPI', 'Целевые показатели']"
+              >
+                <Button icon="pi pi-times" size="small" text severity="secondary" @click="removeKpi(idx)" />
+              </LearnTooltip>
             </div>
           </div>
           <div v-if="!deal.kpis.length" style="font-size:12px;color:var(--p-text-muted-color);padding:8px">
@@ -207,12 +264,27 @@
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
             <i class="pi pi-file-word" style="color:#42a5f5"></i> Term Sheet
-            <Button v-if="termSheet" icon="pi pi-copy" size="small" text @click="copyTermSheet" style="margin-left:auto" />
+            <LearnTooltip
+              v-if="termSheet"
+              label="Копировать Term Sheet"
+              what="Копирует текст Term Sheet в буфер обмена для использования в других документах"
+              when="Когда нужно перенести содержимое в email, презентацию или другой документ"
+              :terms="['Term Sheet', 'Юридическая документация']"
+            >
+              <Button icon="pi pi-copy" size="small" text @click="copyTermSheet" style="margin-left:auto" />
+            </LearnTooltip>
           </div>
           <div v-if="!termSheet && !generatingTS" class="fst-term-empty">
             <i class="pi pi-file" style="font-size:32px;color:var(--p-text-muted-color)"></i>
             <div>Нажмите «Term Sheet» для генерации через AI</div>
-            <Button label="Сгенерировать" icon="pi pi-sparkles" size="small" severity="info" @click="generateTermSheet" :loading="generatingTS" />
+            <LearnTooltip
+              label="Сгенерировать Term Sheet"
+              what="AI генерирует юридический документ Term Sheet на основе всех заполненных параметров сделки"
+              when="Когда все условия сделки согласованы и готовы к формализации в документе"
+              :terms="['Term Sheet', 'AI-генерация', 'Юридическая документация']"
+            >
+              <Button label="Сгенерировать" icon="pi pi-sparkles" size="small" severity="info" @click="generateTermSheet" :loading="generatingTS" />
+            </LearnTooltip>
           </div>
           <div v-else-if="generatingTS" class="fst-term-loading">
             <ProgressSpinner style="width:40px;height:40px" />
@@ -310,6 +382,9 @@
       </div>
     </div>
 
+    <!-- Page Tutor -->
+    <PageTutorButton pageId="fst-deal" :getContext="getPageContext" />
+
   </div>
 </template>
 
@@ -327,9 +402,23 @@ import DatePicker from 'primevue/datepicker'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import TemplateRenderer from '@/components/finmodel/TemplateRenderer.vue'
+import LearnTooltip from '@/components/LearnTooltip.vue'
+import PageTutorButton from '@/components/PageTutorButton.vue'
 import fstStartupTemplate from '@/templates/finmodel/fst_startup.json'
 
 const toast = useToast()
+
+// ── Page Tutor Context ────────────────────────────────────────
+function getPageContext() {
+  return {
+    module: 'Управление сделкой',
+    company: deal.value.companyName,
+    subFund: deal.value.subFund,
+    dealType: deal.value.type,
+    totalAmount: deal.value.totalAmount,
+    stage: deal.value.stage
+  }
+}
 
 // ─── Deal form ──────────────────────────────────────────────────────────────
 const deal = ref({

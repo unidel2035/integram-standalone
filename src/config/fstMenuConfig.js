@@ -1,13 +1,6 @@
 // FST Platform — меню навигации
 export const fstMenuConfig = [
   {
-    label: 'Обучение',
-    adminOnly: true,
-    items: [
-      { label: 'Урок для команды', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide', adminOnly: true },
-    ]
-  },
-  {
     label: 'Обзор',
     items: [
       { label: 'Главная', icon: 'pi pi-home', to: '/fst-hub' },
@@ -22,6 +15,7 @@ export const fstMenuConfig = [
       { label: 'Меморандум', icon: 'pi pi-file-word', to: '/fst-memo' },
       { label: 'Инвесткомитет', icon: 'pi pi-users', to: '/fst-committee' },
       { label: 'Сделка', icon: 'pi pi-handshake', to: '/fst-deal' },
+      { label: 'Совет директоров', icon: 'pi pi-sitemap', to: '/fst-board' },
     ]
   },
   {
@@ -29,6 +23,7 @@ export const fstMenuConfig = [
     items: [
       { label: 'LP Кабинет', icon: 'pi pi-wallet', to: '/fst-lp' },
       { label: 'Cap Table', icon: 'pi pi-table', to: '/fst-captable' },
+      { label: 'Secondary Market', icon: 'pi pi-refresh', to: '/fst-secondary' },
       { label: 'Водопад', icon: 'pi pi-chart-bar', to: '/fst-waterfall' },
       { label: 'Выход', icon: 'pi pi-sign-out', to: '/fst-exit' },
       { label: 'Бенчмарк', icon: 'pi pi-chart-scatter', to: '/fst-benchmark' },
@@ -61,4 +56,10 @@ export const fstMenuConfig = [
       { label: 'Форма заявки', icon: 'pi pi-send', to: '/fst-apply' },
     ]
   },
+  {
+    label: 'Обучение',
+    items: [
+      { label: 'Туры по модулям', icon: 'pi pi-map', action: 'show-tours-menu', special: true },
+    ]
+  }
 ]

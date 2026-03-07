@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useLayout } from './composables/layout'
 import AppMenu from './AppMenu.vue'
 import SmartSearchResults from '@/components/SmartSearchResults.vue'
+import ToursMenuDialog from '@/components/ToursMenuDialog.vue'
 import { debouncedSmartSearch } from '@/services/smartSearchService'
 import { logger } from '@/utils/logger'
 import LogoDisplay from '@/components/LogoDisplay.vue'
@@ -20,6 +21,7 @@ const searchInputRef = ref(null)
 const searchResults = ref(null)
 const searchLoading = ref(false)
 const menuModel = ref([])
+const toursDialogVisible = ref(false)
 
 const handleKeyDown = (e) => {
   // "/" to focus on search (like GitHub, YouTube)
@@ -122,6 +124,10 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeyDown)
 })
+
+const showToursMenu = () => {
+  toursDialogVisible.value = true
+}
 </script>
 
 <template>
@@ -223,6 +229,17 @@ onUnmounted(() => {
                 />
             </div>
 
+            <!-- Tours menu button -->
+            <div v-if="!layoutState.sidebarCollapsed" class="tours-menu-button-wrapper">
+                <Button
+                    label="Интерактивные туры"
+                    icon="pi pi-map"
+                    @click="showToursMenu"
+                    class="w-full tours-button"
+                    outlined
+                />
+            </div>
+
             <!-- Smart Search Extras (routes, agents, Integram) - shown BELOW menu -->
             <div
                 v-if="hasExtraResults && !layoutState.sidebarCollapsed"
@@ -237,6 +254,9 @@ onUnmounted(() => {
                 />
             </div>
         </div>
+
+        <!-- Tours Dialog -->
+        <ToursMenuDialog v-model:visible="toursDialogVisible" />
     </div>
 </template>
 
@@ -417,5 +437,16 @@ onUnmounted(() => {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Tours menu button */
+.tours-menu-button-wrapper {
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--surface-border);
+}
+
+.tours-button {
+    font-size: 0.9rem;
 }
 </style>

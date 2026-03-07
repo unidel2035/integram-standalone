@@ -15,12 +15,13 @@ const routes = [
       { path: 'fst-twin', component: () => import('@/views/pages/FstDigitalTwin.vue'), meta: { title: 'Цифровой двойник компании' } },
       { path: 'fst-fund', component: () => import('@/views/pages/FstFundTwin.vue'), meta: { title: 'Цифровой двойник фонда' } },
       { path: 'fst-execution', component: () => import('@/views/pages/FstExecution.vue'), meta: { title: 'Исполнение сделок' } },
+      { path: 'fst-learning', component: () => import('@/views/pages/FstLearning.vue'), meta: { title: 'Нейрокогнитивное ядро' } },
       { path: 'fst-dealflow', component: () => import('@/views/pages/FstDealflow.vue'), meta: { title: 'Воронка сделок' } },
       { path: 'fst-sourcing', component: () => import('@/views/pages/FstSourcing.vue'), meta: { title: 'AI Deal Sourcing' } },
-      { path: 'fst-intelligence', component: () => import('@/views/pages/FstIntelligence.vue'), meta: { title: 'Portfolio Intelligence' } },
       { path: 'fst-memo', component: () => import('@/views/pages/FstMemo.vue'), meta: { title: 'AI Инвест-меморандум' } },
       { path: 'fst-lp', component: () => import('@/views/pages/FstLp.vue'), meta: { title: 'LP Dashboard' } },
       { path: 'fst-captable', component: () => import('@/views/pages/FstCaptable.vue'), meta: { title: 'Cap Table' } },
+      { path: 'fst-secondary', component: () => import('@/views/pages/FstSecondary.vue'), meta: { title: 'Secondary Market' } },
       { path: 'fst-waterfall', component: () => import('@/views/pages/FstWaterfall.vue'), meta: { title: 'Waterfall Калькулятор' } },
       { path: 'fst-gov', component: () => import('@/views/pages/FstGov.vue'), meta: { title: 'GR-Панель' } },
       { path: 'fst-ilpa', component: () => import('@/views/pages/FstIlpa.vue'), meta: { title: 'ILPA Отчётность' } },
@@ -32,22 +33,21 @@ const routes = [
       { path: 'fst-compliance', component: () => import('@/views/pages/FstCompliance.vue'), meta: { title: 'AML/KYC Комплаенс' } },
       { path: 'fst-grants', component: () => import('@/views/pages/FstGrants.vue'), meta: { title: 'Трекер грантов' } },
       { path: 'fst-natproject', component: () => import('@/views/pages/FstNatproject.vue'), meta: { title: 'Нацпроект БАС 2024–2030' } },
-      { path: 'fst-mini', component: () => import('@/views/pages/FstMiniApp.vue'), meta: { title: 'ФСТ НТИ Mini App' } },
-      { path: 'fst-secondary', component: () => import('@/views/pages/FstSecondary.vue'), meta: { title: 'Secondary Market' } },
-      { path: 'fst-learning', component: () => import('@/views/pages/FstLearning.vue'), meta: { title: 'Нейрокогнитивное ядро' } },
-      { path: 'fst-monitoring', component: () => import('@/views/pages/FstHub.vue'), meta: { title: 'Мониторинг портфеля' } },
-      { path: 'fst-transparency', component: () => import('@/views/pages/FstTransparency.vue'), meta: { title: 'Публичная витрина' } },
-      { path: 'fst-administration', component: () => import('@/views/pages/FstAdministration.vue'), meta: { title: 'Бэк-офис' } },
-      { path: 'fst-board', component: () => import('@/views/pages/FstBoard.vue'), meta: { title: 'Совет директоров' } },
       { path: 'fst-syndication', component: () => import('@/views/pages/FstSyndication.vue'), meta: { title: 'Со-инвестирование' } },
       { path: 'fst-duediligence', component: () => import('@/views/pages/FstDuediligence.vue'), meta: { title: 'AI Due Diligence' } },
       { path: 'fst-legal', component: () => import('@/views/pages/FstLegal.vue'), meta: { title: 'Юридические документы' } },
       { path: 'fst-registry', component: () => import('@/views/pages/FstRegistry.vue'), meta: { title: 'Реестр производителей БПЛА' } },
-      { path: 'fst-dev-guide', component: () => import('@/views/pages/FstDevGuide.vue'), meta: { title: 'Инструкция разработчика', admin: true } },
+      { path: 'fst-intelligence', component: () => import('@/views/pages/FstIntelligence.vue'), meta: { title: 'Portfolio Intelligence' } },
+      { path: 'fst-allocation', component: () => import('@/views/pages/FstAllocation.vue'), meta: { title: 'Оптимизация аллокации' } },
+      { path: 'fst-founders', component: () => import('@/views/pages/FstFounders.vue'), meta: { title: 'Founders CRM & Mentors' } },
+      { path: 'fst-board', component: () => import('@/views/pages/FstBoard.vue'), meta: { title: 'Совет директоров' } },
+      { path: 'fst-transparency', component: () => import('@/views/pages/FstTransparency.vue'), meta: { title: 'Публичная витрина фонда' } },
+      { path: 'fst-administration', component: () => import('@/views/pages/FstAdministration.vue'), meta: { title: 'Бэк-офис фонда' } },
+      { path: 'fst-glossary', component: () => import('@/views/pages/FstGlossary.vue'), meta: { title: 'Глоссарий венчурных терминов' } },
+      { path: 'fst-dev-guide', component: () => import('@/views/pages/FstDevGuide.vue'), meta: { title: 'Путь обучения VentureOS' } },
     ]
   },
-  { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа', public: true } },
-  { path: '/login', component: () => import('@/views/pages/FstLogin.vue'), meta: { title: 'Вход', public: true } },
+  { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },
   { path: '/:pathMatch(.*)*', redirect: '/fst-hub' }
 ]
 
@@ -56,24 +56,8 @@ const router = createRouter({
   routes
 })
 
-
-router.beforeEach((to) => {
-  if (to.meta.public) return true
-  const token = localStorage.getItem('token')
-  if (!token) {
-    return { path: '/login', query: { redirect: to.fullPath } }
-  }
-  if (to.meta.admin) {
-    const isAdmin = localStorage.getItem('is_admin') === 'true'
-    if (!isAdmin) return { path: '/fst-hub' }
-  }
-  return true
-})
-
 router.afterEach((to) => {
   document.title = to.meta.title ? `${to.meta.title} | ФСТ НТИ` : 'ФСТ НТИ'
 })
 
 export default router
-
-export function clearUserCache() {}

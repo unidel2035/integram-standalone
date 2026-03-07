@@ -512,3 +512,64 @@ export async function createTranche(data) {
   })
   return api(`_m_new/${TYPE_TRANCHES}?JSON_KV`, { method: 'POST', body })
 }
+
+// ── Weekly Intelligence Reports ──────────────────────────────────────────────
+
+export const TYPE_WEEKLY_REPORTS = 1200
+
+/**
+ * Получить все еженедельные AI-отчёты
+ */
+export async function getWeeklyReports() {
+  const data = await api(`_m_list/${TYPE_WEEKLY_REPORTS}?JSON_KV`)
+  const objects = data.object || []
+  const reqs = data.reqs || {}
+
+  return objects.map(obj => {
+    let reportData = null
+    try {
+      const jsonStr = reqs[obj.id]?.['1201'] || '{}'
+      reportData = JSON.parse(jsonStr)
+    } catch (e) {
+      console.warn(`Failed to parse report ${obj.id}:`, e)
+    }
+
+    return {
+      id: obj.id,
+      title: obj.val,
+      createdAt: reqs[obj.id]?.['1202'] || null,
+      ...reportData
+    }
+  })
+}
+
+/**
+ * Сохранить еженедельный AI-отчёт
+ * @param {Object} report - Объект отчёта из fstIntelligenceService
+ */
+export async function saveWeeklyReport(report) {
+  // Формируем JSON отчёта без метаданных
+  const reportData = {
+    executiveDigest: report.executiveDigest,
+    topPositives: report.topPositives,
+    topRisks: report.topRisks,
+    actionItems: report.actionItems,
+    riskCompanies: report.riskCompanies,
+    marketNews: report.marketNews,
+    competitorActivity: report.competitorActivity,
+    regulatoryChanges: report.regulatoryChanges,
+    expectedKPIs: report.expectedKPIs,
+    upcomingTranches: report.upcomingTranches,
+    upcomingMeetings: report.upcomingMeetings,
+    risksCount: report.risksCount,
+    actionsCount: report.actionsCount
+  }
+
+  const body = new URLSearchParams({
+    [`t${TYPE_WEEKLY_REPORTS}`]: report.title,
+    t1201: JSON.stringify(reportData, null, 2), // JSON отчёта
+    t1202: report.createdAt || new Date().toISOString()
+  })
+
+  return api(`_m_new/${TYPE_WEEKLY_REPORTS}?JSON_KV`, { method: 'POST', body })
+}

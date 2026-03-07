@@ -40,8 +40,8 @@ export function getOrchestratorUrl() {
     return `${protocol}//${hostname}`
   }
 
-  // Default to production orchestrator
-  return 'https://drondoc.ru'
+  // Default: use current origin (includes port) to avoid CORS on any domain
+  return window.location.origin
 }
 
 /**
@@ -83,8 +83,8 @@ export function getBaseApiUrl() {
     return `${protocol}//${hostname}/api`
   }
 
-  // Default to production API
-  return 'https://drondoc.ru/api'
+  // Default: use current origin (includes port) to avoid CORS on any domain
+  return `${window.location.origin}/api`
 }
 
 /**
@@ -115,7 +115,9 @@ export function getWebSocketUrl() {
     return `${protocol}//${hostname}/ws`
   }
 
-  return 'wss://drondoc.ru/ws'
+  // Default: use current origin (includes port) to avoid CORS on any domain
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${wsProtocol}//${window.location.host}/ws`
 }
 
 /**
