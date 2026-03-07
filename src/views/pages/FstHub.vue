@@ -1,5 +1,8 @@
 <template>
-  <div class="hub">
+  <div class="hub" :class="{ 'sandbox-mode': sandboxStore.isSandboxMode }">
+
+    <!-- ══════════════════════════════════════════════ SANDBOX BANNER -->
+    <SandboxBanner @open-scenarios="showScenarios = true" />
 
     <!-- ══════════════════════════════════════════════ TOP BAR -->
     <div class="hub-topbar">
@@ -10,6 +13,16 @@
         <span class="hub-date">{{ now }}</span>
       </div>
       <div class="hub-topbar-actions">
+        <!-- Sandbox Toggle -->
+        <button
+          class="hub-btn hub-btn-sandbox"
+          :class="{ 'active': sandboxStore.isSandboxMode }"
+          @click="sandboxStore.toggleSandbox"
+          :title="sandboxStore.modeName"
+        >
+          <i :class="sandboxStore.isSandboxMode ? 'pi pi-graduation-cap' : 'pi pi-building'"></i>
+          {{ sandboxStore.isSandboxMode ? 'Обучение' : 'Боевой' }}
+        </button>
         <button class="hub-btn" @click="go('/fst-apply')">
           <i class="pi pi-file-plus"></i> Новая заявка
         </button>
@@ -99,17 +112,25 @@
 
   <!-- Page Help Drawer -->
   <PageHelpDrawer v-model:visible="helpOpen" :page-help="pageHelp" />
+
+  <!-- Practice Scenarios Dialog -->
+  <PracticeScenariosDialog v-model:visible="showScenarios" />
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFstData } from '@/composables/useFstData.js'
+import { useSandboxStore } from '@/stores/sandboxStore'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
+import SandboxBanner from '@/components/SandboxBanner.vue'
+import PracticeScenariosDialog from '@/components/PracticeScenariosDialog.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
 
 const router = useRouter()
+const sandboxStore = useSandboxStore()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
+const showScenarios = ref(false)
 
 function go(path) { router.push(path) }
 
@@ -234,6 +255,22 @@ const tools = [
   color: var(--p-primary-color);
 }
 .hub-btn--accent:hover { background: color-mix(in srgb, var(--p-primary-color) 25%, transparent); }
+.hub-btn-sandbox {
+  font-weight: 600;
+}
+.hub-btn-sandbox.active {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-color: #d97706;
+  color: #78350f;
+}
+.hub-btn-sandbox.active:hover {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* Sandbox mode styling */
+.hub.sandbox-mode {
+  box-shadow: inset 0 0 0 4px #fbbf24;
+}
 
 /* ═══════════════════════════════════════════════ METRICS */
 .hub-metrics {
