@@ -32,6 +32,7 @@ const routes = [
       { path: 'fst-compliance', component: () => import('@/views/pages/FstCompliance.vue'), meta: { title: 'AML/KYC Комплаенс' } },
       { path: 'fst-grants', component: () => import('@/views/pages/FstGrants.vue'), meta: { title: 'Трекер грантов' } },
       { path: 'fst-natproject', component: () => import('@/views/pages/FstNatproject.vue'), meta: { title: 'Нацпроект БАС 2024–2030' } },
+      { path: 'fst-board', component: () => import('@/views/pages/FstBoard.vue'), meta: { title: 'Совет директоров' } },
       { path: 'fst-syndication', component: () => import('@/views/pages/FstSyndication.vue'), meta: { title: 'Со-инвестирование' } },
       { path: 'fst-duediligence', component: () => import('@/views/pages/FstDuediligence.vue'), meta: { title: 'AI Due Diligence' } },
       { path: 'fst-legal', component: () => import('@/views/pages/FstLegal.vue'), meta: { title: 'Юридические документы' } },
