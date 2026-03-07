@@ -318,27 +318,40 @@ ${responseFormat}`
 function parseAgentResponse(rawText) {
   if (!rawText) return null
 
-  // Ищем JSON в ответе (non-greedy чтобы взять первый корректный блок)
-  const jsonMatch = rawText.match(/\{[\s\S]*?\}(?=\s*(?:```|$|\n\n))/) || rawText.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) return null
+  const VALID_DIMS = ['trl','mrl','sovereignty','market','finance','risk','team']
+  const VALID_STANCES = ['APPROVE','DEFER','REJECT']
 
-  try {
-    const parsed = JSON.parse(jsonMatch[0])
-    if (!parsed.text || typeof parsed.text !== 'string') return null
-    return {
-      text:       parsed.text.trim(),
-      dimension:  ['trl','mrl','sovereignty','market','finance','risk','team'].includes(parsed.dimension)
-                    ? parsed.dimension
-                    : null,
-      confidence: typeof parsed.confidence === 'number'
-                    ? Math.max(0, Math.min(1, parsed.confidence))
-                    : 0.7,
-      stance:     ['APPROVE','DEFER','REJECT'].includes(parsed.stance)
-                    ? parsed.stance
-                    : null,
-    }
-  } catch {
-    return null
+  // 1. Попробуем найти JSON-блок в ответе
+  const jsonMatch = rawText.match(/\{[\s\S]*?\}(?=\s*(?:```|$|\n\n))/) || rawText.match(/\{[\s\S]*\}/)
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[0])
+      if (parsed.text && typeof parsed.text === 'string') {
+        return {
+          text:       parsed.text.trim(),
+          dimension:  VALID_DIMS.includes(parsed.dimension) ? parsed.dimension : null,
+          confidence: typeof parsed.confidence === 'number'
+                        ? Math.max(0, Math.min(1, parsed.confidence))
+                        : 0.7,
+          stance:     VALID_STANCES.includes(parsed.stance) ? parsed.stance : null,
+        }
+      }
+    } catch { /* fall through to plain-text fallback */ }
+  }
+
+  // 2. Модель ответила не JSON — используем сырой текст как аргумент
+  const text = rawText
+    .replace(/```[\s\S]*?```/g, '')  // убрать markdown code blocks
+    .replace(/^(json|JSON)\s*/i, '')  // убрать случайное слово json
+    .trim()
+
+  if (text.length < 10) return null  // слишком короткий — скорее всего мусор
+
+  return {
+    text:       text,
+    dimension:  null,
+    confidence: 0.7,
+    stance:     null,
   }
 }
 
