@@ -16,6 +16,7 @@ import { monitorCompanies as monitorEgrul } from '../parsers/egrulParser.js'
 import { monitorCompaniesHiring } from '../parsers/hhParser.js'
 import { monitorCompaniesPatents } from '../parsers/rospatentParser.js'
 import { monitorCompaniesNews } from '../parsers/newsParser.js'
+import { initTelegramBot, triggerPortfolioAlert } from '../services/telegramBot.js'
 
 // Интеграция с Integram API (fst database)
 const INTEGRAM_SERVER = process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru'
@@ -164,7 +165,7 @@ async function saveMonitoringResults(companyId, dataType, data) {
 /**
  * Обновление светофора рисков в Portfolio таблице
  */
-async function updateCompanyRiskStatus(companyId, alerts) {
+async function updateCompanyRiskStatus(companyId, companyName, alerts) {
   try {
     if (!integramToken) {
       await authenticateIntegram()
@@ -206,7 +207,18 @@ async function updateCompanyRiskStatus(companyId, alerts) {
       return false
     }
 
-    console.log(`[Portfolio Monitor] Updated risk status for company ${companyId}: ${riskStatusId === 1127 ? 'RED' : riskStatusId === 1126 ? 'YELLOW' : 'GREEN'}`)
+    const statusText = riskStatusId === 1127 ? 'RED' : riskStatusId === 1126 ? 'YELLOW' : 'GREEN'
+    console.log(`[Portfolio Monitor] Updated risk status for company ${companyId}: ${statusText}`)
+
+    // Send Telegram notifications for critical and warning alerts
+    if (criticalAlerts.length > 0) {
+      const alertMessages = criticalAlerts.map(a => a.message || a.reason).join('\n• ')
+      await triggerPortfolioAlert(companyId, companyName, 'critical', `• ${alertMessages}`)
+    } else if (warnAlerts.length > 0) {
+      const alertMessages = warnAlerts.map(a => a.message || a.reason).join('\n• ')
+      await triggerPortfolioAlert(companyId, companyName, 'warning', `• ${alertMessages}`)
+    }
+
     return true
 
   } catch (error) {
@@ -278,7 +290,7 @@ async function runFullMonitoring() {
       await saveMonitoringResults(company.id, 'news', newsResult)
 
       // Обновляем светофор рисков
-      await updateCompanyRiskStatus(company.id, companyAlerts)
+      await updateCompanyRiskStatus(company.id, company.name, companyAlerts)
     }
 
     // Статистика
@@ -312,9 +324,10 @@ async function runEgrulMonitoring() {
     const results = await monitorEgrul(companies)
 
     for (const result of results) {
+      const company = companies.find(c => c.id === result.companyId)
       await saveMonitoringResults(result.companyId, 'egrul', result)
       if (result.alerts && result.alerts.length > 0) {
-        await updateCompanyRiskStatus(result.companyId, result.alerts)
+        await updateCompanyRiskStatus(result.companyId, company?.name || 'Unknown', result.alerts)
       }
     }
 
@@ -335,9 +348,10 @@ async function runPatentMonitoring() {
     const results = await monitorCompaniesPatents(companies)
 
     for (const result of results) {
+      const company = companies.find(c => c.id === result.companyId)
       await saveMonitoringResults(result.companyId, 'patents', result)
       if (result.alerts && result.alerts.length > 0) {
-        await updateCompanyRiskStatus(result.companyId, result.alerts)
+        await updateCompanyRiskStatus(result.companyId, company?.name || 'Unknown', result.alerts)
       }
     }
 
@@ -358,9 +372,10 @@ async function runNewsMonitoring() {
     const results = await monitorCompaniesNews(companies, 7)  // За последние 7 дней
 
     for (const result of results) {
+      const company = companies.find(c => c.id === result.companyId)
       await saveMonitoringResults(result.companyId, 'news', result)
       if (result.alerts && result.alerts.length > 0) {
-        await updateCompanyRiskStatus(result.companyId, result.alerts)
+        await updateCompanyRiskStatus(result.companyId, company?.name || 'Unknown', result.alerts)
       }
     }
 
@@ -375,6 +390,9 @@ async function runNewsMonitoring() {
  */
 export function initScheduler() {
   console.log('[Portfolio Monitor] Initializing scheduler...')
+
+  // Initialize Telegram bot
+  initTelegramBot()
 
   // Ежедневный мониторинг новостей (каждый день в 09:00)
   cron.schedule('0 9 * * *', () => {
@@ -396,6 +414,7 @@ export function initScheduler() {
   console.log('  - Daily news monitoring: 09:00')
   console.log('  - Weekly EGRUL/HH.ru monitoring: Monday 08:00')
   console.log('  - Monthly patent monitoring: 1st day of month, 10:00')
+  console.log('  - Telegram bot: enabled')
 }
 
 /**
