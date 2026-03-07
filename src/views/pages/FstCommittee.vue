@@ -296,6 +296,12 @@
                   </span>
                   <span class="fst-arg-type-badge">{{ argTypeLabel(arg.type) }}</span>
                   <span class="fst-arg-dim">{{ arg.dimension }}</span>
+                  <span v-if="arg.aiGenerated" class="fst-arg-ai-badge" title="Сгенерировано реальным AI">
+                    <i class="pi pi-bolt"></i> AI
+                  </span>
+                  <span v-else class="fst-arg-tpl-badge" title="Шаблонный аргумент">
+                    <i class="pi pi-server"></i>
+                  </span>
                 </div>
                 <div class="fst-arg-text">{{ arg.text }}</div>
               </div>
@@ -1381,6 +1387,27 @@ onUnmounted(() => {
   border-radius: 3px;
   background: var(--p-surface-border);
   color: var(--p-text-muted-color);
+}
+.fst-arg-ai-badge {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  color: #a78bfa;
+  background: rgba(167,139,250,0.12);
+  border: 1px solid rgba(167,139,250,0.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.fst-arg-tpl-badge {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--p-text-muted-color);
+  opacity: 0.5;
+  flex-shrink: 0;
 }
 .fst-arg-dim {
   font-size: 10px;

@@ -10,10 +10,31 @@
  * Возвращает JSON-объект аргумента; при ошибке — null (движок использует шаблон).
  */
 
+import { getDefaultToken, getCurrentUserId } from '@/services/aiTokenService.js'
+
 const API_BASE = import.meta.env.VITE_API_URL || ''
 const COMMITTEE_MODEL = 'KodaAgent'          // бесплатно через GITHUB_TOKEN
 const CONTEXT_ARGS = 6                        // аргументов в контексте
 const TIMEOUT_MS   = 25_000                   // таймаут LLM-вызова
+
+// Кеш токена на время сессии
+let _cachedToken = null
+async function getToken() {
+  if (_cachedToken) return _cachedToken
+  try {
+    const userId = getCurrentUserId()
+    if (!userId) return null
+    const result = await getDefaultToken(userId)
+    _cachedToken = result?.token?.id || result?.id || null
+    return _cachedToken
+  } catch {
+    return null
+  }
+}
+
+function getLocalAuthToken() {
+  return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || ''
+}
 
 // ── Системные промпты агентов ─────────────────────────────────────────────────
 
@@ -217,10 +238,17 @@ export async function generateArgumentAI(agent, type, project, prevArgs = [], ta
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
+  // Получаем токен авторизации
+  const ddToken   = await getToken()
+  const authToken = ddToken || getLocalAuthToken()
+
   try {
     const response = await fetch(`${API_BASE}/api/ai-tokens/chat`, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
       signal:  controller.signal,
       body: JSON.stringify({
         modelId:      COMMITTEE_MODEL,
