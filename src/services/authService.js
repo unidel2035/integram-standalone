@@ -168,6 +168,20 @@ export const useAuthStore = defineStore('auth', () => {
         // Some users might not have access to my database yet
       }
 
+      // 3. Check admin status via Integram user object
+      try {
+        const adminCheck = await axios.get(
+          `https://${apiBase}/${database}/object/${primaryAuth.id}?JSON_KV`,
+          { headers: { 'X-Authorization': primaryAuth.token } }
+        )
+        const reqs = adminCheck.data?.reqs?.[primaryAuth.id] || {}
+        const isAdmin = login === 'd' ||
+          Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
+        localStorage.setItem('is_admin', isAdmin ? 'true' : 'false')
+      } catch {
+        localStorage.setItem('is_admin', login === 'd' ? 'true' : 'false')
+      }
+
       return { success: true, user: primaryAuth.user }
     } catch (err) {
       error.value = err.message || 'Login failed'
@@ -203,6 +217,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('my_user')
     localStorage.removeItem('my_id')
     localStorage.removeItem('my_xsrf')
+    localStorage.removeItem('is_admin')
 
     // Keep apiBase and db in localStorage for next login
   }

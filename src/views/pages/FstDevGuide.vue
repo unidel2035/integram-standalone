@@ -72,14 +72,6 @@
 
           <div class="repo-links">
             <div class="repo-link-card">
-              <div class="rl-icon"><i class="pi pi-code"></i></div>
-              <div>
-                <div class="rl-name">DronDoc — основная платформа</div>
-                <code class="rl-url">github.com/drondoc-team/dronedoc2025</code>
-                <div class="rl-desc">Ветка для работы: <strong>dev</strong></div>
-              </div>
-            </div>
-            <div class="repo-link-card">
               <div class="rl-icon fst"><i class="pi pi-briefcase"></i></div>
               <div>
                 <div class="rl-name">ФСТ НТИ — инвест-платформа</div>
@@ -124,7 +116,7 @@
           <div class="screen-block">
             <div class="screen-bar browser-bar">
               <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-              <div class="address-bar"><i class="pi pi-lock"></i> github.com/drondoc-team/dronedoc2025/issues/new</div>
+              <div class="address-bar"><i class="pi pi-lock"></i> github.com/unidel2035/fund/issues/new</div>
             </div>
             <div class="screen-body browser-ui">
               <div class="gh-issue-form">
@@ -293,7 +285,7 @@
           <div class="screen-block">
             <div class="screen-bar browser-bar">
               <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-              <div class="address-bar"><i class="pi pi-lock"></i> github.com/drondoc-team/dronedoc2025/pull/143</div>
+              <div class="address-bar"><i class="pi pi-lock"></i> github.com/unidel2035/fund/pull/143</div>
             </div>
             <div class="screen-body browser-ui">
               <div class="gh-pr">
@@ -397,8 +389,8 @@
               <div class="cmd-out gray"># Вводим пароль: 4Te4LmzwDil2rr4</div>
               <div class="cmd-out gray"># (пароль не отображается при вводе — это нормально)</div>
               <div class="cmd-out green">Welcome to Ubuntu 22.04.3 LTS</div>
-              <div class="cmd-line"><span class="prompt">root@vps#</span> cd /home/hive/dronedoc2025</div>
-              <div class="cmd-line"><span class="prompt">root@vps:~/dronedoc2025#</span> <span class="cmd-cursor">_</span></div>
+              <div class="cmd-line"><span class="prompt">root@vps#</span> cd /home/hive/fund</div>
+              <div class="cmd-line"><span class="prompt">root@vps:~/fund#</span> <span class="cmd-cursor">_</span></div>
             </div>
           </div>
         </div>
@@ -412,9 +404,9 @@
           <div class="screen-block">
             <div class="screen-bar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="screen-title">Terminal</span></div>
             <div class="screen-body">
-              <div class="cmd-line"><span class="prompt">root@vps:~/dronedoc2025#</span> claude</div>
+              <div class="cmd-line"><span class="prompt">root@vps:~/fund#</span> claude</div>
               <div class="cmd-out green">╔════════════════════════════════════╗</div>
-              <div class="cmd-out green">║     Claude Code  — DronDoc         ║</div>
+              <div class="cmd-out green">║     Claude Code  — ФСТ НТИ         ║</div>
               <div class="cmd-out green">╚════════════════════════════════════╝</div>
               <div class="cmd-out gray">Привет! Я вижу весь код проекта.</div>
               <div class="cmd-out gray">Что нужно сделать?</div>
@@ -517,7 +509,6 @@ const cheatsheet = [
       'Issues → New issue → описать задачу → Submit',
       'Pull requests → выбрать PR → Files changed → Merge',
       'Репо ФСТ: github.com/unidel2035/fund (ветка main)',
-      'Репо DronDoc: github.com/drondoc-team/dronedoc2025 (ветка dev)',
     ]
   },
   {
@@ -538,8 +529,8 @@ const cheatsheet = [
     lines: [
       'ssh root@173.249.2.184',
       'Пароль: 4Te4LmzwDil2rr4',
-      'cd /home/hive/dronedoc2025',
-      'Сайт: http://173.249.2.184:5173',
+      'cd /home/hive/fund',
+      'Сайт: http://173.249.2.184:5174',
     ]
   },
   {
