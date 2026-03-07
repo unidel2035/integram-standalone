@@ -354,6 +354,18 @@ const modules = [
     tags: ['Black-Litterman', 'Оптимизация', 'Риск', 'NAV', 'Sharpe'],
   },
   {
+    id: 'founders',
+    name: 'Founders CRM & Mentors',
+    phase: 'Фаза 4 — Онлайн-мониторинг',
+    icon: 'pi pi-users',
+    color: '#667eea',
+    path: '/fst-founders',
+    featured: true,
+    status: 'live',
+    desc: 'CRM основателей портфельных компаний: профили, история взаимодействий, теги. База менторов Фонда с AI-матчингом. Alumni network и тематические встречи.',
+    tags: ['CRM', 'Founders', 'Менторы', 'AI-матчинг', 'Alumni', 'Networking'],
+  },
+  {
     id: 'fund',
     name: 'Цифровой двойник фонда',
     phase: 'Фаза 5 — Фонд-индекс',
