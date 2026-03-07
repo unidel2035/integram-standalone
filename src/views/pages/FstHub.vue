@@ -378,6 +378,18 @@ const modules = [
     tags: ['Мультипликаторы', 'EV/Revenue', 'Валюация', 'IRR', 'Бенчмарки', 'Radar', 'Rule of 40'],
   },
   {
+    id: 'secondary',
+    name: 'Secondary Market',
+    phase: 'Фаза 6 — Ликвидность',
+    icon: 'pi pi-refresh',
+    color: '#26c6da',
+    path: '/fst-secondary',
+    featured: true,
+    status: 'live',
+    desc: 'Управление вторичными сделками: продажа доли фонда другим инвесторам. Оценка NAV/DCF/Comparable, сеть покупателей (Ростех, Роскосмос, ВЭБ), LOI, переговоры, история сделок с money multiple.',
+    tags: ['Secondary', 'Вторичные сделки', 'NAV', 'DCF', 'Госкорпорации', 'LOI', 'Ликвидность'],
+  },
+  {
     id: 'fund',
     name: 'Цифровой двойник фонда',
     phase: 'Фаза 5 — Фонд-индекс',

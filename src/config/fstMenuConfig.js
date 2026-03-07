@@ -23,6 +23,7 @@ export const fstMenuConfig = [
     items: [
       { label: 'LP Кабинет', icon: 'pi pi-wallet', to: '/fst-lp' },
       { label: 'Cap Table', icon: 'pi pi-table', to: '/fst-captable' },
+      { label: 'Secondary Market', icon: 'pi pi-refresh', to: '/fst-secondary' },
       { label: 'Водопад', icon: 'pi pi-chart-bar', to: '/fst-waterfall' },
       { label: 'Выход', icon: 'pi pi-sign-out', to: '/fst-exit' },
       { label: 'Бенчмарк', icon: 'pi pi-chart-scatter', to: '/fst-benchmark' },

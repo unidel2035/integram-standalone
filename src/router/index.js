@@ -21,6 +21,7 @@ const routes = [
       { path: 'fst-memo', component: () => import('@/views/pages/FstMemo.vue'), meta: { title: 'AI Инвест-меморандум' } },
       { path: 'fst-lp', component: () => import('@/views/pages/FstLp.vue'), meta: { title: 'LP Dashboard' } },
       { path: 'fst-captable', component: () => import('@/views/pages/FstCaptable.vue'), meta: { title: 'Cap Table' } },
+      { path: 'fst-secondary', component: () => import('@/views/pages/FstSecondary.vue'), meta: { title: 'Secondary Market' } },
       { path: 'fst-waterfall', component: () => import('@/views/pages/FstWaterfall.vue'), meta: { title: 'Waterfall Калькулятор' } },
       { path: 'fst-gov', component: () => import('@/views/pages/FstGov.vue'), meta: { title: 'GR-Панель' } },
       { path: 'fst-ilpa', component: () => import('@/views/pages/FstIlpa.vue'), meta: { title: 'ILPA Отчётность' } },
