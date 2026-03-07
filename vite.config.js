@@ -20,10 +20,12 @@ export default defineConfig({
     port: 5174,
     allowedHosts: ['fst.drondoc.ru', 'localhost'],
     proxy: {
-      '/fst': {
+      '/fst-api': {
         target: 'https://ai2o.ru',
         changeOrigin: true,
         secure: true,
+        cookieDomainRewrite: '',
+        rewrite: (path) => path.replace(/^\/fst-api/, '/fst'),
         headers: { 'Origin': 'https://ai2o.ru' }
       },
       '/api': {

@@ -2,119 +2,6 @@
   <div class="fst-committee">
     <Toast position="bottom-center" />
 
-    <!-- ═══ Project Select Dialog ═══ -->
-    <Dialog v-model:visible="lobbyVisible" header="ФСТ НТИ — Инвесткомитет с AI-агентами" modal
-      :style="{ width: '720px', maxWidth: '95vw' }" :closable="false">
-
-      <div class="fst-intro">
-        <div class="fst-intro-badge">
-          <i class="pi pi-building" style="color:#ffa726;font-size:20px"></i>
-          Фонд суверенных технологий НТИ
-        </div>
-        <p class="fst-intro-text">
-          6 AI-агентов разных ролей анализируют проект, вступают в дебаты и приходят к решению.
-          Инвесткомитет работает как BlackRock Aladdin — прозрачно, с аргументами и контраргументами.
-          Люди утверждают итоговое решение.
-        </p>
-        <div class="fst-intro-subfunds">
-          <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
-            :style="{ borderColor: sf.color, color: sf.color }">
-            <i :class="sf.icon"></i> {{ sf.name }}
-            <span class="fst-subfund-budget">{{ (sf.budget / 1e9).toFixed(1) }} млрд</span>
-          </div>
-        </div>
-      </div>
-
-      <Divider />
-
-      <div class="fst-lobby-section">
-        <div class="fst-lobby-label">Выберите проект для рассмотрения:</div>
-        <div class="fst-project-list">
-          <div v-for="p in PROJECTS_POOL" :key="p.id"
-            :class="['fst-project-card', { 'fst-project-card--active': selectedProjectId === p.id }]"
-            @click="selectedProjectId = p.id">
-            <div class="fst-pc-header">
-              <div class="fst-pc-subfund" :style="{ background: SUBFUNDS[p.subFund]?.color || '#666' }">
-                {{ (SUBFUNDS[p.subFund]?.shortName) || p.subFund.toUpperCase() }}
-              </div>
-              <div class="fst-pc-stage">{{ p.stage }}</div>
-              <div class="fst-pc-amount">{{ (p.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
-            </div>
-            <div class="fst-pc-title">{{ p.title }}</div>
-            <div class="fst-pc-company">{{ p.company }}</div>
-            <div class="fst-pc-metrics">
-              <span class="fst-metric" :class="trlClass(p.trl)">TRL {{ p.trl }}</span>
-              <span class="fst-metric" :class="trlClass(p.mrl - 1)">MRL {{ p.mrl }}</span>
-              <span class="fst-metric" :class="sovClass(p.sovereigntyScore)">Суверен. {{ p.sovereigntyScore }}/9</span>
-              <span class="fst-metric" :class="irrClass(p.projectedIRR)">IRR {{ (p.projectedIRR * 100).toFixed(0) }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="fst-lobby-section" style="margin-top:16px">
-        <div class="fst-lobby-label">Скорость симуляции:</div>
-        <div class="fst-speed-row">
-          <div v-for="sp in speedOptions" :key="sp.id"
-            :class="['fst-speed-btn', { active: selectedSpeed === sp.id }]"
-            @click="selectedSpeed = sp.id">
-            {{ sp.label }}
-          </div>
-        </div>
-
-        <!-- AI режим -->
-        <div class="fst-ai-mode-row">
-          <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useAI }]" @click="useAI = !useAI">
-            <div class="fst-ai-toggle-knob"></div>
-          </div>
-          <div class="fst-ai-mode-label">
-            <span v-if="useAI">
-              <i class="pi pi-bolt" style="color:#a78bfa"></i>
-              <strong>Реальный AI</strong> — агенты реально думают и отвечают друг другу
-            </span>
-            <span v-else>
-              <i class="pi pi-server" style="color:#78909c"></i>
-              <strong>Шаблоны</strong> — быстрая симуляция без API-вызовов
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ FST Policy Settings ═══ -->
-      <div class="fst-lobby-section" style="margin-top:16px">
-        <div class="fst-policy-toggle" @click="policyExpanded = !policyExpanded">
-          <i class="pi pi-sliders-h" style="color:#ffa726"></i>
-          <span class="fst-lobby-label" style="margin:0;cursor:pointer">Параметры оценки ФСТ</span>
-          <span style="font-size:11px;color:var(--p-text-muted-color);margin-left:8px">
-            Сув. ≥ {{ fstPolicy.minSovereignty }}/9 · TRL ≥ {{ fstPolicy.minTRL }} · MRL ≥ {{ fstPolicy.minMRL }}
-          </span>
-          <i :class="policyExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-            style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
-        </div>
-        <div v-if="policyExpanded" class="fst-policy-grid">
-          <div v-for="(range, key) in FST_POLICY_RANGES" :key="key" class="fst-policy-item">
-            <div class="fst-policy-label">
-              {{ range.label }}: <b>{{ formatPolicyValue(key, fstPolicy[key]) }}</b>
-            </div>
-            <Slider
-              :modelValue="policySliderValue(key, fstPolicy[key])"
-              @update:modelValue="v => setPolicyFromSlider(key, v)"
-              :min="range.min * policyMultiplier(key)"
-              :max="range.max * policyMultiplier(key)"
-              :step="range.step * policyMultiplier(key)"
-              class="fst-policy-slider"
-            />
-          </div>
-          <Button label="Сброс" icon="pi pi-refresh" size="small" severity="secondary" text
-            @click="resetPolicy" style="margin-top:4px" />
-        </div>
-      </div>
-
-      <template #footer>
-        <Button label="Запустить инвесткомитет" icon="pi pi-play" severity="success"
-          :disabled="!selectedProjectId" @click="startSession" />
-      </template>
-    </Dialog>
 
     <!-- ═══ Conclusion Dialog ═══ -->
     <Dialog v-model:visible="conclusionVisible" :header="conclusionHeader" modal
@@ -200,7 +87,7 @@
           <Tag :value="currentPhase.label" :style="{ background: currentPhase.color }" class="fst-phase-tag" />
           <Button v-if="running" icon="pi pi-pause" size="small" text severity="secondary" @click="pauseSession" />
           <Button icon="pi pi-sliders-h" label="Настройки" size="small" text severity="secondary"
-            @click="lobbyVisible = true; policyExpanded = true" title="Параметры оценки ФСТ" />
+            @click="policyExpanded = !policyExpanded" title="Параметры оценки ФСТ" />
           <Button icon="pi pi-times" size="small" text severity="secondary" @click="resetSession" />
         </div>
       </div>
@@ -491,33 +378,127 @@
       </div>
     </div>
 
-    <!-- Loading screen before session -->
-    <div v-else class="fst-pre-session">
-      <div class="fst-pre-logo">
-        <i class="pi pi-building" style="font-size:48px;color:#ffa726"></i>
-        <h1>ФСТ НТИ</h1>
-        <h2>AI Инвестиционный Комитет</h2>
-        <p>6 AI-агентов · Полные дебаты · Прозрачное решение</p>
-
-        <!-- Текущие настройки политики -->
-        <div class="fst-pre-policy">
-          <div class="fst-pre-policy-title">
-            <i class="pi pi-sliders-h" style="color:#ffa726"></i>
-            Текущие параметры оценки ФСТ
+    <!-- ═══ Setup Screen ═══ -->
+    <div v-else class="fst-setup">
+      <div class="fst-setup-header">
+        <div class="fst-setup-brand">
+          <i class="pi pi-building"></i>
+          ФСТ НТИ — AI Инвестиционный Комитет
+        </div>
+        <p class="fst-setup-desc">6 AI-агентов анализируют проект, дебатируют и выносят решение с обоснованием</p>
+        <div class="fst-setup-subfunds" v-if="Object.keys(SUBFUNDS).length">
+          <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
+            :style="{ borderColor: sf.color, color: sf.color }">
+            <i :class="sf.icon"></i> {{ sf.name }}
+            <span class="fst-subfund-budget">{{ (sf.budget / 1e9).toFixed(1) }} млрд</span>
           </div>
-          <div class="fst-pre-policy-grid">
-            <div v-for="(range, key) in FST_POLICY_RANGES" :key="key" class="fst-pre-policy-item">
-              <span class="fst-pre-policy-label">{{ range.label }}</span>
-              <span class="fst-pre-policy-val">{{ formatPolicyValue(key, fstPolicy[key]) }}</span>
+        </div>
+      </div>
+
+      <div class="fst-setup-body">
+        <!-- Left: Projects -->
+        <div class="fst-setup-col fst-setup-col--projects">
+          <div class="fst-setup-section-title">
+            <i class="pi pi-list" style="color:#38bdf8"></i>
+            Выберите проект
+          </div>
+          <div class="fst-project-list">
+            <div v-if="PROJECTS_POOL.length === 0" class="fst-setup-empty">
+              <i class="pi pi-spin pi-spinner"></i> Загрузка проектов...
+            </div>
+            <div v-for="p in PROJECTS_POOL" :key="p.id"
+              :class="['fst-project-card', { 'fst-project-card--active': selectedProjectId === p.id }]"
+              @click="selectedProjectId = p.id">
+              <div class="fst-pc-header">
+                <div class="fst-pc-subfund" :style="{ background: SUBFUNDS[p.subFund]?.color || '#666' }">
+                  {{ SUBFUNDS[p.subFund]?.shortName || p.subFund?.toUpperCase() }}
+                </div>
+                <div class="fst-pc-stage">{{ p.stage }}</div>
+                <div class="fst-pc-amount">{{ (p.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
+              </div>
+              <div class="fst-pc-title">{{ p.title }}</div>
+              <div class="fst-pc-company">{{ p.company }}</div>
+              <div class="fst-pc-metrics">
+                <span class="fst-metric" :class="trlClass(p.trl)">TRL {{ p.trl }}</span>
+                <span class="fst-metric" :class="trlClass(p.mrl - 1)">MRL {{ p.mrl }}</span>
+                <span class="fst-metric" :class="sovClass(p.sovereigntyScore)">Суверен. {{ p.sovereigntyScore }}/9</span>
+                <span class="fst-metric" :class="irrClass(p.projectedIRR)">IRR {{ (p.projectedIRR * 100).toFixed(0) }}%</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
-          <Button label="Открыть сессию" icon="pi pi-play" severity="success" size="large"
-            @click="lobbyVisible = true" />
-          <Button label="Настройки" icon="pi pi-sliders-h" severity="secondary"
-            @click="lobbyVisible = true; policyExpanded = true" />
+        <!-- Right: Settings -->
+        <div class="fst-setup-col fst-setup-col--settings">
+          <div class="fst-setup-section-title">
+            <i class="pi pi-gauge" style="color:#a78bfa"></i>
+            Скорость симуляции
+          </div>
+          <div class="fst-speed-row">
+            <div v-for="sp in speedOptions" :key="sp.id"
+              :class="['fst-speed-btn', { active: selectedSpeed === sp.id }]"
+              @click="selectedSpeed = sp.id">
+              {{ sp.label }}
+            </div>
+          </div>
+
+          <div class="fst-setup-section-title" style="margin-top:20px">
+            <i class="pi pi-bolt" style="color:#a78bfa"></i>
+            Режим агентов
+          </div>
+          <div class="fst-ai-mode-row">
+            <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useAI }]" @click="useAI = !useAI">
+              <div class="fst-ai-toggle-knob"></div>
+            </div>
+            <div class="fst-ai-mode-label">
+              <span v-if="useAI">
+                <i class="pi pi-bolt" style="color:#a78bfa"></i>
+                <strong>Реальный AI</strong> — агенты думают и отвечают друг другу
+              </span>
+              <span v-else>
+                <i class="pi pi-server" style="color:#78909c"></i>
+                <strong>Шаблоны</strong> — быстрая симуляция без API-вызовов
+              </span>
+            </div>
+          </div>
+
+          <div class="fst-setup-section-title" style="margin-top:20px">
+            <div class="fst-policy-toggle" @click="policyExpanded = !policyExpanded">
+              <i class="pi pi-sliders-h" style="color:#ffa726"></i>
+              <span>Параметры оценки ФСТ</span>
+              <span class="fst-policy-summary">Сув. ≥ {{ fstPolicy.minSovereignty }}/9 · TRL ≥ {{ fstPolicy.minTRL }}</span>
+              <i :class="policyExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
+            </div>
+          </div>
+          <div v-if="policyExpanded" class="fst-policy-grid">
+            <div v-for="(range, key) in FST_POLICY_RANGES" :key="key" class="fst-policy-item">
+              <div class="fst-policy-label">{{ range.label }}: <b>{{ formatPolicyValue(key, fstPolicy[key]) }}</b></div>
+              <Slider
+                :modelValue="policySliderValue(key, fstPolicy[key])"
+                @update:modelValue="v => setPolicyFromSlider(key, v)"
+                :min="range.min * policyMultiplier(key)"
+                :max="range.max * policyMultiplier(key)"
+                :step="range.step * policyMultiplier(key)"
+                class="fst-policy-slider"
+              />
+            </div>
+            <Button label="Сброс" icon="pi pi-refresh" size="small" severity="secondary" text
+              @click="resetPolicy" style="margin-top:4px" />
+          </div>
+
+          <div class="fst-setup-launch">
+            <Button
+              label="Запустить инвесткомитет"
+              icon="pi pi-play"
+              severity="success"
+              size="large"
+              :disabled="!selectedProjectId"
+              @click="startSession"
+              class="fst-launch-btn"
+            />
+            <div v-if="!selectedProjectId" class="fst-launch-hint">Выберите проект слева</div>
+          </div>
         </div>
       </div>
     </div>
@@ -555,7 +536,6 @@ onMounted(async () => {
 
 // ── State ─────────────────────────────────────────────────────
 
-const lobbyVisible = ref(true)
 const conclusionVisible = ref(false)
 const selectedProjectId = ref(null)
 const selectedSpeed = ref('normal')
@@ -754,7 +734,6 @@ function resetPolicy() {
 function startSession() {
   const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
   if (!project) return
-  lobbyVisible.value = false
 
   const sess = createSession(project, { speed: selectedSpeed.value, policy: { ...fstPolicy.value }, useAI: useAI.value })
   session.value = sess
@@ -785,7 +764,6 @@ function resetSession() {
   kagSavedCount.value = 0
   intSaved.value = false
   intEventId.value = null
-  lobbyVisible.value = true
 }
 
 function humanDecide(verdict) {
@@ -875,69 +853,83 @@ onUnmounted(() => {
   font-family: 'Inter', sans-serif;
 }
 
-/* ── Pre-session ──────────────────────────────────────────── */
-.fst-pre-session {
+/* ── Setup Screen ─────────────────────────────────────────── */
+.fst-setup {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   min-height: 100vh;
 }
-.fst-pre-logo {
-  text-align: center;
+.fst-setup-header {
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
 }
-.fst-pre-logo h1 {
-  font-size: 36px;
+.fst-setup-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
   font-weight: 700;
   color: #ffa726;
-  margin: 12px 0 4px;
+  margin-bottom: 5px;
 }
-.fst-pre-logo h2 {
-  font-size: 20px;
-  font-weight: 400;
+.fst-setup-desc {
   color: var(--p-text-muted-color);
+  font-size: 13px;
   margin: 0 0 12px;
 }
-.fst-pre-logo p {
-  color: var(--p-text-muted-color);
-  margin-bottom: 16px;
-}
-
-/* Pre-session policy preview */
-.fst-pre-policy {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin: 0 auto 4px;
-  max-width: 520px;
-  width: 100%;
-  text-align: left;
-}
-.fst-pre-policy-title {
+.fst-setup-subfunds {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--p-text-color);
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--p-surface-border);
 }
-.fst-pre-policy-grid {
+.fst-setup-body {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 16px;
+  grid-template-columns: 1fr 360px;
+  flex: 1;
 }
-.fst-pre-policy-item {
+.fst-setup-col {
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+.fst-setup-col--projects {
+  border-right: 1px solid var(--p-surface-border);
+}
+.fst-setup-section-title {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--p-text-muted-color);
+  margin-bottom: 10px;
+}
+.fst-setup-empty {
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+  padding: 20px 0;
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
-.fst-pre-policy-label { color: var(--p-text-muted-color); }
-.fst-pre-policy-val { font-weight: 600; color: var(--p-text-color); }
+.fst-setup-launch {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--p-surface-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fst-launch-btn { width: 100%; justify-content: center; }
+.fst-launch-hint { text-align: center; font-size: 12px; color: var(--p-text-muted-color); }
+.fst-policy-summary {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  margin-left: 8px;
+  font-weight: 400;
+}
 
 /* ── FST Policy Panel ──────────────────────────────────────── */
 .fst-policy-toggle {

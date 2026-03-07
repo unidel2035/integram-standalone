@@ -50,7 +50,7 @@
 
 // Пустая строка → использует Vite proxy /fst → https://ai2o.ru/fst
 const FST_SERVER = ''
-const FST_DB = import.meta.env.VITE_FST_DB || 'fst'
+const FST_DB = import.meta.env.VITE_FST_DB || 'fst-api'
 
 let _token = null
 let _xsrf = null
@@ -78,7 +78,13 @@ export async function authenticate() {
 
 async function api(path, options = {}) {
   const { token, xsrf } = await authenticate()
-  const url = `${FST_SERVER}/${FST_DB}/${path}`
+  const method = options.method || 'GET'
+
+  // Append _xsrf to URL for GET requests (no body available)
+  let url = `${FST_SERVER}/${FST_DB}/${path}`
+  if (method === 'GET') {
+    url += (url.includes('?') ? '&' : '?') + `_xsrf=${encodeURIComponent(xsrf)}`
+  }
 
   const headers = {
     'X-Authorization': token,
