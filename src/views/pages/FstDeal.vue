@@ -382,6 +382,9 @@
       </div>
     </div>
 
+    <!-- Page Tutor -->
+    <PageTutorButton pageId="fst-deal" :getContext="getPageContext" />
+
   </div>
 </template>
 
@@ -400,9 +403,22 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import TemplateRenderer from '@/components/finmodel/TemplateRenderer.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import PageTutorButton from '@/components/PageTutorButton.vue'
 import fstStartupTemplate from '@/templates/finmodel/fst_startup.json'
 
 const toast = useToast()
+
+// ── Page Tutor Context ────────────────────────────────────────
+function getPageContext() {
+  return {
+    module: 'Управление сделкой',
+    company: deal.value.companyName,
+    subFund: deal.value.subFund,
+    dealType: deal.value.type,
+    totalAmount: deal.value.totalAmount,
+    stage: deal.value.stage
+  }
+}
 
 // ─── Deal form ──────────────────────────────────────────────────────────────
 const deal = ref({

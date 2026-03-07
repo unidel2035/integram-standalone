@@ -537,6 +537,10 @@
         </div>
       </div>
     </div>
+
+    <!-- Page Tutor -->
+    <PageTutorButton pageId="fst-committee" :getContext="getPageContext" />
+
   </div>
 </template>
 
@@ -553,6 +557,7 @@ import { saveDecision, createProject, saveCommitteeSession, STATUSES } from '@/s
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import PageTutorButton from '@/components/PageTutorButton.vue'
 
 // ── Load FST Data ─────────────────────────────────────────────────
 
@@ -567,6 +572,18 @@ onMounted(async () => {
     selectedProjectId.value = PROJECTS_POOL.value[0].id
   }
 })
+
+// ── Page Tutor Context ────────────────────────────────────────
+function getPageContext() {
+  const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
+  return {
+    module: 'AI-инвесткомитет',
+    selectedProject: project ? project.title : null,
+    isRunning: running.value,
+    currentPhase: session.value?.phase || null,
+    agents: AGENTS.map(a => a.name)
+  }
+}
 
 // ── State ─────────────────────────────────────────────────────
 

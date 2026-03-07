@@ -269,6 +269,9 @@
       @navigate="navigateToTerm"
     />
 
+    <!-- Page Tutor -->
+    <PageTutorButton pageId="fst-hub" :getContext="getPageContext" />
+
   </div>
 </template>
 
@@ -277,6 +280,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFstData } from '@/composables/useFstData.js'
 import { useProductTour } from '@/composables/useProductTour'
+import PageTutorButton from '@/components/PageTutorButton.vue'
 import { useOnboardingStore } from '@/stores/onboardingStore'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import Term from '@/components/Term.vue'
@@ -299,6 +303,15 @@ function openTermModal(termId) {
 
 function navigateToTerm(termId) {
   selectedTermId.value = termId
+}
+
+// ── Page Tutor Context ────────────────────────────────────────────
+function getPageContext() {
+  return {
+    currentPage: 'ФСТ НТИ Хаб',
+    stats: stats.value,
+    availableModules: modules.map(m => m.name)
+  }
 }
 
 // ── Load FST Data from API ─────────────────────────────────────────
