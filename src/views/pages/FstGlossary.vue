@@ -102,6 +102,30 @@
           <div class="stat-value">{{ categoryCounts.ai || 0 }}</div>
         </template>
       </Card>
+
+      <Card class="stat-card">
+        <template #title>
+          <div class="stat-title">
+            <i class="pi pi-shield"></i>
+            <span>Регулирование</span>
+          </div>
+        </template>
+        <template #content>
+          <div class="stat-value">{{ categoryCounts.regulation || 0 }}</div>
+        </template>
+      </Card>
+
+      <Card class="stat-card">
+        <template #title>
+          <div class="stat-title">
+            <i class="pi pi-cog"></i>
+            <span>Платформа</span>
+          </div>
+        </template>
+        <template #content>
+          <div class="stat-value">{{ categoryCounts.platform || 0 }}</div>
+        </template>
+      </Card>
     </div>
 
     <!-- Terms Grid -->

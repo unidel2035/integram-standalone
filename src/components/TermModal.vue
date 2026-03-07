@@ -5,6 +5,7 @@ import Button from 'primevue/button'
 import Chip from 'primevue/chip'
 import { getTermById } from '@/data/glossary'
 import { getApiUrl } from '@/utils/apiConfig'
+import FinancialCalculators from '@/components/FinancialCalculators.vue'
 
 const props = defineProps({
   visible: {
@@ -32,7 +33,9 @@ const categoryLabel = computed(() => {
   const categories = {
     financial: 'Финансовые метрики',
     venture: 'Венчурные термины',
-    ai: 'AI & Технологии'
+    ai: 'AI & Технологии',
+    regulation: 'Регулирование',
+    platform: 'Платформа'
   }
   return categories[term.value?.category] || ''
 })
@@ -41,7 +44,9 @@ const categoryIcon = computed(() => {
   const icons = {
     financial: 'pi-chart-line',
     venture: 'pi-briefcase',
-    ai: 'pi-sparkles'
+    ai: 'pi-sparkles',
+    regulation: 'pi-shield',
+    platform: 'pi-cog'
   }
   return icons[term.value?.category] || 'pi-book'
 })
@@ -58,6 +63,11 @@ const handleClose = () => {
 
 const handleNavigate = (termId) => {
   emit('navigate', termId)
+}
+
+const hasCalculator = (termId) => {
+  const calculatorTerms = ['irr', 'moic', 'dpi', 'tvpi', 'burn-rate', 'runway', 'unit-economics', 'ltv', 'cac', 'dilution']
+  return calculatorTerms.includes(termId)
 }
 
 const explainWithAI = async () => {
@@ -131,6 +141,11 @@ const explainWithAI = async () => {
       <div class="formula-box">
         <pre>{{ term.formula }}</pre>
       </div>
+      <!-- Interactive Calculator -->
+      <FinancialCalculators
+        v-if="hasCalculator(term.id)"
+        :termId="term.id"
+      />
     </div>
 
     <!-- Example section -->
