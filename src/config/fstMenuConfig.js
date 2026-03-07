@@ -60,6 +60,7 @@ export const fstMenuConfig = [
     label: 'Обучение',
     items: [
       { label: 'Туры по модулям', icon: 'pi pi-map', action: 'show-tours-menu', special: true },
+      { label: 'Глоссарий', icon: 'pi pi-book', to: '/fst-glossary' },
     ]
   }
 ]

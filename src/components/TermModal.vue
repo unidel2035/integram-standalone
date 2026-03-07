@@ -32,7 +32,9 @@ const categoryLabel = computed(() => {
   const categories = {
     financial: 'Финансовые метрики',
     venture: 'Венчурные термины',
-    ai: 'AI & Технологии'
+    ai: 'AI & Технологии',
+    regulation: 'Регулирование',
+    platform: 'Платформа'
   }
   return categories[term.value?.category] || ''
 })
@@ -41,7 +43,9 @@ const categoryIcon = computed(() => {
   const icons = {
     financial: 'pi-chart-line',
     venture: 'pi-briefcase',
-    ai: 'pi-sparkles'
+    ai: 'pi-sparkles',
+    regulation: 'pi-shield',
+    platform: 'pi-desktop'
   }
   return icons[term.value?.category] || 'pi-book'
 })

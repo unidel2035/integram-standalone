@@ -22,6 +22,7 @@ import { fileURLToPath } from 'url'
 import portfolioRoutes from './api/routes/portfolio.js'
 import applicationsRoutes from './api/routes/applications.js'
 import webhooksRoutes from './api/routes/webhooks.js'
+import glossaryRoutes from './api/routes/glossary.js'
 import { authenticateApiToken, validateWebhookSecret } from './api/middleware/auth.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -82,6 +83,9 @@ app.use('/api/fst', apiLimiter, authenticateApiToken, portfolioRoutes)
 
 // Applications endpoints (public with auth token)
 app.use('/api/fst', apiLimiter, authenticateApiToken, applicationsRoutes)
+
+// Glossary endpoints (public with auth token) - MCP Tool for AI agents
+app.use('/api/fst', apiLimiter, authenticateApiToken, glossaryRoutes)
 
 // Webhook endpoints (с webhook secret validation)
 app.use('/api/fst/webhook', validateWebhookSecret, webhooksRoutes)

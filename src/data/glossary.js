@@ -326,6 +326,419 @@ export const glossaryTerms = {
     example: 'Меморандум на 20 страниц: AI-стартап для агро, рынок ₽50 млрд, команда из Яндекса, 100 клиентов, запрашивают ₽50 млн при ₽500 млн pre-money.',
     relatedTerms: ['ai-committee', 'due-diligence', 'term-sheet'],
     context: 'Ключевой документ для принятия решения инвесткомитетом. В ФСТ НТИ генерируется AI-агентами автоматически.'
+  },
+
+  // Дополнительные финансовые метрики
+  roi: {
+    id: 'roi',
+    title: 'ROI — Рентабельность инвестиций',
+    category: 'financial',
+    definition: 'Return on Investment — отношение прибыли к затратам. Простейшая метрика эффективности инвестиции.',
+    formula: 'ROI = (Доход - Затраты) / Затраты × 100%',
+    example: 'Инвестировали ₽10 млн, получили ₽15 млн. ROI = (₽15M - ₽10M) / ₽10M = 50%.',
+    relatedTerms: ['irr', 'moic', 'roe'],
+    context: 'Простая метрика, не учитывает время. Для венчура лучше использовать IRR.'
+  },
+
+  roe: {
+    id: 'roe',
+    title: 'ROE — Рентабельность собственного капитала',
+    category: 'financial',
+    definition: 'Return on Equity — отношение чистой прибыли к собственному капиталу. Показывает эффективность использования капитала акционеров.',
+    formula: 'ROE = Чистая прибыль / Собственный капитал × 100%',
+    example: 'Компания заработала ₽20 млн при капитале ₽100 млн. ROE = 20%.',
+    relatedTerms: ['roi', 'roa', 'ebitda'],
+    context: 'Важная метрика для оценки операционной эффективности портфельных компаний.'
+  },
+
+  ebitda: {
+    id: 'ebitda',
+    title: 'EBITDA — Прибыль до вычетов',
+    category: 'financial',
+    definition: 'Earnings Before Interest, Taxes, Depreciation, Amortization — операционная прибыль компании без учёта финансовых и бухгалтерских корректировок.',
+    formula: 'EBITDA = Выручка - Операционные расходы (без амортизации)',
+    example: 'Выручка ₽100 млн, расходы ₽70 млн, амортизация ₽10 млн. EBITDA = ₽30 млн.',
+    relatedTerms: ['revenue', 'burn-rate', 'unit-economics'],
+    context: 'Стандартная метрика для оценки компаний. Популярна в венчуре с Series B+.'
+  },
+
+  rvpi: {
+    id: 'rvpi',
+    title: 'RVPI — Остаточная стоимость',
+    category: 'financial',
+    definition: 'Residual Value to Paid-In — отношение текущей стоимости портфеля к внесённому капиталу.',
+    formula: 'RVPI = Остаточная стоимость / Внесённый капитал',
+    example: 'LP внёс ₽10 млн, текущая стоимость портфеля ₽12 млн. RVPI = 1.2x.',
+    relatedTerms: ['dpi', 'tvpi', 'nav'],
+    context: 'Показывает нереализованный потенциал фонда. TVPI = DPI + RVPI.'
+  },
+
+  'fair-value': {
+    id: 'fair-value',
+    title: 'Fair Value — Справедливая стоимость',
+    category: 'financial',
+    definition: 'Оценочная рыночная стоимость актива по стандартам IPEV/ILPA для расчёта NAV.',
+    formula: 'Fair Value = Comparable Companies × Adjustments',
+    example: 'Аналоги на рынке торгуются при EV/Revenue 10x. Наша компания: ₽50M revenue → Fair Value = ₽500M.',
+    relatedTerms: ['nav', 'valuation', 'mark-to-market'],
+    context: 'Квартальная переоценка для отчётности LP. Критично для расчёта TVPI и NAV.'
+  },
+
+  // Дополнительные венчурные термины
+  valuation: {
+    id: 'valuation',
+    title: 'Valuation — Оценка компании',
+    category: 'venture',
+    definition: 'Pre-money (до инвестиции) или post-money (после) стоимость компании. Определяет цену акции и долю инвестора.',
+    formula: 'Post-money = Pre-money + Investment. Ownership = Investment / Post-money',
+    example: 'Pre-money ₽200M, инвестиция ₽50M → Post-money ₽250M. Доля инвестора = 50/250 = 20%.',
+    relatedTerms: ['term-sheet', 'cap-table', 'dilution'],
+    context: 'Главный предмет переговоров между основателями и инвесторами.'
+  },
+
+  'anti-dilution': {
+    id: 'anti-dilution',
+    title: 'Anti-dilution — Защита от разводнения',
+    category: 'venture',
+    definition: 'Механизм защиты ранних инвесторов при down round через корректировку цены конверсии.',
+    formula: 'Full Ratchet (жёсткий) или Weighted Average (мягкий)',
+    example: 'Series A по ₽1000/акция. Series B по ₽500/акция → Full Ratchet пересчитывает Series A до ₽500/акция.',
+    relatedTerms: ['down-round', 'weighted-average', 'full-ratchet'],
+    context: 'Стандартное условие для institutional investors. Сильно разводняет основателей при down round.'
+  },
+
+  'liquidation-preference': {
+    id: 'liquidation-preference',
+    title: 'Liquidation Preference — Ликвидационное предпочтение',
+    category: 'venture',
+    definition: 'Приоритет инвесторов при выходе/ликвидации: сначала инвестор получает 1x-3x вложенного, затем остальные.',
+    formula: 'Стандарт: 1x participating или 1x non-participating',
+    example: 'Инвестор вложил ₽50M с 1x preference. При выходе за ₽100M получает ₽50M + долю от остатка ₽50M.',
+    relatedTerms: ['term-sheet', 'waterfall', 'participating-preferred'],
+    context: 'Защита инвестора от неудачного exit. Participating preference может быть агрессивным для основателей.'
+  },
+
+  sha: {
+    id: 'sha',
+    title: 'SHA — Акционерное соглашение',
+    category: 'venture',
+    definition: 'Shareholders Agreement — юридически обязывающий договор между инвесторами и основателями о правах, управлении, exit.',
+    formula: 'SHA = Term Sheet + Legal Details (50-100 страниц)',
+    example: 'Пункты: board seats, вето-права, drag-along, tag-along, liquidation preference, anti-dilution.',
+    relatedTerms: ['term-sheet', 'drag-along', 'tag-along', 'veto-rights'],
+    context: 'Финальный документ после Due Diligence. Определяет все права сторон на годы вперёд.'
+  },
+
+  'drag-along': {
+    id: 'drag-along',
+    title: 'Drag-along — Принудительная продажа',
+    category: 'venture',
+    definition: 'Право мажоритарных акционеров принудить миноритариев продать свои доли при exit сделке.',
+    formula: 'Если 75% акционеров согласны продать → остальные 25% обязаны',
+    example: 'Покупатель хочет купить 100% компании. 80% акционеров согласны → drag-along принуждает оставшиеся 20%.',
+    relatedTerms: ['tag-along', 'sha', 'exit'],
+    context: 'Защита от блокировки выгодных M&A сделок миноритариями.'
+  },
+
+  'tag-along': {
+    id: 'tag-along',
+    title: 'Tag-along — Право продать вместе',
+    category: 'venture',
+    definition: 'Право миноритарных акционеров продать свои доли на тех же условиях, что и мажоритарии.',
+    formula: 'Если крупный акционер продаёт → миноритарии могут присоединиться',
+    example: 'Основатель продаёт 50% за ₽500/акцию → миноритарии имеют право продать свои доли по той же цене.',
+    relatedTerms: ['drag-along', 'sha', 'co-sale-rights'],
+    context: 'Защита миноритариев от ситуации, когда основатели exit-нулись, а они остались с неликвидными акциями.'
+  },
+
+  'veto-rights': {
+    id: 'veto-rights',
+    title: 'Veto Rights — Право вето',
+    category: 'venture',
+    definition: 'Список решений, требующих одобрения инвесторов: M&A, новые раунды, изменение устава, продажа активов.',
+    formula: 'Protective provisions в SHA',
+    example: 'Компания не может привлечь новый раунд, взять кредит >₽10M, сменить CEO без одобрения Series A инвесторов.',
+    relatedTerms: ['sha', 'board-seat', 'protective-provisions'],
+    context: 'Баланс контроля между основателями и инвесторами. Слишком много veto парализует компанию.'
+  },
+
+  'board-seat': {
+    id: 'board-seat',
+    title: 'Board Seat — Место в совете директоров',
+    category: 'venture',
+    definition: 'Представительство инвестора в совете директоров компании для контроля стратегических решений.',
+    formula: 'Типичная структура: 2 основателя + 2 инвестора + 1 независимый',
+    example: 'Series A фонд получает 1 board seat при инвестиции ₽50M+. Участвует в найме CEO, одобрении бюджета, M&A.',
+    relatedTerms: ['veto-rights', 'sha', 'observer-rights'],
+    context: 'Критическое право для крупных инвесторов. Observer rights — промежуточный вариант без права голоса.'
+  },
+
+  runway: {
+    id: 'runway',
+    title: 'Runway — Время до конца денег',
+    category: 'venture',
+    definition: 'Количество месяцев, на которые хватит текущих денежных средств при текущем burn rate.',
+    formula: 'Runway (месяцев) = Cash / Monthly Burn Rate',
+    example: 'На счёте ₽30 млн, burn rate ₽5 млн/месяц → Runway = 6 месяцев.',
+    relatedTerms: ['burn-rate', 'cash-flow', 'bridge-round'],
+    context: 'Критический параметр для планирования следующего раунда. Начинать fundraising при runway < 9 месяцев.'
+  },
+
+  'burn-rate': {
+    id: 'burn-rate',
+    title: 'Burn Rate — Скорость сжигания денег',
+    category: 'venture',
+    definition: 'Ежемесячные чистые расходы компании (операционные затраты минус выручка).',
+    formula: 'Burn Rate = Операционные расходы - Выручка (monthly)',
+    example: 'Расходы ₽10 млн/месяц, выручка ₽3 млн/месяц → Net Burn = ₽7 млн/месяц.',
+    relatedTerms: ['runway', 'unit-economics', 'cash-flow'],
+    context: 'Ключевая метрика для early-stage компаний. Высокий burn требует быстрого роста для оправдания.'
+  },
+
+  'unit-economics': {
+    id: 'unit-economics',
+    title: 'Unit Economics — Экономика на единицу',
+    category: 'venture',
+    definition: 'Прибыльность бизнес-модели в расчёте на одного клиента: LTV vs CAC.',
+    formula: 'Healthy: LTV / CAC > 3, Payback < 12 months',
+    example: 'SaaS: CAC ₽10K, MRR ₽3K, Churn 5%/мес → LTV ₽60K. Ratio = 6.0 ✅',
+    relatedTerms: ['ltv', 'cac', 'payback-period'],
+    context: 'Критично для Series A+. Плохие unit economics убивают любой рост.'
+  },
+
+  ltv: {
+    id: 'ltv',
+    title: 'LTV — Пожизненная ценность клиента',
+    category: 'venture',
+    definition: 'Lifetime Value — общая прибыль от клиента за всё время сотрудничества.',
+    formula: 'LTV = ARPU × Gross Margin / Churn Rate',
+    example: 'ARPU ₽5K/мес, Margin 80%, Churn 10%/мес → LTV = ₽5K × 0.8 / 0.1 = ₽40K.',
+    relatedTerms: ['cac', 'unit-economics', 'churn'],
+    context: 'Основа unit economics. LTV > 3× CAC — индикатор здоровой бизнес-модели.'
+  },
+
+  cac: {
+    id: 'cac',
+    title: 'CAC — Стоимость привлечения клиента',
+    category: 'venture',
+    definition: 'Customer Acquisition Cost — затраты на маркетинг и продажи для привлечения одного платящего клиента.',
+    formula: 'CAC = (Marketing + Sales Costs) / New Customers',
+    example: 'Потратили ₽1 млн на рекламу, получили 100 клиентов → CAC = ₽10K.',
+    relatedTerms: ['ltv', 'unit-economics', 'payback-period'],
+    context: 'Ключевая метрика эффективности роста. Должна снижаться со scale компании.'
+  },
+
+  // Регуляторные термины
+  aml: {
+    id: 'aml',
+    title: 'AML — Противодействие отмыванию денег',
+    category: 'regulation',
+    definition: 'Anti-Money Laundering — комплекс процедур проверки источников капитала инвесторов и портфельных компаний.',
+    formula: 'AML = KYC + Transaction Monitoring + Suspicious Activity Reports',
+    example: 'Фонд проверяет нового LP: запрашивает источники богатства, скринит по санкционным спискам, проверяет UBO.',
+    relatedTerms: ['kyc', 'compliance', 'ubo'],
+    context: 'Обязательно для венчурных фондов с институциональными LP. Регулируется ФЗ-115 в России.'
+  },
+
+  kyc: {
+    id: 'kyc',
+    title: 'KYC — Знай своего клиента',
+    category: 'regulation',
+    definition: 'Know Your Customer — процедура идентификации и проверки инвесторов и контрагентов.',
+    formula: 'KYC = Identity Verification + Source of Funds + PEP Screening',
+    example: 'Новый LP → запрос паспорта, tax ID, proof of address, банковских выписок, деклараций.',
+    relatedTerms: ['aml', 'compliance', 'accredited-investor'],
+    context: 'Первый шаг onboarding LP в фонд. Без KYC нельзя принять инвестиции.'
+  },
+
+  ilpa: {
+    id: 'ilpa',
+    title: 'ILPA — Стандарты отчётности LP',
+    category: 'regulation',
+    definition: 'Institutional Limited Partners Association — глобальные стандарты отчётности венчурных фондов для институциональных LP.',
+    formula: 'Quarterly: NAV, IRR, DPI, TVPI, Cash Flows, Portfolio Updates',
+    example: 'Фонд отправляет LP ежеквартально: обновление оценок портфеля, cash flow statement, детализацию по каждой сделке.',
+    relatedTerms: ['lp', 'nav', 'dpi', 'tvpi'],
+    context: 'Стандарт для top-tier фондов. Требуют крупные LP (пенсионные фонды, endowments).'
+  },
+
+  esg: {
+    id: 'esg',
+    title: 'ESG — Экологическая, социальная, корпоративная ответственность',
+    category: 'regulation',
+    definition: 'Environmental, Social, Governance — критерии оценки компаний по устойчивости и этике.',
+    formula: 'Scoring: Carbon Footprint + Diversity + Board Independence + ...',
+    example: 'Компания получает ESG score 75/100: отлично по Governance, средне по Social, плохо по Environmental.',
+    relatedTerms: ['compliance', 'sustainability', 'impact-investing'],
+    context: 'Всё больше LP требуют ESG reporting. Может влиять на valuations публичных компаний.'
+  },
+
+  'accredited-investor': {
+    id: 'accredited-investor',
+    title: 'Accredited Investor — Квалифицированный инвестор',
+    category: 'regulation',
+    definition: 'Физлицо или компания, соответствующие критериям по доходам/активам для инвестиций в венчурные фонды.',
+    formula: 'Россия: ₽6M активов или ₽600K годовой доход. США: $1M net worth или $200K income',
+    example: 'Семейный офис с ₽500M активов → квалифицированный инвестор → может быть LP фонда.',
+    relatedTerms: ['lp', 'kyc', 'sec'],
+    context: 'Регуляторная защита неопытных инвесторов от высокорисковых венчурных инвестиций.'
+  },
+
+  // AI/Платформа-специфичные термины
+  integram: {
+    id: 'integram',
+    title: 'Integram — NoSQL база ФСТ НТИ',
+    category: 'platform',
+    definition: 'Фирменная NoSQL база данных на ai2o.ru для хранения всех данных платформы: сделки, портфель, агенты.',
+    formula: 'REST API: POST /_m_new/{typeId}, GET /_d_req/{typeId}',
+    example: 'Создание сделки: POST /fst/_m_new/123 → запись в типе "Deals".',
+    relatedTerms: ['mcp', 'api', 'nosql'],
+    context: 'Замена PostgreSQL/MySQL в архитектуре ФСТ НТИ. 60+ MCP-инструментов для AI-агентов.'
+  },
+
+  'token-router': {
+    id: 'token-router',
+    title: 'Token Router — LLM координатор',
+    category: 'platform',
+    definition: 'Сервис маршрутизации запросов к разным LLM (Claude, DeepSeek, GPT-4o, YandexGPT) с учётом стоимости и задачи.',
+    formula: 'Route = TaskType → ModelSelector → API Call',
+    example: 'Быстрый код-анализ → DeepSeek. Стратегический документ → Claude Sonnet 4.',
+    relatedTerms: ['deepseek', 'claude', 'llm'],
+    context: 'Эндпоинт /api/ai-tokens/chat — единая точка для всех AI-запросов платформы.'
+  },
+
+  deepseek: {
+    id: 'deepseek',
+    title: 'DeepSeek — Быстрая LLM для кода',
+    category: 'platform',
+    definition: 'Китайская LLM, специализирующаяся на коде и структурированных данных. Default модель ФСТ НТИ.',
+    formula: 'Speed: 10× faster than GPT-4, Cost: 10× cheaper',
+    example: 'Парсинг финмодели, генерация JSON, code review → DeepSeek справляется за секунды.',
+    relatedTerms: ['token-router', 'claude', 'gpt-4o'],
+    context: 'Используется для 80% AI-запросов платформы. Экономия ~$50K/месяц vs OpenAI.'
+  },
+
+  'hyperformula': {
+    id: 'hyperformula',
+    title: 'HyperFormula — Excel-движок в браузере',
+    category: 'platform',
+    definition: 'JavaScript библиотека для расчёта сложных финансовых моделей в браузере без сервера.',
+    formula: 'Frontend: Vue + HyperFormula = Instant Recalc',
+    example: 'Финмодель с 1000 ячеек и формулами → пересчёт за 10ms при изменении параметра.',
+    relatedTerms: ['financial-modeling', 'fst-deal'],
+    context: 'Основа для интерактивных финмоделей в /fst-deal. Поддерживает 380+ Excel функций.'
+  },
+
+  'tick-engine': {
+    id: 'tick-engine',
+    title: 'Tick Engine — Симуляционный движок',
+    category: 'platform',
+    definition: 'Event-driven система для симуляции развития портфельных компаний по событиям (hire, revenue, funding).',
+    formula: 'Event → State Update → Metrics Recalc → Dashboard Refresh',
+    example: 'Событие "+10 клиентов" → обновление MRR → пересчёт Runway → обновление графика NAV.',
+    relatedTerms: ['digital-twin', 'simulation', 'portfolio-monitoring'],
+    context: 'Основа цифрового двойника компании в /fst-twin. Позволяет прогнозировать сценарии.'
+  },
+
+  rag: {
+    id: 'rag',
+    title: 'RAG — Retrieval-Augmented Generation',
+    category: 'platform',
+    definition: 'Архитектура AI: поиск релевантных данных → подстановка в контекст LLM → генерация точного ответа.',
+    formula: 'Answer = LLM(Question + Retrieved_Context)',
+    example: 'Вопрос "IRR фонда?" → Vector DB находит финансовые отчёты → GPT генерирует ответ "23.5% median IRR".',
+    relatedTerms: ['kag', 'vector-db', 'knowledge-graph'],
+    context: 'Базовая технология для AI-агентов платформы. KAG — улучшенная версия RAG с графом.'
+  },
+
+  'vector-db': {
+    id: 'vector-db',
+    title: 'Vector Database — Векторная база знаний',
+    category: 'platform',
+    definition: 'База данных для хранения embeddings (векторных представлений) текстов для семантического поиска.',
+    formula: 'Text → Embedding Model → Vector → Similarity Search',
+    example: 'Запрос "беспилотники" находит документы про "БПЛА", "дроны", "UAV" через cosine similarity.',
+    relatedTerms: ['rag', 'kag', 'embeddings'],
+    context: 'Часть KAG-системы ФСТ НТИ. 1140+ концептов БПЛА в векторной базе.'
+  },
+
+  // Дополнительные венчурные термины
+  seed: {
+    id: 'seed',
+    title: 'Seed Round — Посевной раунд',
+    category: 'venture',
+    definition: 'Первый институциональный раунд финансирования стартапа для валидации продукта и первых клиентов.',
+    formula: 'Обычно: $500K-$3M при оценке $5M-$15M',
+    example: 'Стартап с MVP и 100 пользователей привлёк ₽30M seed при оценке ₽200M pre-money.',
+    relatedTerms: ['series-a', 'pre-seed', 'valuation'],
+    context: 'Критический раунд для достижения product-market fit. Высокий risk, высокий potential return.'
+  },
+
+  'series-a': {
+    id: 'series-a',
+    title: 'Series A — Раунд масштабирования',
+    category: 'venture',
+    definition: 'Раунд для компаний с доказанным product-market fit, готовых масштабировать бизнес-модель.',
+    formula: 'Обычно: $2M-$15M при revenue >$1M ARR',
+    example: 'SaaS с ₽50M ARR и положительными unit economics привлёк ₽300M Series A при ₽1.5B оценке.',
+    relatedTerms: ['seed', 'series-b', 'product-market-fit'],
+    context: 'Фокус на масштабировании: расширение команды, маркетинг, новые рынки.'
+  },
+
+  'product-market-fit': {
+    id: 'product-market-fit',
+    title: 'Product-Market Fit — Соответствие продукт-рынок',
+    category: 'venture',
+    definition: 'Момент, когда продукт решает реальную проблему достаточного рынка, клиенты готовы платить и рекомендовать.',
+    formula: 'PMF индикаторы: >40% "very disappointed" в survey, NPS >50, LTV/CAC >3',
+    example: 'После 3 pivot-ов стартап нашёл PMF: organic рост 20%/месяц, 60% клиентов сказали "very disappointed" без продукта.',
+    relatedTerms: ['series-a', 'pivot', 'retention'],
+    context: 'Holy grail для стартапов. До PMF — выживание, после PMF — масштабирование.'
+  },
+
+  pivot: {
+    id: 'pivot',
+    title: 'Pivot — Изменение бизнес-модели',
+    category: 'venture',
+    definition: 'Кардинальное изменение продукта, целевой аудитории или бизнес-модели на основе обратной связи рынка.',
+    formula: 'Trigger: плохой retention, высокий CAC, отсутствие PMF',
+    example: 'Instagram начинался как Burbn (check-in app), pivot на фото → product-market fit.',
+    relatedTerms: ['product-market-fit', 'lean-startup', 'iteration'],
+    context: 'Нормальная часть поиска PMF. Большинство успешных стартапов делали 1-3 pivot.'
+  },
+
+  'bridge-round': {
+    id: 'bridge-round',
+    title: 'Bridge Round — Промежуточное финансирование',
+    category: 'venture',
+    definition: 'Краткосрочный раунд для продления runway до следующего большого раунда. Часто от существующих инвесторов.',
+    formula: 'Обычно: конвертируемый заём или SAFE, размер <50% последнего раунда',
+    example: 'Series A инвесторы дают ₽20M bridge (convertible note 20% discount) чтобы компания дожила до Series B.',
+    relatedTerms: ['runway', 'convertible-note', 'down-round'],
+    context: 'Может быть позитивным (подготовка к росту) или негативным (выживание) сигналом.'
+  },
+
+  // Регуляторные термины
+  'pp-1726': {
+    id: 'pp-1726',
+    title: 'ПП-1726 — Реестр производителей БПЛА',
+    category: 'regulation',
+    definition: 'Постановление Правительства РФ №1726 о создании реестра российских производителей беспилотных авиационных систем.',
+    formula: 'Требования: российское юрлицо, производство в РФ, сертификация',
+    example: 'Компания подаёт заявку в реестр → проверка Минпромторгом → включение в реестр → доступ к госзакупкам.',
+    relatedTerms: ['compliance', 'uav', 'certification'],
+    context: 'Критично для БПЛА-стартапов в портфеле ФСТ НТИ. Включение в реестр открывает доступ к госконтрактам.'
+  },
+
+  'catch-up': {
+    id: 'catch-up',
+    title: 'Catch-up — Догоняющая выплата GP',
+    category: 'financial',
+    definition: 'Механизм в waterfall, позволяющий GP быстро получить свой carry после выплаты hurdle rate LP.',
+    formula: '100% выплат GP до достижения эффективной ставки carry (обычно 20%)',
+    example: 'После возврата капитала и hurdle 8%, GP получает 100% следующих выплат пока не "догонит" до своих 20% от всей прибыли.',
+    relatedTerms: ['waterfall', 'carried-interest', 'hurdle-rate'],
+    context: 'Ускоряет motivation GP за перформанс. Типичная структура: 1x return → 8% hurdle → catch-up → 80/20 split.'
   }
 }
 
@@ -360,9 +773,11 @@ export function getTermsByCategory(category) {
  */
 export function getCategories() {
   return [
-    { id: 'financial', label: 'Финансовые метрики', icon: 'pi pi-chart-line' },
-    { id: 'venture', label: 'Венчурные термины', icon: 'pi pi-briefcase' },
-    { id: 'ai', label: 'AI & Технологии', icon: 'pi pi-sparkles' }
+    { id: 'financial', label: 'Финансовые метрики', icon: 'pi-chart-line' },
+    { id: 'venture', label: 'Венчурные термины', icon: 'pi-briefcase' },
+    { id: 'ai', label: 'AI & Технологии', icon: 'pi-sparkles' },
+    { id: 'regulation', label: 'Регулирование', icon: 'pi-shield' },
+    { id: 'platform', label: 'Платформа', icon: 'pi-desktop' }
   ]
 }
 
