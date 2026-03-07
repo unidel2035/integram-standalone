@@ -125,6 +125,61 @@
       </div>
     </div>
 
+    <!-- Radar chart: компания vs сектор -->
+    <div class="bm-section">
+      <h2>Radar Chart: Портфель vs Медиана vs Топ-квартиль</h2>
+      <div class="radar-wrap">
+        <canvas ref="radarCanvas" width="600" height="400"></canvas>
+      </div>
+      <div class="radar-legend">
+        <div class="legend-item"><span class="legend-dot portfolio"></span>Портфель ФСТ</div>
+        <div class="legend-item"><span class="legend-dot median"></span>Медиана сектора</div>
+        <div class="legend-item"><span class="legend-dot top-quartile"></span>Топ-квартиль (P75)</div>
+      </div>
+    </div>
+
+    <!-- Исторический тренд мультипликаторов -->
+    <div class="bm-section">
+      <h2>Исторический тренд мультипликаторов (2020-2026)</h2>
+      <div class="chart-wrap">
+        <canvas ref="trendCanvas" width="800" height="300"></canvas>
+      </div>
+    </div>
+
+    <!-- Справедливая оценка диапазон -->
+    <div class="bm-section">
+      <h2>Справедливая оценка диапазон</h2>
+      <div class="valuation-grid">
+        <div v-for="comp in portfolioCompanies" :key="comp.name" class="valuation-card">
+          <div class="val-company">{{ comp.name }}</div>
+          <div class="val-stage">{{ comp.stage }}</div>
+          <div class="val-metrics">
+            <div class="val-metric">
+              <span class="val-label">Текущая оценка:</span>
+              <span class="val-current">{{ comp.currentValuation }}M</span>
+            </div>
+            <div class="val-metric">
+              <span class="val-label">Справедливый диапазон:</span>
+              <span class="val-range">{{ comp.fairMin }}M - {{ comp.fairMax }}M</span>
+            </div>
+            <div class="val-bar-wrap">
+              <div class="val-bar-track">
+                <div class="val-bar-range" :style="{ left: rangeLeft(comp) + '%', width: rangeWidth(comp) + '%' }"></div>
+                <div class="val-bar-current" :style="{ left: currentPosition(comp) + '%' }"></div>
+              </div>
+              <div class="val-bar-labels">
+                <span>{{ comp.fairMin }}M</span>
+                <span>{{ comp.fairMax }}M</span>
+              </div>
+            </div>
+            <div class="val-status" :class="valuationStatus(comp)">
+              {{ valuationStatusLabel(comp) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Позиционирование на карте -->
     <div class="bm-section">
       <h2>Позиционирование по Risk/Return</h2>
@@ -150,14 +205,48 @@
         </div>
       </div>
     </div>
+
+    <!-- Источники данных -->
+    <div class="bm-section">
+      <h2>Источники данных</h2>
+      <div class="sources-grid">
+        <div v-for="src in dataSources" :key="src.name" class="source-card">
+          <div class="src-icon"><i :class="src.icon"></i></div>
+          <div class="src-name">{{ src.name }}</div>
+          <div class="src-desc">{{ src.desc }}</div>
+          <div class="src-coverage">{{ src.coverage }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Нормативная база -->
+    <div class="bm-section">
+      <h2>Нормативная база</h2>
+      <div class="norms-list">
+        <div v-for="norm in normativeBase" :key="norm.code" class="norm-card">
+          <div class="norm-header">
+            <div class="norm-code">{{ norm.code }}</div>
+            <div class="norm-type">{{ norm.type }}</div>
+          </div>
+          <div class="norm-title">{{ norm.title }}</div>
+          <div class="norm-purpose">{{ norm.purpose }}</div>
+          <a v-if="norm.link" :href="norm.link" target="_blank" class="norm-link">
+            <i class="pi pi-external-link"></i> Читать документ
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const sector = ref('bas')
 const sectorLabel = computed(() => ({ bas: 'БАС / БПЛА', robo: 'Робототехника', medtech: 'MedTech', agritech: 'AgriTech' })[sector.value])
+
+const radarCanvas = ref(null)
+const trendCanvas = ref(null)
 
 const marketMultiples = computed(() => [
   { label: 'EV/Revenue', median: '8.2x', p25: '4.1x', p75: '14.5x', portfolio: '7.4x', medianNum: 8.2, portNum: 7.4, maxNum: 20 },
@@ -198,10 +287,26 @@ function compareToMedian(val, field) {
 }
 
 const portfolioCompanies = ref([
-  { name: 'АгроДрон',       stage: 'Серия A', evRev: 6.8, evEbitda: '—', pe: '—', growth: 112, gm: 58, r40: 67 },
-  { name: 'DroneLogistics', stage: 'Серия B', evRev: 8.4, evEbitda: 18.2, pe: '—', growth: 64, gm: 54, r40: 38 },
-  { name: 'CyberPilot',     stage: 'Серия B', evRev: 9.1, evEbitda: 21.3, pe: '—', growth: 89, gm: 63, r40: 55 }
+  { name: 'АгроДрон',       stage: 'Серия A', evRev: 6.8, evEbitda: '—', pe: '—', growth: 112, gm: 58, r40: 67, currentValuation: 48, fairMin: 42, fairMax: 68 },
+  { name: 'DroneLogistics', stage: 'Серия B', evRev: 8.4, evEbitda: 18.2, pe: '—', growth: 64, gm: 54, r40: 38, currentValuation: 95, fairMin: 78, fairMax: 112 },
+  { name: 'CyberPilot',     stage: 'Серия B', evRev: 9.1, evEbitda: 21.3, pe: '—', growth: 89, gm: 63, r40: 55, currentValuation: 120, fairMin: 98, fairMax: 145 }
 ])
+
+function rangeLeft(comp) { return 0 }
+function rangeWidth(comp) { return 100 }
+function currentPosition(comp) {
+  const range = comp.fairMax - comp.fairMin
+  return ((comp.currentValuation - comp.fairMin) / range) * 100
+}
+function valuationStatus(comp) {
+  if (comp.currentValuation < comp.fairMin) return 'undervalued'
+  if (comp.currentValuation > comp.fairMax) return 'overvalued'
+  return 'fair'
+}
+function valuationStatusLabel(comp) {
+  const status = valuationStatus(comp)
+  return { undervalued: 'Недооценена', fair: 'В диапазоне', overvalued: 'Переоценена' }[status]
+}
 
 const fundBenchmarks = ref([
   {
@@ -232,8 +337,205 @@ const scatterPoints = ref([
   { name: 'ОФЗ',             type: 'market', x: 10, y: 26, irr:  8.5, risk:  3.1 }
 ])
 
+const dataSources = ref([
+  { name: 'Crunchbase', icon: 'pi pi-database', desc: 'Глобальные венчурные сделки', coverage: '~3.5M компаний, 120K+ инвесторов' },
+  { name: 'PitchBook', icon: 'pi pi-chart-line', desc: 'Private equity и венчурные данные', coverage: 'Детальные мультипликаторы по раундам' },
+  { name: 'РФПИ', icon: 'pi pi-flag', desc: 'Российский фонд прямых инвестиций', coverage: 'Бенчмарки российских сделок' },
+  { name: 'РВК', icon: 'pi pi-building', desc: 'Российская венчурная компания', coverage: 'Данные по портфельным оценкам РФ' },
+  { name: 'Публичные аналоги', icon: 'pi pi-chart-bar', desc: 'Торгуемые drone/robotics компании', coverage: 'AgEagle, Joby Aviation, EHang и др.' }
+])
+
+const normativeBase = ref([
+  {
+    code: 'МСФО 13',
+    type: 'Международный стандарт',
+    title: 'Оценка справедливой стоимости',
+    purpose: 'Определение справедливой стоимости для LP-отчётности и IFRS консолидации',
+    link: 'https://www.ifrs.org/issued-standards/list-of-standards/ifrs-13-fair-value-measurement/'
+  },
+  {
+    code: 'ФСО 8',
+    type: 'Федеральный стандарт оценки РФ',
+    title: 'Оценка бизнеса',
+    purpose: 'Российский стандарт оценки стоимости бизнеса и долей в уставном капитале',
+    link: 'https://base.garant.ru/12181997/'
+  }
+])
+
+// Historical trend data (2020-2026)
+const historicalData = {
+  years: ['2020', '2021', '2022', '2023', '2024', '2025', '2026'],
+  evRevenue: [5.2, 7.8, 12.4, 9.2, 7.8, 8.2, 8.8],
+  evEbitda: [14.2, 18.6, 24.8, 21.3, 18.9, 18.4, 19.2],
+  growth: [45, 58, 78, 68, 62, 65, 70]
+}
+
+// Radar chart data
+const radarData = {
+  labels: ['EV/Revenue', 'Growth %', 'Gross Margin', 'Rule of 40', 'Market Share'],
+  portfolio: [7.4, 78, 58, 42, 35],
+  median: [8.2, 65, 62, 38, 40],
+  topQuartile: [14.5, 120, 76, 54, 65]
+}
+
 function exportBenchmark() {
   alert('Экспорт бенчмаркинг-отчёта')
+}
+
+// Initialize charts after mount
+onMounted(() => {
+  initRadarChart()
+  initTrendChart()
+})
+
+function initRadarChart() {
+  if (!radarCanvas.value) return
+  const ctx = radarCanvas.value.getContext('2d')
+  const centerX = 300, centerY = 200, maxRadius = 150
+
+  // Clear canvas
+  ctx.clearRect(0, 0, 600, 400)
+
+  // Draw background circles
+  ctx.strokeStyle = 'rgba(148,163,184,0.1)'
+  ctx.lineWidth = 1
+  for (let i = 1; i <= 5; i++) {
+    ctx.beginPath()
+    ctx.arc(centerX, centerY, (maxRadius / 5) * i, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+
+  // Draw axes
+  const angles = radarData.labels.map((_, i) => (Math.PI * 2 * i) / radarData.labels.length - Math.PI / 2)
+  ctx.strokeStyle = 'rgba(148,163,184,0.2)'
+  angles.forEach(angle => {
+    ctx.beginPath()
+    ctx.moveTo(centerX, centerY)
+    ctx.lineTo(centerX + Math.cos(angle) * maxRadius, centerY + Math.sin(angle) * maxRadius)
+    ctx.stroke()
+  })
+
+  // Draw labels
+  ctx.fillStyle = 'rgba(226,232,240,0.9)'
+  ctx.font = '11px Inter, sans-serif'
+  ctx.textAlign = 'center'
+  radarData.labels.forEach((label, i) => {
+    const angle = angles[i]
+    const x = centerX + Math.cos(angle) * (maxRadius + 25)
+    const y = centerY + Math.sin(angle) * (maxRadius + 25)
+    ctx.fillText(label, x, y)
+  })
+
+  // Helper to draw polygon
+  const drawPolygon = (data, color, lineWidth) => {
+    const maxVal = 150
+    ctx.strokeStyle = color
+    ctx.fillStyle = color.replace('1)', '0.1)')
+    ctx.lineWidth = lineWidth
+    ctx.beginPath()
+    data.forEach((val, i) => {
+      const angle = angles[i]
+      const r = (val / maxVal) * maxRadius
+      const x = centerX + Math.cos(angle) * r
+      const y = centerY + Math.sin(angle) * r
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+    ctx.closePath()
+    ctx.fill()
+    ctx.stroke()
+  }
+
+  // Draw data polygons
+  drawPolygon(radarData.topQuartile, 'rgba(251,146,60,0.6)', 1.5)
+  drawPolygon(radarData.median, 'rgba(66,165,245,0.8)', 2)
+  drawPolygon(radarData.portfolio, 'rgba(99,102,241,1)', 2.5)
+}
+
+function initTrendChart() {
+  if (!trendCanvas.value) return
+  const ctx = trendCanvas.value.getContext('2d')
+  const width = 800, height = 300
+  const padding = { top: 20, right: 100, bottom: 40, left: 60 }
+  const chartWidth = width - padding.left - padding.right
+  const chartHeight = height - padding.top - padding.bottom
+
+  // Clear canvas
+  ctx.clearRect(0, 0, width, height)
+
+  // Background
+  ctx.fillStyle = 'rgba(15,23,42,0.3)'
+  ctx.fillRect(0, 0, width, height)
+
+  // Axes
+  ctx.strokeStyle = 'rgba(148,163,184,0.3)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(padding.left, padding.top)
+  ctx.lineTo(padding.left, height - padding.bottom)
+  ctx.lineTo(width - padding.right, height - padding.bottom)
+  ctx.stroke()
+
+  // Draw grid lines
+  ctx.strokeStyle = 'rgba(148,163,184,0.1)'
+  for (let i = 0; i <= 5; i++) {
+    const y = padding.top + (chartHeight / 5) * i
+    ctx.beginPath()
+    ctx.moveTo(padding.left, y)
+    ctx.lineTo(width - padding.right, y)
+    ctx.stroke()
+  }
+
+  // Helper to draw line
+  const drawLine = (data, color, label, maxVal) => {
+    const xStep = chartWidth / (historicalData.years.length - 1)
+    ctx.strokeStyle = color
+    ctx.lineWidth = 2.5
+    ctx.beginPath()
+    data.forEach((val, i) => {
+      const x = padding.left + i * xStep
+      const y = height - padding.bottom - (val / maxVal) * chartHeight
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+    ctx.stroke()
+
+    // Draw points
+    ctx.fillStyle = color
+    data.forEach((val, i) => {
+      const x = padding.left + i * xStep
+      const y = height - padding.bottom - (val / maxVal) * chartHeight
+      ctx.beginPath()
+      ctx.arc(x, y, 4, 0, Math.PI * 2)
+      ctx.fill()
+    })
+  }
+
+  // Draw lines
+  drawLine(historicalData.evRevenue, 'rgba(99,102,241,1)', 'EV/Revenue', 30)
+  drawLine(historicalData.evEbitda, 'rgba(66,165,245,1)', 'EV/EBITDA', 30)
+
+  // X-axis labels
+  ctx.fillStyle = 'rgba(226,232,240,0.8)'
+  ctx.font = '11px Inter, sans-serif'
+  ctx.textAlign = 'center'
+  historicalData.years.forEach((year, i) => {
+    const x = padding.left + i * (chartWidth / (historicalData.years.length - 1))
+    ctx.fillText(year, x, height - padding.bottom + 20)
+  })
+
+  // Legend
+  ctx.font = '12px Inter, sans-serif'
+  ctx.textAlign = 'left'
+  ctx.fillStyle = 'rgba(99,102,241,1)'
+  ctx.fillRect(width - padding.right + 10, 40, 12, 12)
+  ctx.fillStyle = 'rgba(226,232,240,0.9)'
+  ctx.fillText('EV/Revenue', width - padding.right + 26, 50)
+
+  ctx.fillStyle = 'rgba(66,165,245,1)'
+  ctx.fillRect(width - padding.right + 10, 60, 12, 12)
+  ctx.fillStyle = 'rgba(226,232,240,0.9)'
+  ctx.fillText('EV/EBITDA', width - padding.right + 26, 70)
 }
 </script>
 
@@ -310,4 +612,52 @@ function exportBenchmark() {
 .q2 { left: 8px; top: 8px; }
 .q3 { right: 8px; bottom: 20px; }
 .q4 { left: 8px; bottom: 20px; }
+
+.radar-wrap { display: flex; justify-content: center; align-items: center; min-height: 420px; background: var(--p-surface-ground); border-radius: 8px; }
+.radar-wrap canvas { max-width: 100%; }
+.radar-legend { display: flex; gap: 20px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--p-text-color); }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+.legend-dot.portfolio { background: rgba(99,102,241,1); }
+.legend-dot.median { background: rgba(66,165,245,1); }
+.legend-dot.top-quartile { background: rgba(251,146,60,0.7); }
+
+.chart-wrap { background: var(--p-surface-ground); border-radius: 8px; padding: 16px; display: flex; justify-content: center; overflow-x: auto; }
+.chart-wrap canvas { max-width: 100%; }
+
+.valuation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.valuation-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 16px; }
+.val-company { font-weight: 700; font-size: 0.95rem; color: var(--p-primary-color); margin-bottom: 4px; }
+.val-stage { font-size: 0.72rem; color: var(--p-text-muted-color); margin-bottom: 12px; }
+.val-metrics { display: flex; flex-direction: column; gap: 8px; }
+.val-metric { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.78rem; }
+.val-label { color: var(--p-text-muted-color); }
+.val-current { font-weight: 700; color: var(--p-text-color); }
+.val-range { font-weight: 600; color: var(--p-primary-color); }
+.val-bar-wrap { margin-top: 8px; }
+.val-bar-track { position: relative; height: 10px; background: var(--p-surface-border); border-radius: 5px; margin-bottom: 6px; }
+.val-bar-range { position: absolute; height: 100%; background: rgba(99,102,241,0.2); border-radius: 5px; }
+.val-bar-current { position: absolute; width: 3px; height: 100%; background: var(--p-primary-color); top: 0; transform: translateX(-50%); }
+.val-bar-labels { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--p-text-muted-color); }
+.val-status { margin-top: 8px; padding: 4px 8px; border-radius: 4px; text-align: center; font-size: 0.72rem; font-weight: 600; }
+.val-status.undervalued { background: #66bb6a22; color: #66bb6a; }
+.val-status.fair { background: #42a5f522; color: #42a5f5; }
+.val-status.overvalued { background: #ef535022; color: #ef5350; }
+
+.sources-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.source-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 14px; text-align: center; }
+.src-icon { font-size: 1.8rem; color: var(--p-primary-color); margin-bottom: 8px; }
+.src-name { font-weight: 700; font-size: 0.85rem; color: var(--p-text-color); margin-bottom: 6px; }
+.src-desc { font-size: 0.72rem; color: var(--p-text-muted-color); margin-bottom: 6px; line-height: 1.3; }
+.src-coverage { font-size: 0.68rem; color: var(--p-text-muted-color); font-style: italic; }
+
+.norms-list { display: flex; flex-direction: column; gap: 14px; }
+.norm-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 16px; }
+.norm-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.norm-code { font-weight: 700; font-size: 0.95rem; color: var(--p-primary-color); }
+.norm-type { font-size: 0.68rem; color: var(--p-text-muted-color); background: rgba(99,102,241,0.1); padding: 2px 8px; border-radius: 10px; }
+.norm-title { font-weight: 600; font-size: 0.85rem; color: var(--p-text-color); margin-bottom: 6px; }
+.norm-purpose { font-size: 0.78rem; color: var(--p-text-muted-color); line-height: 1.4; margin-bottom: 10px; }
+.norm-link { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--p-primary-color); text-decoration: none; }
+.norm-link:hover { text-decoration: underline; }
 </style>

@@ -366,6 +366,18 @@ const modules = [
     tags: ['CRM', 'Founders', 'Менторы', 'AI-матчинг', 'Alumni', 'Networking'],
   },
   {
+    id: 'benchmark',
+    name: 'Бенчмаркинг портфеля',
+    phase: 'Фаза 4 — Онлайн-мониторинг',
+    icon: 'pi pi-chart-bar',
+    color: '#ff9800',
+    path: '/fst-benchmark',
+    featured: true,
+    status: 'live',
+    desc: 'Сравнение портфельных компаний с рыночными аналогами и отраслевыми мультипликаторами. Radar chart, исторические тренды 2020-2026, справедливая оценка, фондовые бенчмарки vs Cambridge Associates и РАВИ.',
+    tags: ['Мультипликаторы', 'EV/Revenue', 'Валюация', 'IRR', 'Бенчмарки', 'Radar', 'Rule of 40'],
+  },
+  {
     id: 'fund',
     name: 'Цифровой двойник фонда',
     phase: 'Фаза 5 — Фонд-индекс',
