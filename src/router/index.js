@@ -52,3 +52,5 @@ router.afterEach((to) => {
 })
 
 export default router
+
+export function clearUserCache() {}

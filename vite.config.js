@@ -43,8 +43,16 @@ export default defineConfig({
       'primevue/checkbox',
       'primevue/password',
       'primevue/inputswitch',
+      'primevue/inputnumber',
+      'primevue/textarea',
+      'primevue/tabview',
+      'primevue/tabpanel',
       'primevue/toast',
       'primevue/progressspinner',
+      'primevue/slider',
+      'primevue/selectbutton',
+      'primevue/multiselect',
+      'primevue/dropdown',
     ]
   },
   test: {
