@@ -39,6 +39,7 @@ const routes = [
       { path: 'fst-allocation', component: () => import('@/views/pages/FstAllocation.vue'), meta: { title: 'Оптимизация аллокации' } },
       { path: 'fst-founders', component: () => import('@/views/pages/FstFounders.vue'), meta: { title: 'Founders CRM & Mentors' } },
       { path: 'fst-board', component: () => import('@/views/pages/FstBoard.vue'), meta: { title: 'Совет директоров' } },
+      { path: 'fst-transparency', component: () => import('@/views/pages/FstTransparency.vue'), meta: { title: 'Публичная витрина фонда' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },

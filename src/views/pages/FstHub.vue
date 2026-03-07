@@ -401,6 +401,18 @@ const modules = [
     desc: 'Live-симуляция АвиаЛогик: выручка, burn rate, TRL/MRL/суверенность, датчики рисков, смарт-контракт с траншами, AI-прогноз выживаемости.',
     tags: ['Симуляция', 'Tick-engine', 'Смарт-контракт', 'AI'],
   },
+  {
+    id: 'transparency',
+    name: 'Публичная витрина фонда',
+    phase: 'Фаза 5 — LP Relations',
+    icon: 'pi pi-shield',
+    color: '#42a5f5',
+    path: '/fst-transparency',
+    featured: true,
+    status: 'live',
+    desc: 'Публичная демонстрация прозрачности по стандарту Santiago Principles® (IFSWF): структура фонда, стратегия, команда, ESG и compliance, investor data room для потенциальных LP.',
+    tags: ['Santiago Principles', 'LP Relations', 'Прозрачность', 'ESG', 'Compliance', 'Data Room'],
+  },
 ]
 
 const tools = [
