@@ -26,7 +26,7 @@
           <strong>48 часов</strong> от заявки до решения вместо 3–6 месяцев.
         </p>
 
-        <div class="fst-hero-actions">
+        <div class="fst-hero-actions" data-tour="hero-actions">
           <button class="fst-btn-primary" @click="go('/fst-apply')">
             <i class="pi pi-file-plus"></i>
             Подать заявку
@@ -38,7 +38,7 @@
         </div>
 
         <!-- Stats strip -->
-        <div class="fst-hero-stats">
+        <div class="fst-hero-stats" data-tour="hero-stats">
           <div v-for="s in heroStats" :key="s.label" class="fst-hero-stat">
             <div class="fst-hero-stat-val" :class="{ 'fst-skeleton': statsLoading }">{{ s.val }}</div>
             <div class="fst-hero-stat-label">{{ s.label }}</div>
@@ -47,7 +47,7 @@
       </div>
 
       <!-- Floating orbit decoration -->
-      <div class="fst-hero-orbit">
+      <div class="fst-hero-orbit" data-tour="orbit">
         <div class="fst-orbit-ring fst-orbit-ring--1">
           <div class="fst-orbit-dot" style="--angle:0deg"><i class="pi pi-users"></i></div>
           <div class="fst-orbit-dot" style="--angle:120deg"><i class="pi pi-chart-line"></i></div>
@@ -66,7 +66,7 @@
     <!-- ══════════════════════════════════════════════════════ PIPELINE -->
     <div class="fst-pipeline-wrap">
       <div class="fst-section-label">Жизненный цикл инвестиции</div>
-      <div class="fst-pipeline">
+      <div class="fst-pipeline" data-tour="pipeline">
         <div
           v-for="(step, idx) in pipeline"
           :key="step.id"
@@ -88,7 +88,7 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════ BEFORE/AFTER -->
-    <div class="fst-transform">
+    <div class="fst-transform" data-tour="transform">
       <div class="fst-section-label" style="padding:0 32px">Как мы перестроили процесс</div>
       <div class="fst-transform-grid">
 
@@ -128,7 +128,7 @@
     </div>
 
     <!-- ════════════════════════════════════════════════════ KEY MODULES -->
-    <div class="fst-modules">
+    <div class="fst-modules" data-tour="modules">
       <div class="fst-section-label" style="padding: 0 32px">Ключевые модули</div>
       <div class="fst-modules-grid">
         <div
@@ -162,7 +162,7 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ TOOLS -->
-    <div class="fst-tools-wrap">
+    <div class="fst-tools-wrap" data-tour="tools">
       <div class="fst-section-label" style="padding: 0 32px">Экосистема</div>
       <div class="fst-tools">
         <div v-for="tool in tools" :key="tool.id" class="fst-tool" @click="go(tool.path)">
@@ -194,6 +194,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFstData } from '@/composables/useFstData.js'
+import { useProductTour } from '@/composables/useProductTour'
+import { useOnboardingStore } from '@/stores/onboardingStore'
 
 const router = useRouter()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
@@ -204,9 +206,20 @@ function statusLabel(s) { return { live: 'Live', demo: 'Demo', beta: 'Beta' }[s]
 // ── Load FST Data from API ─────────────────────────────────────────
 const { stats, statsLoading, loadStats } = useFstData()
 
+// ── Product Tour ───────────────────────────────────────────────────
+const { startFstHubTour, shouldStartTour } = useProductTour()
+const onboardingStore = useOnboardingStore()
+
 // Load stats on component mount
 onMounted(() => {
   loadStats()
+
+  // Auto-start tour if not completed yet
+  if (shouldStartTour('fst-hub') && onboardingStore.preferences.autoStart) {
+    setTimeout(() => {
+      startFstHubTour()
+    }, 1000) // Delay to let page fully render
+  }
 })
 
 // Computed hero stats based on API data
