@@ -109,6 +109,7 @@
           <Button v-if="running" icon="pi pi-pause" size="small" text severity="secondary" @click="pauseSession" />
           <Button icon="pi pi-sliders-h" label="Настройки" size="small" text severity="secondary"
             @click="policyExpanded = !policyExpanded" title="Параметры оценки ФСТ" />
+          <Button icon="pi pi-question-circle" size="small" text severity="secondary" @click="toggleHelp" title="Помощь по странице" />
           <Button icon="pi pi-times" size="small" text severity="secondary" @click="resetSession" />
         </div>
       </div>
@@ -687,6 +688,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Page Help Drawer -->
+  <PageHelpDrawer v-model:visible="helpOpen" :page-help="pageHelp" />
 </template>
 
 <script setup>
@@ -707,6 +711,8 @@ import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
 import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
+import { usePageHelp } from '@/composables/usePageHelp'
 
 // ── Load FST Data ─────────────────────────────────────────────────
 
@@ -723,6 +729,9 @@ onMounted(async () => {
 })
 
 // ── State ─────────────────────────────────────────────────────
+
+// Page Help
+const { isOpen: helpOpen, pageHelp, toggleHelp } = usePageHelp('fst-committee')
 
 const conclusionVisible = ref(false)
 const projectModalVisible = ref(false)
