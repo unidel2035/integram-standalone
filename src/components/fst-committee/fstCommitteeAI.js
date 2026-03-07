@@ -417,7 +417,7 @@ export async function generateAllOpenings(agents, project) {
 
 // ── Сохранение сессии в СОД (Предметные события) ─────────────────────────────
 
-const FST_SERVER_AI   = import.meta.env?.VITE_FST_SERVER || 'https://ai2o.ru'
+const FST_SERVER_AI   = ''
 const FST_DB_AI       = import.meta.env?.VITE_FST_DB     || 'fst'
 const TYPE_SOD_EVENTS = 2451   // СОД Предметные события
 const REQ_SOD_DATE    = 2458   // Дата

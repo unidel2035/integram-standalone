@@ -23,7 +23,8 @@
 
 import { authenticate } from './fstApi.js'
 
-const FST_SERVER = import.meta.env.VITE_FST_SERVER || 'https://ai2o.ru'
+// Пустая строка → использует Vite proxy /fst → https://ai2o.ru/fst
+const FST_SERVER = ''
 const FST_DB     = import.meta.env.VITE_FST_DB     || 'fst'
 const TYPE_AGENTS = 3674
 
