@@ -93,7 +93,8 @@
     <!-- ═══════════════════════════════════════════ PROCESS -->
     <section id="process" class="land-process">
       <div class="land-section-eyebrow">Как работает ФСТ НТИ</div>
-      <h2 class="land-section-h2">Мы перестроили процесс,<br><span>а не автоматизировали его</span></h2>
+      <h2 class="land-section-h2">Мы переписали логику,<br><span>а не автоматизировали старую</span></h2>
+      <p class="land-section-sub">Автоматизация встраивает агентов в существующие процессы. Мы перестроили сам процесс — от онтологии рынка до протокола инвесткомитета.</p>
 
       <div class="land-compare">
         <div class="land-compare-col land-compare-col--old">
@@ -255,6 +256,7 @@ const pillars = [
   { id: 1, icon: 'pi pi-eye', color: '#a78bfa', title: 'Прозрачность', text: 'Каждое решение сопровождается протоколом дебатов. Стартап видит аргументы каждого из 6 AI-агентов.' },
   { id: 2, icon: 'pi pi-bolt', color: '#f59e0b', title: 'Скорость', text: '48 часов вместо 3–6 месяцев. Структурированная форма → AI-карта → инвесткомитет → решение.' },
   { id: 3, icon: 'pi pi-shield', color: '#34d399', title: 'Суверенность', text: 'Единственный фонд, где суверенность (0–9) является обязательным критерием оценки каждой заявки.' },
+  { id: 4, icon: 'pi pi-sitemap', color: '#38bdf8', title: 'Онтология', text: 'Вместо PDF и Excel — предметная карта проекта по доменной модели рынка НТИ. Агенты работают с контекстом, а не с текстом.' },
 ]
 
 const oldProcess = [
@@ -287,8 +289,8 @@ const numbers = [
   { val: '6', label: 'AI-агентов', desc: 'Технолог, финансист, суверенность, риск, стратег, критический аналитик', color: '#38bdf8' },
   { val: '9D', label: 'Суверенность', desc: 'Девятимерная матрица оценки суверенности технологии', color: '#34d399' },
   { val: '3', label: 'Субфонда', desc: 'БАС · Робототехника · Машиностроение', color: '#fb923c' },
-  { val: '100%', label: 'Прозрачность', desc: 'Полный протокол дебатов доступен стартапу после решения', color: '#f59e0b' },
-  { val: 'AI+', label: 'Онтология', desc: 'Предметные онтологии по каждому рынку НТИ', color: '#f87171' },
+  { val: 'AI+Ч', label: 'Управление', desc: 'Когнитивные цепочки 6 агентов + финальное решение человека. Governance смешанной среды.', color: '#f59e0b' },
+  { val: 'AI+', label: 'Онтология', desc: 'Предметные карты рынка НТИ — агенты работают с контекстом, а не с текстом PDF', color: '#f87171' },
 ]
 
 const modules = [
@@ -726,6 +728,14 @@ const modules = [
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+.land-section-sub {
+  font-size: 16px;
+  color: var(--p-text-muted-color);
+  text-align: center;
+  max-width: 620px;
+  margin: -36px auto 48px;
+  line-height: 1.7;
 }
 
 /* ════════════════════════════════════════════════ PROCESS */
