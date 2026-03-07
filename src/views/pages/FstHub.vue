@@ -158,8 +158,8 @@ const tools = [
 /* ═══════════════════════════════════════════════ BASE */
 .hub {
   min-height: 100vh;
-  background: #05080f;
-  color: #e2e8f0;
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
   font-family: var(--p-font-family, 'Onest', 'Inter', sans-serif);
 }
 
@@ -169,8 +169,8 @@ const tools = [
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-card);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -181,7 +181,7 @@ const tools = [
   align-items: center;
   gap: 10px;
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--p-text-muted-color);
 }
 .hub-live-dot {
   width: 7px;
@@ -195,9 +195,9 @@ const tools = [
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
-.hub-fund-name { font-weight: 600; color: #e2e8f0; font-size: 14px; }
-.hub-sep { color: #475569; }
-.hub-date { color: #64748b; }
+.hub-fund-name { font-weight: 600; color: var(--p-text-color); font-size: 14px; }
+.hub-sep { color: var(--p-text-muted-color); }
+.hub-date { color: var(--p-text-muted-color); }
 
 .hub-topbar-actions {
   display: flex;
@@ -209,27 +209,27 @@ const tools = [
   gap: 6px;
   padding: 6px 14px;
   border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.04);
-  color: #cbd5e1;
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-section);
+  color: var(--p-text-color);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
-.hub-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+.hub-btn:hover { background: var(--p-surface-hover); }
 .hub-btn--accent {
-  background: rgba(167,139,250,0.15);
-  border-color: rgba(167,139,250,0.4);
-  color: #c4b5fd;
+  background: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
+  border-color: color-mix(in srgb, var(--p-primary-color) 40%, transparent);
+  color: var(--p-primary-color);
 }
-.hub-btn--accent:hover { background: rgba(167,139,250,0.25); }
+.hub-btn--accent:hover { background: color-mix(in srgb, var(--p-primary-color) 25%, transparent); }
 
 /* ═══════════════════════════════════════════════ METRICS */
 .hub-metrics {
   display: flex;
   gap: 1px;
-  background: rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: var(--p-content-border-color);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 .hub-metric {
   flex: 1;
@@ -237,10 +237,10 @@ const tools = [
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  background: #05080f;
+  background: var(--p-surface-ground);
   transition: background 0.2s;
 }
-.hub-metric:hover { background: rgba(255,255,255,0.02); }
+.hub-metric:hover { background: var(--p-surface-hover); }
 .hub-metric-icon {
   font-size: 20px;
   opacity: 0.8;
@@ -248,18 +248,18 @@ const tools = [
 .hub-metric-val {
   font-size: 20px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--p-text-color);
   line-height: 1;
 }
 .hub-metric-label {
   font-size: 11px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
   margin-top: 3px;
   white-space: nowrap;
 }
 .hub-skeleton {
-  color: #334155 !important;
-  background: #1e293b;
+  color: var(--p-surface-400) !important;
+  background: var(--p-surface-200);
   border-radius: 4px;
   animation: shimmer 1.5s infinite;
 }
@@ -271,14 +271,14 @@ const tools = [
 /* ═══════════════════════════════════════════════ SECTION */
 .hub-section {
   padding: 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 .hub-section-label {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--p-text-muted-color);
   margin-bottom: 16px;
 }
 
@@ -287,8 +287,7 @@ const tools = [
   display: flex;
   align-items: stretch;
   gap: 0;
-  overflow-x: auto;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -297,16 +296,16 @@ const tools = [
   position: relative;
   padding: 16px 14px;
   cursor: pointer;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid var(--p-content-border-color);
   transition: background 0.2s;
-  background: rgba(255,255,255,0.01);
+  background: var(--p-surface-card);
   min-width: 110px;
 }
 .hub-pipe-step:last-child { border-right: none; }
-.hub-pipe-step:hover { background: rgba(var(--c-rgb, 56,189,248), 0.06); }
+.hub-pipe-step:hover { background: var(--p-surface-hover); }
 .hub-pipe-num {
   font-size: 10px;
-  color: #475569;
+  color: var(--p-text-muted-color);
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -318,19 +317,19 @@ const tools = [
 .hub-pipe-name {
   font-size: 13px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--p-text-color);
   margin-bottom: 3px;
 }
 .hub-pipe-sub {
   font-size: 11px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
 }
 .hub-pipe-arrow {
   position: absolute;
   right: -8px;
   top: 50%;
   transform: translateY(-50%);
-  color: #334155;
+  color: var(--p-text-muted-color);
   font-size: 12px;
   z-index: 1;
   display: none;
@@ -353,8 +352,8 @@ const tools = [
   transition: all 0.15s;
 }
 .hub-mod:hover {
-  background: rgba(255,255,255,0.03);
-  border-color: rgba(255,255,255,0.08);
+  background: var(--p-surface-hover);
+  border-color: var(--p-content-border-color);
 }
 .hub-mod-left {
   flex-shrink: 0;
@@ -363,8 +362,8 @@ const tools = [
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--p-surface-section);
+  border: 1px solid var(--p-content-border-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -375,11 +374,11 @@ const tools = [
 .hub-mod-name {
   font-size: 14px;
   font-weight: 500;
-  color: #e2e8f0;
+  color: var(--p-text-color);
 }
 .hub-mod-phase {
   font-size: 11px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
   margin-top: 1px;
 }
 .hub-mod-right {
@@ -407,10 +406,9 @@ const tools = [
   border: 1px solid rgba(251,191,36,0.2);
 }
 .hub-mod-arrow {
-  color: #334155;
+  color: var(--p-text-muted-color);
   font-size: 12px;
 }
-.hub-mod:hover .hub-mod-arrow { color: #64748b; }
 
 /* ═══════════════════════════════════════════════ TOOLS */
 .hub-tools {
@@ -421,14 +419,14 @@ const tools = [
 .hub-tool {
   padding: 16px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-card);
   cursor: pointer;
   transition: all 0.2s;
 }
 .hub-tool:hover {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.14);
+  background: var(--p-surface-hover);
+  border-color: var(--p-primary-color);
 }
 .hub-tool-icon {
   font-size: 20px;
@@ -437,12 +435,12 @@ const tools = [
 .hub-tool-name {
   font-size: 13px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--p-text-color);
   margin-bottom: 4px;
 }
 .hub-tool-desc {
   font-size: 11px;
-  color: #64748b;
+  color: var(--p-text-muted-color);
 }
 
 /* ═══════════════════════════════════════════════ FOOTER */
@@ -450,7 +448,7 @@ const tools = [
   text-align: center;
   padding: 20px;
   font-size: 11px;
-  color: #334155;
+  color: var(--p-text-muted-color);
 }
 
 /* ═══════════════════════════════════════════════ RESPONSIVE */
@@ -458,7 +456,7 @@ const tools = [
   .hub-metrics { flex-wrap: wrap; }
   .hub-metric { flex: 1 1 50%; }
   .hub-pipeline { flex-direction: column; }
-  .hub-pipe-step { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hub-pipe-step { border-right: none; border-bottom: 1px solid var(--p-content-border-color); }
   .hub-topbar { flex-direction: column; gap: 10px; align-items: flex-start; }
 }
 </style>
