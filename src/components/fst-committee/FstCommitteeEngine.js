@@ -12,7 +12,7 @@ import {
   PHASES, PHASE_ORDER, VERDICTS, TIMING, SPEED_MULTIPLIERS,
   RECOMMENDATION_TEMPLATES, REVISION_SIMULATION_STEPS, METRIC_FIELD_MAP, METRIC_CLAMP,
 } from './FstCommitteeConfig.js'
-import { generateArgumentAI } from './fstCommitteeAI.js'
+import { generateArgumentAI, fetchKagContext, clearKagCache } from './fstCommitteeAI.js'
 import { annotateArg } from './fstCommitteeOntology.js'
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
@@ -193,6 +193,14 @@ export class FstCommitteeEngine {
     this._running = true
     this.session.startedAt = Date.now()
     this.emit('SessionStarted', { sessionId: this.session.id })
+
+    // Загружаем KAG-контекст прошлых решений (не блокирует старт)
+    clearKagCache()
+    if (this.session.useAI) {
+      fetchKagContext(this.session.project).then(ctx => {
+        this.session._kagContext = ctx || ''
+      }).catch(() => { this.session._kagContext = '' })
+    }
 
     try {
       await this._phaseLoading()
@@ -477,7 +485,8 @@ export class FstCommitteeEngine {
     // ── AI-first: реальный LLM-вызов ──
     if (useAI) {
       try {
-        arg = await generateArgumentAI(agent, type, project, this.session.arguments, targetArgId)
+        const kagCtx = type === 'OPENING' ? (this.session._kagContext || '') : ''
+        arg = await generateArgumentAI(agent, type, project, this.session.arguments, targetArgId, kagCtx)
       } catch (e) {
         console.warn('[FstCommitteeEngine] AI call failed, falling back to template:', e.message)
       }

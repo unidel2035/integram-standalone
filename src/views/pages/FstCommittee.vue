@@ -151,7 +151,16 @@
         </div>
       </div>
       <template #footer>
-        <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession" />
+        <div style="display:flex;align-items:center;gap:8px;width:100%">
+          <Button v-if="!kagSaved" label="Сохранить в базу знаний" icon="pi pi-database"
+            severity="info" size="small" :loading="kagSaving" @click="saveToKag" />
+          <span v-else class="fst-kag-saved">
+            <i class="pi pi-check-circle" style="color:#4caf50"></i>
+            Сохранено в KAG ({{ kagSavedCount }} сущностей)
+          </span>
+          <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession"
+            style="margin-left:auto" />
+        </div>
       </template>
     </Dialog>
 
@@ -255,13 +264,26 @@
           </div>
         </div>
 
-        <!-- Center: Debate Timeline -->
+        <!-- Center: Debate Timeline / Graph -->
         <div class="fst-debate-panel">
           <div class="fst-panel-title">
-            Арена дебатов
-            <span class="fst-arg-count">{{ session.arguments.length }} аргументов</span>
+            <div class="fst-debate-tabs">
+              <button :class="['fst-dtab', { 'fst-dtab--active': debateTab === 'timeline' }]"
+                @click="debateTab = 'timeline'">
+                <i class="pi pi-comments"></i> Дебаты
+                <span class="fst-arg-count">{{ session.arguments.length }}</span>
+              </button>
+              <button :class="['fst-dtab', { 'fst-dtab--active': debateTab === 'graph' }]"
+                @click="debateTab = 'graph'">
+                <i class="pi pi-sitemap"></i> Граф событий
+              </button>
+            </div>
           </div>
-          <div class="fst-timeline" ref="timelineEl">
+
+          <!-- Graph Panel -->
+          <DebateGraphPanel v-if="debateTab === 'graph'" :session="session" class="fst-graph-panel" />
+
+          <div v-show="debateTab === 'timeline'" class="fst-timeline" ref="timelineEl">
             <!-- Loading phase -->
             <div v-if="session.phase === 'LOADING'" class="fst-loading-phase">
               <div class="fst-loading-title">
@@ -332,8 +354,8 @@
               <i class="pi pi-comments" style="font-size:40px;color:#444;margin-bottom:12px"></i>
               <div>Сессия готова. Запуск...</div>
             </div>
-          </div>
-        </div>
+          </div><!-- /fst-timeline -->
+        </div><!-- /fst-debate-panel -->
 
         <!-- Right: Scoring + Decision -->
         <div class="fst-score-panel">
@@ -506,7 +528,9 @@ import {
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
 import { saveDecision, createProject, saveCommitteeSession, STATUSES } from '@/services/fstApi'
+import { saveSessionToKag } from '@/components/fst-committee/fstCommitteeAI.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
+import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
 import { useFstData } from '@/composables/useFstData.js'
 
 // ── Load FST Data ─────────────────────────────────────────────────
@@ -537,6 +561,28 @@ const running = ref(false)
 const timelineEl = ref(null)
 
 const fstPolicy = ref({ ...FST_POLICY_DEFAULTS })
+
+// Debate view tab
+const debateTab = ref('timeline')
+
+// KAG save state
+const kagSaving    = ref(false)
+const kagSaved     = ref(false)
+const kagSavedCount = ref(0)
+
+async function saveToKag() {
+  if (!session.value || kagSaving.value) return
+  kagSaving.value = true
+  try {
+    const result = await saveSessionToKag(session.value)
+    kagSavedCount.value = result.saved || 0
+    kagSaved.value = true
+  } catch (e) {
+    console.error('KAG save error:', e)
+  } finally {
+    kagSaving.value = false
+  }
+}
 
 // Финансовый калькулятор
 const finMetrics = ref({ npv: null, irr: null, pi: null, gatePass: false })
@@ -705,6 +751,9 @@ function resetSession() {
   running.value = false
   conclusionVisible.value = false
   humanComment.value = ''
+  debateTab.value = 'timeline'
+  kagSaved.value = false
+  kagSavedCount.value = 0
   lobbyVisible.value = true
 }
 
@@ -1744,4 +1793,53 @@ onUnmounted(() => {
 .fst-ai-mode-label { font-size: 0.8125rem; color: var(--p-text-color); }
 .fst-ai-mode-label strong { font-weight: 600; }
 
+/* ── Debate Tabs ───────────────────────────────────────────── */
+.fst-debate-tabs {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+.fst-dtab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--p-text-muted-color);
+  transition: all 0.15s;
+}
+.fst-dtab:hover {
+  background: var(--p-surface-hover);
+  color: var(--p-text-color);
+}
+.fst-dtab--active {
+  background: var(--p-primary-color, #42a5f5);
+  color: #fff;
+  border-color: transparent;
+}
+.fst-dtab--active .fst-arg-count {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+/* ── Graph Panel ───────────────────────────────────────────── */
+.fst-graph-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── KAG saved badge ───────────────────────────────────────── */
+.fst-kag-saved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--p-text-color);
+}
 </style>

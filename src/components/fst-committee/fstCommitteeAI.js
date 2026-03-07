@@ -17,6 +17,69 @@ const COMMITTEE_MODEL = 'KodaAgent'          // бесплатно через GI
 const CONTEXT_ARGS = 6                        // аргументов в контексте
 const TIMEOUT_MS   = 25_000                   // таймаут LLM-вызова
 
+// ── KAG: поиск прошлых решений ИК ─────────────────────────────────────────────
+
+// Кеш KAG-контекста по проекту (обнуляется при новой сессии)
+const _kagCache = new Map()
+
+export async function fetchKagContext(project) {
+  const key = project.title || project.company || 'unknown'
+  if (_kagCache.has(key)) return _kagCache.get(key)
+  try {
+    const res = await fetch(`${API_BASE}/api/kag/search`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal:  AbortSignal.timeout(5000),
+      body: JSON.stringify({
+        query:       `инвесткомитет ФСТ ${project.subFund || ''} ${project.trl ? 'TRL ' + project.trl : ''}`,
+        limit:       4,
+        entityTypes: ['CommitteeSession'],
+        minScore:    0.25,
+      }),
+    })
+    if (!res.ok) { _kagCache.set(key, ''); return '' }
+    const data = await res.json()
+    const hits = (data.results || [])
+      .filter(r => r.entity?.observations?.length)
+      .slice(0, 3)
+    if (!hits.length) { _kagCache.set(key, ''); return '' }
+    const text = hits
+      .map(r => r.entity.observations.slice(0, 4).join(' | '))
+      .join('\n')
+    const result = `Прошлые решения ИК по схожим проектам:\n${text}`
+    _kagCache.set(key, result)
+    return result
+  } catch {
+    _kagCache.set(key, '')
+    return ''
+  }
+}
+
+export function clearKagCache() { _kagCache.clear() }
+
+// ── KAG: сохранение сессии ────────────────────────────────────────────────────
+
+export async function saveSessionToKag(session) {
+  const { exportToKagEntities } = await import('./fstCommitteeOntology.js')
+  const entities = exportToKagEntities(session)
+  if (!entities.length) return { saved: 0 }
+  try {
+    const res = await fetch(`${API_BASE}/api/mcp/kag/execute`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toolName: 'kag_create_entities', arguments: { entities } }),
+    })
+    if (!res.ok) return { saved: 0, error: res.statusText }
+    const data = await res.json()
+    const count = data.result?.content?.[0]?.text
+      ? JSON.parse(data.result.content[0].text)?.count || entities.length
+      : entities.length
+    return { saved: count }
+  } catch (e) {
+    return { saved: 0, error: e.message }
+  }
+}
+
 // Кеш токена на время сессии
 let _cachedToken = null
 async function getToken() {
@@ -187,7 +250,7 @@ function pickFocus(agentId) {
 
 // ── Промпты по типам аргументов ───────────────────────────────────────────────
 
-function buildUserPrompt(agent, type, project, prevArgs, targetArg) {
+function buildUserPrompt(agent, type, project, prevArgs, targetArg, kagContext = '') {
   const projectInfo = formatProject(project)
   const history = formatDebateHistory(prevArgs, AGENT_SHORT_NAMES)
   const focus = pickFocus(agent.id)
@@ -198,7 +261,7 @@ function buildUserPrompt(agent, type, project, prevArgs, targetArg) {
 
   if (type === 'OPENING') {
     return `${projectInfo}
-
+${kagContext ? '\n' + kagContext + '\n' : ''}
 Фаза: ПЕРВИЧНЫЕ ПОЗИЦИИ
 Твоя задача: представь свою первичную позицию по проекту (2-3 конкретных предложения).
 Используй данные из заявки. Назови 1 сильную сторону и 1 ключевой риск/вопрос.
@@ -281,13 +344,13 @@ function parseAgentResponse(rawText) {
 
 // ── Основная функция генерации ────────────────────────────────────────────────
 
-export async function generateArgumentAI(agent, type, project, prevArgs = [], targetArgId = null) {
+export async function generateArgumentAI(agent, type, project, prevArgs = [], targetArgId = null, kagContext = '') {
   const targetArg = targetArgId ? prevArgs.find(a => a.id === targetArgId) : null
   const systemPrompt = AGENT_SYSTEM_PROMPTS[agent.id]
 
   if (!systemPrompt) return null
 
-  const userPrompt = buildUserPrompt(agent, type, project, prevArgs, targetArg)
+  const userPrompt = buildUserPrompt(agent, type, project, prevArgs, targetArg, kagContext)
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
