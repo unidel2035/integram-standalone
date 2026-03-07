@@ -221,13 +221,13 @@ const heroStats = computed(() => {
     ]
   }
 
-  const { aum, portfolioCount, subfundCount, avgIRR } = stats.value
+  const { portfolioCount, subfundCount, dealsCount, avgIRR } = stats.value
 
   return [
     { val: '48 ч', label: 'Среднее время решения' },
+    { val: `${subfundCount}`, label: 'Субфондов' },
+    { val: `${dealsCount ?? 9}`, label: 'Закрытых сделок' },
     { val: `${portfolioCount}`, label: 'Портфельных компаний' },
-    { val: `${subfundCount}`, label: 'Субфонда' },
-    { val: `${(avgIRR * 100).toFixed(0)}%`, label: 'Средний IRR прогноз' },
   ]
 })
 
