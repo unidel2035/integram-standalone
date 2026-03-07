@@ -43,6 +43,7 @@ const routes = [
       { path: 'fst-board', component: () => import('@/views/pages/FstBoard.vue'), meta: { title: 'Совет директоров' } },
       { path: 'fst-transparency', component: () => import('@/views/pages/FstTransparency.vue'), meta: { title: 'Публичная витрина фонда' } },
       { path: 'fst-administration', component: () => import('@/views/pages/FstAdministration.vue'), meta: { title: 'Бэк-офис фонда' } },
+      { path: 'fst-glossary', component: () => import('@/views/pages/FstGlossary.vue'), meta: { title: 'Глоссарий венчурных терминов' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },

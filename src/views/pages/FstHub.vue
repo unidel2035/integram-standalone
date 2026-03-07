@@ -211,6 +211,46 @@
       </div>
     </div>
 
+    <!-- ══════════════════════════════════════════════════ GLOSSARY DEMO -->
+    <div class="fst-glossary-demo-wrap">
+      <div class="fst-section-label" style="padding: 0 32px">Обучение</div>
+      <div class="fst-glossary-demo">
+        <div class="fst-glossary-demo-content">
+          <h3 class="fst-glossary-demo-title">
+            <i class="pi pi-book"></i>
+            Интерактивный глоссарий венчурных терминов
+          </h3>
+          <p class="fst-glossary-demo-desc">
+            В ФСТ НТИ мы оцениваем проекты по ключевым финансовым метрикам, таким как
+            <Term id="irr" @open="openTermModal">IRR</Term>,
+            <Term id="moic" @open="openTermModal">MOIC</Term> и
+            <Term id="tvpi" @open="openTermModal">TVPI</Term>.
+            После одобрения инвесткомитетом мы готовим
+            <Term id="term-sheet" @open="openTermModal">Term Sheet</Term>,
+            создаём <Term id="spv" @open="openTermModal">SPV</Term>
+            для сделки и согласовываем
+            <Term id="cap-table" @open="openTermModal">Cap Table</Term>.
+            Управляющая компания (<Term id="gp" @open="openTermModal">GP</Term>)
+            получает <Term id="management-fee" @open="openTermModal">management fee</Term>
+            и <Term id="carried-interest" @open="openTermModal">carried interest</Term>
+            согласно <Term id="waterfall" @open="openTermModal">waterfall</Term>-модели
+            распределения доходов с ограниченными партнёрами
+            (<Term id="lp" @open="openTermModal">LP</Term>).
+          </p>
+          <div class="fst-glossary-demo-actions">
+            <button class="fst-btn-primary" @click="go('/fst-glossary')">
+              <i class="pi pi-book"></i>
+              Открыть полный глоссарий
+            </button>
+            <span class="fst-glossary-demo-hint">
+              <i class="pi pi-info-circle"></i>
+              Кликните на подчёркнутые термины для подробного объяснения
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ════════════════════════════════════════════════════════ FOOTER -->
     <div class="fst-footer">
       <div class="fst-footer-brand">
@@ -222,6 +262,13 @@
       <div class="fst-footer-right">Powered by DronDoc Platform · v2026.03</div>
     </div>
 
+    <!-- Term Modal -->
+    <TermModal
+      v-model:visible="termModalVisible"
+      :termId="selectedTermId"
+      @navigate="navigateToTerm"
+    />
+
   </div>
 </template>
 
@@ -232,12 +279,27 @@ import { useFstData } from '@/composables/useFstData.js'
 import { useProductTour } from '@/composables/useProductTour'
 import { useOnboardingStore } from '@/stores/onboardingStore'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import Term from '@/components/Term.vue'
+import TermModal from '@/components/TermModal.vue'
 
 const router = useRouter()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
 
+// Glossary term modal
+const termModalVisible = ref(false)
+const selectedTermId = ref(null)
+
 function go(path) { router.push(path) }
 function statusLabel(s) { return { live: 'Live', demo: 'Demo', beta: 'Beta' }[s] || s }
+
+function openTermModal(termId) {
+  selectedTermId.value = termId
+  termModalVisible.value = true
+}
+
+function navigateToTerm(termId) {
+  selectedTermId.value = termId
+}
 
 // ── Load FST Data from API ─────────────────────────────────────────
 const { stats, statsLoading, loadStats } = useFstData()
@@ -1231,6 +1293,57 @@ const tools = [
 .fst-footer-sep { opacity: 0.3; }
 .fst-footer-motto { color: #334155; font-style: italic; }
 .fst-footer-right { color: #1e293b; }
+
+/* ══════════════════════════════════════════════ GLOSSARY DEMO */
+.fst-glossary-demo-wrap {
+  padding: 48px 0;
+}
+.fst-glossary-demo {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+.fst-glossary-demo-content {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 12px;
+  padding: 2rem;
+}
+.fst-glossary-demo-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: var(--p-text-color);
+}
+.fst-glossary-demo-title i {
+  color: #a78bfa;
+  font-size: 1.75rem;
+}
+.fst-glossary-demo-desc {
+  line-height: 1.8;
+  font-size: 1.05rem;
+  color: var(--p-text-color);
+  margin: 0 0 1.5rem 0;
+}
+.fst-glossary-demo-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.fst-glossary-demo-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--p-text-muted-color);
+}
+.fst-glossary-demo-hint i {
+  color: #a78bfa;
+}
 
 /* ══════════════════════════════════════════════════ RESPONSIVE */
 @media (max-width: 768px) {
