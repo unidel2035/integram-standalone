@@ -16,6 +16,9 @@
         <button class="hub-btn hub-btn--accent" @click="go('/fst-committee')">
           <i class="pi pi-play-circle"></i> Запустить ИК
         </button>
+        <button class="hub-btn" @click="toggleHelp" title="Помощь по странице">
+          <i class="pi pi-question-circle"></i>
+        </button>
       </div>
     </div>
 
@@ -93,17 +96,25 @@
     <div class="hub-footer">ФСТ НТИ · DronDoc Platform · v2026.03</div>
 
   </div>
+
+  <!-- Page Help Drawer -->
+  <PageHelpDrawer v-model:visible="helpOpen" :page-help="pageHelp" />
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFstData } from '@/composables/useFstData.js'
+import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
+import { usePageHelp } from '@/composables/usePageHelp'
 
 const router = useRouter()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
 
 function go(path) { router.push(path) }
+
+// Page Help
+const { isOpen: helpOpen, pageHelp, toggleHelp } = usePageHelp('fst')
 
 const { stats, statsLoading, loadStats } = useFstData()
 onMounted(() => { loadStats() })
