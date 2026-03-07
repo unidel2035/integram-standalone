@@ -2915,12 +2915,14 @@ onUnmounted(() => {
 // Floating selection action bar (Telegram-style)
 .selection-action-bar {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
   background: var(--surface-card, #fff);
-  border-top: 1px solid var(--surface-border, #e2e8f0);
+  border-top: 2px solid var(--primary-color, #0ea5e9);
   box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  z-index: 10;
   gap: 0.5rem;
 
   .selection-count {
