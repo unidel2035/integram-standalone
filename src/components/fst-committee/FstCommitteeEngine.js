@@ -141,6 +141,9 @@ export function createSession(project, options = {}) {
     phaseIndex: 0,
     speed,
     useAI: options.useAI !== false,   // по умолчанию включён
+    // Настройки оркестратора моделей
+    speedProfile:   options.speedProfile   || 'fast',
+    modelOverrides: options.modelOverrides || {},  // { [agentId]: modelId }
     roundNumber: project._roundNumber || 1,
     agents: AGENTS,
     arguments: [],
@@ -276,8 +279,10 @@ export class FstCommitteeEngine {
       const challengers = [...AGENTS].sort(() => Math.random() - 0.5).slice(0, 3)
       for (const agent of challengers) {
         if (!this._running) return
-        // Challenge
-        const arg = await this._agentSpeak(agent, 'CHALLENGE')
+        // Challenge — target a random OPENING from a different agent
+        const openings = this.session.arguments.filter(a => a.type === 'OPENING' && a.agentId !== agent.id)
+        const targetOpening = openings.length ? openings[Math.floor(Math.random() * openings.length)] : null
+        const arg = await this._agentSpeak(agent, 'CHALLENGE', targetOpening?.id || null)
         if (!arg) continue
         await this.delay(TIMING.ARGUMENT_DELAY)
 
@@ -486,7 +491,10 @@ export class FstCommitteeEngine {
     if (useAI) {
       try {
         const kagCtx = type === 'OPENING' ? (this.session._kagContext || '') : ''
-        arg = await generateArgumentAI(agent, type, project, this.session.arguments, targetArgId, kagCtx)
+        arg = await generateArgumentAI(agent, type, project, this.session.arguments, targetArgId, kagCtx, {
+          speedProfile:   this.session.speedProfile,
+          modelOverrides: this.session.modelOverrides,
+        })
       } catch (e) {
         console.warn('[FstCommitteeEngine] AI call failed, falling back to template:', e.message)
       }

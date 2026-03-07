@@ -35,6 +35,10 @@ export const EVENT_TYPES = {
   // Решение
   DECISION_SYNTH:     'decision:synthesized',
   DECISION_HUMAN:     'decision:human:approved',
+
+  // Оркестратор моделей
+  MODEL_ASSIGNED:     'model:assigned',   // агенту назначена модель
+  MODEL_OVERRIDE:     'model:override',   // пользователь переопределил модель агента
 }
 
 // ── Типы отношений между событиями ───────────────────────────────────────────
@@ -90,7 +94,7 @@ export function inferRelations(arg, allArgs) {
     }
   }
 
-  if (arg.type === 'SYNTHESIS' || arg.type === 'CLOSING') {
+  if (arg.type === 'SYNTHESIS' || arg.type === 'CLOSING' || arg.type === 'SUMMARY') {
     // Синтез обобщает все аргументы этого агента
     const agentArgs = allArgs.filter(a => a.agentId === arg.agentId && a.id !== arg.id)
     for (const prev of agentArgs.slice(-3)) {
@@ -131,6 +135,19 @@ export function annotateArg(arg, allArgs) {
 export function exportToKagEntities(session) {
   const entities = []
 
+  // Собираем статистику использования моделей по агентам
+  const modelUsage = {}
+  for (const arg of (session.arguments || [])) {
+    if (arg.model && arg.agentId) {
+      if (!modelUsage[arg.agentId]) modelUsage[arg.agentId] = {}
+      const shortModel = arg.model.split('/').pop()
+      modelUsage[arg.agentId][shortModel] = (modelUsage[arg.agentId][shortModel] || 0) + 1
+    }
+  }
+  const modelSummary = Object.entries(modelUsage)
+    .map(([agent, models]) => `${agent}: ${Object.entries(models).map(([m,n]) => `${m}×${n}`).join(',')}`)
+    .join(' | ')
+
   // Сессия
   entities.push({
     name:         `ИК: ${session.project?.title || session.projectId}`,
@@ -142,6 +159,8 @@ export function exportToKagEntities(session) {
       `Балл: ${session.decision?.aggregatedScore?.toFixed(2)}`,
       `Раундов: ${session.roundNumber}`,
       `Аргументов: ${session.arguments?.length}`,
+      `Профиль моделей: ${session.speedProfile || 'fast'}`,
+      ...(modelSummary ? [`Модели агентов: ${modelSummary}`] : []),
     ],
   })
 
@@ -156,6 +175,7 @@ export function exportToKagEntities(session) {
           `Тип: ${arg.ontotype || arg.type}`,
           `Измерение: ${arg.dimension}`,
           `Уверенность: ${arg.confidence?.toFixed(2) || arg.strength?.toFixed(2)}`,
+          ...(arg.model ? [`Модель: ${arg.model.split('/').pop()}`] : []),
           `Текст: ${arg.text?.slice(0, 200)}`,
         ],
       })
