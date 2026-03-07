@@ -44,6 +44,7 @@ const routes = [
       { path: 'fst-transparency', component: () => import('@/views/pages/FstTransparency.vue'), meta: { title: 'Публичная витрина фонда' } },
       { path: 'fst-administration', component: () => import('@/views/pages/FstAdministration.vue'), meta: { title: 'Бэк-офис фонда' } },
       { path: 'fst-glossary', component: () => import('@/views/pages/FstGlossary.vue'), meta: { title: 'Глоссарий венчурных терминов' } },
+      { path: 'fst-dev-guide', component: () => import('@/views/pages/FstDevGuide.vue'), meta: { title: 'Путь обучения VentureOS' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },
