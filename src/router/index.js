@@ -41,12 +41,23 @@ const routes = [
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },
+  { path: '/login', component: () => import('@/views/pages/FstLogin.vue'), meta: { title: 'Вход', public: true } },
   { path: '/:pathMatch(.*)*', redirect: '/fst-hub' }
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+})
+
+
+router.beforeEach((to) => {
+  if (to.meta.public) return true
+  const token = localStorage.getItem('token')
+  if (!token) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  return true
 })
 
 router.afterEach((to) => {
