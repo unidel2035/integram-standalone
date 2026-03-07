@@ -278,6 +278,10 @@
       </template>
 
     </div>
+
+    <!-- Page Tutor -->
+    <PageTutorButton pageId="fst-execution" :getContext="getPageContext" />
+
   </div>
 </template>
 
@@ -287,8 +291,20 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import SelectButton from 'primevue/selectbutton'
 import { useToast } from 'primevue/usetoast'
+import PageTutorButton from '@/components/PageTutorButton.vue'
 
 const toast = useToast()
+
+// ── Page Tutor Context ────────────────────────────────────────
+function getPageContext() {
+  return {
+    module: 'Исполнение фонда',
+    company: company.name,
+    viewMode: viewMode.value,
+    currentTranche: currentTranche.value,
+    tasksCount: allTasks.value.length
+  }
+}
 
 // ─── Company & sim state ──────────────────────────────────────────────────────
 const company = { name: 'АвиаЛогик', inn: '7701234567', subFund: 'БАС' }
