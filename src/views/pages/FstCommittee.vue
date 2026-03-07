@@ -395,34 +395,135 @@
         </div>
       </div>
 
+      <!-- ═══ Project Detail Modal ═══ -->
+      <Dialog v-model:visible="projectModalVisible" modal
+        :style="{ width: '560px', maxWidth: '95vw' }"
+        :header="previewProject?.title || ''"
+        :pt="{ header: { style: 'border-bottom: 3px solid ' + (SUBFUNDS[previewProject?.subFund]?.color || '#ffa726') } }">
+        <div v-if="previewProject" class="fst-pmodal">
+          <div class="fst-pmodal-top">
+            <div class="fst-pmodal-subfund" :style="{ background: SUBFUNDS[previewProject.subFund]?.color || '#666' }">
+              <i :class="SUBFUNDS[previewProject.subFund]?.icon"></i>
+              {{ SUBFUNDS[previewProject.subFund]?.name || previewProject.subFund }}
+            </div>
+            <div class="fst-pmodal-stage">{{ previewProject.stage }}</div>
+          </div>
+
+          <div class="fst-pmodal-company">
+            <i class="pi pi-building"></i> {{ previewProject.company }}
+          </div>
+
+          <div class="fst-pmodal-metrics">
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val">{{ (previewProject.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
+              <div class="fst-pmodal-metric-label">Запрашиваемая сумма</div>
+            </div>
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val" :class="trlClass(previewProject.trl)">TRL {{ previewProject.trl }}</div>
+              <div class="fst-pmodal-metric-label">Готовность технологии</div>
+            </div>
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val" :class="trlClass(previewProject.mrl - 1)">MRL {{ previewProject.mrl }}</div>
+              <div class="fst-pmodal-metric-label">Рыночная готовность</div>
+            </div>
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val" :class="sovClass(previewProject.sovereigntyScore)">{{ previewProject.sovereigntyScore }}/9</div>
+              <div class="fst-pmodal-metric-label">Суверенность</div>
+            </div>
+            <div class="fst-pmodal-metric">
+              <div class="fst-pmodal-metric-val" :class="irrClass(previewProject.projectedIRR)">{{ (previewProject.projectedIRR * 100).toFixed(0) }}%</div>
+              <div class="fst-pmodal-metric-label">Прогноз IRR</div>
+            </div>
+            <div class="fst-pmodal-metric" v-if="previewProject.marketSize">
+              <div class="fst-pmodal-metric-val">{{ (previewProject.marketSize / 1e9).toFixed(1) }} млрд</div>
+              <div class="fst-pmodal-metric-label">Объём рынка</div>
+            </div>
+          </div>
+
+          <div v-if="previewProject.description" class="fst-pmodal-desc">
+            {{ previewProject.description }}
+          </div>
+
+          <div v-if="previewProject.tags?.length" class="fst-pmodal-tags">
+            <span v-for="t in previewProject.tags" :key="t" class="fst-pmodal-tag">{{ t }}</span>
+          </div>
+
+          <!-- Policy check -->
+          <div class="fst-pmodal-check">
+            <div :class="['fst-pmodal-check-item', previewProject.trl >= fstPolicy.minTRL ? 'pass' : 'fail']">
+              <i :class="previewProject.trl >= fstPolicy.minTRL ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+              TRL ≥ {{ fstPolicy.minTRL }} (есть {{ previewProject.trl }})
+            </div>
+            <div :class="['fst-pmodal-check-item', previewProject.mrl >= fstPolicy.minMRL ? 'pass' : 'fail']">
+              <i :class="previewProject.mrl >= fstPolicy.minMRL ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+              MRL ≥ {{ fstPolicy.minMRL }} (есть {{ previewProject.mrl }})
+            </div>
+            <div :class="['fst-pmodal-check-item', previewProject.sovereigntyScore >= fstPolicy.minSovereignty ? 'pass' : 'fail']">
+              <i :class="previewProject.sovereigntyScore >= fstPolicy.minSovereignty ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+              Суверенность ≥ {{ fstPolicy.minSovereignty }}/9 (есть {{ previewProject.sovereigntyScore }})
+            </div>
+          </div>
+        </div>
+        <template #footer>
+          <Button label="Отмена" severity="secondary" text @click="projectModalVisible = false" />
+          <Button
+            :label="selectedProjectId === previewProject?.id ? 'Выбран ✓' : 'Выбрать проект'"
+            :severity="selectedProjectId === previewProject?.id ? 'success' : 'primary'"
+            icon="pi pi-check"
+            @click="selectProject(previewProject)"
+          />
+        </template>
+      </Dialog>
+
       <div class="fst-setup-body">
-        <!-- Left: Projects -->
+        <!-- Projects Grid -->
         <div class="fst-setup-col fst-setup-col--projects">
           <div class="fst-setup-section-title">
-            <i class="pi pi-list" style="color:#38bdf8"></i>
-            Выберите проект
+            <i class="pi pi-th-large" style="color:#38bdf8"></i>
+            Выберите проект для рассмотрения
+            <span v-if="selectedProjectId" class="fst-selected-badge">
+              <i class="pi pi-check-circle"></i> Выбран
+            </span>
           </div>
-          <div class="fst-project-list">
+          <div class="fst-project-grid">
             <div v-if="PROJECTS_POOL.length === 0" class="fst-setup-empty">
               <i class="pi pi-spin pi-spinner"></i> Загрузка проектов...
             </div>
             <div v-for="p in PROJECTS_POOL" :key="p.id"
-              :class="['fst-project-card', { 'fst-project-card--active': selectedProjectId === p.id }]"
-              @click="selectedProjectId = p.id">
-              <div class="fst-pc-header">
-                <div class="fst-pc-subfund" :style="{ background: SUBFUNDS[p.subFund]?.color || '#666' }">
-                  {{ SUBFUNDS[p.subFund]?.shortName || p.subFund?.toUpperCase() }}
-                </div>
-                <div class="fst-pc-stage">{{ p.stage }}</div>
-                <div class="fst-pc-amount">{{ (p.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
+              :class="['fst-pcard', { 'fst-pcard--selected': selectedProjectId === p.id }]"
+              :style="{ '--pc': SUBFUNDS[p.subFund]?.color || '#667eea' }"
+              @click="openProjectModal(p)">
+              <!-- Top stripe -->
+              <div class="fst-pcard-stripe"></div>
+              <!-- Selected indicator -->
+              <div v-if="selectedProjectId === p.id" class="fst-pcard-checkmark">
+                <i class="pi pi-check"></i>
               </div>
-              <div class="fst-pc-title">{{ p.title }}</div>
-              <div class="fst-pc-company">{{ p.company }}</div>
-              <div class="fst-pc-metrics">
+              <!-- Subfund + Stage -->
+              <div class="fst-pcard-top">
+                <span class="fst-pcard-subfund" :style="{ background: SUBFUNDS[p.subFund]?.color || '#666' }">
+                  {{ SUBFUNDS[p.subFund]?.shortName || p.subFund?.toUpperCase() }}
+                </span>
+                <span class="fst-pcard-stage">{{ p.stage }}</span>
+              </div>
+              <!-- Title -->
+              <div class="fst-pcard-title">{{ p.title }}</div>
+              <!-- Company -->
+              <div class="fst-pcard-company">
+                <i class="pi pi-building"></i> {{ p.company }}
+              </div>
+              <!-- Amount -->
+              <div class="fst-pcard-amount">{{ (p.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
+              <!-- Metrics -->
+              <div class="fst-pcard-metrics">
                 <span class="fst-metric" :class="trlClass(p.trl)">TRL {{ p.trl }}</span>
                 <span class="fst-metric" :class="trlClass(p.mrl - 1)">MRL {{ p.mrl }}</span>
-                <span class="fst-metric" :class="sovClass(p.sovereigntyScore)">Суверен. {{ p.sovereigntyScore }}/9</span>
+                <span class="fst-metric" :class="sovClass(p.sovereigntyScore)">{{ p.sovereigntyScore }}/9</span>
                 <span class="fst-metric" :class="irrClass(p.projectedIRR)">IRR {{ (p.projectedIRR * 100).toFixed(0) }}%</span>
+              </div>
+              <!-- Click hint -->
+              <div class="fst-pcard-hint">
+                <i class="pi pi-eye"></i> Подробнее
               </div>
             </div>
           </div>
@@ -537,6 +638,8 @@ onMounted(async () => {
 // ── State ─────────────────────────────────────────────────────
 
 const conclusionVisible = ref(false)
+const projectModalVisible = ref(false)
+const previewProject = ref(null)
 const selectedProjectId = ref(null)
 const selectedSpeed = ref('normal')
 const useAI = ref(true)
@@ -723,6 +826,16 @@ function formatPolicyValue(key, val) {
 function setPolicyFromSlider(key, v) {
   const m = policyMultiplier(key)
   fstPolicy.value[key] = m === 1 ? v : v / 100
+}
+
+function openProjectModal(p) {
+  previewProject.value = p
+  projectModalVisible.value = true
+}
+
+function selectProject(p) {
+  selectedProjectId.value = p.id
+  projectModalVisible.value = false
 }
 
 function resetPolicy() {
@@ -1009,67 +1122,209 @@ onUnmounted(() => {
   margin-bottom: 10px;
   color: var(--p-text-muted-color);
 }
-.fst-project-list {
+/* ── Project Grid Cards ───────────────────────────────────── */
+.fst-selected-badge {
+  margin-left: 10px;
+  font-size: 11px;
+  color: #4caf50;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.fst-project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.fst-pcard {
+  position: relative;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 360px;
-  overflow-y: auto;
+  overflow: hidden;
 }
-.fst-project-card {
-  border: 1px solid var(--p-surface-border);
-  border-radius: 8px;
-  padding: 10px 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: var(--p-surface-card);
+.fst-pcard-stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--pc);
 }
-.fst-project-card:hover {
-  border-color: #42a5f5;
+.fst-pcard:hover {
+  border-color: var(--pc);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 0 0 1px var(--pc);
+}
+.fst-pcard--selected {
+  border-color: var(--pc);
+  box-shadow: 0 0 0 2px var(--pc), 0 4px 16px rgba(0,0,0,0.1);
+}
+.fst-pcard-checkmark {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #4caf50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+}
+.fst-pcard-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.fst-pcard-subfund {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #fff;
+}
+.fst-pcard-stage {
+  font-size: 10px;
+  color: var(--p-text-muted-color);
   background: var(--p-surface-hover);
+  padding: 2px 7px;
+  border-radius: 4px;
 }
-.fst-project-card--active {
-  border-color: #ffa726;
+.fst-pcard-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--p-text-color);
+  line-height: 1.3;
+  flex: 1;
+}
+.fst-pcard-company {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.fst-pcard-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pc);
+}
+.fst-pcard-metrics {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.fst-pcard-hint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.fst-pcard:hover .fst-pcard-hint { opacity: 1; }
+
+/* ── Project Detail Modal ─────────────────────────────────── */
+.fst-pmodal { display: flex; flex-direction: column; gap: 16px; }
+.fst-pmodal-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fst-pmodal-subfund {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+  color: #fff;
+}
+.fst-pmodal-stage {
+  font-size: 12px;
+  color: var(--p-text-muted-color);
   background: var(--p-surface-hover);
+  padding: 4px 10px;
+  border-radius: 6px;
 }
-.fst-pc-header {
+.fst-pmodal-company {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
-}
-.fst-pc-subfund {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
-  color: #fff;
-}
-.fst-pc-stage {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-}
-.fst-pc-amount {
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 600;
-  color: #ffd54f;
-}
-.fst-pc-title {
   font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 3px;
+  color: var(--p-text-color);
 }
-.fst-pc-company {
-  font-size: 11px;
+.fst-pmodal-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  background: var(--p-surface-section, var(--p-surface-hover));
+  border-radius: 10px;
+  padding: 14px;
+}
+.fst-pmodal-metric { text-align: center; }
+.fst-pmodal-metric-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--p-text-color);
+  line-height: 1.2;
+}
+.fst-pmodal-metric-label {
+  font-size: 10px;
   color: var(--p-text-muted-color);
-  margin-bottom: 6px;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-.fst-pc-metrics {
+.fst-pmodal-desc {
+  font-size: 13px;
+  color: var(--p-text-muted-color);
+  line-height: 1.6;
+  padding: 12px;
+  background: var(--p-surface-hover);
+  border-radius: 8px;
+}
+.fst-pmodal-tags {
   display: flex;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
 }
+.fst-pmodal-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--p-surface-hover);
+  border: 1px solid var(--p-surface-border);
+  color: var(--p-text-muted-color);
+}
+.fst-pmodal-check {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--p-surface-border);
+}
+.fst-pmodal-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.fst-pmodal-check-item.pass { color: #4caf50; }
+.fst-pmodal-check-item.fail { color: #ef5350; }
 .fst-metric {
   font-size: 11px;
   padding: 2px 7px;
