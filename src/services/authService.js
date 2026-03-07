@@ -74,8 +74,11 @@ export const useAuthStore = defineStore('auth', () => {
         const isAdmin = login === 'd' ||
           Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
         localStorage.setItem('is_admin', isAdmin ? 'true' : 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: isAdmin }))
       }).catch(() => {
-        localStorage.setItem('is_admin', login === 'd' ? 'true' : 'false')
+        const fallback = login === 'd'
+        localStorage.setItem('is_admin', fallback ? 'true' : 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: fallback }))
       })
     }
   }
@@ -198,8 +201,11 @@ export const useAuthStore = defineStore('auth', () => {
         const isAdmin = login === 'd' ||
           Object.values(reqs).some(v => v === 'admin' || v === 'Администратор')
         localStorage.setItem('is_admin', isAdmin ? 'true' : 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: isAdmin }))
       } catch {
-        localStorage.setItem('is_admin', login === 'd' ? 'true' : 'false')
+        const fallback = login === 'd'
+        localStorage.setItem('is_admin', fallback ? 'true' : 'false')
+        window.dispatchEvent(new CustomEvent('admin-status-changed', { detail: fallback }))
       }
 
       return { success: true, user: primaryAuth.user }

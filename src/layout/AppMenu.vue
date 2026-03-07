@@ -19,8 +19,8 @@ watch(() => props.searchQuery, (newQuery) => {
 }, { flush: 'post' })
 
 const isAdmin = ref(localStorage.getItem('is_admin') === 'true')
-window.addEventListener('storage', (e) => {
-  if (e.key === 'is_admin') isAdmin.value = e.newValue === 'true'
+window.addEventListener('admin-status-changed', (e) => {
+  isAdmin.value = e.detail === true
 })
 
 const model = computed(() =>
