@@ -389,8 +389,8 @@
               <div class="cmd-out gray"># Вводим пароль: 4Te4LmzwDil2rr4</div>
               <div class="cmd-out gray"># (пароль не отображается при вводе — это нормально)</div>
               <div class="cmd-out green">Welcome to Ubuntu 22.04.3 LTS</div>
-              <div class="cmd-line"><span class="prompt">root@vps#</span> cd /home/hive/fund</div>
-              <div class="cmd-line"><span class="prompt">root@vps:~/fund#</span> <span class="cmd-cursor">_</span></div>
+              <div class="cmd-line"><span class="prompt">root@vps#</span> su - hive &amp;&amp; cd /home/hive/found-repo</div>
+              <div class="cmd-line"><span class="prompt">root@vps:~/found-repo#</span> <span class="cmd-cursor">_</span></div>
             </div>
           </div>
         </div>
@@ -404,7 +404,7 @@
           <div class="screen-block">
             <div class="screen-bar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="screen-title">Terminal</span></div>
             <div class="screen-body">
-              <div class="cmd-line"><span class="prompt">root@vps:~/fund#</span> claude</div>
+              <div class="cmd-line"><span class="prompt">root@vps:~/found-repo#</span> claude</div>
               <div class="cmd-out green">╔════════════════════════════════════╗</div>
               <div class="cmd-out green">║     Claude Code  — ФСТ НТИ         ║</div>
               <div class="cmd-out green">╚════════════════════════════════════╝</div>
@@ -529,7 +529,7 @@ const cheatsheet = [
     lines: [
       'ssh root@173.249.2.184',
       'Пароль: 4Te4LmzwDil2rr4',
-      'cd /home/hive/fund',
+      'cd /home/hive/found-repo',
       'Сайт: http://173.249.2.184:5174',
     ]
   },
