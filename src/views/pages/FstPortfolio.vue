@@ -25,9 +25,30 @@
         </div>
       </div>
       <div class="fsp-header-right">
-        <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="refreshAll" :loading="refreshing" />
-        <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="showAddDialog = true" />
-        <Button icon="pi pi-building" label="ЦД Фонда" size="small" severity="secondary" text @click="$router.push('/fst-fund')" />
+        <LearnTooltip
+          label="Обновить данные"
+          what="Загружает актуальные данные по портфелю: KPI компаний, финансовые показатели, статусы рисков"
+          when="Для получения последних данных от портфельных компаний"
+          :terms="['Портфель', 'KPI', 'Мониторинг']"
+        >
+          <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="refreshAll" :loading="refreshing" />
+        </LearnTooltip>
+        <LearnTooltip
+          label="Добавить компанию"
+          what="Добавляет новую портфельную компанию для мониторинга после закрытия сделки"
+          when="После подписания Term Sheet и получения первого транша"
+          :terms="['Портфельная компания', 'Транш', 'Постинвест-мониторинг']"
+        >
+          <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="showAddDialog = true" />
+        </LearnTooltip>
+        <LearnTooltip
+          label="Цифровой двойник фонда"
+          what="Переход к макро-симуляции всего фонда: NAV, IRR, субфонды, сценарии"
+          when="Для оценки общего состояния и прогнозирования портфеля"
+          :terms="['NAV', 'IRR', 'Цифровой двойник', 'Субфонд']"
+        >
+          <Button icon="pi pi-building" label="ЦД Фонда" size="small" severity="secondary" text @click="$router.push('/fst-fund')" />
+        </LearnTooltip>
       </div>
     </div>
 
@@ -227,6 +248,7 @@ import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { getPortfolio, getProjects } from '@/services/fstApi'
 import PageTutorButton from '@/components/PageTutorButton.vue'
+import LearnTooltip from '@/components/LearnTooltip.vue'
 
 const toast = useToast()
 

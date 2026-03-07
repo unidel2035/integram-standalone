@@ -39,20 +39,41 @@
       </div>
       <template #footer>
         <div style="display:flex;align-items:center;gap:8px;width:100%">
-          <Button v-if="!kagSaved" label="Сохранить в базу знаний" icon="pi pi-database"
-            severity="info" size="small" :loading="kagSaving" @click="saveToKag" />
-          <span v-else class="fst-kag-saved">
+          <LearnTooltip
+            label="Сохранить в базу знаний"
+            what="Сохраняет решение инвесткомитета в граф знаний KAG — для будущего обучения AI-агентов на реальных кейсах"
+            when="После завершения сессии ИК для накопления исторических решений"
+            :terms="['KAG', 'База знаний', 'AI-обучение']"
+          >
+            <Button v-if="!kagSaved" label="Сохранить в базу знаний" icon="pi pi-database"
+              severity="info" size="small" :loading="kagSaving" @click="saveToKag" />
+          </LearnTooltip>
+          <span v-if="kagSaved" class="fst-kag-saved">
             <i class="pi pi-check-circle" style="color:#4caf50"></i>
             Сохранено в KAG ({{ kagSavedCount }} сущностей)
           </span>
-          <Button v-if="!intSaved" label="Сохранить в СОД" icon="pi pi-sitemap"
-            severity="secondary" size="small" :loading="intSaving" @click="saveToIntegram" />
-          <span v-else class="fst-kag-saved">
+          <LearnTooltip
+            label="Сохранить в СОД"
+            what="Создаёт событие в системе объектных данных Integram — фиксирует решение ИК в корпоративной базе фонда"
+            when="После завершения сессии ИК для официального документирования"
+            :terms="['СОД', 'Integram', 'Протокол ИК']"
+          >
+            <Button v-if="!intSaved" label="Сохранить в СОД" icon="pi pi-sitemap"
+              severity="secondary" size="small" :loading="intSaving" @click="saveToIntegram" />
+          </LearnTooltip>
+          <span v-if="intSaved" class="fst-kag-saved">
             <i class="pi pi-check-circle" style="color:#7e57c2"></i>
             СОД #{{ intEventId }}
           </span>
-          <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession"
-            style="margin-left:auto" />
+          <LearnTooltip
+            label="Новая сессия"
+            what="Сбрасывает текущую сессию и возвращает к выбору проекта для оценки"
+            when="После просмотра результатов текущей сессии инвесткомитета"
+            :terms="['Сессия комитета', 'Инвесткомитет']"
+          >
+            <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession"
+              style="margin-left:auto" />
+          </LearnTooltip>
         </div>
       </template>
     </Dialog>
@@ -366,12 +387,33 @@
               <InputText v-model="humanComment" placeholder="Комментарий (опционально)" class="fst-human-comment" size="small" />
             </div>
             <div class="fst-human-buttons">
-              <Button label="Утвердить" icon="pi pi-check" severity="success" size="small"
-                @click="humanDecide('APPROVE')" />
-              <Button label="Отложить" icon="pi pi-clock" severity="warning" size="small"
-                @click="humanDecide('DEFER')" />
-              <Button label="Отклонить" icon="pi pi-times" severity="danger" size="small"
-                @click="humanDecide('REJECT')" />
+              <LearnTooltip
+                label="Утвердить"
+                what="Председатель комитета утверждает рекомендацию AI-агентов. Проект переходит к структурированию сделки."
+                when="Когда согласны с решением агентов и готовы двигаться к Term Sheet"
+                :terms="['Одобрение', 'Term Sheet', 'Инвесткомитет']"
+              >
+                <Button label="Утвердить" icon="pi pi-check" severity="success" size="small"
+                  @click="humanDecide('APPROVE')" />
+              </LearnTooltip>
+              <LearnTooltip
+                label="Отложить"
+                what="Откладывает решение — проект остаётся в воронке для повторного рассмотрения после получения доп. информации"
+                when="Когда нужна дополнительная информация: финмодель, DD, юр. проверка"
+                :terms="['Due Diligence', 'Воронка сделок', 'Скрининг']"
+              >
+                <Button label="Отложить" icon="pi pi-clock" severity="warning" size="small"
+                  @click="humanDecide('DEFER')" />
+              </LearnTooltip>
+              <LearnTooltip
+                label="Отклонить"
+                what="Проект не проходит критерии ФСТ НТИ. Решение фиксируется в протоколе."
+                when="Когда проект не соответствует стратегии фонда или минимальным критериям отбора"
+                :terms="['Критерии отбора', 'Протокол ИК', 'Политика фонда']"
+              >
+                <Button label="Отклонить" icon="pi pi-times" severity="danger" size="small"
+                  @click="humanDecide('REJECT')" />
+              </LearnTooltip>
             </div>
           </div>
 
@@ -664,6 +706,7 @@ import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-commit
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
 import { useFstData } from '@/composables/useFstData.js'
+import LearnTooltip from '@/components/LearnTooltip.vue'
 
 // ── Load FST Data ─────────────────────────────────────────────────
 
