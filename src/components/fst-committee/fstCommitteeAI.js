@@ -13,7 +13,7 @@
 import { getDefaultToken, getCurrentUserId } from '@/services/aiTokenService.js'
 
 const API_BASE = ''  // всегда относительный URL → Vite proxy → порт 8082
-const COMMITTEE_MODEL = 'KodaAgent'          // бесплатно через GITHUB_TOKEN
+const COMMITTEE_MODEL = 'deepseek-chat'       // надёжная модель, поддерживает несколько запросов
 const CONTEXT_ARGS = 6                        // аргументов в контексте
 const TIMEOUT_MS   = 25_000                   // таймаут LLM-вызова
 
@@ -96,7 +96,10 @@ async function getToken() {
 }
 
 function getLocalAuthToken() {
-  return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || ''
+  // FST app stores token as 'token', main dronedoc app as 'auth_token'
+  return localStorage.getItem('auth_token') ||
+         localStorage.getItem('token') ||
+         sessionStorage.getItem('auth_token') || ''
 }
 
 // ── Системные промпты агентов ─────────────────────────────────────────────────
