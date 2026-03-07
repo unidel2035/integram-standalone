@@ -324,17 +324,31 @@ ${responseFormat}`
 
 // ── Парсинг ответа LLM ────────────────────────────────────────────────────────
 
+/** Извлекает первый сбалансированный JSON-объект из строки */
+function extractFirstJson(str) {
+  let depth = 0, start = -1
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === '{') {
+      if (depth === 0) start = i
+      depth++
+    } else if (str[i] === '}') {
+      if (--depth === 0 && start !== -1) return str.slice(start, i + 1)
+    }
+  }
+  return null
+}
+
 function parseAgentResponse(rawText) {
   if (!rawText) return null
 
   const VALID_DIMS = ['trl','mrl','sovereignty','market','finance','risk','team']
   const VALID_STANCES = ['APPROVE','DEFER','REJECT']
 
-  // 1. Попробуем найти JSON-блок в ответе
-  const jsonMatch = rawText.match(/\{[\s\S]*?\}(?=\s*(?:```|$|\n\n))/) || rawText.match(/\{[\s\S]*\}/)
-  if (jsonMatch) {
+  // 1. Извлекаем ПЕРВЫЙ полный JSON-объект (балансирующий обход скобок)
+  const jsonStr = extractFirstJson(rawText)
+  if (jsonStr) {
     try {
-      const parsed = JSON.parse(jsonMatch[0])
+      const parsed = JSON.parse(jsonStr)
       if (parsed.text && typeof parsed.text === 'string') {
         return {
           text:       parsed.text.trim(),
@@ -348,10 +362,11 @@ function parseAgentResponse(rawText) {
     } catch { /* fall through to plain-text fallback */ }
   }
 
-  // 2. Модель ответила не JSON — используем сырой текст как аргумент
+  // 2. Модель ответила не JSON — убираем мусор и используем как текст
   const text = rawText
-    .replace(/```[\s\S]*?```/g, '')  // убрать markdown code blocks
-    .replace(/^(json|JSON)\s*/i, '')  // убрать случайное слово json
+    .replace(/```[\s\S]*?```/g, '')   // убрать markdown code blocks
+    .replace(/^\s*(json|JSON)\s*/i, '') // убрать случайное слово json
+    .replace(/\{[\s\S]*?\}/g, '')      // убрать JSON-обломки
     .trim()
 
   if (text.length < 10) return null  // слишком короткий — скорее всего мусор
