@@ -1,0 +1,859 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "FST REST API",
+    "description": "REST API для интеграции платформы Фонда Суверенных Технологий (ФСТ) с внешними системами: Госуслуги, СПАРК, Сколково, министерства.\n\n## Аутентификация\n\nВсе эндпоинты (кроме `/health`) требуют аутентификации:\n\n### API Token (Bearer)\n```\nAuthorization: Bearer <your_api_token>\n```\n\n### Webhook Secret\n```\nX-Webhook-Secret: <webhook_secret>\n```\n\n## Rate Limiting\n\nДля партнёров установлен лимит: **1000 запросов в день**.\n\n## Контакты\n\nПо вопросам получения API токена: [unidel@yandex.ru](mailto:unidel@yandex.ru)",
+    "version": "1.0.0",
+    "contact": {
+      "name": "FST Support",
+      "email": "unidel@yandex.ru",
+      "url": "https://dev.drondoc.ru"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://dev.drondoc.ru",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3100",
+      "description": "Local development"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/fst/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Проверка работоспособности API",
+        "tags": ["System"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API работает",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fst/portfolio": {
+      "get": {
+        "summary": "Список портфельных компаний",
+        "description": "Возвращает список всех компаний в портфеле ФСТ с показателями здоровья (публичный вариант без конфиденциальных финансовых данных)",
+        "tags": ["Portfolio"],
+        "responses": {
+          "200": {
+            "description": "Список компаний",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/api/fst/company/{id}": {
+      "get": {
+        "summary": "Детали портфельной компании",
+        "description": "Подробная информация о компании, включая историю событий мониторинга",
+        "tags": ["Portfolio"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID компании в портфеле"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Детали компании",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/fst/kpis": {
+      "get": {
+        "summary": "Агрегированные KPI портфеля",
+        "description": "Сводная статистика по всему портфелю ФСТ",
+        "tags": ["Portfolio"],
+        "responses": {
+          "200": {
+            "description": "KPI портфеля",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioKPIs"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/fst/apply": {
+      "post": {
+        "summary": "Подача заявки на финансирование",
+        "description": "Создание новой заявки из внешних порталов (Сколково, РФРИТ, Госуслуги)",
+        "tags": ["Applications"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Заявка успешно создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/fst/application/{id}": {
+      "get": {
+        "summary": "Статус заявки",
+        "description": "Получить информацию о статусе рассмотрения заявки и результаты AI-инвесткомитета",
+        "tags": ["Applications"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID заявки"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Статус заявки",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/fst/webhook/egrul": {
+      "post": {
+        "summary": "Webhook ЕГРЮЛ/ЕФРСБ",
+        "description": "Получение обновлений из ЕГРЮЛ (изменения статуса, адреса, директора, банкротства)",
+        "tags": ["Webhooks"],
+        "security": [
+          {
+            "WebhookSecret": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EgrulWebhook"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook обработан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/fst/webhook/rospatent": {
+      "post": {
+        "summary": "Webhook Роспатент",
+        "description": "Получение информации о новых патентах и изменениях IP",
+        "tags": ["Webhooks"],
+        "security": [
+          {
+            "WebhookSecret": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RospatentWebhook"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook обработан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/fst/webhook/hh": {
+      "post": {
+        "summary": "Webhook HH.ru",
+        "description": "Получение статистики найма с HH.ru",
+        "tags": ["Webhooks"],
+        "security": [
+          {
+            "WebhookSecret": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HHWebhook"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook обработан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API Token для партнёров (получить: unidel@yandex.ru)"
+      },
+      "WebhookSecret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Webhook-Secret",
+        "description": "Secret для webhook эндпоинтов"
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "service": {
+            "type": "string",
+            "example": "FST REST API"
+          },
+          "version": {
+            "type": "string",
+            "example": "1.0.0"
+          }
+        }
+      },
+      "PortfolioResponse": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Количество компаний в портфеле"
+          },
+          "companies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyBrief"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CompanyBrief": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "inn": {
+            "type": "string"
+          },
+          "healthScore": {
+            "type": "integer",
+            "description": "Скор здоровья 0-100"
+          },
+          "trafficLight": {
+            "type": "string",
+            "enum": ["green", "yellow", "red", "gray"]
+          },
+          "trl": {
+            "type": "integer",
+            "description": "Technology Readiness Level"
+          },
+          "status": {
+            "type": "string"
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "patentsCount": {
+                "type": "integer"
+              },
+              "hiringActivity": {
+                "type": "integer"
+              },
+              "newsCoverage": {
+                "type": "integer"
+              },
+              "lastUpdated": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "CompanyDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CompanyBrief"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "recentEvents": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MonitoringEvent"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "MonitoringEvent": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "info"]
+          }
+        }
+      },
+      "PortfolioKPIs": {
+        "type": "object",
+        "properties": {
+          "totalCompanies": {
+            "type": "integer"
+          },
+          "averageHealthScore": {
+            "type": "integer"
+          },
+          "trafficLightDistribution": {
+            "type": "object",
+            "properties": {
+              "green": {
+                "type": "integer"
+              },
+              "yellow": {
+                "type": "integer"
+              },
+              "red": {
+                "type": "integer"
+              }
+            }
+          },
+          "totalPatents": {
+            "type": "integer"
+          },
+          "averageTRL": {
+            "type": "integer"
+          },
+          "activeCompanies": {
+            "type": "integer"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApplicationRequest": {
+        "type": "object",
+        "required": ["companyName", "inn", "description", "requestedAmount"],
+        "properties": {
+          "companyName": {
+            "type": "string",
+            "example": "ИнноТех"
+          },
+          "inn": {
+            "type": "string",
+            "example": "7729123456"
+          },
+          "ogrn": {
+            "type": "string",
+            "example": "1177746123456"
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание проекта"
+          },
+          "requestedAmount": {
+            "type": "integer",
+            "description": "Запрашиваемая сумма финансирования (руб.)",
+            "example": 50000000
+          },
+          "trl": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "sovereignty": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10,
+            "description": "Индекс суверенности 0-10"
+          },
+          "subfund": {
+            "type": "string",
+            "description": "Целевой субфонд",
+            "example": "БАС"
+          },
+          "stage": {
+            "type": "string",
+            "example": "Seed"
+          },
+          "contactEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "contactPhone": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["skolkovo", "rfrit", "gosuslugi", "api"],
+            "description": "Источник заявки"
+          }
+        }
+      },
+      "ApplicationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "applicationId": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "nextSteps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trackingUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "ApplicationStatus": {
+        "type": "object",
+        "properties": {
+          "applicationId": {
+            "type": "integer"
+          },
+          "companyName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_review",
+              "approved",
+              "approved_pending_signature",
+              "approved_funded",
+              "deferred",
+              "rejected"
+            ]
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "committeeReview": {
+            "type": "object",
+            "properties": {
+              "decision": {
+                "type": "string"
+              },
+              "score": {
+                "type": "integer"
+              },
+              "reviewedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "deal": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "amount": {
+                "type": "integer"
+              },
+              "equity": {
+                "type": "number"
+              },
+              "status": {
+                "type": "string"
+              },
+              "signedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "EgrulWebhook": {
+        "type": "object",
+        "required": ["inn", "changeType", "newValue"],
+        "properties": {
+          "inn": {
+            "type": "string"
+          },
+          "companyName": {
+            "type": "string"
+          },
+          "changeType": {
+            "type": "string",
+            "enum": ["status", "address", "director", "capital", "bankruptcy"]
+          },
+          "oldValue": {
+            "type": "string"
+          },
+          "newValue": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "changeDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RospatentWebhook": {
+        "type": "object",
+        "required": ["inn", "patentNumber", "status"],
+        "properties": {
+          "inn": {
+            "type": "string"
+          },
+          "companyName": {
+            "type": "string"
+          },
+          "patentNumber": {
+            "type": "string"
+          },
+          "patentTitle": {
+            "type": "string"
+          },
+          "patentType": {
+            "type": "string",
+            "enum": ["invention", "utility_model", "industrial_design"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["filed", "granted", "expired", "invalidated"]
+          },
+          "filingDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "grantDate": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "HHWebhook": {
+        "type": "object",
+        "required": ["inn", "activeVacancies"],
+        "properties": {
+          "inn": {
+            "type": "string"
+          },
+          "companyName": {
+            "type": "string"
+          },
+          "activeVacancies": {
+            "type": "integer"
+          },
+          "totalVacancies": {
+            "type": "integer"
+          },
+          "avgSalary": {
+            "type": "integer"
+          },
+          "topPositions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "period": {
+            "type": "string",
+            "enum": ["week", "month"]
+          }
+        }
+      },
+      "WebhookResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "eventId": {
+            "type": "integer"
+          },
+          "companyId": {
+            "type": "integer"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Отсутствует или невалидный токен аутентификации",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Ресурс не найден",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Некорректный запрос",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "RateLimitExceeded": {
+        "description": "Превышен лимит запросов (1000/день)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "System",
+      "description": "Системные эндпоинты"
+    },
+    {
+      "name": "Portfolio",
+      "description": "Портфельные компании и KPI"
+    },
+    {
+      "name": "Applications",
+      "description": "Заявки на финансирование"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Webhooks для внешних источников данных"
+    }
+  ]
+}
