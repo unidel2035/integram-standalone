@@ -15,6 +15,7 @@ const routes = [
       { path: 'fst-twin', component: () => import('@/views/pages/FstDigitalTwin.vue'), meta: { title: 'Цифровой двойник компании' } },
       { path: 'fst-fund', component: () => import('@/views/pages/FstFundTwin.vue'), meta: { title: 'Цифровой двойник фонда' } },
       { path: 'fst-execution', component: () => import('@/views/pages/FstExecution.vue'), meta: { title: 'Исполнение сделок' } },
+      { path: 'fst-learning', component: () => import('@/views/pages/FstLearning.vue'), meta: { title: 'Нейрокогнитивное ядро' } },
       { path: 'fst-dealflow', component: () => import('@/views/pages/FstDealflow.vue'), meta: { title: 'Воронка сделок' } },
       { path: 'fst-sourcing', component: () => import('@/views/pages/FstSourcing.vue'), meta: { title: 'AI Deal Sourcing' } },
       { path: 'fst-memo', component: () => import('@/views/pages/FstMemo.vue'), meta: { title: 'AI Инвест-меморандум' } },
