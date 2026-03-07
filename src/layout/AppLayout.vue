@@ -1,5 +1,6 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout'
+import { useAuthStore } from '@/stores/authStore'
 import { computed, ref, watch, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 // Lazy load AppFooter to avoid dynamic import issues when AppLayout is lazy-loaded
@@ -16,6 +17,7 @@ import Toast from 'primevue/toast'
 
 const route = useRoute()
 const { layoutConfig, layoutState, isSidebarActive } = useLayout()
+const authStore = useAuthStore()
 
 const outsideClickListener = ref(null)
 const isChatActive = ref(false)
@@ -32,7 +34,16 @@ const isMobileDevice = () => {
   return window.innerWidth <= 960 // Соответствует медиа-запросу в Chat.vue
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Авто-логин в FST (ai2o.ru/fst) если нет токена
+  if (!localStorage.getItem('token')) {
+    try {
+      await authStore.login('d', 'd', 'ai2o.ru', 'fst')
+    } catch (e) {
+      console.warn('[AppLayout] авто-логин FST не удался:', e.message)
+    }
+  }
+
   const chatState = window.localStorage.getItem('chat')
 
   // Если состояние чата не сохранено, используем дефолтное значение
