@@ -46,7 +46,6 @@ const categoryIcon = computed(() => {
     venture: 'pi-briefcase',
     ai: 'pi-sparkles',
     regulation: 'pi-shield',
-    platform: 'pi-cog'
     platform: 'pi-desktop'
   }
   return icons[term.value?.category] || 'pi-book'

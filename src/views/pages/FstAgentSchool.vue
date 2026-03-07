@@ -212,75 +212,318 @@
       </div>
     </div>
 
-    <!-- Tournament Modal -->
-    <Teleport to="body">
-    <div v-if="showTournament" class="modal-overlay" @click.self="showTournament = false">
-      <div class="tournament-modal">
-        <div class="modal-header">
-          <h3>Турнир агентов: <em>{{ selectedMarket?.title }}</em></h3>
-          <button @click="showTournament = false"><i class="pi pi-times" /></button>
+    <!-- ── Tab: Calculators Playground ── -->
+    <div v-if="activeTab === 'calculators'" class="tab-content">
+      <div class="calc-intro">
+        <div class="calc-intro-text">
+          <h3>Верифицируемые калькуляторы</h3>
+          <p>Агенты вызывают эти калькуляторы <strong>до</strong> запроса к AI. Числа считаются реальными формулами — AI только интерпретирует результат. Проверьте сами теми же входными данными.</p>
         </div>
-        <div class="modal-body">
-          <div v-if="tournamentRunning" class="tournament-progress">
-            <div v-for="a in agents" :key="a.id" class="agent-progress-row">
-              <span class="ap-avatar">{{ a.avatar }}</span>
-              <span class="ap-name">{{ a.name }}</span>
-              <span class="ap-status">
-                <i v-if="tournamentDone[a.id] === 'pending'" class="pi pi-spin pi-spinner" />
-                <span v-else-if="tournamentDone[a.id]">{{ tournamentDone[a.id].probability }}%</span>
-                <span v-else>—</span>
-              </span>
+        <a href="https://github.com/unidel2035/fund/blob/main/backend/calc.mjs" target="_blank" class="btn-sm link">
+          <i class="pi pi-github" /> Исходный код
+        </a>
+      </div>
+
+      <div class="calc-grid">
+        <!-- Bayesian -->
+        <div class="calc-card">
+          <div class="calc-card-header">
+            <span class="calc-icon">📊</span>
+            <div>
+              <div class="calc-name">Байесовский обновитель</div>
+              <div class="calc-formula">P(H|E) = P(E|H) × P(H) / P(E)</div>
             </div>
           </div>
-          <div v-else-if="tournamentResults.length" class="tournament-results">
-            <div v-for="r in tournamentResults" :key="r.agent.id" class="result-row"
-              :style="{ '--agent-color': r.agent.color }">
-              <span class="r-avatar">{{ r.agent.avatar }}</span>
-              <span class="r-name">{{ r.agent.name }}</span>
-              <div class="r-prob-bar">
-                <div class="r-prob-fill" :style="{ width: r.prediction.probability + '%', background: probColor(r.prediction.probability) }" />
+          <div class="calc-inputs">
+            <label>Приор P₀ (%)
+              <input v-model.number="calc.bayesian.prior" type="range" min="1" max="99" class="calc-slider" />
+              <span>{{ calc.bayesian.prior }}%</span>
+            </label>
+            <div class="calc-signals">
+              <div v-for="(sig, i) in calc.bayesian.signals" :key="i" class="calc-signal-row">
+                <input v-model="sig.label" placeholder="Сигнал" class="calc-input-text" />
+                <input v-model.number="sig.likelihood" type="range" min="0.05" max="0.95" step="0.05" class="calc-slider-sm" />
+                <span>{{ Math.round(sig.likelihood * 100) }}%</span>
               </div>
-              <span class="r-prob">{{ r.prediction.probability }}% YES</span>
-              <span class="r-conf">conf: {{ r.prediction.confidence }}%</span>
-              <div class="r-reasoning" v-if="expandedResult === r.agent.id">
-                {{ r.prediction.reasoning }}
-              </div>
-              <button class="r-expand" @click="expandedResult = expandedResult === r.agent.id ? null : r.agent.id">
-                {{ expandedResult === r.agent.id ? '▲' : '▼' }}
-              </button>
-            </div>
-            <!-- Aggregated view -->
-            <div class="tournament-aggregate">
-              <div class="agg-label">Медианная ставка агентов:</div>
-              <div class="agg-prob" :style="{ color: probColor(medianPrediction) }">
-                {{ medianPrediction }}% YES
-              </div>
-              <div class="agg-spread">Разброс: {{ spreadPrediction }}% — {{ spreadMax }}%</div>
-              <div class="agg-nash" v-if="nashResult">
-                Nash Equilibrium: {{ nashResult.isNash ? '✓ Достигнут' : '⚠ Не достигнут' }}
-                {{ nashResult.consensus === 'approve' ? '(консенсус: ДА)' : '(консенсус: НЕТ)' }}
-              </div>
-            </div>
-            <div class="modal-actions">
-              <button class="btn-save" @click="saveAllPredictions">
-                <i class="pi pi-database" /> Сохранить все предсказания
-              </button>
             </div>
           </div>
-        </div>
-        <div v-if="!tournamentRunning && !tournamentResults.length" class="modal-footer">
-          <button class="btn-primary" @click="startTournament">
-            <i class="pi pi-bolt" /> Запустить турнир агентов
+          <button class="btn-calc" @click="runCalc('bayesian')" :disabled="calcLoading.bayesian">
+            <i :class="calcLoading.bayesian ? 'pi pi-spin pi-spinner' : 'pi pi-play'" /> Считать
           </button>
+          <div v-if="calcResults.bayesian" class="calc-result">
+            <div class="calc-result-main">{{ calcResults.bayesian.prior }}% → <strong>{{ calcResults.bayesian.posterior }}%</strong></div>
+            <div v-for="s in calcResults.bayesian.steps" :key="s.label" class="calc-step">
+              {{ s.label }}: {{ s.probability }}%
+            </div>
+            <div v-if="calcResults.bayesian.planningFallacyWarning" class="calc-warn">⚠ Planning Fallacy — слишком уверенный прогноз</div>
+          </div>
+        </div>
+
+        <!-- DCF -->
+        <div class="calc-card">
+          <div class="calc-card-header">
+            <span class="calc-icon">💰</span>
+            <div>
+              <div class="calc-name">DCF + IRR</div>
+              <div class="calc-formula">NPV = Σ CFₜ / (1+r)ᵗ + TV/(1+r)ⁿ</div>
+            </div>
+          </div>
+          <div class="calc-inputs">
+            <label>WACC (%) <input v-model.number="calc.dcf.wacc" type="number" min="5" max="60" class="calc-input-num" /> </label>
+            <label>CF год 1-5 (тыс.руб)</label>
+            <div class="calc-flows">
+              <input v-for="(_, i) in calc.dcf.flows" :key="i" v-model.number="calc.dcf.flows[i]" type="number" class="calc-input-num-sm" />
+            </div>
+          </div>
+          <button class="btn-calc" @click="runCalc('dcf')" :disabled="calcLoading.dcf">
+            <i :class="calcLoading.dcf ? 'pi pi-spin pi-spinner' : 'pi pi-play'" /> Считать
+          </button>
+          <div v-if="calcResults.dcf" class="calc-result">
+            <div class="calc-result-main">NPV: <strong>{{ calcResults.dcf.npv.toLocaleString() }}</strong> тыс.</div>
+            <div>Терминальная стоимость: {{ calcResults.dcf.pvTerminalValue.toLocaleString() }} ({{ calcResults.dcf.tvShare }}% от итого)</div>
+            <div>Итого: <strong>{{ calcResults.dcf.totalValue.toLocaleString() }}</strong> тыс.</div>
+          </div>
+          <div v-if="calcResults.irr" class="calc-result">
+            <div>IRR: <strong :class="calcResults.irr.irr > 20 ? 'good' : 'ok'">{{ calcResults.irr.irr }}%</strong>
+              {{ calcResults.irr.converged ? '✓' : '⚠ не сошлось' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Kelly -->
+        <div class="calc-card">
+          <div class="calc-card-header">
+            <span class="calc-icon">🎯</span>
+            <div>
+              <div class="calc-name">Kelly Criterion</div>
+              <div class="calc-formula">f* = (p×b − q) / b</div>
+            </div>
+          </div>
+          <div class="calc-inputs">
+            <label>P(выигрыш) (%) <input v-model.number="calc.kelly.p" type="range" min="1" max="99" class="calc-slider" /> <span>{{ calc.kelly.p }}%</span></label>
+            <label>Коэф. выплаты b <input v-model.number="calc.kelly.b" type="number" min="0.1" max="10" step="0.1" class="calc-input-num" /></label>
+          </div>
+          <button class="btn-calc" @click="runCalc('kelly')" :disabled="calcLoading.kelly">
+            <i :class="calcLoading.kelly ? 'pi pi-spin pi-spinner' : 'pi pi-play'" /> Считать
+          </button>
+          <div v-if="calcResults.kelly" class="calc-result">
+            <div class="calc-result-main">Kelly full: <strong>{{ calcResults.kelly.kellyFull }}%</strong></div>
+            <div>Дробный (×0.5): <strong>{{ calcResults.kelly.kellyFractional }}%</strong> от капитала</div>
+            <div :class="calcResults.kelly.positive ? 'good' : 'bad'">{{ calcResults.kelly.recommendation }}</div>
+          </div>
+        </div>
+
+        <!-- Monte Carlo VaR -->
+        <div class="calc-card">
+          <div class="calc-card-header">
+            <span class="calc-icon">🎲</span>
+            <div>
+              <div class="calc-name">Monte Carlo VaR</div>
+              <div class="calc-formula">10 000 симуляций Box-Muller</div>
+            </div>
+          </div>
+          <div class="calc-inputs">
+            <label>Волатильность σ (%) <input v-model.number="calc.var.sigma" type="range" min="5" max="120" class="calc-slider" /> <span>{{ calc.var.sigma }}%</span></label>
+            <label>Горизонт (дней) <input v-model.number="calc.var.horizon" type="number" min="1" max="252" class="calc-input-num" /></label>
+          </div>
+          <button class="btn-calc" @click="runCalc('var')" :disabled="calcLoading.var">
+            <i :class="calcLoading.var ? 'pi pi-spin pi-spinner' : 'pi pi-play'" /> Считать
+          </button>
+          <div v-if="calcResults.var" class="calc-result">
+            <div class="calc-result-main">VaR(95%): <strong :class="'bad'">{{ calcResults.var.var95 }}%</strong></div>
+            <div>VaR(99%): {{ calcResults.var.var99 }}% | CVaR: {{ calcResults.var.cvar }}%</div>
+            <div>Медиана: {{ calcResults.var.median }}% за {{ calc.var.horizon }}д</div>
+          </div>
+        </div>
+
+        <!-- Black-Scholes -->
+        <div class="calc-card">
+          <div class="calc-card-header">
+            <span class="calc-icon">🌳</span>
+            <div>
+              <div class="calc-name">Black-Scholes / Real Options</div>
+              <div class="calc-formula">C = S·N(d₁) − K·e⁻ʳᵀ·N(d₂)</div>
+            </div>
+          </div>
+          <div class="calc-inputs">
+            <label>S (стоимость проекта) <input v-model.number="calc.bs.S" type="number" class="calc-input-num" /></label>
+            <label>K (инвестиция) <input v-model.number="calc.bs.K" type="number" class="calc-input-num" /></label>
+            <label>T (лет) <input v-model.number="calc.bs.T" type="number" step="0.5" class="calc-input-num" /></label>
+            <label>σ (%) <input v-model.number="calc.bs.sigma" type="range" min="5" max="100" class="calc-slider" /> <span>{{ calc.bs.sigma }}%</span></label>
+          </div>
+          <button class="btn-calc" @click="runCalc('blackscholes')" :disabled="calcLoading.blackscholes">
+            <i :class="calcLoading.blackscholes ? 'pi pi-spin pi-spinner' : 'pi pi-play'" /> Считать
+          </button>
+          <div v-if="calcResults.blackscholes" class="calc-result">
+            <div class="calc-result-main">Стоимость опциона: <strong>{{ calcResults.blackscholes.callValue }}</strong></div>
+            <div>P(исполнения): <strong>{{ calcResults.blackscholes.impliedProbability }}%</strong></div>
+            <div>Delta: {{ calcResults.blackscholes.delta }} | d1={{ calcResults.blackscholes.d1 }}</div>
+          </div>
+        </div>
+
+        <!-- Nash -->
+        <div class="calc-card">
+          <div class="calc-card-header">
+            <span class="calc-icon">♟️</span>
+            <div>
+              <div class="calc-name">Nash Equilibrium</div>
+              <div class="calc-formula">Стабильность ≥ 80% = Nash достигнут</div>
+            </div>
+          </div>
+          <div class="calc-inputs">
+            <div v-for="(val, key) in calc.nash.votes" :key="key" class="calc-signal-row">
+              <span class="calc-signal-label">{{ key }}</span>
+              <input v-model.number="calc.nash.votes[key]" type="range" min="0.01" max="0.99" step="0.01" class="calc-slider-sm" />
+              <span>{{ Math.round(calc.nash.votes[key] * 100) }}%</span>
+            </div>
+          </div>
+          <button class="btn-calc" @click="runCalc('nash')" :disabled="calcLoading.nash">
+            <i :class="calcLoading.nash ? 'pi pi-spin pi-spinner' : 'pi pi-play'" /> Считать
+          </button>
+          <div v-if="calcResults.nash" class="calc-result">
+            <div class="calc-result-main" :class="calcResults.nash.isNash ? 'good' : 'ok'">
+              Nash: {{ calcResults.nash.isNash ? '✓ Достигнут' : '✗ Не достигнут' }}
+            </div>
+            <div>Консенсус: {{ calcResults.nash.consensus }} ({{ calcResults.nash.majorityShare }}%)</div>
+            <div>Schelling point: {{ calcResults.nash.schellingPoint }}%</div>
+            <div v-if="calcResults.nash.unstableAgents.length">Нестабильны: {{ calcResults.nash.unstableAgents.join(', ') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit Trail Section -->
+      <div class="audit-section">
+        <h4>Аудит-след последних предсказаний агентов</h4>
+        <p class="audit-desc">Каждое предсказание включает реальный вызов калькулятора. Ниже — последние 10 с входными данными и результатами.</p>
+        <div v-if="!auditPredictions.length" class="no-data">Запустите агентов — здесь появится аудит-след</div>
+        <div v-for="p in auditPredictions" :key="p._id" class="audit-row">
+          <div class="audit-agent">
+            <span>{{ agentById(p.agentId)?.avatar }}</span>
+            <span>{{ agentById(p.agentId)?.shortName }}</span>
+          </div>
+          <div class="audit-market">{{ p.title }}</div>
+          <div class="audit-prediction">{{ p.probability }}% YES</div>
+          <div v-if="p.calcAudit" class="audit-calc">
+            <span class="audit-calc-name">{{ p.calcAudit.name }}</span>
+            <span class="audit-calc-summary">{{ p.calcAudit.summary }}</span>
+          </div>
+          <div v-else class="audit-no-calc">без калькулятора (старое предсказание)</div>
         </div>
       </div>
     </div>
-    </Teleport>
+
+    <!-- Tournament Dialog (PrimeVue) -->
+    <Dialog v-model:visible="showTournament" modal
+      :header="`Турнир агентов: ${selectedMarket?.title || ''}`"
+      :style="{ width: '700px', maxWidth: '95vw' }"
+      :closable="!tournamentRunning">
+
+      <!-- Pipeline: процесс работы агентов -->
+      <div v-if="tournamentRunning" style="display:flex;flex-direction:column;gap:0.5rem;">
+        <div v-for="a in agents" :key="a.id"
+          style="display:flex;flex-direction:column;gap:0.25rem;padding:0.5rem 0;border-bottom:1px solid var(--p-content-border-color)">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+            <span style="font-size:1.1rem">{{ a.avatar }}</span>
+            <span style="font-size:0.8rem;font-weight:600">{{ a.shortName || a.name.split(' ')[0] }}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.2rem;flex-wrap:wrap;">
+            <!-- Integram -->
+            <div :style="pipelineNodeStyle(a.id, 'integram', '#42a5f5')">
+              <span>🗄</span><span style="font-size:0.65rem">Integram</span>
+            </div>
+            <!-- Arrow 1: данные рынка -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:0;min-width:44px;">
+              <span style="font-size:0.55rem;color:var(--p-text-muted-color);white-space:nowrap">данные рынка</span>
+              <span style="color:var(--p-text-muted-color);font-size:1rem;line-height:1">──›</span>
+            </div>
+            <!-- Calculator -->
+            <div :style="pipelineNodeStyle(a.id, 'calc', '#ff9800')">
+              <i v-if="nodeState(a.id,'calc')==='active'" class="pi pi-spin pi-spinner" style="font-size:0.75rem" />
+              <span v-else>🧮</span>
+              <span style="font-size:0.65rem">{{ agentFlows[a.id]?.calcName || 'Calc' }}</span>
+            </div>
+            <!-- Arrow 2: числа/расчёты -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:0;min-width:44px;">
+              <span style="font-size:0.55rem;color:var(--p-text-muted-color);white-space:nowrap">расчёты</span>
+              <span style="color:var(--p-text-muted-color);font-size:1rem;line-height:1">──›</span>
+            </div>
+            <!-- LLM -->
+            <div :style="pipelineNodeStyle(a.id, 'llm', '#ab47bc')">
+              <i v-if="nodeState(a.id,'llm')==='active'" class="pi pi-spin pi-spinner" style="font-size:0.75rem" />
+              <span v-else>🤖</span>
+              <span style="font-size:0.65rem">
+                {{ agentFlows[a.id]?.probability ? agentFlows[a.id].probability + '%' : 'DeepSeek' }}
+              </span>
+            </div>
+            <!-- Arrow 3: предсказание -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:0;min-width:44px;">
+              <span style="font-size:0.55rem;color:var(--p-text-muted-color);white-space:nowrap">предсказание</span>
+              <span style="color:var(--p-text-muted-color);font-size:1rem;line-height:1">──›</span>
+            </div>
+            <!-- Save -->
+            <div :style="pipelineNodeStyle(a.id, 'save', '#66bb6a')">
+              <i v-if="nodeState(a.id,'save')==='active'" class="pi pi-spin pi-spinner" style="font-size:0.75rem" />
+              <span v-else>💾</span>
+              <span style="font-size:0.65rem">Integram</span>
+            </div>
+          </div>
+          <div v-if="agentFlows[a.id]?.calcSummary"
+            style="font-size:0.68rem;color:var(--p-text-muted-color);font-family:monospace;margin-top:0.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            {{ agentFlows[a.id].calcSummary }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Результаты турнира -->
+      <div v-else-if="tournamentResults.length" style="display:flex;flex-direction:column;gap:0.5rem;">
+        <div v-for="r in tournamentResults" :key="r.agent.id"
+          style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem;border-radius:8px;border:1px solid var(--p-content-border-color)">
+          <span style="font-size:1.2rem">{{ r.agent.avatar }}</span>
+          <span style="min-width:80px;font-size:0.82rem;font-weight:600;color:var(--p-text-color)">{{ r.agent.name }}</span>
+          <div style="flex:1;height:8px;background:var(--p-content-border-color);border-radius:4px;overflow:hidden">
+            <div :style="{ width: r.prediction.probability + '%', height:'100%', background: probColor(r.prediction.probability), transition:'width 0.5s' }" />
+          </div>
+          <span style="min-width:52px;font-weight:700;font-size:0.88rem" :style="{ color: probColor(r.prediction.probability) }">{{ r.prediction.probability }}% YES</span>
+          <span style="font-size:0.75rem;color:var(--p-text-muted-color)">conf:{{ r.prediction.confidence }}%</span>
+          <Button text size="small" :icon="expandedResult === r.agent.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+            @click="expandedResult = expandedResult === r.agent.id ? null : r.agent.id" />
+          <div v-if="r.prediction.calcAudit" style="width:100%;font-size:0.72rem;color:var(--p-text-muted-color);font-family:monospace;margin-top:0.25rem">
+            🧮 {{ r.prediction.calcAudit.name }}: {{ r.prediction.calcAudit.summary }}
+          </div>
+        </div>
+        <div v-if="expandedResult" style="padding:0.75rem;background:var(--p-content-background);border-radius:8px;font-size:0.82rem;color:var(--p-text-color)">
+          {{ tournamentResults.find(r => r.agent.id === expandedResult)?.prediction.reasoning }}
+        </div>
+        <!-- Агрегат -->
+        <div style="margin-top:0.5rem;padding:0.75rem;background:var(--p-content-background);border-radius:8px;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+          <div>
+            <div style="font-size:0.75rem;color:var(--p-text-muted-color)">Медиана</div>
+            <div style="font-size:1.4rem;font-weight:700" :style="{ color: probColor(medianPrediction) }">{{ medianPrediction }}% YES</div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem;color:var(--p-text-muted-color)">Разброс</div>
+            <div style="font-size:0.88rem">{{ spreadPrediction }}% — {{ spreadMax }}%</div>
+          </div>
+          <div v-if="nashResult">
+            <div style="font-size:0.75rem;color:var(--p-text-muted-color)">Nash</div>
+            <div style="font-size:0.82rem">{{ nashResult.isNash ? '✓ Достигнут' : '⚠ Нет консенсуса' }}</div>
+          </div>
+        </div>
+        <Button label="Сохранить все предсказания" icon="pi pi-database" @click="saveAllPredictions" style="margin-top:0.5rem" />
+      </div>
+
+      <!-- Кнопка запуска (footer slot) -->
+      <template v-if="!tournamentRunning && !tournamentResults.length" #footer>
+        <Button label="Запустить турнир агентов" icon="pi pi-bolt" @click="startTournament" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, nextTick } from 'vue'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
 import { AGENTS } from '@/components/fst-committee/FstCommitteeConfig.js'
 import {
   fetchManifoldMarkets, fetchMetaculusQuestions,
@@ -308,6 +551,75 @@ const historyAgent = ref('')
 const historyStatus = ref('')
 const historyCategory = ref('')
 
+// ── Pipeline animation state ───────────────────────────────────────────────────
+// agentFlows[agentId] = { integram, calc, llm, save: 'idle'|'active'|'done'|'error', calcName, calcSummary, probability }
+const agentFlows = ref({})
+
+function _setFlow(agentId, update) {
+  agentFlows.value = {
+    ...agentFlows.value,
+    [agentId]: { ...(agentFlows.value[agentId] || {}), ...update },
+  }
+}
+
+// ── Calculator Playground state ───────────────────────────────────────────────
+const calc = reactive({
+  bayesian: { prior: 30, signals: [
+    { label: 'Сильная команда', likelihood: 0.75 },
+    { label: 'PMF найден', likelihood: 0.65 },
+  ]},
+  dcf: { wacc: 25, flows: [100, 200, 350, 500, 750] },
+  kelly: { p: 60, b: 2.0 },
+  var: { sigma: 45, horizon: 5 },
+  bs: { S: 100, K: 120, T: 1.0, sigma: 50 },
+  nash: { votes: { monte_carlo: 0.70, bayesian: 0.55, market_timing: 0.40, risk: 0.30 } },
+})
+const calcResults = reactive({})
+const calcLoading = reactive({})
+
+async function runCalc(tool) {
+  calcLoading[tool] = true
+  try {
+    const body = _buildCalcBody(tool)
+    const res = await fetch(`/api/calc/${tool}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json()
+    if (data.ok) calcResults[tool] = data.result
+    // For DCF also run IRR
+    if (tool === 'dcf') {
+      const irrRes = await fetch('/api/calc/irr', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cashFlows: [-calc.dcf.flows[0] * 5, ...calc.dcf.flows] }),
+      })
+      const irrData = await irrRes.json()
+      if (irrData.ok) calcResults.irr = irrData.result
+    }
+  } finally {
+    calcLoading[tool] = false
+  }
+}
+
+function _buildCalcBody(tool) {
+  switch (tool) {
+    case 'bayesian':    return { prior: calc.bayesian.prior / 100, signals: calc.bayesian.signals }
+    case 'dcf':         return { cashFlows: calc.dcf.flows, wacc: calc.dcf.wacc / 100, terminalGrowth: 0.03 }
+    case 'kelly':       return { p: calc.kelly.p / 100, b: calc.kelly.b, fraction: 0.5 }
+    case 'var':         return { mu: 0.1, sigma: calc.var.sigma / 100, horizon: calc.var.horizon }
+    case 'blackscholes':return { S: calc.bs.S, K: calc.bs.K, T: calc.bs.T, r: 0.05, sigma: calc.bs.sigma / 100 }
+    case 'nash':        return { votes: calc.nash.votes }
+    default:            return {}
+  }
+}
+
+const auditPredictions = computed(() =>
+  allPredictions.value
+    .filter(p => p.calcAudit)
+    .slice(-10)
+    .reverse()
+)
+
 const loadingMarkets = ref(false)
 const loadingCrypto = ref(false)
 const predicting = ref(null)
@@ -324,6 +636,7 @@ const tabs = [
   { id: 'markets', label: 'Рынки предсказаний', icon: 'pi pi-chart-scatter' },
   { id: 'crypto', label: 'Крипто', icon: 'pi pi-bitcoin' },
   { id: 'history', label: 'История', icon: 'pi pi-history' },
+  { id: 'calculators', label: 'Калькуляторы', icon: 'pi pi-calculator' },
 ]
 
 const tabBadge = computed(() => ({
@@ -468,18 +781,42 @@ async function startTournament() {
   tournamentRunning.value = true
   tournamentResults.value = []
 
-  // Initialize pending state
-  for (const a of agents.value) tournamentDone.value[a.id] = 'pending'
+  // Reset pipeline state for all agents
+  const initialFlows = {}
+  for (const a of agents.value) {
+    initialFlows[a.id] = { integram: 'idle', calc: 'idle', llm: 'idle', save: 'idle', calcName: null, calcSummary: null, probability: null }
+    tournamentDone.value[a.id] = 'pending'
+  }
+  agentFlows.value = initialFlows
+
+  const onStep = async ({ stage, agentId: aid, calcName, calcSummary, probability }) => {
+    if (stage === 'integram') {
+      _setFlow(aid, { integram: 'done' })
+    } else if (stage === 'calc') {
+      _setFlow(aid, { calc: 'active' })
+    } else if (stage === 'calc_done') {
+      _setFlow(aid, { calc: 'done', ...(calcName && { calcName }), ...(calcSummary && { calcSummary }) })
+    } else if (stage === 'llm') {
+      _setFlow(aid, { llm: 'active' })
+    } else if (stage === 'done') {
+      _setFlow(aid, { llm: 'done', probability, save: 'active' })
+    } else if (stage === 'error') {
+      _setFlow(aid, { llm: 'error' })
+    }
+    await nextTick()
+  }
 
   try {
     for (const agent of agents.value) {
       const memory = allPredictions.value.filter(p => p.agentId === agent.id)
       const stats = agentStats.value[agent.id] || {}
       try {
-        const pred = await generatePrediction(agent.id, selectedMarket.value, memory, stats)
+        const pred = await generatePrediction(agent.id, selectedMarket.value, memory, stats, onStep)
+        _setFlow(agent.id, { save: 'done' })
         tournamentDone.value[agent.id] = pred
         tournamentResults.value.push({ agent, prediction: pred })
       } catch {
+        _setFlow(agent.id, { llm: 'error' })
         tournamentDone.value[agent.id] = { probability: '?' }
       }
       await new Promise(r => setTimeout(r, 200))
@@ -519,6 +856,15 @@ async function runCoinTournament(coin) {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function agentById(id) { return agents.value.find(a => a.id === id) }
+function nodeState(agentId, node) { return agentFlows.value[agentId]?.[node] || 'idle' }
+function pipelineNodeStyle(agentId, node, color) {
+  const state = nodeState(agentId, node)
+  const base = 'display:flex;flex-direction:column;align-items:center;gap:0.1rem;padding:0.3rem 0.45rem;border-radius:6px;min-width:52px;border:1px solid;transition:all 0.3s;font-size:0.9rem;'
+  if (state === 'done')   return base + `border-color:${color};background:${color}22;opacity:1;`
+  if (state === 'active') return base + `border-color:${color};background:${color}11;opacity:1;`
+  if (state === 'error')  return base + `border-color:#ef5350;background:#ef535011;opacity:1;`
+  return base + 'border-color:transparent;opacity:0.3;background:transparent;'
+}
 function brierClass(b) { if (!b) return ''; return b < 0.1 ? 'good' : b < 0.2 ? 'ok' : 'bad' }
 function skillClass(s) { if (s == null) return ''; return s > 30 ? 'good' : s > 0 ? 'ok' : 'bad' }
 function brierColor(b) { return b < 0.1 ? '#4caf50' : b < 0.2 ? '#ffa726' : '#ef5350' }
@@ -698,6 +1044,64 @@ h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
 .pred-status.wrong { color: #ef5350; }
 .no-data { text-align: center; padding: 2rem; color: var(--p-text-muted-color); }
 
+/* Calculators */
+.calc-intro { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; justify-content: space-between; }
+.calc-intro-text h3 { margin: 0 0 0.3rem; }
+.calc-intro-text p { margin: 0; font-size: 0.88rem; color: var(--p-text-muted-color); max-width: 600px; }
+.calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.calc-card {
+  background: var(--p-surface-card); border: 1px solid var(--p-surface-border);
+  border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;
+}
+.calc-card-header { display: flex; align-items: flex-start; gap: 0.75rem; }
+.calc-icon { font-size: 1.8rem; }
+.calc-name { font-weight: 700; font-size: 0.95rem; }
+.calc-formula { font-size: 0.75rem; color: var(--p-text-muted-color); font-family: monospace; }
+.calc-inputs { display: flex; flex-direction: column; gap: 0.5rem; }
+.calc-inputs label { font-size: 0.82rem; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.calc-slider { flex: 1; min-width: 80px; accent-color: var(--p-primary-color); }
+.calc-slider-sm { width: 80px; accent-color: var(--p-primary-color); }
+.calc-input-num { width: 70px; padding: 0.2rem 0.4rem; border: 1px solid var(--p-surface-border); border-radius: 0.3rem; background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.85rem; }
+.calc-input-num-sm { width: 55px; padding: 0.2rem; border: 1px solid var(--p-surface-border); border-radius: 0.3rem; background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.82rem; }
+.calc-input-text { flex: 1; padding: 0.2rem 0.4rem; border: 1px solid var(--p-surface-border); border-radius: 0.3rem; background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.82rem; }
+.calc-signals { display: flex; flex-direction: column; gap: 0.3rem; }
+.calc-signal-row { display: flex; align-items: center; gap: 0.5rem; }
+.calc-signal-label { font-size: 0.8rem; min-width: 80px; }
+.calc-flows { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.btn-calc {
+  padding: 0.45rem 1rem; border-radius: 0.4rem; border: none; cursor: pointer;
+  background: var(--p-primary-color); color: #fff; font-size: 0.85rem;
+  display: flex; align-items: center; gap: 0.4rem; align-self: flex-start;
+}
+.btn-calc:disabled { opacity: 0.6; cursor: wait; }
+.calc-result {
+  background: var(--p-surface-section, rgba(0,0,0,0.04)); border-radius: 0.5rem;
+  padding: 0.75rem; font-size: 0.82rem; display: flex; flex-direction: column; gap: 0.25rem;
+}
+.calc-result-main { font-size: 1rem; font-weight: 600; }
+.calc-step { color: var(--p-text-muted-color); }
+.calc-warn { color: #ffa726; font-weight: 600; }
+.good { color: #4caf50; }
+.ok  { color: #ffa726; }
+.bad { color: #ef5350; }
+
+/* Audit trail */
+.audit-section { margin-top: 2rem; }
+.audit-section h4 { margin: 0 0 0.3rem; font-size: 1rem; }
+.audit-desc { color: var(--p-text-muted-color); font-size: 0.85rem; margin: 0 0 1rem; }
+.audit-row {
+  display: grid; grid-template-columns: 80px 1fr 70px 1fr;
+  gap: 0.75rem; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--p-surface-border);
+  align-items: center; font-size: 0.82rem;
+}
+.audit-agent { display: flex; align-items: center; gap: 0.3rem; font-weight: 600; }
+.audit-market { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--p-text-muted-color); }
+.audit-prediction { font-weight: 700; }
+.audit-calc { display: flex; flex-direction: column; gap: 0.1rem; }
+.audit-calc-name { font-weight: 600; color: var(--p-primary-color); font-size: 0.78rem; }
+.audit-calc-summary { color: var(--p-text-muted-color); font-size: 0.75rem; }
+.audit-no-calc { color: var(--p-text-muted-color); font-style: italic; font-size: 0.78rem; }
+
 /* Modal */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000;
@@ -715,7 +1119,37 @@ h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
 .modal-header em { color: var(--p-text-muted-color); }
 .modal-body { padding: 1.25rem 1.5rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
 .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--p-surface-border); }
-.agent-progress-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0; font-size: 0.88rem; }
+/* ── Pipeline animation ── */
+.pipeline-progress { display: flex; flex-direction: column; gap: 0.5rem; }
+.pipeline-row { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.5rem 0; border-bottom: 1px solid var(--p-surface-border, rgba(0,0,0,0.08)); }
+.pipeline-agent { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.25rem; }
+.pa-avatar { font-size: 1.1rem; }
+.pa-name { font-size: 0.8rem; font-weight: 600; color: var(--p-text-color); }
+.pipeline-nodes { display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
+.pnode-arrow { color: var(--p-text-muted-color, #888); font-size: 1.1rem; padding: 0 0.1rem; }
+.pnode {
+  display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+  padding: 0.3rem 0.5rem; border-radius: 6px; min-width: 58px;
+  border: 1px solid transparent; font-size: 0.72rem; transition: all 0.3s;
+  background: var(--p-surface-section, rgba(0,0,0,0.04));
+  opacity: 0.4;
+}
+.pnode.done { opacity: 1; border-color: currentColor; }
+.pnode.active { opacity: 1; border-color: currentColor; animation: pulse-border 1s infinite; }
+.pnode.error { opacity: 1; }
+.pnode-icon { font-size: 1rem; line-height: 1; }
+.pnode-lbl { font-size: 0.68rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
+.pnode-integram.done  { color: #42a5f5; background: rgba(66,165,245,0.12); }
+.pnode-integram.active { color: #42a5f5; background: rgba(66,165,245,0.08); }
+.pnode-calc.done  { color: #ff9800; background: rgba(255,152,0,0.12); }
+.pnode-calc.active { color: #ff9800; background: rgba(255,152,0,0.08); }
+.pnode-llm.done  { color: #ab47bc; background: rgba(171,71,188,0.12); }
+.pnode-llm.active { color: #ab47bc; background: rgba(171,71,188,0.08); }
+.pnode-llm.error  { color: #ef5350; background: rgba(239,83,80,0.1); }
+.pnode-save.done  { color: #66bb6a; background: rgba(102,187,106,0.12); }
+.pnode-save.active { color: #66bb6a; background: rgba(102,187,106,0.08); }
+.pipeline-calc-detail { font-size: 0.68rem; color: var(--p-text-muted-color, #888); padding: 0.15rem 0.25rem; font-family: monospace; background: var(--p-surface-ground); border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes pulse-border { 0%,100% { box-shadow: 0 0 0 0 currentColor; } 50% { box-shadow: 0 0 0 3px transparent; } }
 .result-row {
   display: flex; align-items: center; gap: 0.75rem;
   padding: 0.5rem; border-radius: 0.5rem; border: 1px solid var(--p-surface-border);

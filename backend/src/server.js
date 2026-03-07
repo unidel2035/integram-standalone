@@ -24,6 +24,7 @@ import applicationsRoutes from './api/routes/applications.js'
 import webhooksRoutes from './api/routes/webhooks.js'
 import glossaryRoutes from './api/routes/glossary.js'
 import { authenticateApiToken, validateWebhookSecret } from './api/middleware/auth.js'
+import { startAgentSchoolTrainer } from './schedulers/agentSchoolTrainer.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -117,6 +118,9 @@ app.listen(PORT, () => {
   console.log(`[FST API] Server running on port ${PORT}`)
   console.log(`[FST API] Documentation: http://localhost:${PORT}/api/fst/docs`)
   console.log(`[FST API] Health check: http://localhost:${PORT}/api/fst/health`)
+
+  // Start autonomous agent training
+  startAgentSchoolTrainer()
 })
 
 export default app

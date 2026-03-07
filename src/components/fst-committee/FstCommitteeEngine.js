@@ -169,7 +169,7 @@ export function createSession(project, options = {}) {
     revisionProgress: 0,        // 0..1 during REVISION phase
     revisionStep: '',
     revisedProject: null,       // project after applying recs
-    agentStatus: Object.fromEntries(AGENTS.map(a => [a.id, { thinking: false, done: false, thinkText: '' }])),
+    agentStatus: Object.fromEntries(AGENTS.map(a => [a.id, { thinking: false, done: false, thinkText: '', pipeline: { integram: 'idle', calc: 'idle', llm: 'idle', save: 'idle' } }])),
     dimScores: computeDimScores(project),
     agentScores: [],
     events: [],
@@ -750,6 +750,9 @@ export class FstCommitteeEngine {
     const project  = this.session.project
     const useAI    = this.session.useAI !== false  // default: true
 
+    // ── Pipeline Step 1: Integram — читаем данные проекта ──────────────────────
+    this._setPipeline(agent.id, { integram: 'done', calc: 'active' })
+
     // ── Thinking: показываем анимацию пока идёт LLM-вызов ──
     this._setAgentStatus(agent.id, { thinking: true, thinkText: pick(agent.thinkingPhrases) })
 
@@ -768,6 +771,9 @@ export class FstCommitteeEngine {
     }
 
     let arg = null
+
+    // ── Pipeline Step 2: LLM ─────────────────────────────────────────────────
+    this._setPipeline(agent.id, { calc: 'done', llm: 'active' })
 
     // ── AI-first: реальный LLM-вызов ──
     if (useAI) {
@@ -789,14 +795,17 @@ export class FstCommitteeEngine {
     }
 
     if (thinkInterval) clearInterval(thinkInterval)
+    // ── Pipeline Step 3: Сохраняем аргумент ──────────────────────────────────
+    this._setPipeline(agent.id, { llm: 'done', save: 'active' })
     this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
 
-    if (!arg) return null
+    if (!arg) { this._setPipeline(agent.id, { save: 'error' }); return null }
 
     // ── Аннотируем онтологическими метаданными ──
     const annotated = annotateArg(arg, this.session.arguments)
 
     this.session.arguments.push(annotated)
+    this._setPipeline(agent.id, { save: 'done' })
     this.emit('ArgumentRaised', {
       argument:    annotated,
       agentId:     agent.id,
@@ -821,6 +830,11 @@ export class FstCommitteeEngine {
       ...update,
     }
     this.emit('AgentStatusChanged', { agentId, status: this.session.agentStatus[agentId] })
+  }
+
+  _setPipeline(agentId, pipelineUpdate) {
+    const current = this.session.agentStatus[agentId]?.pipeline || {}
+    this._setAgentStatus(agentId, { pipeline: { ...current, ...pipelineUpdate } })
   }
 
   _buildVoteRationale(agent, score, verdict) {

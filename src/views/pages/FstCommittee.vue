@@ -161,6 +161,24 @@
                 <div v-else-if="agentStatus(agent.id).done" class="fst-agent-ready">
                   <i class="pi pi-check" style="color:#4caf50;font-size:10px"></i> Готов
                 </div>
+                <!-- Pipeline nodes -->
+                <div v-if="agentStatus(agent.id).thinking || agentStatus(agent.id).done" class="fst-agent-pipeline">
+                  <span :class="['fst-pnode', agentStatus(agent.id).pipeline?.integram || 'idle']"
+                    :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.integram, '#42a5f5')"
+                    title="Integram: данные проекта">🗄</span>
+                  <span class="fst-parrow" title="данные проекта">──›</span>
+                  <span :class="['fst-pnode', agentStatus(agent.id).pipeline?.calc || 'idle']"
+                    :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.calc, '#ff9800')"
+                    title="Фреймворк агента">🧮</span>
+                  <span class="fst-parrow" title="расчёты">──›</span>
+                  <span :class="['fst-pnode', agentStatus(agent.id).pipeline?.llm || 'idle']"
+                    :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.llm, '#ab47bc')"
+                    title="DeepSeek LLM">🤖</span>
+                  <span class="fst-parrow" title="аргумент">──›</span>
+                  <span :class="['fst-pnode', agentStatus(agent.id).pipeline?.save || 'idle']"
+                    :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.save, '#66bb6a')"
+                    title="Сохранить в Integram">💾</span>
+                </div>
               </div>
               <div class="fst-agent-weight">{{ Math.round(agent.weight * 100) }}%</div>
             </div>
@@ -233,90 +251,9 @@
           <!-- Links Graph Panel -->
           <LinksGraphViz v-if="debateTab === 'links'" class="fst-graph-panel" />
 
-          <div v-show="debateTab === 'timeline'" class="fst-timeline" ref="timelineEl">
-            <!-- Loading phase -->
-            <div v-if="session.phase === 'LOADING'" class="fst-loading-phase">
-              <div class="fst-loading-title">
-                <i class="pi pi-file-search"></i> Агенты изучают документацию...
-              </div>
-              <div v-for="agent in AGENTS" :key="agent.id" class="fst-loading-agent">
-                <span class="fst-la-avatar">{{ agent.avatar }}</span>
-                <div class="fst-la-bar-wrap">
-                  <div class="fst-la-name">{{ agent.shortName }}</div>
-                  <div class="fst-la-bar">
-                    <div class="fst-la-bar-fill"
-                      :style="{ background: agent.color, width: agentStatus(agent.id).done ? '100%' : agentStatus(agent.id).thinking ? '65%' : '0%' }"></div>
-                  </div>
-                </div>
-                <div class="fst-la-status">
-                  <i v-if="agentStatus(agent.id).done" class="pi pi-check" style="color:#4caf50"></i>
-                  <i v-else-if="agentStatus(agent.id).thinking" class="pi pi-spin pi-spinner" style="color:#42a5f5"></i>
-                  <i v-else class="pi pi-clock" style="color:#78909c"></i>
-                </div>
-              </div>
-            </div>
-
-            <!-- Arguments stream -->
-            <TransitionGroup name="fst-arg" tag="div" class="fst-args-stream">
-              <div v-for="arg in session.arguments" :key="arg.id"
-                :class="['fst-argument', `fst-arg-type--${arg.type.toLowerCase()}`,
-                  arg.targetArgId ? 'fst-argument--counter' : '']">
-                <div class="fst-arg-header">
-                  <span class="fst-arg-avatar">{{ agentById(arg.agentId)?.avatar }}</span>
-                  <span class="fst-arg-agent-name" :style="{ color: agentById(arg.agentId)?.color }">
-                    {{ agentById(arg.agentId)?.name }}
-                  </span>
-                  <span class="fst-arg-type-badge">{{ argTypeLabel(arg.type) }}</span>
-                  <span class="fst-arg-dim">{{ arg.dimension }}</span>
-                  <span v-if="arg.aiGenerated" class="fst-arg-ai-badge"
-                    :title="arg.model ? `Модель: ${arg.model}` : 'Сгенерировано реальным AI'">
-                    <i class="pi pi-bolt"></i> {{ arg.model ? arg.model.split('/').pop() : 'AI' }}
-                  </span>
-                  <span v-else class="fst-arg-tpl-badge" title="Шаблонный аргумент">
-                    <i class="pi pi-server"></i>
-                  </span>
-                </div>
-                <!-- Reply-to quote -->
-                <div v-if="arg.targetArgId" class="fst-arg-reply">
-                  <span class="fst-arg-reply-arrow">↩</span>
-                  <span class="fst-arg-reply-who"
-                    :style="{ color: agentById(session.arguments.find(a => a.id === arg.targetArgId)?.agentId)?.color }">
-                    {{ agentById(session.arguments.find(a => a.id === arg.targetArgId)?.agentId)?.shortName || '?' }}:
-                  </span>
-                  <span class="fst-arg-reply-text">
-                    {{ (session.arguments.find(a => a.id === arg.targetArgId)?.text || '').slice(0, 90) }}{{ (session.arguments.find(a => a.id === arg.targetArgId)?.text || '').length > 90 ? '…' : '' }}
-                  </span>
-                </div>
-                <div class="fst-arg-text">{{ arg.text }}</div>
-              </div>
-            </TransitionGroup>
-
-            <!-- Voting in progress -->
-            <div v-if="session.phase === 'VOTING' && session.votes.length > 0" class="fst-vote-stream">
-              <div class="fst-vote-title"><i class="pi pi-check-square"></i> Голосование агентов</div>
-              <TransitionGroup name="fst-arg" tag="div">
-                <div v-for="vote in session.votes" :key="vote.id" class="fst-vote-row">
-                  <span class="fst-vote-avatar">{{ agentById(vote.agentId)?.avatar }}</span>
-                  <span class="fst-vote-name" :style="{ color: agentById(vote.agentId)?.color }">
-                    {{ agentById(vote.agentId)?.shortName }}
-                  </span>
-                  <span class="fst-vote-pill-sm" :style="{ background: VERDICTS[vote.verdict]?.color }">
-                    {{ VERDICTS[vote.verdict]?.label }}
-                  </span>
-                  <span class="fst-vote-score">{{ vote.score }}/100</span>
-                  <div class="fst-vote-conf-bar">
-                    <div :style="{ width: (vote.confidence * 100) + '%', background: agentById(vote.agentId)?.color }"></div>
-                  </div>
-                </div>
-              </TransitionGroup>
-            </div>
-
-            <!-- Empty state -->
-            <div v-if="session.phase === 'IDLE'" class="fst-empty-state">
-              <i class="pi pi-comments" style="font-size:40px;color:#444;margin-bottom:12px"></i>
-              <div>Сессия готова. Запуск...</div>
-            </div>
-          </div><!-- /fst-timeline -->
+          <DebateTimeline v-if="debateTab === 'timeline'"
+            :session="session" :running="running"
+            class="fst-graph-panel" />
         </div><!-- /fst-debate-panel -->
 
         <!-- Right: Scoring + Decision -->
@@ -756,6 +693,7 @@ import { saveDecision, createProject, saveCommitteeSession, authenticate, STATUS
 import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-committee/fstCommitteeAI.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
+import DebateTimeline from '@/components/fst-committee/DebateTimeline.vue'
 import ScenarioNodesPanel from '@/components/fst-committee/ScenarioNodesPanel.vue'
 import LinksGraphViz from '@/components/links/LinksGraphViz.vue'
 import { useFstData } from '@/composables/useFstData.js'
@@ -941,6 +879,13 @@ function agentStatus(agentId) {
   return session.value?.agentStatus?.[agentId] || {}
 }
 
+function fstPipeNodeStyle(state, color) {
+  if (state === 'done')   return { borderColor: color, background: color + '22', opacity: 1 }
+  if (state === 'active') return { borderColor: color, background: color + '11', opacity: 1, animation: 'fst-pulse 1s infinite' }
+  if (state === 'error')  return { borderColor: '#ef5350', background: '#ef535011', opacity: 1 }
+  return {}
+}
+
 function argTypeLabel(type) {
   const labels = { OPENING: 'Позиция', CHALLENGE: 'Вызов', COUNTER: 'Контр', SUMMARY: 'Итог' }
   return labels[type] || type
@@ -1081,6 +1026,12 @@ function handleEvent(event) {
     session.value.nodeProposals = s.nodeProposals
     session.value.contractNodes = s.contractNodes
     session.value.nodeVotes = s.nodeVotes
+    // Явно синхронизируем массивы + tick для гарантированной реактивности графа
+    session.value.events    = s.events
+    session.value.arguments = s.arguments
+    session.value.votes     = s.votes
+    session.value.dimScores = s.dimScores
+    session.value._tick     = (session.value._tick || 0) + 1
   }
 
   if (event.type === 'PortfolioOverlapDetected') {
@@ -1877,6 +1828,21 @@ onUnmounted(() => {
   align-items: center;
   gap: 4px;
 }
+.fst-agent-pipeline {
+  display: flex; align-items: center; gap: 2px; margin-top: 4px; flex-wrap: wrap;
+}
+.fst-pnode {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 4px; font-size: 0.7rem;
+  border: 1px solid transparent; opacity: 0.3; transition: all 0.3s; cursor: default;
+}
+.fst-pnode.done, .fst-pnode.active { opacity: 1; }
+.fst-pnode.error { border-color: #ef5350 !important; background: #ef535011 !important; opacity: 1; }
+.fst-parrow {
+  font-size: 0.6rem; color: var(--p-text-muted-color); opacity: 0.6;
+  white-space: nowrap; user-select: none; letter-spacing: -1px;
+}
+@keyframes fst-pulse { 0%,100% { box-shadow: 0 0 0 0 currentColor; } 50% { box-shadow: 0 0 4px 1px currentColor; } }
 .fst-agent-ready {
   font-size: 10px;
   color: #4caf50;
@@ -1925,6 +1891,7 @@ onUnmounted(() => {
 }
 .fst-timeline {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 12px;
   scroll-behavior: smooth;
