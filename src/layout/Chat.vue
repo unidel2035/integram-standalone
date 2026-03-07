@@ -239,25 +239,17 @@
             </DynamicScroller>
 
             <!-- Telegram-style selection action bar -->
-            <Transition name="selection-bar">
-              <div v-if="selectedMsgIds.length > 0" class="selection-action-bar">
-                <span class="selection-count">{{ selectedMsgIds.length }} сообщ.</span>
-                <div class="selection-bar-actions">
-                  <Button
-                    icon="pi pi-copy"
-                    label="Копировать"
-                    class="p-button-sm p-button-text"
-                    @click="copySelectedMessages"
-                  />
-                  <Button
-                    icon="pi pi-times"
-                    class="p-button-sm p-button-text p-button-secondary"
-                    title="Снять выделение"
-                    @click="clearSelection"
-                  />
-                </div>
+            <div v-if="selectedMsgIds.length > 0" class="selection-action-bar">
+              <span class="selection-count"><i class="pi pi-check-square"></i> {{ selectedMsgIds.length }} выбрано</span>
+              <div class="selection-bar-actions">
+                <button class="sel-btn sel-btn-copy" @click="copySelectedMessages">
+                  <i class="pi pi-copy"></i> Копировать
+                </button>
+                <button class="sel-btn sel-btn-close" @click="clearSelection" title="Снять выделение">
+                  <i class="pi pi-times"></i>
+                </button>
               </div>
-            </Transition>
+            </div>
 
             <!-- Issue #6832: Context bar — shows active document/table context chips -->
             <ContextBar
@@ -2934,8 +2926,32 @@ onUnmounted(() => {
   .selection-bar-actions {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
   }
+}
+
+.sel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.sel-btn-copy {
+  background: var(--primary-color, #0ea5e9);
+  color: #fff;
+  &:hover { opacity: 0.9; }
+}
+.sel-btn-close {
+  background: var(--surface-hover, #f1f5f9);
+  color: var(--text-color, #333);
+  padding: 0.4rem 0.6rem;
+  &:hover { background: var(--surface-200, #e2e8f0); }
 }
 
 .selection-bar-enter-active,
@@ -2948,17 +2964,9 @@ onUnmounted(() => {
   transform: translateY(4px);
 }
 
-// Action buttons: hidden by default, visible on bubble hover/focus (both sidebar & modal)
+// Action buttons: always visible
 .message-actions .action-buttons,
 .modal-message-actions .modal-action-buttons {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.message-content:hover .message-actions .action-buttons,
-.message-content:focus-within .message-actions .action-buttons,
-.modal-message-content:hover .modal-message-actions .modal-action-buttons,
-.modal-message-content:focus-within .modal-message-actions .modal-action-buttons {
   opacity: 1;
 }
 

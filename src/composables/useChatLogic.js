@@ -3832,7 +3832,22 @@ AI-помощник по продажам активирован! Полный �
   // ==================== Message Actions ====================
 
   const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text)
+    if (!text) return
+    const doFallback = () => {
+      const el = document.createElement('textarea')
+      el.value = text
+      el.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none'
+      document.body.appendChild(el)
+      el.focus()
+      el.select()
+      try { document.execCommand('copy') } catch (_) {}
+      document.body.removeChild(el)
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).catch(doFallback)
+    } else {
+      doFallback()
+    }
   }
 
   const editMessage = (index) => {
