@@ -369,6 +369,7 @@ const logout = () => {
   // Clear session-related data
   localStorage.removeItem('integram_session')
   localStorage.removeItem('unified_auth_session_id')
+  localStorage.removeItem('is_admin')
 
   // Clear user photo cache (Issue #5139)
   const userId = localStorage.getItem('id')
@@ -379,8 +380,7 @@ const logout = () => {
 
   op.value.hide()
 
-  // Issue #3730: Redirect to main page instead of login page
-  router.push('/')
+  router.push('/login')
 }
 
 defineExpose({

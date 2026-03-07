@@ -18,12 +18,15 @@ watch(() => props.searchQuery, (newQuery) => {
   searchDebounceTimer = setTimeout(() => { debouncedSearchQuery.value = newQuery || '' }, delay)
 }, { flush: 'post' })
 
-const isAdmin = localStorage.getItem('is_admin') === 'true'
+const isAdmin = ref(localStorage.getItem('is_admin') === 'true')
+window.addEventListener('storage', (e) => {
+  if (e.key === 'is_admin') isAdmin.value = e.newValue === 'true'
+})
 
 const model = computed(() =>
   fstMenuConfig
-    .filter(s => !s.adminOnly || isAdmin)
-    .map(s => ({ ...s, items: (s.items || []).filter(i => !i.adminOnly || isAdmin) }))
+    .filter(s => !s.adminOnly || isAdmin.value)
+    .map(s => ({ ...s, items: (s.items || []).filter(i => !i.adminOnly || isAdmin.value) }))
 )
 
 const filteredModel = computed(() => {

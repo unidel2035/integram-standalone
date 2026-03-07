@@ -1,6 +1,13 @@
 // FST Platform — меню навигации
 export const fstMenuConfig = [
   {
+    label: 'Администрирование',
+    adminOnly: true,
+    items: [
+      { label: 'Урок для команды', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide', adminOnly: true },
+    ]
+  },
+  {
     label: 'Обзор',
     items: [
       { label: 'Главная', icon: 'pi pi-home', to: '/fst-hub' },
@@ -54,11 +61,4 @@ export const fstMenuConfig = [
       { label: 'Форма заявки', icon: 'pi pi-send', to: '/fst-apply' },
     ]
   },
-  {
-    label: 'Администрирование',
-    adminOnly: true,
-    items: [
-      { label: 'Урок для команды', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide', adminOnly: true },
-    ]
-  }
 ]
