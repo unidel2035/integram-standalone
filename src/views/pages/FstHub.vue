@@ -342,6 +342,18 @@ const modules = [
     tags: ['AI-отчёт', 'Аналитика', 'Риски', 'Прогноз', 'Разведка'],
   },
   {
+    id: 'allocation',
+    name: 'Оптимизация аллокации',
+    phase: 'Фаза 5 — Фонд-индекс',
+    icon: 'pi pi-chart-pie',
+    color: '#ab47bc',
+    path: '/fst-allocation',
+    featured: true,
+    status: 'live',
+    desc: 'Black-Litterman оптимизация распределения NAV между субфондами. Граница эффективности, матрица корреляций, стресс-тесты, концентрация рисков. Аналог BlackRock Aladdin.',
+    tags: ['Black-Litterman', 'Оптимизация', 'Риск', 'NAV', 'Sharpe'],
+  },
+  {
     id: 'fund',
     name: 'Цифровой двойник фонда',
     phase: 'Фаза 5 — Фонд-индекс',
