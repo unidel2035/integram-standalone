@@ -70,7 +70,7 @@
               <div class="message"
                 :class="{ 'user-message': msg.isUser }" data-testid="message-item" :data-message-id="index">
                 <div class="message-content" v-if="!isSystemMessage(msg)"
-                  :class="{ 'message-selected': selectedMessages.has(index) }"
+                  :class="{ 'message-selected': isSelected(index) }"
                   @click="toggleMessageSelection(index, msg)">
                   <div v-if="msg.attachments && msg.attachments.length > 0" class="attachment-info">
                     <div v-for="(attachment, attIndex) in msg.attachments" :key="attIndex" class="attachment-item">
@@ -240,8 +240,8 @@
 
             <!-- Telegram-style selection action bar -->
             <Transition name="selection-bar">
-              <div v-if="selectedMessages.size > 0" class="selection-action-bar">
-                <span class="selection-count">{{ selectedMessages.size }} сообщ.</span>
+              <div v-if="selectedMsgIds.length > 0" class="selection-action-bar">
+                <span class="selection-count">{{ selectedMsgIds.length }} сообщ.</span>
                 <div class="selection-bar-actions">
                   <Button
                     icon="pi pi-copy"
@@ -1827,24 +1827,25 @@ const contextBarColor = computed(() => {
 })
 
 // Telegram-style message selection
-const selectedMessages = ref(new Set())
+const selectedMsgIds = ref([])
+function isSelected(index) {
+  return selectedMsgIds.value.includes(index)
+}
 function toggleMessageSelection(index, msg) {
-  if (msg.isUser && !msg.text && !msg.displayText) return
-  const next = new Set(selectedMessages.value)
-  if (next.has(index)) next.delete(index)
-  else next.add(index)
-  selectedMessages.value = next
+  const i = selectedMsgIds.value.indexOf(index)
+  if (i >= 0) selectedMsgIds.value.splice(i, 1)
+  else selectedMsgIds.value.push(index)
 }
 function clearSelection() {
-  selectedMessages.value = new Set()
+  selectedMsgIds.value = []
 }
 function copySelectedMessages() {
-  const texts = []
-  for (const idx of [...selectedMessages.value].sort((a, b) => a - b)) {
+  const sorted = [...selectedMsgIds.value].sort((a, b) => a - b)
+  const texts = sorted.map(idx => {
     const msg = aiChatMessagesWithIds.value[idx]
-    if (msg) texts.push(msg.displayText || msg.text || '')
-  }
-  copyToClipboard(texts.join('\n\n'))
+    return msg ? (msg.displayText || msg.text || '') : ''
+  }).filter(Boolean)
+  if (texts.length) copyToClipboard(texts.join('\n\n'))
   clearSelection()
 }
 
@@ -2450,7 +2451,7 @@ const onExecutionError = (exec) => {
 // ========== Lifecycle Hooks ==========
 
 function onKeydownSelection(e) {
-  if (e.key === 'Escape' && selectedMessages.value.size > 0) clearSelection()
+  if (e.key === 'Escape' && selectedMsgIds.value.length > 0) clearSelection()
 }
 
 onMounted(() => {
