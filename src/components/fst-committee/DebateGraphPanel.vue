@@ -320,15 +320,21 @@ function stanceLabel(s) {
 /* Popup */
 .dgp-popup {
   position: absolute;
-  background: var(--p-surface-card);
+  background: var(--p-surface-overlay, #1e2535);
+  background-color: var(--p-surface-overlay, #1e2535);
   border: 1px solid var(--p-surface-border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  width: 260px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  z-index: 10;
+  border-radius: 10px;
+  padding: 12px 14px;
+  width: 280px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  z-index: 100;
   pointer-events: all;
+  backdrop-filter: none;
+  isolation: isolate;
 }
+/* Force opaque in both light and dark themes */
+:root .dgp-popup { background-color: var(--p-content-background, #ffffff); }
+.p-dark .dgp-popup, [data-p-theme="dark"] .dgp-popup { background-color: #1a2035; }
 
 .dgp-popup-header {
   display: flex;
