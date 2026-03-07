@@ -18,7 +18,7 @@ export default defineConfig({
   },
   server: {
     port: 5174,
-    allowedHosts: ['fst.drondoc.ru', 'localhost'],
+    allowedHosts: ['fst.drondoc.ru', 'localhost', '173.249.2.184', 'all'],
     proxy: {
       '/fst-api': {
         target: 'https://ai2o.ru',

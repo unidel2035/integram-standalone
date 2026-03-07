@@ -215,9 +215,9 @@ const heroStats = computed(() => {
     // Default skeleton/loading state
     return [
       { val: '...', label: 'Среднее время решения' },
-      { val: '...', label: 'AI-агентов ИК' },
-      { val: '...', label: 'Прозрачность' },
-      { val: '...', label: 'Суверенность' },
+      { val: '...', label: 'Субфондов' },
+      { val: '...', label: 'Закрытых сделок' },
+      { val: '...', label: 'Портфельных компаний' },
     ]
   }
 
