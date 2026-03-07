@@ -425,6 +425,18 @@ const modules = [
     desc: 'Публичная демонстрация прозрачности по стандарту Santiago Principles® (IFSWF): структура фонда, стратегия, команда, ESG и compliance, investor data room для потенциальных LP.',
     tags: ['Santiago Principles', 'LP Relations', 'Прозрачность', 'ESG', 'Compliance', 'Data Room'],
   },
+  {
+    id: 'administration',
+    name: 'Бэк-офис фонда',
+    phase: 'Фаза 5 — Fund Operations',
+    icon: 'pi pi-building',
+    color: '#7c3aed',
+    path: '/fst-administration',
+    featured: true,
+    status: 'live',
+    desc: 'Управленческий учёт и соответствие ФСБУ 4/2023: Management Fee & Carry, расходы фонда, расчёт NAV, банковские операции, аудиторская поддержка, финансовая отчётность.',
+    tags: ['ФСБУ 4/2023', 'Management Fee', 'NAV', 'Аудит', 'Back Office', 'Accounting'],
+  },
 ]
 
 const tools = [
