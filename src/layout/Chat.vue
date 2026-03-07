@@ -71,7 +71,7 @@
                 :class="{ 'user-message': msg.isUser }" data-testid="message-item" :data-message-id="index">
                 <div class="message-content" v-if="!isSystemMessage(msg)"
                   :class="{ 'message-selected': selectedMessages.has(index) }"
-                  @click.self="toggleMessageSelection(index, msg)">
+                  @click="toggleMessageSelection(index, msg)">
                   <div v-if="msg.attachments && msg.attachments.length > 0" class="attachment-info">
                     <div v-for="(attachment, attIndex) in msg.attachments" :key="attIndex" class="attachment-item">
                       <img v-if="isImage(attachment)" :src="attachment.url" class="image-preview" 
@@ -188,7 +188,7 @@
                     </button>
                   </div>
 
-                  <div class="message-actions">
+                  <div class="message-actions" @click.stop>
                     <div class="message-time">{{ msg.time }}</div>
                     <span v-if="!msg.isUser && msg.outputTokens" class="msg-tokens"
                       :title="`Вход: ${msg.inputTokens}т. Выход: ${msg.outputTokens}т.`">
