@@ -199,3 +199,14 @@ https://github.com/unidel2035/found/issues — 47+ задач с приорит�
 - #38 Нацпроект БАС tracker
 - #41 AI-ускоренный due diligence
 - #45 Реестр БПЛА (Постановление №1726)
+
+---
+
+Issue to solve: https://github.com/unidel2035/found/issues/26
+Your prepared branch: issue-26-11145280476b
+Your prepared working directory: /tmp/gh-issue-solver-1772845772883
+
+Proceed.
+
+
+Run timestamp: 2026-03-07T01:09:37.114Z
