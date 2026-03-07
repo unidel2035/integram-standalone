@@ -15,7 +15,7 @@ import { getCurrentUserId } from '@/services/aiTokenService.js'
 const API_BASE = ''  // всегда относительный URL → Vite proxy → порт 8082
 const COMMITTEE_MODEL = 'deepseek-chat'       // надёжная модель, поддерживает несколько запросов
 const CONTEXT_ARGS = 6                        // аргументов в контексте
-const TIMEOUT_MS   = 25_000                   // таймаут LLM-вызова
+const TIMEOUT_MS   = 60_000                   // таймаут LLM-вызова (deepseek через polza ~30-50с)
 
 // ── KAG: поиск прошлых решений ИК ─────────────────────────────────────────────
 
