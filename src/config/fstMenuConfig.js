@@ -53,5 +53,12 @@ export const fstMenuConfig = [
     items: [
       { label: 'Форма заявки', icon: 'pi pi-send', to: '/fst-apply' },
     ]
+  },
+  {
+    label: 'Администрирование',
+    adminOnly: true,
+    items: [
+      { label: 'Урок для команды', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide', adminOnly: true },
+    ]
   }
 ]
