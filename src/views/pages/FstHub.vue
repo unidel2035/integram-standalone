@@ -303,20 +303,28 @@ const kpis = computed(() => {
 
 // ── Funnel ─────────────────────────────────────────────────────────────────
 const FUNNEL_STAGES = [
-  { status: 'Новые заявки',       match: ['Новый'],                   color: '#38bdf8' },
-  { status: 'На рассмотрении ИК', match: ['На рассмотрении ИК'],      color: '#a78bfa' },
-  { status: 'Одобрены',           match: ['Одобрен'],                  color: '#34d399' },
-  { status: 'В работе',           match: ['В работе'],                 color: '#ffa726' },
-  { status: 'Закрыты',            match: ['Закрыт'],                   color: '#ef5350' },
+  { status: 'Новые заявки',       names: ['Новый'],                color: '#38bdf8' },
+  { status: 'На рассмотрении ИК', names: ['На рассмотрении ИК'],   color: '#a78bfa' },
+  { status: 'Одобрены',           names: ['Одобрен'],               color: '#34d399' },
+  { status: 'В работе',           names: ['В работе'],              color: '#ffa726' },
+  { status: 'Закрыты',            names: ['Закрыт'],                color: '#ef5350' },
 ]
 
+function matchStatus(statusId, names) {
+  if (!statusId) return false
+  const s = String(statusId)
+  return names.some(n =>
+    s === n ||                              // display name
+    s === String(STATUSES[n]) ||            // numeric id as string
+    s.endsWith(':' + String(STATUSES[n]))   // "1088:1115" format
+  )
+}
+
 const funnel = computed(() => {
-  return FUNNEL_STAGES.map(s => {
-    const count = projects.value.filter(p =>
-      s.match.some(m => String(p.statusId) === String(STATUSES[m]) || p.statusName === m)
-    ).length
-    return { ...s, count }
-  })
+  return FUNNEL_STAGES.map(s => ({
+    ...s,
+    count: projects.value.filter(p => matchStatus(p.statusId, s.names)).length,
+  }))
 })
 
 const totalProjects = computed(() => projects.value.length)

@@ -356,22 +356,27 @@ export async function getCommitteeSessions() {
   const reqs = data.reqs || {}
 
   return objects.map(obj => {
+    const r = reqs[obj.id] || {}
     let protocol = null
     try {
-      const jsonStr = reqs[obj.id]?.['1162'] || '{}'
-      protocol = JSON.parse(jsonStr)
+      protocol = JSON.parse(r['1162'] || '{}')
     } catch (e) {
       console.warn(`Failed to parse protocol for decision ${obj.id}:`, e)
     }
 
     return {
-      id: obj.id,
-      name: obj.val,
-      votesAgainst: Number(reqs[obj.id]?.['1161'] || 0),
-      protocol: protocol,
-      meetingDate: reqs[obj.id]?.['1163'] || null,
-      projectId: reqs[obj.id]?.['1185'] || null,
-      decisionId: reqs[obj.id]?.['1187'] || null
+      id:             obj.id,
+      name:           obj.val,
+      votesAgainst:   Number(r['1161'] || 0),
+      protocol:       protocol,
+      date:           r['1163'] || null,
+      meetingDate:    r['1163'] || null,
+      projectId:      r['1185'] || null,
+      decisionId:     r['1187'] || null,
+      // Вынесено наверх для удобства
+      projectName:    protocol?.project?.title || protocol?.projectId || obj.val,
+      recommendation: protocol?.decision?.recommendation || null,
+      aggregatedScore: protocol?.decision?.aggregatedScore || null,
     }
   })
 }
@@ -403,24 +408,61 @@ export async function saveDeal(data) {
 
 export const TYPE_PORTFOLIO = 1169
 
+const SUBFUND_NAMES = { '1096': 'БАС', '1098': 'РОБО', '1100': 'МЭ' }
+const STAGE_NAMES   = { '1102': 'Pre-seed', '1103': 'Seed', '1104': 'Round A', '1105': 'Round B', '1106': 'Round C' }
+
+function refId(val) {
+  // Integram REF value: "TypeId:ObjectId" → returns ObjectId string
+  if (!val) return null
+  return String(val).includes(':') ? String(val).split(':')[1] : String(val)
+}
+
 /**
  * Возвращает нормализованный массив портфельных компаний.
- * Каждый объект содержит: id, name, kpi, aiReport, updatedAt, projectId, dealId, riskStatusId
+ * Включает расширенные поля: invested, nav, метрики JSON, субфонд, стадия.
  */
 export async function getPortfolio() {
   const data = await api(`_m_list/${TYPE_PORTFOLIO}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
-  return objects.map(obj => ({
-    id:          obj.id,
-    name:        obj.val,
-    kpi:         Number(reqs[obj.id]?.['1170'] || 0),
-    aiReport:    reqs[obj.id]?.['1171'] || '',
-    updatedAt:   reqs[obj.id]?.['1172'] || null,
-    riskStatusId: reqs[obj.id]?.['1183'] || null,
-    projectId:   reqs[obj.id]?.['1185'] || null,
-    dealId:      reqs[obj.id]?.['1196'] || null
-  }))
+  return objects.map(obj => {
+    const r = reqs[obj.id] || {}
+
+    // Метрики JSON (реквизит 3521)
+    let metrics = {}
+    try { metrics = JSON.parse(r['3521'] || '{}') } catch {}
+
+    const subfundRaw = refId(r['3524'])
+    const stageRaw   = refId(r['3525'])
+
+    return {
+      id:          obj.id,
+      name:        obj.val,
+      kpi:         Number(r['1170'] || 0),
+      aiReport:    r['1171'] || '',
+      updatedAt:   r['1172'] || null,
+      riskStatusId: r['1183'] || null,
+      projectId:   r['1185'] || null,
+      dealId:      r['1196'] || null,
+      // Расширенные поля
+      invested:    Number(r['3519'] || 0),
+      nav:         Number(r['3520'] || 0),
+      subfundId:   subfundRaw,
+      subfund:     SUBFUND_NAMES[subfundRaw] || subfundRaw || '',
+      stageId:     stageRaw,
+      stage:       STAGE_NAMES[stageRaw]   || stageRaw   || '',
+      // Из JSON метрик
+      health:      metrics.health    || null,
+      trl:         metrics.trl       || null,
+      runway:      metrics.runway    != null ? Number(metrics.runway) : null,
+      headcount:   metrics.headcount || null,
+      revenue:     metrics.revenue   || null,
+      growth:      metrics.growth    || null,
+      fstShare:    metrics.fstShare  || null,
+      inn:         metrics.inn       || r['1042'] || '',
+      riskLevel:   metrics.riskLevel || null,
+    }
+  })
 }
 
 export async function updatePortfolioCompany(id, { kpi, aiReport }) {
