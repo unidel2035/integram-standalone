@@ -10,7 +10,7 @@
  * Возвращает JSON-объект аргумента; при ошибке — null (движок использует шаблон).
  */
 
-import { getDefaultToken, getCurrentUserId } from '@/services/aiTokenService.js'
+import { getCurrentUserId } from '@/services/aiTokenService.js'
 
 const API_BASE = ''  // всегда относительный URL → Vite proxy → порт 8082
 const COMMITTEE_MODEL = 'deepseek-chat'       // надёжная модель, поддерживает несколько запросов
@@ -87,8 +87,14 @@ async function getToken() {
   try {
     const userId = getCurrentUserId()
     if (!userId) return null
-    const result = await getDefaultToken(userId)
-    _cachedToken = result?.token?.id || result?.id || null
+    // Используем относительный URL (через Vite proxy → 127.0.0.1:8082)
+    // а не getDefaultToken() из aiTokenService (он берёт полный URL drondoc.ru → CORS)
+    const res = await fetch(`${API_BASE}/api/ai-tokens/default-token/${userId}`, {
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    _cachedToken = data?.data?.token?.id || data?.data?.id || null
     return _cachedToken
   } catch {
     return null
