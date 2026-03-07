@@ -5,14 +5,14 @@
  *
  * fst/1155 "Проекты ФСТ v2":
  *   t1155 = название компании (main)
- *   t1156 = ОГРН (SHORT)
- *   t1157 = Запрашиваемая сумма, руб (NUMBER)
+ *   t2237 = ОГРН (SHORT)
+ *   t2238 = Запрашиваемая сумма, руб (NUMBER)
  *   t1158 = Описание проекта (HTML)
  *   t1159 = Дата подачи (DATETIME)
- *   t1177 = Субфонд (ref→1082)
- *   t1179 = Стадия (ref→1084)
- *   t1181 = Тип финансирования (ref→1086)
- *   t1183 = Статус проекта (ref→1088)
+ *   t1178 = Субфонд (ref→1082)
+ *   t1180 = Стадия (ref→1084)
+ *   t1182 = Тип финансирования (ref→1086)
+ *   t1184 = Статус проекта (ref→1088)
  *
  * fst/1160 "Решения ИК":
  *   t1160 = название (main)
@@ -80,11 +80,8 @@ async function api(path, options = {}) {
   const { token, xsrf } = await authenticate()
   const method = options.method || 'GET'
 
-  // Append _xsrf to URL for GET requests (no body available)
+  // For GET requests do NOT append _xsrf — server returns 403 CSRF error for GET+_xsrf in URL
   let url = `${FST_SERVER}/${FST_DB}/${path}`
-  if (method === 'GET') {
-    url += (url.includes('?') ? '&' : '?') + `_xsrf=${encodeURIComponent(xsrf)}`
-  }
 
   const headers = {
     'X-Authorization': token,
@@ -114,19 +111,29 @@ export const TYPE_PROJECTS = 1155
  * Возвращает нормализованный массив проектов.
  */
 export async function getProjects() {
-  const data = await api(`_m_list/${TYPE_PROJECTS}?JSON_KV`)
+  // Use object/{typeId} endpoint (GET, no _xsrf needed)
+  const data = await api(`object/${TYPE_PROJECTS}?JSON_KV`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
+
+  // Helper: parse ref value "typeId:objectId" → objectId string
+  const refId = (r, refKey) => {
+    const raw = r?.[`ref_${refKey}`]
+    if (!raw) return r?.[refKey] || null
+    const parts = String(raw).split(':')
+    return parts.length === 2 ? parts[1] : raw
+  }
+
   return objects.map(obj => ({
     id:          obj.id,
     name:        obj.val,
-    ogrn:        reqs[obj.id]?.['1156'] || '',
-    amount:      Number(reqs[obj.id]?.['1157'] || 0),
+    ogrn:        reqs[obj.id]?.['2237'] || '',  // SHORT (was 1156)
+    amount:      Number(reqs[obj.id]?.['2238'] || 0),  // NUMBER (was 1157)
     description: reqs[obj.id]?.['1158'] || '',
     submittedAt: reqs[obj.id]?.['1159'] || null,
-    subfundId:   reqs[obj.id]?.['1177'] || null,
-    stageId:     reqs[obj.id]?.['1179'] || null,
-    statusId:    reqs[obj.id]?.['1183'] || null
+    subfundId:   refId(reqs[obj.id], '1178'),  // ref→1082 (was 1177)
+    stageId:     refId(reqs[obj.id], '1180'),  // ref→1084 (was 1179)
+    statusId:    refId(reqs[obj.id], '1184'),  // ref→1088 (was 1183)
   }))
 }
 
@@ -137,13 +144,13 @@ export async function getProject(id) {
 export async function createProject(data) {
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: data.name,
-    t1156: data.ogrn || '',
-    t1157: data.amount || 0,
+    t2237: data.ogrn || '',       // SHORT (was t1156)
+    t2238: data.amount || 0,      // NUMBER (was t1157)
     t1158: data.description || '',
     t1159: data.submittedAt || new Date().toISOString(),
-    ...(data.subfundId ? { t1177: data.subfundId } : {}),
-    ...(data.stageId   ? { t1179: data.stageId   } : {}),
-    ...(data.statusId  ? { t1183: data.statusId  } : {})
+    ...(data.subfundId ? { t1178: data.subfundId } : {}),  // was t1177
+    ...(data.stageId   ? { t1180: data.stageId   } : {}),  // was t1179
+    ...(data.statusId  ? { t1184: data.statusId  } : {})   // was t1183
   })
   return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
 }
@@ -235,13 +242,13 @@ export async function createProjectFromApplication(application) {
 
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: application.companyName,
-    t1156: application.inn || '',
-    t1157: (application.amount || 0) * 1_000_000, // Конвертируем млн → руб
+    t2237: application.inn || '',              // ОГРН/ИНН (was t1156)
+    t2238: (application.amount || 0) * 1_000_000, // Сумма млн→руб (was t1157)
     t1158: descriptionWithExtended,
     t1159: new Date().toISOString(),
-    ...(subfundId ? { t1177: subfundId } : {}),
-    ...(stageId   ? { t1179: stageId   } : {}),
-    t1183: STATUSES['Новый'] // Новая заявка всегда со статусом "Новый"
+    ...(subfundId ? { t1178: subfundId } : {}),  // was t1177
+    ...(stageId   ? { t1180: stageId   } : {}),  // was t1179
+    t1184: STATUSES['Новый'] // was t1183
   })
   return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
 }
