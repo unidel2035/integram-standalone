@@ -69,7 +69,9 @@
                 <DynamicScrollerItem :item="msg" :active="active" :data-index="index">
               <div class="message"
                 :class="{ 'user-message': msg.isUser }" data-testid="message-item" :data-message-id="index">
-                <div class="message-content" v-if="!isSystemMessage(msg)">
+                <div class="message-content" v-if="!isSystemMessage(msg)"
+                  :class="{ 'message-selected': selectedMessages.has(index) }"
+                  @click.self="toggleMessageSelection(index, msg)">
                   <div v-if="msg.attachments && msg.attachments.length > 0" class="attachment-info">
                     <div v-for="(attachment, attIndex) in msg.attachments" :key="attIndex" class="attachment-item">
                       <img v-if="isImage(attachment)" :src="attachment.url" class="image-preview" 
@@ -235,6 +237,27 @@
                 </div>
               </template>
             </DynamicScroller>
+
+            <!-- Telegram-style selection action bar -->
+            <Transition name="selection-bar">
+              <div v-if="selectedMessages.size > 0" class="selection-action-bar">
+                <span class="selection-count">{{ selectedMessages.size }} сообщ.</span>
+                <div class="selection-bar-actions">
+                  <Button
+                    icon="pi pi-copy"
+                    label="Копировать"
+                    class="p-button-sm p-button-text"
+                    @click="copySelectedMessages"
+                  />
+                  <Button
+                    icon="pi pi-times"
+                    class="p-button-sm p-button-text p-button-secondary"
+                    title="Снять выделение"
+                    @click="clearSelection"
+                  />
+                </div>
+              </div>
+            </Transition>
 
             <!-- Issue #6832: Context bar — shows active document/table context chips -->
             <ContextBar
@@ -1803,6 +1826,28 @@ const contextBarColor = computed(() => {
   return 'var(--green-500)'
 })
 
+// Telegram-style message selection
+const selectedMessages = ref(new Set())
+function toggleMessageSelection(index, msg) {
+  if (msg.isUser && !msg.text && !msg.displayText) return
+  const next = new Set(selectedMessages.value)
+  if (next.has(index)) next.delete(index)
+  else next.add(index)
+  selectedMessages.value = next
+}
+function clearSelection() {
+  selectedMessages.value = new Set()
+}
+function copySelectedMessages() {
+  const texts = []
+  for (const idx of [...selectedMessages.value].sort((a, b) => a - b)) {
+    const msg = aiChatMessagesWithIds.value[idx]
+    if (msg) texts.push(msg.displayText || msg.text || '')
+  }
+  copyToClipboard(texts.join('\n\n'))
+  clearSelection()
+}
+
 // Current model display name for the button
 const currentModelDisplayName = computed(() => {
   if (!selectedModel.value) return null
@@ -2404,11 +2449,16 @@ const onExecutionError = (exec) => {
 
 // ========== Lifecycle Hooks ==========
 
+function onKeydownSelection(e) {
+  if (e.key === 'Escape' && selectedMessages.value.size > 0) clearSelection()
+}
+
 onMounted(() => {
   // Initialize shared chat logic
   init()
   // Listen for editor plan steps updates from BlockDocumentEditor
   window.addEventListener('editor-plan-steps', onEditorPlanSteps)
+  window.addEventListener('keydown', onKeydownSelection)
 
   // Check admin role — Options button shown only to admins
   const _token = localStorage.getItem('token')
@@ -2437,6 +2487,7 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', handleResize)
   document.removeEventListener('mouseup', stopResize)
   window.removeEventListener('editor-plan-steps', onEditorPlanSteps)
+  window.removeEventListener('keydown', onKeydownSelection)
 })
 </script>
 
@@ -2833,6 +2884,65 @@ onUnmounted(() => {
       }
     }
   }
+}
+
+// Telegram-style selected message highlight
+.message-content.message-selected {
+  background: rgba(var(--primary-color-rgb, 14, 165, 233), 0.12) !important;
+  border-color: var(--primary-color, #0ea5e9) !important;
+  border-width: 1px;
+  border-style: solid;
+  position: relative;
+
+  &::after {
+    content: '✓';
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    line-height: 1.25rem;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--primary-color, #0ea5e9);
+    color: #fff;
+    font-size: 0.7rem;
+    pointer-events: none;
+  }
+}
+
+// Floating selection action bar (Telegram-style)
+.selection-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-card, #fff);
+  border-top: 1px solid var(--surface-border, #e2e8f0);
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  gap: 0.5rem;
+
+  .selection-count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color, #0ea5e9);
+  }
+
+  .selection-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+}
+
+.selection-bar-enter-active,
+.selection-bar-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.selection-bar-enter-from,
+.selection-bar-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
 }
 
 // Action buttons: hidden by default, visible on bubble hover/focus (both sidebar & modal)
