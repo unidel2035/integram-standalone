@@ -85,7 +85,7 @@ emit('ConditionalDecisionReady')        ← новое событие
 
 ## Следующие шаги
 
-- **dronedoc2025#7240** — серверный debate orchestrator (Phase 1-2, P1)
-- Подключение Socket.io namespace `/debate`
-- Перенос LLM-вызовов на бэкенд
-- Agent autonomy: агент сам решает тип ответа
+- **dronedoc2025#7240** — оптимизация бэкенда для дебатов (P1)
+- Параллельные LLM-вызовы через Promise.allSettled
+- Кеширование системных промптов агентов
+- Streaming ответов через Socket.io namespace `/debate`
