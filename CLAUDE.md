@@ -179,14 +179,3 @@ GITHUB_TOKEN=...         # для Koda (бесплатный AI)
 YANDEX_API_KEY=...
 YANDEX_FOLDER_ID=...
 ```
-
----
-
-Issue to solve: https://github.com/unidel2035/fund/issues/167
-Your prepared branch: issue-167-650896be55cb
-Your prepared working directory: /tmp/gh-issue-solver-1772985884108
-
-Proceed.
-
-
-Run timestamp: 2026-03-08T16:04:48.574Z
