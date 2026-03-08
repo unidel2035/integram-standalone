@@ -687,9 +687,9 @@ async function generateAiReport() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  background: var(--surface-card);
-  border-bottom: 1px solid var(--surface-border);
+  padding: 12px 20px;
+  background: transparent;
+  border-bottom: 1px solid var(--p-content-border-color);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -763,7 +763,7 @@ async function generateAiReport() {
 
 /* Card */
 .fsp-card {
-  background: var(--surface-card);
+  background: transparent;
   border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 12px;
@@ -857,7 +857,7 @@ async function generateAiReport() {
 }
 
 .fsp-detail-panel {
-  background: var(--surface-card);
+  background: transparent;
   border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 12px;
@@ -872,7 +872,7 @@ async function generateAiReport() {
   color: var(--p-text-color);
   margin-bottom: 10px;
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
 .fsp-detail-company-header {
@@ -947,7 +947,7 @@ async function generateAiReport() {
   align-items: center;
   gap: 10px;
   padding: 5px 0;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 .fsp-event:last-child { border-bottom: none; }
 .fsp-event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }

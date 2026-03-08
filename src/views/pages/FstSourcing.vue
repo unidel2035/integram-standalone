@@ -1027,10 +1027,10 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 20px 12px;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--p-content-border-color);
   position: sticky;
   top: 0;
-  background: var(--surface-card);
+  background: transparent;
   z-index: 1;
 }
 

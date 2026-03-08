@@ -724,8 +724,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: var(--surface-card);
-  border-bottom: 1px solid var(--surface-border);
+  background: transparent;
+  border-bottom: 1px solid var(--p-content-border-color);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;

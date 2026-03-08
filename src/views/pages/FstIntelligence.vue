@@ -381,9 +381,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
-  background: var(--surface-card);
-  border-bottom: 1px solid var(--surface-border);
+  padding: 12px 20px;
+  background: transparent;
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
 .fsti-header-left {

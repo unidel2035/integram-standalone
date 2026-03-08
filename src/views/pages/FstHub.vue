@@ -204,13 +204,12 @@ const modulesByPhase = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--p-content-border-color);
-  background: var(--surface-card);
+  background: transparent;
   position: sticky;
   top: 0;
   z-index: 10;
-  backdrop-filter: blur(8px);
 }
 .hub-topbar-left {
   display: flex;
@@ -354,7 +353,7 @@ const modulesByPhase = computed(() => {
   cursor: pointer;
   border-right: 1px solid var(--p-content-border-color);
   transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-  background: var(--surface-card);
+  background: transparent;
   min-width: 110px;
 }
 .hub-pipe-step:last-child { border-right: none; }
@@ -430,7 +429,7 @@ const modulesByPhase = computed(() => {
   transition: all 0.15s;
 }
 .hub-mod:hover {
-  background: var(--surface-hover);
+  background: color-mix(in srgb, var(--mc, #38bdf8) 8%, var(--surface-card));
   border-left-color: var(--mc, #38bdf8);
   border-right-color: var(--mc, #38bdf8);
 }

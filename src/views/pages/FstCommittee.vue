@@ -1786,12 +1786,11 @@ onUnmounted(() => {
 .fst-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 16px;
-  border-bottom: 1px solid var(--surface-border);
-  background: var(--surface-card);
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--p-content-border-color);
+  background: transparent;
   flex-shrink: 0;
-  min-height: 50px;
 }
 .fst-header-project {
   display: flex;
@@ -2410,8 +2409,8 @@ onUnmounted(() => {
 }
 .fst-setup-header {
   padding: 24px 28px 18px;
-  border-bottom: 1px solid var(--surface-border);
-  background: var(--surface-card);
+  border-bottom: 1px solid var(--p-content-border-color);
+  background: transparent;
 }
 .fst-setup-brand {
   display: flex;

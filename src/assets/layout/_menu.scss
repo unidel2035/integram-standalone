@@ -71,7 +71,7 @@
                     transition: background-color var(--element-transition-duration);
 
                     &:hover {
-                        background-color: var(--surface-hover);
+                        background-color: color-mix(in srgb, var(--text-color) 8%, var(--surface-card));
                     }
 
                     .layout-menuitem-icon {
@@ -106,6 +106,13 @@
             color: var(--text-color);
             margin: 0.75rem 0;
             gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: var(--content-border-radius);
+            transition: background-color var(--element-transition-duration);
+
+            &:hover {
+                background-color: color-mix(in srgb, var(--text-color) 8%, var(--surface-card));
+            }
         }
 
         > a {
@@ -173,7 +180,7 @@
             }
 
             &:hover {
-                background-color: var(--surface-hover);
+                background-color: color-mix(in srgb, var(--text-color) 8%, var(--surface-card));
             }
 
             &:focus {
@@ -183,7 +190,7 @@
             &:focus-visible {
                 outline: 2px solid var(--primary-color);
                 outline-offset: -2px;
-                background-color: var(--surface-hover);
+                background-color: color-mix(in srgb, var(--text-color) 8%, var(--surface-card));
             }
         }
 

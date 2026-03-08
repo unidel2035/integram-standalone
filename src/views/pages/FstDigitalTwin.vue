@@ -527,9 +527,9 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fdt-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 16px;
-  background: var(--surface-card);
+  gap: 12px;
+  padding: 12px 20px;
+  background: transparent;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .fdt-header-left { flex: 1 }

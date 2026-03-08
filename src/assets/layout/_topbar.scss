@@ -119,8 +119,8 @@
 
         .layout-topbar-logo-container {
             width: 20rem;
-            padding-left: 1.875rem;
-            transition: width 0.3s ease, padding-left 0.3s ease;
+            padding-left: 1.25rem;
+            transition: width 0.3s ease;
         }
 
         .layout-menu-button {
@@ -130,8 +130,7 @@
 
     .layout-wrapper.sidebar-collapsed .layout-topbar .layout-topbar-logo-container {
         width: 5rem;
-        padding-left: 0;
-        justify-content: center;
+        padding-left: 1.25rem;
     }
 
 }
