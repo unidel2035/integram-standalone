@@ -520,7 +520,7 @@ const showAddDialog = ref(false)
 const dataSources = ref([
   { id: 'egrul', name: 'ЕГРЮЛ / ФНС', icon: 'pi pi-building', status: 'ok', lastUpdate: '2026-03-05 08:00' },
   { id: 'efrsb', name: 'ЕФРСБ (банкротства)', icon: 'pi pi-exclamation-circle', status: 'ok', lastUpdate: '2026-03-05 08:00' },
-  { id: 'rosreestr', name: 'Роспатент', icon: 'pi pi-verified', status: 'ok', lastUpdate: '2026-03-04 16:00' },
+  { id: 'rosreestr', name: 'Роспатент', icon: 'pi pi-key', status: 'ok', lastUpdate: '2026-03-04 16:00' },
   { id: 'hh', name: 'HH.ru (найм)', icon: 'pi pi-users', status: 'warn', lastUpdate: '2026-03-03 12:00' },
   { id: 'news', name: 'Новостной мониторинг', icon: 'pi pi-globe', status: 'ok', lastUpdate: '2026-03-05 10:00' },
   { id: 'crm', name: 'Отчёты компании (Integram)', icon: 'pi pi-database', status: 'ok', lastUpdate: '2026-03-01 09:00' },
@@ -589,7 +589,7 @@ function sensorSeverity(level) {
 }
 
 function alertIcon(type) {
-  const icons = { runway: 'pi pi-clock', revenue: 'pi pi-chart-line', hiring: 'pi pi-users', ip: 'pi pi-verified' }
+  const icons = { runway: 'pi pi-clock', revenue: 'pi pi-chart-line', hiring: 'pi pi-users', ip: 'pi pi-key' }
   return icons[type] || 'pi pi-exclamation-triangle'
 }
 

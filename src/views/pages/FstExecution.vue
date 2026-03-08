@@ -513,7 +513,7 @@ const taskCategories = [
   { key: 'Продажи', name: 'Продажи', icon: 'pi pi-dollar', color: '#66bb6a' },
   { key: 'Команда', name: 'Команда', icon: 'pi pi-users', color: '#26c6da' },
   { key: 'Финансы', name: 'Финансы', icon: 'pi pi-chart-bar', color: '#ffa726' },
-  { key: 'IP', name: 'IP', icon: 'pi pi-verified', color: '#ab47bc' },
+  { key: 'IP', name: 'IP', icon: 'pi pi-key', color: '#ab47bc' },
   { key: 'Регуляторика', name: 'Регуляторика', icon: 'pi pi-shield', color: '#ef5350' },
 ]
 

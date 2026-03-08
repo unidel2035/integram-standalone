@@ -105,7 +105,7 @@ const availableTours = ref([
     id: 'fst-deal',
     name: 'Сделка',
     description: 'SPV, транши, Term Sheet, финансовая модель',
-    icon: 'pi pi-handshake',
+    icon: 'pi pi-file-check',
     steps: 7,
     route: '/fst-deal',
     completed: false,
