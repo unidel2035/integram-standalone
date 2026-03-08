@@ -280,7 +280,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
@@ -756,6 +756,10 @@ onMounted(() => {
   nextTick(() => {
     initChart()
   })
+})
+
+onUnmounted(() => {
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null }
 })
 </script>
 

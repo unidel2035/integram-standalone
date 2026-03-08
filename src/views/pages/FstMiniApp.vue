@@ -120,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 const activeTab = ref('portfolio')
 const selectedCompany = ref(null)
@@ -209,6 +209,8 @@ NAV: 6.4 млрд ₽, AUM: 8.2 млрд ₽, IRR: 38%, субфонды: БАС
 
 function selectCompany(c) { selectedCompany.value = c }
 
+let _tgClickHandler = null
+
 onMounted(() => {
   // Telegram WebApp integration
   if (window.Telegram?.WebApp) {
@@ -217,8 +219,16 @@ onMounted(() => {
     tg.expand()
     isDark.value = tg.colorScheme === 'dark'
     tg.MainButton.setText('Открыть полную платформу')
-    tg.MainButton.onClick(() => tg.openLink(platformUrl))
+    _tgClickHandler = () => tg.openLink(platformUrl)
+    tg.MainButton.onClick(_tgClickHandler)
     tg.MainButton.show()
+  }
+})
+
+onUnmounted(() => {
+  if (window.Telegram?.WebApp && _tgClickHandler) {
+    window.Telegram.WebApp.MainButton.offClick(_tgClickHandler)
+    window.Telegram.WebApp.MainButton.hide()
   }
 })
 </script>

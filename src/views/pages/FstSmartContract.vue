@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Chart from 'chart.js/auto'
 import { loadContract, loadContractNodes, loadConditions } from '@/services/fstApi.js'
@@ -255,6 +255,10 @@ onMounted(async () => {
     error.value = err.message
     loading.value = false
   }
+})
+
+onUnmounted(() => {
+  Object.values(chartInstances).forEach(c => c.destroy())
 })
 </script>
 
