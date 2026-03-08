@@ -34,7 +34,7 @@
 
 ## Архитектурное влияние
 
-Изменения затрагивают только фронтенд-логику дебатов. Бэкенд (dronedoc2025) не затронут.
+Фронтенд + бэкенд. Сессии дебатов синхронизируются на сервер через REST + Socket.IO.
 
 ```
 DebateRoom.publish()
@@ -83,9 +83,21 @@ emit('ConditionalDecisionReady')        ← новое событие
 
 ---
 
-## Следующие шаги
+## Следующие шаги (ВЫПОЛНЕНО)
 
-- **dronedoc2025#7240** — оптимизация бэкенда для дебатов (P1)
-- Параллельные LLM-вызовы через Promise.allSettled
-- Кеширование системных промптов агентов
-- Streaming ответов через Socket.io namespace `/debate`
+### dronedoc2025 PR #7241 (merged)
+
+**Бэкенд — 3 новых файла:**
+- `backend/monolith/src/core/DebateSession.js` — in-memory session model (TTL 30мин, smart targeting, messagesSince)
+- `backend/monolith/src/api/routes/debate.js` — REST CRUD: 6 endpoints /api/debate/sessions
+- `backend/monolith/src/sockets/debateNamespace.js` — Socket.IO namespace /debate (join, message, vote, phase-change, end)
+
+**Фронтенд fund:**
+- `src/services/debateSessionService.js` — REST клиент + Socket.IO коннектор
+- `src/components/fst-committee/FstCommitteeEngine.js` — авто-создание бэкенд-сессии, синхронизация фаз/сообщений/голосов
+
+**Тест после интеграции:**
+- 159 событий, 42 аргумента, 12 голосов
+- Бэкенд-сессия синхронизирована: phase HUMAN_APPROVAL, 42 messages
+- Решение: DEFER 61/100
+- Все 3 сервиса работают: backend:8082, dronedoc-frontend:5173, fst-frontend:5174
