@@ -14,7 +14,7 @@
  *     {"action": "publish", "text": "...", "dimension": "...", "confidence": 0.0-1.0, "stance": "APPROVE|DEFER|REJECT"}
  */
 
-import { resolveModel } from './fstCommitteeModelOrchestrator.js'
+import { resolveModel, SPEED_PROFILES } from './fstCommitteeModelOrchestrator.js'
 import { getCurrentUserId } from '@/services/aiTokenService.js'
 import {
   getToolsForAgent, formatToolsForPrompt,
@@ -364,7 +364,9 @@ async function callLLM({ agent, argType, conversationHistory, systemPrompt, mode
  */
 export async function runAgentLoop(agent, argType, room, project, targetArg = null, session = {}, opts = {}, onProgress = null) {
   // Issue #161: configurable max iterations from DB
-  const maxIter   = session.icParams?.maxIter || MAX_ITER
+  // Issue #165: maxIter from icParams > speed profile > default (5)
+  const profileMaxIter = SPEED_PROFILES[opts.speedProfile]?.maxIter
+  const maxIter   = session.icParams?.maxIter || profileMaxIter || MAX_ITER
   const tools     = getToolsForAgent(agent.id)
   const toolsDesc = formatToolsForPrompt(tools)
   const modelId   = resolveModel(agent.id, argType, opts.speedProfile || 'balanced', opts.modelOverrides || {})
