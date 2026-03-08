@@ -1244,7 +1244,7 @@ function stanceColor(stance) {
 async function saveDecisionToFst(sess) {
   if (!sess) return
   try {
-    const project = PROJECTS_POOL.value.find(p => p.id === sess.projectId) || {}
+    const project = PROJECTS_POOL.value.find(p => p.id === sess.projectId) || sess.project || {}
     const approved = sess.decision?.humanApproval?.verdict === 'APPROVE'
 
     // Создать проект в fst если его ещё нет
@@ -1279,7 +1279,7 @@ async function saveContractNodes(sess) {
   try {
     const { token, xsrf } = await authenticate()
     const db = import.meta.env.VITE_FST_DB || 'fst-api'
-    const project = PROJECTS_POOL.value.find(p => p.id === sess.projectId) || {}
+    const project = PROJECTS_POOL.value.find(p => p.id === sess.projectId) || sess.project || {}
 
     async function post(path, fields) {
       const body = new URLSearchParams()
@@ -1296,11 +1296,14 @@ async function saveContractNodes(sess) {
     }
 
     // Создаём Смарт контракт (3995)
+    const contractName = `Смарт контракт — ${project.title || project.company || sess.projectId || 'Проект'}`
+    console.log('[saveContractNodes] creating contract:', contractName, 'nodes:', sess.contractNodes?.length)
     const cData = await post('_m_new/3995', {
-      t3995: `Смарт контракт — ${project.title || project.company || sess.projectId}`,
+      t3995: contractName,
     })
-    const contractId = cData.obj || cData.id
-    if (!contractId) { console.warn('[saveContractNodes] no contractId'); return }
+    console.log('[saveContractNodes] cData:', JSON.stringify(cData))
+    const contractId = cData.id || cData.newId || cData.obj
+    if (!contractId) { console.warn('[saveContractNodes] no contractId, response:', JSON.stringify(cData)); return }
 
     // Создаём ноды (3996) под контрактом
     for (const node of sess.contractNodes) {
@@ -1325,7 +1328,7 @@ async function saveContractNodes(sess) {
         t4038:  'approved',
         up: contractId,
       })
-      const nodeId = nData.obj || nData.id
+      const nodeId = nData.id || nData.newId || nData.obj
       if (!nodeId) continue
 
       // Требования из условий decision (3999)

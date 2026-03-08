@@ -159,6 +159,7 @@ export function createSession(project, options = {}) {
   const speed = SPEED_MULTIPLIERS[options.speed || 'normal']
   return {
     id: `ses_${Date.now()}`,
+    projectId: project?.id || null,   // ← явно сохраняем для saveDecisionToFst / saveContractNodes
     project,
     phase: 'IDLE',
     phaseIndex: 0,
