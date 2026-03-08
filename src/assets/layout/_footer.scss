@@ -2,7 +2,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem 0 1rem 0;
     gap: 0.5rem;
-    border-top: none;
+    padding: 1rem 2rem;
+    font-size: 0.75rem;
+    color: var(--text-muted-color);
 }

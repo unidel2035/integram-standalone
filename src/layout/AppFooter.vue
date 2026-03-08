@@ -1,17 +1,43 @@
 <template>
     <div class="layout-footer">
-        <div class="flex flex-col gap-2">
-            <div class="flex items-center justify-center">
-                <span class="text-sm text-muted-color">&copy; 2026 ФСТ НТИ &middot; DronDoc Platform</span>
-            </div>
-            <div class="flex flex-wrap gap-4 text-sm justify-center">
-                <router-link to="/legal/terms-of-service" class="text-muted-color hover:text-primary transition-colors">Условия использования</router-link>
-                <router-link to="/legal/privacy-policy" class="text-muted-color hover:text-primary transition-colors">Политика конфиденциальности</router-link>
-                <router-link to="/legal/cookie-policy" class="text-muted-color hover:text-primary transition-colors">Cookies</router-link>
-                <router-link to="/legal/refund-policy" class="text-muted-color hover:text-primary transition-colors">Возврат средств</router-link>
-                <router-link to="/legal/acceptable-use-policy" class="text-muted-color hover:text-primary transition-colors">Правила использования</router-link>
-                <router-link to="/legal/dmca-policy" class="text-muted-color hover:text-primary transition-colors">DMCA</router-link>
-            </div>
-        </div>
+        <span class="footer-copy">&copy; 2026 ФСТ НТИ &middot; DronDoc Platform</span>
+        <span class="footer-sep">&middot;</span>
+        <nav class="footer-links">
+            <router-link to="/legal/terms-of-service">Условия</router-link>
+            <router-link to="/legal/privacy-policy">Конфиденциальность</router-link>
+            <router-link to="/legal/cookie-policy">Cookies</router-link>
+        </nav>
     </div>
 </template>
+
+<style scoped>
+.footer-copy {
+  color: var(--p-text-muted-color);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.footer-sep {
+  color: var(--p-text-muted-color);
+  opacity: 0.4;
+  font-size: 0.75rem;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer-links a {
+  color: var(--p-text-muted-color);
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.footer-links a:hover {
+  color: var(--p-primary-color);
+}
+</style>
