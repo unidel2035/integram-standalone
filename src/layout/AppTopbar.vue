@@ -71,13 +71,7 @@ const topbarMenuVisible = ref(false)
 const configPanelRef = ref(null) // Ref for config panel (click-outside detection)
 const pendingProfileToggle = ref(null) // Сохраняет событие клика, если компонент ещё не загружен
 const profileMenuReady = ref(false) // Флаг готовности компонента
-// Clear stale Integram direct URLs (they require auth, can't be loaded by <img>)
-const cachedPhoto = localStorage.getItem('currentUserPhoto') || ''
-if (cachedPhoto && !cachedPhoto.startsWith('/api/')) {
-  localStorage.removeItem('currentUserPhoto')
-}
-const userPhoto = ref(cachedPhoto.startsWith('/api/') ? cachedPhoto : '')
-const photoFailed = ref(false) // set to true on @error, prevents re-showing broken img
+
 const userName = ref(
   localStorage.getItem('my_user') ||
   localStorage.getItem('currentUserName') ||
@@ -96,8 +90,6 @@ const userInitial = computed(() => {
 
 // Cleanup handlers for memory leak prevention
 let chatStorageCleanup = null
-let photoStorageCleanup = null
-let photoUpdateInterval = null
 let pendingCheckInterval = null
 let configClickOutsideCleanup = null
 
@@ -232,70 +224,12 @@ const learnModeTooltip = computed(() => {
 
 watch(isDarkTheme, updateFavicon)
 
-// Listen for userPhoto updates from Profile.vue
-const updateUserPhoto = () => {
-  if (photoFailed.value) return // don't restore after explicit error
-  const stored = localStorage.getItem('currentUserPhoto') || ''
-  if (stored.startsWith('/api/')) userPhoto.value = stored
-}
 
-// Handle photo load error (404, 401, etc.) - permanently fall back to initials
-const handlePhotoError = () => {
-  logger.debug('[AppTopbar] Photo load error, showing initials')
-  userPhoto.value = ''
-  photoFailed.value = true
-  const userId = localStorage.getItem('id')
-  if (userId) localStorage.removeItem(`userPhoto_${userId}`)
-  localStorage.removeItem('currentUserPhoto')
-}
-
-// Fetch user photo from API if not in localStorage
-const fetchUserPhotoOnMount = async () => {
-  const token = localStorage.getItem('my_token') || localStorage.getItem('token')
-  const userId = localStorage.getItem('id')
-
-  if (!token || !userId) return
-
-  try {
-    // Get profile data (name + whether photo exists)
-    const response = await fetch(`/api/profile/${userId}`, {
-      headers: { 'X-Authorization': token }
-    })
-
-    if (!response.ok) return
-    const data = await response.json()
-    if (!data.success) return
-
-    // Always update name from profile API (not only when empty)
-    if (data.data?.name) {
-      userName.value = data.data.name
-      localStorage.setItem('my_user', data.data.name)
-    }
-
-    // Use proxy URL — browser can't load Integram URLs directly (requires auth)
-    if (data.data?.photo) {
-      photoFailed.value = false
-      const proxyUrl = `/api/profile/${userId}/photo?t=${Date.now()}`
-      userPhoto.value = proxyUrl
-      localStorage.setItem('currentUserPhoto', proxyUrl)
-    } else {
-      // No photo in table 18 — clear any stale cache and show initials
-      userPhoto.value = ''
-      photoFailed.value = false
-      localStorage.removeItem('currentUserPhoto')
-    }
-  } catch (error) {
-    logger.debug('Failed to fetch user photo on mount:', error)
-  }
-}
 
 const paletteBtn = ref(null)
 
 onMounted(() => {
   updateFavicon()
-  // Fetch user photo immediately on mount
-  fetchUserPhotoOnMount()
-
   // Close config panel when clicking outside it
   const handleConfigClickOutside = (e) => {
     if (configVisible.value && configPanelRef.value && !configPanelRef.value.contains(e.target)) {
@@ -338,24 +272,11 @@ onMounted(() => {
   window.addEventListener('storage', handleChatStorage)
   chatStorageCleanup = () => window.removeEventListener('storage', handleChatStorage)
 
-  // Listen for photo storage changes (when Profile.vue updates the photo)
-  const handlePhotoStorage = (e) => {
-    if (e.key === 'currentUserPhoto') {
-      updateUserPhoto()
-    }
-  }
-  window.addEventListener('storage', handlePhotoStorage)
-  photoStorageCleanup = () => window.removeEventListener('storage', handlePhotoStorage)
-
-  // Also check periodically in case storage event doesn't fire (same tab)
-  photoUpdateInterval = setInterval(updateUserPhoto, 3000)
 })
 
 onBeforeUnmount(() => {
   // Cleanup all event listeners and intervals
   if (chatStorageCleanup) chatStorageCleanup()
-  if (photoStorageCleanup) photoStorageCleanup()
-  if (photoUpdateInterval) clearInterval(photoUpdateInterval)
   if (pendingCheckInterval) clearInterval(pendingCheckInterval)
   if (configClickOutsideCleanup) configClickOutsideCleanup()
 })
@@ -426,16 +347,7 @@ onBeforeUnmount(() => {
             class="layout-topbar-action"
             :title="profileTooltip"
           >
-            <div class="topbar-avatar-wrap">
-              <div class="topbar-avatar topbar-avatar-initials">{{ userInitial }}</div>
-              <img
-                v-if="userPhoto"
-                :src="userPhoto"
-                @error="handlePhotoError"
-                class="topbar-avatar topbar-avatar-img topbar-avatar-over"
-                alt=""
-              />
-            </div>
+            <div class="topbar-avatar topbar-avatar-initials">{{ userInitial }}</div>
             <span>{{ $t('nav.profile', 'Профиль') }}</span>
           </button>
         </div>
@@ -505,48 +417,18 @@ onBeforeUnmount(() => {
   }
 }*/
 
-.topbar-avatar-wrap {
-  position: relative;
-  width: 1.5rem;
-  height: 1.5rem;
-  flex-shrink: 0;
-}
-
-.topbar-avatar {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.topbar-avatar-img {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
-
-/* overlay: image sits on top of initials, hidden if broken */
-.topbar-avatar-over {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
-
 .topbar-avatar-initials {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
   border-radius: 50%;
-  background: var(--p-primary-500, #6366f1);
-  color: var(--p-surface-0, #fff);
-  font-size: 0.7rem;
+  border: 1.5px solid currentColor;
+  color: inherit;
+  font-size: 0.6rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
   vertical-align: middle;
   user-select: none;
 }

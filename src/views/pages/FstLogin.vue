@@ -25,11 +25,6 @@
         <Button type="submit" label="Войти" icon="pi pi-sign-in"
           :loading="loading" class="fst-login-btn" />
       </form>
-
-      <div class="fst-login-hint">
-        <i class="pi pi-info-circle"></i>
-        Используйте учётную запись <strong>ai2o.ru/fst</strong>
-      </div>
     </div>
   </div>
 </template>
@@ -116,13 +111,4 @@ async function doLogin() {
 }
 .fst-field :deep(.p-password) { width: 100%; }
 .fst-login-btn { width: 100%; margin-top: 0.5rem; }
-.fst-login-hint {
-  font-size: 0.78rem;
-  color: var(--text-color-secondary);
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-}
 </style>

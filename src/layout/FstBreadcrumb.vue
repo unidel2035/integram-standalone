@@ -134,13 +134,14 @@ const nextStep = computed(() =>
 .fst-bc {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 24px;
+  gap: 5px;
+  padding: 5px 12px;
   background: var(--p-content-background);
   border-bottom: 1px solid var(--p-surface-border);
-  font-size: 0.8125rem;
-  min-height: 38px;
-  flex-wrap: wrap;
+  font-size: 0.75rem;
+  min-height: 30px;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .fst-bc-home {
@@ -154,12 +155,13 @@ const nextStep = computed(() =>
   white-space: nowrap;
 }
 .fst-bc-home:hover { color: #ffa726; }
-.fst-bc-home .pi-home { font-size: 12px; }
+.fst-bc-home .pi-home { font-size: 11px; }
 
 .fst-bc-sep {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--p-text-muted-color);
   opacity: 0.4;
+  flex-shrink: 0;
 }
 
 .fst-bc-cat {
@@ -174,6 +176,8 @@ const nextStep = computed(() =>
   color: var(--p-text-color);
   font-weight: 600;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Pipeline prev/next */
@@ -204,4 +208,11 @@ const nextStep = computed(() =>
   background: rgba(255,167,38,0.07);
 }
 .fst-bc-nav .pi { font-size: 9px; }
+
+@media (max-width: 1400px) {
+  .fst-bc { padding: 4px 10px; min-height: 28px; font-size: 0.7rem; gap: 4px; }
+  .fst-bc-home .pi-home { font-size: 10px; }
+  .fst-bc-sep { font-size: 8px; }
+  .fst-bc-nav { padding: 2px 8px; font-size: 0.7rem; }
+}
 </style>

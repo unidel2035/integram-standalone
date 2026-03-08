@@ -19,18 +19,7 @@
       <div v-else class="profile-content">
         <!-- Шапка профиля -->
         <div class="profile-header p-4 flex align-items-center gap-3">
-          <template v-if="userPhoto">
-            <div class="avatar-large-wrapper">
-              <img
-                :src="userPhoto"
-                @error="handlePhotoError"
-                class="avatar-large-img"
-                alt="User photo"
-              />
-            </div>
-          </template>
           <Avatar
-            v-else
             icon="pi pi-user"
             size="xlarge"
             shape="circle"
@@ -132,7 +121,6 @@ const user = ref({
   userId: null,
 })
 const userInfo = ref({})
-const userPhoto = ref('')
 
 // API Base и База данных из localStorage
 // Issue #5405: Show configured server from config, not hardcoded value
@@ -259,10 +247,7 @@ const fetchUserData = async () => {
         'Роль': data.role,
       }
 
-      // Fetch user photo from profile API
-      if (data.id) {
-        fetchUserPhoto(data.id)
-      }
+
     } else {
       console.warn('Failed to fetch user data from xsrf endpoint:', response.status)
       // Fallback to localStorage
@@ -279,46 +264,7 @@ const fetchUserData = async () => {
   }
 }
 
-// Fetch user profile photo from backend API
-const fetchUserPhoto = async (userId) => {
-  try {
-    const token = localStorage.getItem('my_token') || localStorage.getItem('token')
-    if (!token || !userId) return
 
-    const response = await fetch(`/api/profile/${userId}`, {
-      headers: { 'X-Authorization': token }
-    })
-
-    if (response.ok) {
-      const data = await response.json()
-      if (data.success && data.data?.photo) {
-        userPhoto.value = data.data.photo
-        // Cache photo URL in localStorage with userId for multi-account support
-        localStorage.setItem(`userPhoto_${userId}`, data.data.photo)
-        localStorage.setItem('currentUserPhoto', data.data.photo)
-      } else {
-        // No photo - clear cache for this user
-        userPhoto.value = ''
-        localStorage.removeItem(`userPhoto_${userId}`)
-        localStorage.removeItem('currentUserPhoto')
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching user photo:', error)
-  }
-}
-
-// Handle photo load error (404, etc.) - use fallback icon
-const handlePhotoError = () => {
-  console.debug('[Profile] Photo load error, using fallback icon')
-  // Clear broken photo URL
-  userPhoto.value = ''
-  const userId = localStorage.getItem('id')
-  if (userId) {
-    localStorage.removeItem(`userPhoto_${userId}`)
-  }
-  localStorage.removeItem('currentUserPhoto')
-}
 
 const onMenuShow = () => {
   isMenuOpen.value = true
@@ -371,13 +317,6 @@ const logout = () => {
   localStorage.removeItem('unified_auth_session_id')
   localStorage.removeItem('is_admin')
 
-  // Clear user photo cache (Issue #5139)
-  const userId = localStorage.getItem('id')
-  if (userId) {
-    localStorage.removeItem(`userPhoto_${userId}`)
-  }
-  localStorage.removeItem('currentUserPhoto')
-
   op.value.hide()
 
   router.push('/login')
@@ -420,27 +359,6 @@ defineExpose({
 .avatar-large {
   background-color: var(--p-primary-contrast-color) !important;
   color: var(--p-primary-color) !important;
-}
-
-.avatar-large :deep(img) {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-}
-
-.avatar-large-wrapper {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  overflow: hidden;
-  background-color: var(--p-primary-contrast-color);
-}
-
-.avatar-large-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 
 .detail-item i {
