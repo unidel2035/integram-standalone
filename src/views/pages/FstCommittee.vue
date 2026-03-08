@@ -656,6 +656,25 @@
             </div>
           </div>
 
+          <!-- ═══ Режим голосования ═══ -->
+          <div v-if="useAI && useAgentLoop" class="fst-ai-mode-row" style="margin-top:10px">
+            <div class="fst-voting-mode-select">
+              <i class="pi pi-chart-bar" style="color:#ab47bc; margin-right:6px"></i>
+              <strong style="margin-right:10px">Голосование:</strong>
+              <SelectButton v-model="votingMode" :options="[
+                { label: 'Формула', value: 'formula' },
+                { label: 'Гибрид', value: 'hybrid' },
+                { label: 'LLM', value: 'llm' }
+              ]" optionLabel="label" optionValue="value" :allowEmpty="false"
+                style="font-size:0.8rem" />
+            </div>
+            <div class="fst-ai-mode-label" style="margin-top:4px; font-size:0.78rem; color:var(--p-text-color-secondary)">
+              <span v-if="votingMode === 'formula'">Алгоритмические веса + bias + шум — быстро, предсказуемо</span>
+              <span v-else-if="votingMode === 'hybrid'">LLM stance из дебатов + формульный score — баланс</span>
+              <span v-else>Чисто LLM — stance и confidence из ответа агента, без формул</span>
+            </div>
+          </div>
+
           <!-- ═══ Настройки моделей оркестратора ═══ -->
           <div v-if="useAI" class="fst-setup-section-title" style="margin-top:20px">
             <div class="fst-policy-toggle" @click="modelPanelExpanded = !modelPanelExpanded">
@@ -793,6 +812,7 @@ const selectedSpeed = ref('normal')
 const useAI        = ref(true)
 const useAgentLoop = ref(true)    // Multi-agent orchestrator: tool_use + parallel
 const useOrchestrator = ref(false) // Серверная оркестрация (Phase 3)
+const votingMode = ref('hybrid')   // 'formula' | 'hybrid' | 'llm'
 const policyExpanded = ref(false)
 
 // ── Оркестратор моделей ────────────────────────────────────────
@@ -1084,6 +1104,7 @@ function startSession() {
     useAI:          useAI.value,
     useAgentLoop:   useAgentLoop.value,
     useOrchestrator: useOrchestrator.value,
+    votingMode:      votingMode.value,
     speedProfile:   selectedSpeedProfile.value,
     modelOverrides: { ...agentModelOverrides.value },
   })

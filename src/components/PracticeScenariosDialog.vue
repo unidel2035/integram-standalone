@@ -1,6 +1,6 @@
 <template>
   <Dialog
-    v-model:visible="visible"
+    :visible="visible"
     modal
     header="Сценарии для практики"
     :style="{ width: '900px', maxWidth: '95vw' }"

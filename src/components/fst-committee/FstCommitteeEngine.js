@@ -166,6 +166,7 @@ export function createSession(project, options = {}) {
     useAI:        options.useAI        !== false,  // по умолчанию включён
     useAgentLoop: options.useAgentLoop === true,   // agentic loop (opt-in)
     useOrchestrator: options.useOrchestrator === true, // server-side orchestration (opt-in)
+    votingMode: options.votingMode || 'hybrid',       // 'formula' | 'hybrid' | 'llm'
     // Настройки оркестратора моделей
     speedProfile:   options.speedProfile   || 'fast',
     modelOverrides: options.modelOverrides || {},  // { [agentId]: modelId }
@@ -550,18 +551,24 @@ export class FstCommitteeEngine {
     this.emit('VotingStarted')
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
 
+    const mode = this.session.votingMode || 'hybrid'
     const dimScores = this.session.dimScores
     const agentVotes = []
 
-    // ── Извлекаем позиции из SUMMARY аргументов (если agentLoop работал) ──
-    // Если агент выразил stance в SUMMARY — голосует по своей позиции из дебатов
+    // ── Извлекаем позиции из SUMMARY/RESCORE аргументов ──
     const summaryStances = {}
+    const summaryConfidence = {}
     for (const arg of this.session.arguments) {
-      if (arg.type === 'SUMMARY' && arg.stance) {
-        summaryStances[arg.agentId] = arg.stance
+      if ((arg.type === 'RESCORE' || arg.type === 'SUMMARY') && arg.stance) {
+        // RESCORE перезаписывает SUMMARY (если есть)
+        if (!summaryStances[arg.agentId] || arg.type === 'RESCORE') {
+          summaryStances[arg.agentId] = arg.stance
+          summaryConfidence[arg.agentId] = arg.confidence
+        }
       }
     }
-    // Проверяем консенсус из SUMMARY: если >60% агентов согласны — склоняем всех
+
+    // Consensus pressure (только для hybrid)
     const stanceCounts = { APPROVE: 0, DEFER: 0, REJECT: 0 }
     for (const st of Object.values(summaryStances)) stanceCounts[st] = (stanceCounts[st] || 0) + 1
     const dominantStance = Object.entries(stanceCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null
@@ -571,27 +578,48 @@ export class FstCommitteeEngine {
       if (!this._running) return
       await this.delay(TIMING.VOTE_DELAY)
 
-      // Используем stance из SUMMARY если есть, иначе — формула
       let verdict, score, confidence
-      const agentSummaryStance = summaryStances[agent.id]
+      const llmStance = summaryStances[agent.id]
+      const llmConf   = summaryConfidence[agent.id]
 
-      if (agentSummaryStance) {
-        // Позиция агента из дебатов — она важнее формулы
-        verdict = agentSummaryStance
-        // Если доминантный консенсус сильный (>70%) — слабые несогласные меняют позицию
-        if (dominantShare >= 0.7 && verdict !== dominantStance) {
-          // Агент под давлением консенсуса
-          const agentArg = this.session.arguments.filter(a => a.agentId === agent.id && a.type === 'SUMMARY')[0]
-          if (!agentArg || agentArg.confidence < 0.6) verdict = dominantStance
-        }
-        // Добавляем естественный разброс внутри каждого вердикта
-        const baseScore = verdict === 'APPROVE' ? 0.74 : verdict === 'DEFER' ? 0.55 : 0.28
-        score = clamp(baseScore + (Math.random() - 0.5) * 0.12, 0, 1)
-        confidence = clamp(0.6 + Math.random() * 0.3, 0.6, 0.95)
-      } else {
+      if (mode === 'formula') {
+        // ── Чистая формула: веса + bias + шум ──
         score = agentScore(agent, dimScores)
         verdict = scoreToVerdict(score)
         confidence = clamp(Math.abs(score - 0.6) * 2 + 0.4, 0.4, 1.0)
+
+      } else if (mode === 'llm') {
+        // ── Чисто LLM: stance и confidence из ответа агента ──
+        if (llmStance) {
+          verdict = llmStance
+          confidence = typeof llmConf === 'number' ? clamp(llmConf, 0, 1) : 0.7
+          score = verdict === 'APPROVE' ? 0.7 + confidence * 0.3
+               : verdict === 'REJECT'  ? 0.3 - confidence * 0.2
+               : 0.5
+        } else {
+          // Fallback если LLM не дал stance
+          score = agentScore(agent, dimScores)
+          verdict = scoreToVerdict(score)
+          confidence = 0.5
+        }
+
+      } else {
+        // ── Гибрид (по умолчанию): LLM stance + формульный score + consensus pressure ──
+        if (llmStance) {
+          verdict = llmStance
+          // Consensus pressure: >70% согласны → слабые переворачиваются
+          if (dominantShare >= 0.7 && verdict !== dominantStance) {
+            const agentArg = this.session.arguments.filter(a => a.agentId === agent.id && a.type === 'SUMMARY')[0]
+            if (!agentArg || agentArg.confidence < 0.6) verdict = dominantStance
+          }
+          const baseScore = verdict === 'APPROVE' ? 0.74 : verdict === 'DEFER' ? 0.55 : 0.28
+          score = clamp(baseScore + (Math.random() - 0.5) * 0.12, 0, 1)
+          confidence = clamp(0.6 + Math.random() * 0.3, 0.6, 0.95)
+        } else {
+          score = agentScore(agent, dimScores)
+          verdict = scoreToVerdict(score)
+          confidence = clamp(Math.abs(score - 0.6) * 2 + 0.4, 0.4, 1.0)
+        }
       }
 
       const vote = {
@@ -601,7 +629,8 @@ export class FstCommitteeEngine {
         score: Math.round(score * 100),
         confidence,
         rationale: this._buildVoteRationale(agent, score, verdict),
-        fromDebate: !!agentSummaryStance,
+        fromDebate: mode !== 'formula' && !!llmStance,
+        votingMode: mode,
       }
 
       this.session.votes.push(vote)
