@@ -22,7 +22,7 @@ import {
 } from './AgentToolRegistry.js'
 
 const API_BASE      = ''
-const MAX_ITER      = 3           // Максимум tool_call итераций до публикации
+const MAX_ITER      = 5           // Максимум tool_call итераций до публикации
 const TIMEOUT_MS    = 45_000
 const MAX_PARALLEL  = 4           // Максимум агентов одновременно (concurrency limit)
 const MAX_TOKENS    = 600         // Достаточно для JSON + аргумент 3-4 предложения
@@ -404,7 +404,7 @@ ${toolsDesc}
 
 ПРАВИЛА:
 — Сначала вызови хотя бы 1 инструмент (данные или зал), потом публикуй
-— Максимум 3 tool_call итерации, потом обязательно publish
+— Максимум 5 tool_call итераций, потом обязательно publish
 — Аргумент должен содержать конкретные числа из инструментов
 — confidence отражает уверенность в своём вердикте`
 

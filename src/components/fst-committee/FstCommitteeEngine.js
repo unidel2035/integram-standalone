@@ -609,7 +609,7 @@ export class FstCommitteeEngine {
         if (llmStance) {
           verdict = llmStance
           // Consensus pressure: >70% согласны → слабые переворачиваются
-          if (dominantShare >= 0.7 && verdict !== dominantStance) {
+          if (dominantShare >= 0.85 && verdict !== dominantStance) {
             const agentArg = this.session.arguments.filter(a => a.agentId === agent.id && a.type === 'SUMMARY')[0]
             if (!agentArg || agentArg.confidence < 0.6) verdict = dominantStance
           }
@@ -1230,27 +1230,93 @@ export class FstCommitteeEngine {
 
   _buildConditions(project, score) {
     const conditions = []
-    // Базовые условия из проекта
-    if (project.mrl < 5) conditions.push(`Предоставить роуд-мэп по MRL до уровня 5+ в течение 6 месяцев (текущий MRL: ${project.mrl})`)
-    if (project.localizationRatio < 0.6) conditions.push(`Разработать план импортозамещения критических компонентов (текущая локализация: ${Math.round((project.localizationRatio||0)*100)}%)`)
-    if (project.trl < 6) conditions.push(`Провести независимую экспертизу TRL перед траншем A (текущий TRL: ${project.trl})`)
-    if (project.employees < 15) conditions.push(`Усилить команду профильными специалистами (текущая: ${project.employees} чел.)`)
+    // Базовые условия из проекта (с вариативными формулировками)
+    const mrlTemplates = [
+      `Предоставить роуд-мэп по MRL до уровня 5+ в течение 6 месяцев (текущий MRL: ${project.mrl})`,
+      `Достичь MRL 5+ с подтверждением производственного партнёра (текущий MRL: ${project.mrl})`,
+      `Разработать план выхода на серийное производство, MRL ${project.mrl} → 5+ за 6 мес`,
+    ]
+    const locTemplates = [
+      `Разработать план импортозамещения критических компонентов (текущая локализация: ${Math.round((project.localizationRatio||0)*100)}%)`,
+      `Увеличить долю отечественных компонентов до 60%+ (сейчас ${Math.round((project.localizationRatio||0)*100)}%)`,
+      `Представить road-map импортозамещения с конкретными поставщиками (локализация: ${Math.round((project.localizationRatio||0)*100)}%)`,
+    ]
+    const trlTemplates = [
+      `Провести независимую экспертизу TRL перед траншем A (текущий TRL: ${project.trl})`,
+      `Подтвердить TRL ${project.trl} → ${project.trl + 1} у аккредитованной лаборатории`,
+      `Достичь TRL ${Math.min(project.trl + 2, 9)} до следующего транша с независимой верификацией`,
+    ]
+    const teamTemplates = [
+      `Усилить команду профильными специалистами (текущая: ${project.employees} чел.)`,
+      `Нанять CTO/VP Engineering с опытом масштабирования (команда: ${project.employees} чел.)`,
+      `Расширить R&D команду до ${project.employees + 5}+ специалистов`,
+    ]
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)]
+
+    if (project.mrl < 5) conditions.push(pick(mrlTemplates))
+    if (project.localizationRatio < 0.6) conditions.push(pick(locTemplates))
+    if (project.trl < 6) conditions.push(pick(trlTemplates))
+    if (project.employees < 15) conditions.push(pick(teamTemplates))
     if (score >= 0.5 && score < 0.72) conditions.push(`Подтвердить финансовую модель у 2 независимых аналитиков (текущий скоринг: ${Math.round(score*100)}/100)`)
 
     // Условия из CHALLENGE/COUNTER аргументов — реальные риски, поднятые в дебатах
-    const challengeTexts = this.session.arguments
+    const debateArgs = this.session.arguments
       .filter(a => a.type === 'CHALLENGE' || a.type === 'COUNTER')
-      .map(a => a.text || '')
-    for (const text of challengeTexts) {
-      if (/патент|IP|интеллектуальн/i.test(text) && !conditions.some(c => /патент/i.test(c)))
-        conditions.push('Подтвердить патентную чистоту технологии до закрытия сделки')
-      if (/партнёр|производств|контракт/i.test(text) && !conditions.some(c => /производств/i.test(c)))
-        conditions.push('Предоставить LOI от производственного партнёра')
-      if (/cash.?flow|денежн.*поток|кассов/i.test(text) && !conditions.some(c => /cash/i.test(c)))
-        conditions.push('Предоставить детальную помесячную cash-flow модель на 18 месяцев')
+    const challengeTexts = debateArgs.map(a => a.text || '')
+
+    const debatePatterns = [
+      { re: /патент|IP|интеллектуальн/i, guard: /патент/i, templates: [
+        'Подтвердить патентную чистоту технологии до закрытия сделки',
+        'Провести IP-аудит и зарегистрировать ключевые патенты',
+        'Получить заключение патентного поверенного о свободе от претензий',
+      ]},
+      { re: /партнёр|производств|контракт/i, guard: /производств|партнёр/i, templates: [
+        'Предоставить LOI от производственного партнёра',
+        'Заключить предварительное соглашение с производственной площадкой',
+        'Подтвердить наличие производственных мощностей для серии',
+      ]},
+      { re: /cash.?flow|денежн.*поток|кассов|burn/i, guard: /cash|burn/i, templates: [
+        'Предоставить детальную помесячную cash-flow модель на 18 месяцев',
+        'Подготовить финансовый план с учётом текущего burn rate',
+        'Обосновать runway и точку безубыточности с помесячной детализацией',
+      ]},
+      { re: /сертифик|лицензи|разрешен|регулятор/i, guard: /сертифик|лицензи/i, templates: [
+        'Получить необходимые сертификаты и лицензии до транша B',
+        'Представить план сертификации продукции с конкретными сроками',
+      ]},
+      { re: /конкурент|аналог|рынок.*насыщ/i, guard: /конкурент/i, templates: [
+        'Провести детальный конкурентный анализ с бенчмарками',
+        'Подтвердить конкурентное преимущество независимой экспертизой',
+      ]},
+      { re: /масштаб|scale|growth|рост/i, guard: /масштаб|scale/i, templates: [
+        'Представить план масштабирования с unit-экономикой на 3 года',
+        'Подтвердить возможность масштабирования пилотными контрактами',
+      ]},
+    ]
+
+    for (const pattern of debatePatterns) {
+      if (challengeTexts.some(t => pattern.re.test(t)) && !conditions.some(c => pattern.guard.test(c))) {
+        conditions.push(pick(pattern.templates))
+      }
+    }
+
+    // Прямые цитаты из высококонфидентных CHALLENGE аргументов (уникальные условия)
+    const highConfChallenges = debateArgs
+      .filter(a => a.type === 'CHALLENGE' && (a.confidence || 0) >= 0.75 && a.text?.length > 30)
+    if (highConfChallenges.length > 0 && conditions.length < 5) {
+      const picked = highConfChallenges[Math.floor(Math.random() * highConfChallenges.length)]
+      const short = picked.text.split(/[.!?]/)[0].trim()
+      if (short.length > 15 && short.length < 120 && !conditions.some(c => c.includes(short.slice(0, 20)))) {
+        conditions.push(`Устранить риск: ${short}`)
+      }
     }
 
     if (conditions.length === 0) conditions.push('Стандартная отчётность по KPI ежеквартально')
+    // Перемешиваем порядок для вариативности между запусками
+    for (let i = conditions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [conditions[i], conditions[j]] = [conditions[j], conditions[i]]
+    }
     return conditions.slice(0, 5)
   }
 
