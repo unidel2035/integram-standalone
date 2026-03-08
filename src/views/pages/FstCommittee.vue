@@ -103,6 +103,10 @@
             :negotiating="['NODE_NEGOTIATION','NODE_VOTING'].includes(session.phase)"
             :approved="(session.contractNodes || []).length > 0"
           />
+          <div v-if="session.savedContractId" class="fst-contract-saved">
+            <i class="pi pi-file-check"></i>
+            Смарт контракт #{{ session.savedContractId }} сохранён в базе
+          </div>
         </div>
 
         <div v-if="session.decision.humanApproval" class="fst-human-result">
@@ -766,6 +770,7 @@
 <script setup>
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import Slider from 'primevue/slider'
+import { useToast } from 'primevue/usetoast'
 import { FstCommitteeEngine, createSession } from '@/components/fst-committee/FstCommitteeEngine.js'
 import {
   AGENTS, SCORING_DIMS, PHASES, PHASE_ORDER, VERDICTS,
@@ -790,6 +795,7 @@ import { usePageHelp } from '@/composables/usePageHelp'
 // ── Load FST Data ─────────────────────────────────────────────────
 
 const { projects: PROJECTS_POOL, subfunds: SUBFUNDS, loadProjects, loadSubfunds } = useFstData()
+const toast = useToast()
 
 // Load data on component mount
 onMounted(async () => {
@@ -1331,6 +1337,10 @@ async function saveContractNodes(sess) {
         up: contractId,
       })
       const nodeId = nData.id || nData.newId || nData.obj
+      // Issue #152: save MOIC if available
+      if (nodeId && node.moic) {
+        await post('_m_set/' + nodeId, { t4030: node.moic })
+      }
       if (!nodeId) continue
 
       // Требования из условий decision (3999)
@@ -1346,8 +1356,23 @@ async function saveContractNodes(sess) {
     }
 
     console.log('✅ Ноды контракта сохранены в БД. Contract ID:', contractId)
+    // Issue #152: save contractId + show toast
+    sess.savedContractId = contractId
+    session.value = { ...sess }
+    toast.add({
+      severity: 'success',
+      summary: 'Смарт контракт создан',
+      detail: 'Contract ID: ' + contractId,
+      life: 8000
+    })
   } catch (err) {
     console.error('❌ saveContractNodes failed:', err)
+    toast.add({
+      severity: 'error',
+      summary: 'Ошибка сохранения контракта',
+      detail: err.message,
+      life: 5000
+    })
   }
 }
 
@@ -3354,6 +3379,26 @@ onUnmounted(() => {
 }
 
 /* ── KAG saved badge ───────────────────────────────────────── */
+.fst-contract-saved {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  background: var(--p-green-50, rgba(76, 175, 80, 0.08));
+  border: 1px solid var(--p-green-200, rgba(76, 175, 80, 0.3));
+  border-radius: var(--p-content-border-radius, 6px);
+  color: var(--p-green-700, #2e7d32);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+:root.dark .fst-contract-saved {
+  background: rgba(76, 175, 80, 0.12);
+  border-color: rgba(76, 175, 80, 0.25);
+  color: var(--p-green-400, #66bb6a);
+}
+
 .fst-kag-saved {
   display: flex;
   align-items: center;
