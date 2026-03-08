@@ -21,13 +21,13 @@
           :title="sandboxStore.modeName"
         >
           <i :class="sandboxStore.isSandboxMode ? 'pi pi-graduation-cap' : 'pi pi-building'"></i>
-          {{ sandboxStore.isSandboxMode ? 'Обучение' : 'Боевой' }}
+          <span class="hub-btn-label">{{ sandboxStore.isSandboxMode ? 'Обучение' : 'Боевой' }}</span>
         </button>
-        <button class="hub-btn" @click="go('/fst-apply')">
-          <i class="pi pi-file-plus"></i> Новая заявка
+        <button class="hub-btn" @click="go('/fst-apply')" title="Новая заявка">
+          <i class="pi pi-file-plus"></i><span class="hub-btn-label"> Новая заявка</span>
         </button>
-        <button class="hub-btn hub-btn--accent" @click="go('/fst-committee')">
-          <i class="pi pi-play-circle"></i> Запустить ИК
+        <button class="hub-btn hub-btn--accent" @click="go('/fst-committee')" title="Запустить ИК">
+          <i class="pi pi-play-circle"></i><span class="hub-btn-label"> Запустить ИК</span>
         </button>
         <button class="hub-btn" @click="toggleHelp" title="Помощь по странице">
           <i class="pi pi-question-circle"></i>
@@ -490,11 +490,132 @@ const modulesByPhase = computed(() => {
 
 /* ═══════════════════════════════════════════════ RESPONSIVE */
 @media (max-width: 768px) {
-  .hub-metrics { flex-wrap: wrap; padding: 12px 16px; gap: 8px; }
-  .hub-metric { flex: 1 1 calc(50% - 8px); }
-  .hub-pipeline { flex-direction: column; }
-  .hub-pipe-step { border-right: none; border-bottom: 1px solid var(--p-content-border-color); }
-  .hub-topbar { flex-direction: column; gap: 10px; align-items: flex-start; }
+  /* Top bar: stack left/right, make actions full-width */
+  .hub-topbar {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 16px;
+  }
+  .hub-topbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  /* Show only icon on small buttons, keep text on key actions */
+  .hub-btn {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  /* Metrics: 2 columns */
+  .hub-metrics {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  .hub-metric {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+  }
+
+  /* Sections */
+  .hub-section {
+    padding: 16px;
+  }
+
+  /* Pipeline: vertical list */
+  .hub-pipeline {
+    flex-direction: column;
+    border-radius: 8px;
+  }
+  .hub-pipe-step {
+    border-right: none;
+    border-bottom: 1px solid var(--p-content-border-color);
+    min-width: 0;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  .hub-pipe-step:last-child {
+    border-bottom: none;
+  }
+  .hub-pipe-num {
+    margin-bottom: 0;
+    min-width: 20px;
+  }
+  .hub-pipe-icon {
+    margin-bottom: 0;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .hub-pipe-name {
+    margin-bottom: 0;
+    font-size: 13px;
+  }
+  .hub-pipe-sub {
+    flex: 1;
+    font-size: 11px;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Modules: fix negative margin overflow */
+  .hub-mod {
+    margin: 0;
+    padding: 10px 10px;
+    border-left-width: 2px;
+    border-right: none;
+  }
+  .hub-mod:hover {
+    border-right-color: transparent;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small: hide button labels, show only icons for secondary actions */
+  .hub-btn-sandbox span,
+  .hub-btn-label {
+    display: none;
+  }
+  .hub-btn {
+    padding: 7px 9px;
+  }
+  .hub-topbar-left {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .hub-fund-name {
+    font-size: 13px;
+  }
+  .hub-date {
+    display: none;
+  }
+
+  /* Metrics: tighter */
+  .hub-metrics {
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .hub-metric {
+    padding: 10px 6px;
+  }
+  .hub-metric-val {
+    font-size: 18px;
+  }
+  .hub-metric-label {
+    font-size: 10px;
+  }
+
+  /* Sections */
+  .hub-section {
+    padding: 12px;
+  }
 }
 
 </style>
