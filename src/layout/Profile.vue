@@ -3,7 +3,7 @@
     ref="op"
     :dismissable="true"
     class="profile-overlay"
-    :style="{ width: '350px' }"
+    :style="{ width: '320px' }"
     @show="onMenuShow"
     @hide="onMenuHide"
   >
@@ -54,22 +54,6 @@
             <i class="pi pi-database field-key"></i>
             <span class="field-key">База данных:</span>
             <span class="field-value">{{ dataBase }}</span>
-          </div>
-        </div>
-
-        <!-- Навигация -->
-        <div class="profile-nav">
-          <div class="profile-nav-item" @click="goToAgents">
-            <i class="pi pi-bolt"></i>
-            <span>Агенты</span>
-          </div>
-          <div class="profile-nav-item" @click="goToTraining">
-            <i class="pi pi-graduation-cap"></i>
-            <span>Обучение</span>
-          </div>
-          <div class="profile-nav-item" @click="openThemeSettings">
-            <i class="pi pi-palette"></i>
-            <span>Настройка темы</span>
           </div>
         </div>
 
@@ -258,22 +242,6 @@ const onMenuHide = () => {
   isMenuOpen.value = false
 }
 
-const goToAgents = () => {
-  op.value.hide()
-  router.push('/spaces')
-}
-
-const goToTraining = () => {
-  op.value.hide()
-  router.push('/fst-learning')
-}
-
-const openThemeSettings = () => {
-  op.value.hide()
-  // Trigger the palette button in topbar via custom event
-  window.dispatchEvent(new CustomEvent('open-theme-settings'))
-}
-
 const logout = () => {
   // Clear primary database credentials
   ;['_xsrf', 'token', 'user', 'id', 'db', 'apiBase'].forEach(key =>
@@ -370,32 +338,6 @@ defineExpose({
   width: 100%;
   justify-content: flex-start;
   padding-left: 1rem;
-}
-
-.profile-nav {
-  border-top: 1px solid var(--p-content-border-color);
-  border-bottom: 1px solid var(--p-content-border-color);
-}
-
-.profile-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 1.25rem;
-  cursor: pointer;
-  color: var(--p-text-color);
-  font-size: 0.875rem;
-  transition: background 0.15s;
-}
-
-.profile-nav-item:hover {
-  background: var(--p-content-hover-background);
-}
-
-.profile-nav-item i {
-  font-size: 0.875rem;
-  color: var(--p-text-muted-color);
-  width: 1rem;
 }
 
 .field-key {
