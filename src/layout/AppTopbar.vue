@@ -421,18 +421,17 @@ onBeforeUnmount(() => {
 }*/
 
 .topbar-avatar-initials {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
   border-radius: 50%;
   border: 1.5px solid currentColor;
   color: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.625rem;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  vertical-align: middle;
   user-select: none;
 }
 
