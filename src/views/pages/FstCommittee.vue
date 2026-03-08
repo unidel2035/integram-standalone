@@ -1308,6 +1308,7 @@ async function saveContractNodes(sess) {
     console.log('[saveContractNodes] creating contract:', contractName, 'nodes:', sess.contractNodes?.length)
     const cData = await post('_m_new/3995', {
       t3995: contractName,
+      up: 1,
     })
     console.log('[saveContractNodes] cData:', JSON.stringify(cData))
     const contractId = cData.id || cData.newId || cData.obj
