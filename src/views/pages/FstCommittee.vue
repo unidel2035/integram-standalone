@@ -32,6 +32,65 @@
             <li v-for="c in session.decision.conditions" :key="c">{{ c }}</li>
           </ul>
         </div>
+
+        <!-- Противоречия дебатов (ConditionalDecision) -->
+        <div v-if="session.conditionalDecision?.contradictions?.length" class="fst-conclusion-section">
+          <div class="fst-conclusion-label">Выявленные противоречия:</div>
+          <div class="fst-contradictions-list">
+            <div v-for="(c, i) in session.conditionalDecision.contradictions" :key="i" class="fst-contradiction-item">
+              <span class="fst-contradiction-dim">{{ c.dimension }}</span>
+              <span class="fst-contradiction-severity" :class="'sev-' + (c.severity || 'medium')">
+                {{ c.severity === 'high' ? 'Высокая' : c.severity === 'low' ? 'Низкая' : 'Средняя' }}
+              </span>
+              <div class="fst-contradiction-thesis">{{ c.thesis }}</div>
+              <div class="fst-contradiction-antithesis">{{ c.antithesis }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Условия из противоречий -->
+        <div v-if="session.conditionalDecision?.conditions?.length" class="fst-conclusion-section">
+          <div class="fst-conclusion-label">Условия сделки (из противоречий):</div>
+          <div class="fst-deal-conditions">
+            <div v-for="(cond, i) in session.conditionalDecision.conditions" :key="i" class="fst-deal-condition">
+              <span class="fst-cond-type" :class="'type-' + cond.type">{{ cond.type }}</span>
+              <span class="fst-cond-text">{{ cond.text }}</span>
+              <span v-if="cond.metric" class="fst-cond-metric">{{ cond.metric }} {{ cond.threshold ? '≥ ' + cond.threshold : '' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Belief Drift — изменение позиций агентов -->
+        <div v-if="session.beliefDrift && Object.keys(session.beliefDrift).length" class="fst-conclusion-section">
+          <div class="fst-conclusion-label">Динамика позиций агентов:</div>
+          <div class="fst-belief-drift-grid">
+            <div v-for="(drift, agentId) in session.beliefDrift" :key="agentId" class="fst-drift-card">
+              <div class="fst-drift-header">
+                <span class="fst-drift-avatar" :style="{ background: agentColor(agentId) }">
+                  {{ agentAvatar(agentId) }}
+                </span>
+                <span class="fst-drift-name">{{ agentShortName(agentId) }}</span>
+                <span v-if="drift.stanceChanged" class="fst-drift-changed">изменил позицию</span>
+              </div>
+              <div class="fst-drift-bars">
+                <div class="fst-drift-bar-row">
+                  <span class="fst-drift-label">Начало:</span>
+                  <div class="fst-drift-bar" :style="{ width: (drift.initialConfidence * 100) + '%', background: stanceColor(drift.initialStance) }"></div>
+                  <span class="fst-drift-val">{{ drift.initialStance || '?' }} {{ (drift.initialConfidence * 100).toFixed(0) }}%</span>
+                </div>
+                <div class="fst-drift-bar-row">
+                  <span class="fst-drift-label">Итог:</span>
+                  <div class="fst-drift-bar" :style="{ width: (drift.finalConfidence * 100) + '%', background: stanceColor(drift.finalStance) }"></div>
+                  <span class="fst-drift-val">{{ drift.finalStance || '?' }} {{ (drift.finalConfidence * 100).toFixed(0) }}%</span>
+                </div>
+              </div>
+              <div class="fst-drift-delta" :class="drift.delta > 0 ? 'positive' : drift.delta < 0 ? 'negative' : ''">
+                {{ drift.delta > 0 ? '+' : '' }}{{ (drift.delta * 100).toFixed(0) }}%
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Цифровой двойник контракта — матрица сценариев -->
         <div class="fst-conclusion-section fst-scenario-section">
           <div class="fst-conclusion-label">Сценарии сделки (Цифровой двойник контракта):</div>
@@ -1127,7 +1186,12 @@ function handleEvent(event) {
     // positionDeltas уже синкнуты выше через engine.session
   }
 
+  if (event.type === 'ConditionalDecisionReady') {
+    session.value.conditionalDecision = event
+  }
+
   if (event.type === 'SessionConcluded') {
+    if (event.beliefDrift) session.value.beliefDrift = event.beliefDrift
     agentActivity.value = {}
     setTimeout(() => {
       conclusionVisible.value = true
@@ -1135,6 +1199,25 @@ function handleEvent(event) {
     // Сохранить решение ИК в fst
     saveDecisionToFst(session.value)
   }
+}
+
+
+function agentColor(id) {
+  const a = AGENTS.find(a => a.id === id)
+  return a?.color || '#64748b'
+}
+function agentAvatar(id) {
+  const a = AGENTS.find(a => a.id === id)
+  return a?.avatar || '🤖'
+}
+function agentShortName(id) {
+  const a = AGENTS.find(a => a.id === id)
+  return a?.shortName || id
+}
+function stanceColor(stance) {
+  if (stance === 'APPROVE') return '#4caf50'
+  if (stance === 'REJECT') return '#ef5350'
+  return '#ffa726'
 }
 
 async function saveDecisionToFst(sess) {
@@ -1616,6 +1699,131 @@ onUnmounted(() => {
   color: var(--p-text-muted-color);
   line-height: 1.4;
 }
+
+/* Contradictions */
+.fst-contradictions-list { display: flex; flex-direction: column; gap: 8px; }
+.fst-contradiction-item {
+  background: var(--p-surface-100);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.fst-contradiction-dim {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--p-primary-100);
+  color: var(--p-primary-700);
+  font-size: 11px;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.fst-contradiction-severity {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.fst-contradiction-severity.sev-high { background: #ffcdd2; color: #c62828; }
+.fst-contradiction-severity.sev-medium { background: #fff3e0; color: #e65100; }
+.fst-contradiction-severity.sev-low { background: #e8f5e9; color: #2e7d32; }
+.fst-contradiction-thesis { margin-top: 4px; color: var(--p-text-color); }
+.fst-contradiction-antithesis { color: var(--p-text-muted-color); font-style: italic; }
+
+/* Deal conditions */
+.fst-deal-conditions { display: flex; flex-direction: column; gap: 4px; }
+.fst-deal-condition {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.fst-cond-type {
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.fst-cond-type.type-MILESTONE { background: #e3f2fd; color: #1565c0; }
+.fst-cond-type.type-GOVERNANCE { background: #f3e5f5; color: #7b1fa2; }
+.fst-cond-type.type-RISK { background: #fce4ec; color: #c62828; }
+.fst-cond-text { flex: 1; color: var(--p-text-color); }
+.fst-cond-metric { color: var(--p-text-muted-color); font-size: 11px; }
+
+/* Belief Drift */
+.fst-belief-drift-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.fst-drift-card {
+  background: var(--p-surface-100);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.fst-drift-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.fst-drift-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+.fst-drift-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+.fst-drift-changed {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: #fff3e0;
+  color: #e65100;
+  font-weight: 600;
+  margin-left: auto;
+}
+.fst-drift-bars { display: flex; flex-direction: column; gap: 3px; }
+.fst-drift-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+.fst-drift-label {
+  width: 42px;
+  color: var(--p-text-muted-color);
+  font-size: 10px;
+}
+.fst-drift-bar {
+  height: 6px;
+  border-radius: 3px;
+  min-width: 4px;
+  transition: width 0.5s ease;
+}
+.fst-drift-val {
+  font-size: 10px;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+}
+.fst-drift-delta {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 4px;
+  color: var(--p-text-muted-color);
+}
+.fst-drift-delta.positive { color: #4caf50; }
+.fst-drift-delta.negative { color: #ef5350; }
+
 .fst-human-result {
   display: flex;
   align-items: center;
@@ -2908,6 +3116,131 @@ onUnmounted(() => {
 }
 .fst-conditions-list li { margin-bottom: 4px; }
 .fst-scenario-section { margin-top: 16px; }
+
+/* Contradictions */
+.fst-contradictions-list { display: flex; flex-direction: column; gap: 8px; }
+.fst-contradiction-item {
+  background: var(--p-surface-100);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.fst-contradiction-dim {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--p-primary-100);
+  color: var(--p-primary-700);
+  font-size: 11px;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.fst-contradiction-severity {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.fst-contradiction-severity.sev-high { background: #ffcdd2; color: #c62828; }
+.fst-contradiction-severity.sev-medium { background: #fff3e0; color: #e65100; }
+.fst-contradiction-severity.sev-low { background: #e8f5e9; color: #2e7d32; }
+.fst-contradiction-thesis { margin-top: 4px; color: var(--p-text-color); }
+.fst-contradiction-antithesis { color: var(--p-text-muted-color); font-style: italic; }
+
+/* Deal conditions */
+.fst-deal-conditions { display: flex; flex-direction: column; gap: 4px; }
+.fst-deal-condition {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.fst-cond-type {
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.fst-cond-type.type-MILESTONE { background: #e3f2fd; color: #1565c0; }
+.fst-cond-type.type-GOVERNANCE { background: #f3e5f5; color: #7b1fa2; }
+.fst-cond-type.type-RISK { background: #fce4ec; color: #c62828; }
+.fst-cond-text { flex: 1; color: var(--p-text-color); }
+.fst-cond-metric { color: var(--p-text-muted-color); font-size: 11px; }
+
+/* Belief Drift */
+.fst-belief-drift-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.fst-drift-card {
+  background: var(--p-surface-100);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.fst-drift-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.fst-drift-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+.fst-drift-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+.fst-drift-changed {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: #fff3e0;
+  color: #e65100;
+  font-weight: 600;
+  margin-left: auto;
+}
+.fst-drift-bars { display: flex; flex-direction: column; gap: 3px; }
+.fst-drift-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+}
+.fst-drift-label {
+  width: 42px;
+  color: var(--p-text-muted-color);
+  font-size: 10px;
+}
+.fst-drift-bar {
+  height: 6px;
+  border-radius: 3px;
+  min-width: 4px;
+  transition: width 0.5s ease;
+}
+.fst-drift-val {
+  font-size: 10px;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+}
+.fst-drift-delta {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 4px;
+  color: var(--p-text-muted-color);
+}
+.fst-drift-delta.positive { color: #4caf50; }
+.fst-drift-delta.negative { color: #ef5350; }
+
 .fst-human-result {
   display: flex;
   align-items: center;
