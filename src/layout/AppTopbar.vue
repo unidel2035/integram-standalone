@@ -328,7 +328,7 @@ onBeforeUnmount(() => {
           <button
             @click="toggleDarkMode(); topbarMenuVisible = false"
             type="button"
-            class="layout-topbar-action"
+            class="layout-topbar-action mobile-only-action"
             :title="themeTooltip"
           >
             <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
@@ -505,6 +505,12 @@ onBeforeUnmount(() => {
 /* Mobile topbar menu toggle — hidden only on small screens */
 @media (max-width: 991px) {
   .layout-topbar-menu.topbar-menu-mobile-hidden {
+    display: none !important;
+  }
+}
+/* Hide duplicate theme toggle on desktop (already in .layout-config-menu) */
+@media (min-width: 992px) {
+  .layout-topbar-menu .mobile-only-action {
     display: none !important;
   }
 }

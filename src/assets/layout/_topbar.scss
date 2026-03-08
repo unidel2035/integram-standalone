@@ -111,6 +111,29 @@
     }
 }
 
+// Desktop: align hamburger with sidebar icons
+@media (min-width: 992px) {
+    .layout-topbar {
+        padding-left: 0;
+
+        .layout-topbar-logo-container {
+            width: 20rem;
+            padding-left: 1.875rem;
+            transition: width 0.3s ease, padding-left 0.3s ease;
+        }
+
+        .layout-menu-button {
+            margin-right: 0;
+        }
+    }
+
+    .layout-wrapper.sidebar-collapsed .layout-topbar .layout-topbar-logo-container {
+        width: 5rem;
+        padding-left: 0;
+        justify-content: center;
+    }
+}
+
 @media (max-width: 991px) {
     .layout-topbar {
         padding: 0 1rem;
