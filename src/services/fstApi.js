@@ -109,7 +109,7 @@ export const STATUSES = { Новый: 1115, 'На рассмотрении ИК'
  * Uses stage, TAM, TRL and requested amount to produce a per-project estimate
  * instead of the old hardcoded 0.25.
  */
-function estimateIRR(app) {
+export function estimateIRR(app) {
   // Base IRR by investment stage — earlier stage = higher target return
   const stageIRR = {
     'Pre-Seed': 0.55,

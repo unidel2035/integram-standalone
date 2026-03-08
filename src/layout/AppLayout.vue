@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router'
 const AppFooter = defineAsyncComponent(() => import('./AppFooter.vue'))
 import AppSidebar from './AppSidebar.vue'
 import AppTopbar from './AppTopbar.vue'
-import FstBreadcrumb from './FstBreadcrumb.vue'
+// FstBreadcrumb moved into AppTopbar
 // Lazy load Chat component - it's 2097 lines and significantly impacts page load
 const Chat = defineAsyncComponent(() => import('./Chat.vue'))
 import packageJson from '../../package.json'
@@ -173,7 +173,6 @@ const chatMargin = computed(() => {
     </Transition>
     <div class="layout-main-container" :style="isChatActive && layoutConfig.menuMode === 'static' ? { marginRight: chatMargin } : {}">
       <div class="layout-main">
-        <FstBreadcrumb />
         <router-view v-slot="{ Component, route: matchedRoute }">
             <component :is="Component" :key="matchedRoute.fullPath" />
         </router-view>

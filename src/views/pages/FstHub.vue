@@ -38,11 +38,9 @@
     <!-- ══════════════════════════════════════════ METRICS -->
     <div class="hub-metrics">
       <div v-for="m in metrics" :key="m.label" class="hub-metric">
-        <div class="hub-metric-icon" :style="{ color: m.color }"><i :class="m.icon"></i></div>
-        <div class="hub-metric-body">
-          <div class="hub-metric-val" :class="{ 'hub-skeleton': statsLoading }">{{ m.val }}</div>
-          <div class="hub-metric-label">{{ m.label }}</div>
-        </div>
+        <i :class="m.icon" class="hub-metric-icon"></i>
+        <div class="hub-metric-val" :class="{ 'hub-skeleton': statsLoading }">{{ m.val }}</div>
+        <div class="hub-metric-label">{{ m.label }}</div>
       </div>
     </div>
 
@@ -145,7 +143,7 @@ const metrics = computed(() => {
     { icon: 'pi pi-clock',       color: '#38bdf8', val: '48 ч',                             label: 'Среднее время решения' },
     { icon: 'pi pi-sitemap',     color: '#a78bfa', val: statsLoading.value ? '...' : `${s?.subfundCount ?? 3}`,    label: 'Субфонда' },
     { icon: 'pi pi-briefcase',   color: '#34d399', val: statsLoading.value ? '...' : `${s?.portfolioCount ?? 0}`, label: 'Компаний в портфеле' },
-    { icon: 'pi pi-handshake',   color: '#fb923c', val: statsLoading.value ? '...' : `${s?.dealsCount ?? 9}`,     label: 'Закрытых сделок' },
+    { icon: 'pi pi-check-circle', color: '#fb923c', val: statsLoading.value ? '...' : `${s?.dealsCount ?? 9}`,     label: 'Закрытых сделок' },
     { icon: 'pi pi-chart-line',  color: '#f87171', val: statsLoading.value ? '...' : `${s?.avgIRR ? (s.avgIRR * 100).toFixed(0) + '%' : '—'}`, label: 'Средний IRR' },
   ]
 })
@@ -274,26 +272,27 @@ const tools = [
 /* ═══════════════════════════════════════════════ METRICS */
 .hub-metrics {
   display: flex;
-  gap: 1px;
-  background: var(--p-content-border-color);
-  border-bottom: 1px solid var(--p-content-border-color);
+  padding: 16px 24px;
+  gap: 16px;
 }
 .hub-metric {
   flex: 1;
+  min-width: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
+  text-align: center;
+  padding: 14px 8px;
   background: var(--p-surface-ground);
-  transition: background 0.2s;
+  border-bottom: 2px solid transparent;
 }
-.hub-metric:hover { background: var(--p-surface-hover); }
 .hub-metric-icon {
-  font-size: 20px;
-  opacity: 0.8;
+  font-size: 16px;
+  margin-bottom: 8px;
+  opacity: 0.7;
 }
 .hub-metric-val {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--p-text-color);
   line-height: 1;
@@ -301,8 +300,11 @@ const tools = [
 .hub-metric-label {
   font-size: 11px;
   color: var(--p-text-muted-color);
-  margin-top: 3px;
+  margin-top: 6px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .hub-skeleton {
   color: transparent !important;
@@ -344,12 +346,18 @@ const tools = [
   padding: 16px 14px;
   cursor: pointer;
   border-right: 1px solid var(--p-content-border-color);
-  transition: background 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
   background: var(--p-surface-card);
   min-width: 110px;
 }
 .hub-pipe-step:last-child { border-right: none; }
-.hub-pipe-step:hover { background: var(--p-surface-hover); }
+.hub-pipe-step:hover {
+  background: color-mix(in srgb, var(--c, #38bdf8) 8%, var(--p-surface-card));
+  box-shadow: inset 0 -3px 0 var(--c, #38bdf8);
+}
+.hub-pipe-step:hover .hub-pipe-name {
+  color: var(--c, #38bdf8);
+}
 .hub-pipe-num {
   font-size: 10px;
   color: var(--p-text-muted-color);
@@ -493,10 +501,11 @@ const tools = [
 
 /* ═══════════════════════════════════════════════ RESPONSIVE */
 @media (max-width: 768px) {
-  .hub-metrics { flex-wrap: wrap; }
-  .hub-metric { flex: 1 1 50%; }
+  .hub-metrics { flex-wrap: wrap; padding: 12px 16px; gap: 8px; }
+  .hub-metric { flex: 1 1 calc(50% - 8px); }
   .hub-pipeline { flex-direction: column; }
   .hub-pipe-step { border-right: none; border-bottom: 1px solid var(--p-content-border-color); }
   .hub-topbar { flex-direction: column; gap: 10px; align-items: flex-start; }
 }
+
 </style>

@@ -132,7 +132,7 @@ function serializeExtendedData(description, extended) {
 /**
  * Estimate IRR from extended project data when not stored (issue #151)
  */
-function estimateIRRFromExtended(ext, proj) {
+export function estimateIRRFromExtended(ext, proj) {
   const trl = ext.trl || 5
   const marketSize = ext.marketSize || 10_000_000_000
   const amount = proj.amount || 100_000_000

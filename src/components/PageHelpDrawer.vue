@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import Chip from 'primevue/chip'
@@ -22,8 +23,11 @@ const isOpen = computed({
   set: (value) => emit('update:visible', value)
 })
 
+const router = useRouter()
+
 function navigateTo(path) {
-  window.location.href = path
+  isOpen.value = false
+  router.push(path)
 }
 </script>
 
@@ -196,13 +200,10 @@ function navigateTo(path) {
 
 .page-help-scenario {
   padding: 12px;
-  background: var(--p-surface-50);
-  border-radius: 6px;
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
   border-left: 3px solid var(--p-primary-500);
-}
-
-:root.dark .page-help-scenario {
-  background: var(--p-surface-800);
+  border-radius: 6px;
 }
 
 .page-help-scenario-name {
@@ -237,15 +238,12 @@ function navigateTo(path) {
 .page-help-flow {
   margin-top: 8px;
   padding: 8px 12px;
-  background: var(--p-surface-100);
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   font-size: 0.75rem;
   color: var(--p-text-muted-color);
   text-align: center;
-}
-
-:root.dark .page-help-flow {
-  background: var(--p-surface-700);
 }
 
 .page-help-flow-text {
