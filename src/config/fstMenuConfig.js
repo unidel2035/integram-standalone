@@ -14,7 +14,7 @@ export const fstMenuConfig = [
       { label: 'Дилфлоу', icon: 'pi pi-filter', to: '/fst-dealflow' },
       { label: 'Меморандум', icon: 'pi pi-file-word', to: '/fst-memo' },
       { label: 'Инвесткомитет', icon: 'pi pi-users', to: '/fst-committee' },
-      { label: 'Сделка', icon: 'pi pi-handshake', to: '/fst-deal' },
+      { label: 'Сделка', icon: 'pi pi-file-check', to: '/fst-deal' },
       { label: 'Совет директоров', icon: 'pi pi-sitemap', to: '/fst-board' },
     ]
   },
