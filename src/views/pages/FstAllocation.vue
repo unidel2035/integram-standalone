@@ -1231,6 +1231,12 @@ onUnmounted(() => {
 }
 
 /* Responsive */
+@media (max-width: 768px) {
+  .fsa-panel { padding: 12px; }
+  .fsa-correlation { grid-template-columns: 1fr; }
+  .fsa-stress-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 1400px) {
   .fsa-body {
     grid-template-columns: 1fr;

@@ -2069,4 +2069,14 @@ function generateAuditPackage() {
   margin-top: 1.5rem;
   justify-content: flex-end;
 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .admin-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .admin-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .admin-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .admin-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
+  .params-grid { grid-template-columns: 1fr !important; }
+  .nav-metrics { grid-template-columns: 1fr !important; }
+}
 </style>

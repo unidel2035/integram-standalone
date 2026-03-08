@@ -365,4 +365,10 @@ onUnmounted(() => {
 
 .positive { color: var(--p-green-500); }
 .negative { color: var(--p-red-500); }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .fst-summary-section { flex-wrap: wrap; gap: 8px; }
+  .fst-metrics-row { grid-template-columns: 1fr !important; }
+}
 </style>

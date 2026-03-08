@@ -388,4 +388,15 @@ function sendCapCall() {
 
 /* — Unified page title — */
 .lp-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); line-height: 1.3; }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .lp-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .lp-summary-grid { flex-wrap: wrap; gap: 8px; }
+  .lp-kpi { flex-wrap: wrap; gap: 8px; }
+  .lp-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .lp-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
+  .lp-summary-grid { grid-template-columns: 1fr !important; }
+  .cf-grid { grid-template-columns: 1fr !important; }
+}
 </style>

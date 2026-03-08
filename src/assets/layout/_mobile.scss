@@ -1,0 +1,157 @@
+/* =====================================================
+   Global mobile adaptive styles for all Fst pages
+   Breakpoints: 768px (tablet), 480px (phone)
+   ===================================================== */
+
+/* ── Tables: horizontal scroll on narrow screens ── */
+@media (max-width: 768px) {
+  /* Any table inside page body gets scroll wrapper behavior */
+  .fst-page-body table,
+  [class*='-section'] table,
+  [class*='-root'] table,
+  [class*='-table'] {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+
+    th, td {
+      white-space: nowrap;
+    }
+  }
+
+  /* Kanban / horizontal flex containers → scroll */
+  [class*='-kanban'],
+  [class*='-pipeline'],
+  [class*='-columns'] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    padding-bottom: 8px;
+  }
+
+  /* Summary/KPI card rows → wrap + smaller */
+  [class*='-summary'],
+  [class*='-stats'],
+  [class*='-metrics'],
+  [class*='-kpis'] {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+
+    > * {
+      flex: 1 1 calc(50% - 8px) !important;
+      min-width: 120px !important;
+    }
+  }
+
+  /* Tabs → scroll horizontally */
+  [class*='-tabs']:not(.p-tabview) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    padding-bottom: 4px;
+
+    > button, > div, > a {
+      flex-shrink: 0;
+      white-space: nowrap;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+    }
+  }
+
+  /* 3-column grids → stack */
+  [class*='-body'][style*='grid-template-columns'],
+  [style*='grid-template-columns: 380px'],
+  [style*='grid-template-columns: 1fr 1fr 1fr'] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Modal dialogs → max width */
+  .modal-box,
+  .modal-content,
+  [class*='-modal'],
+  .p-dialog {
+    max-width: 95vw !important;
+    width: 95vw !important;
+    margin: 0 auto;
+  }
+
+  /* Reduce padding on all page containers */
+  .fst-page-body {
+    padding: 12px !important;
+  }
+
+  /* Action buttons → smaller */
+  [class*='-actions'] {
+    flex-wrap: wrap;
+    gap: 6px !important;
+
+    button, .p-button {
+      font-size: 0.8rem !important;
+      padding: 6px 10px !important;
+    }
+
+    select {
+      font-size: 0.8rem;
+      padding: 4px 8px;
+    }
+  }
+
+  /* Header blocks in #header slot → stack */
+  [class*='-header-left'],
+  [class*='-header-right'],
+  [class*='-header-center'] {
+    flex-wrap: wrap;
+  }
+
+  /* Chart containers → responsive width */
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Phone: even tighter */
+  .fst-page-body {
+    padding: 8px !important;
+  }
+
+  /* Stack KPI cards fully */
+  [class*='-summary'],
+  [class*='-stats'],
+  [class*='-metrics'],
+  [class*='-kpis'] {
+    > * {
+      flex: 1 1 100% !important;
+    }
+  }
+
+  /* Reduce font sizes globally */
+  [class*='-title'],
+  [class*='-name'] {
+    font-size: 0.85rem !important;
+  }
+
+  [class*='-subtitle'],
+  [class*='-sub'],
+  [class*='-desc'],
+  [class*='-label'] {
+    font-size: 0.75rem !important;
+  }
+
+  /* Toolbar wraps on phone */
+  .fst-page-toolbar {
+    :deep(.p-toolbar-start),
+    :deep(.p-toolbar-end) {
+      width: 100%;
+    }
+  }
+
+  /* Hide low-priority Tags on phone */
+  .p-tag {
+    font-size: 9px !important;
+    padding: 2px 6px !important;
+  }
+}

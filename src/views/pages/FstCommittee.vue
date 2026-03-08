@@ -4067,4 +4067,15 @@ onUnmounted(() => {
   background: var(--p-surface-200); color: var(--p-text-color);
 }
 .fst-btn--secondary:hover { background: var(--p-surface-300); }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .fst-committee { padding: 12px; }
+  .fst-conclusion-score { flex-wrap: wrap; gap: 8px; }
+  .fst-votes-summary { flex-wrap: wrap; gap: 8px; }
+  .fst-tabs-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .fst-tabs-bar > * { flex-shrink: 0; font-size: 0.8rem; }
+  .fst-kpis { grid-template-columns: 1fr !important; }
+  .fst-belief-drift-grid { grid-template-columns: 1fr !important; }
+}
 </style>

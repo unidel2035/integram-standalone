@@ -922,4 +922,12 @@ onMounted(() => {
 .fsti-empty-main p {
   margin: 0 0 24px;
 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .fsti-ri-stats { flex-wrap: wrap; gap: 8px; }
+  .fsti-news-summary { flex-wrap: wrap; gap: 8px; }
+  .fsti-highlights { grid-template-columns: 1fr !important; }
+  .fsti-tranche-item { grid-template-columns: 1fr !important; }
+}
 </style>

@@ -260,4 +260,13 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 .tcfd-impact.medium { color: #ff9800; }
 .tcfd-impact.low    { color: #66bb6a; }
 .tcfd-horizon { font-size: 0.68rem; color: var(--p-text-muted-color); }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .esg-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .esg-portfolio-score { flex-wrap: wrap; gap: 8px; }
+  .esg-cat-score { flex-wrap: wrap; gap: 8px; }
+  .esg-metrics-grid { grid-template-columns: 1fr !important; }
+  .tcfd-grid { grid-template-columns: 1fr !important; }
+}
 </style>

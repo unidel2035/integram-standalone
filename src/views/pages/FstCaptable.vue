@@ -388,4 +388,15 @@ function exportCsv() {
 .modal-form label { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .modal-form input, .modal-form select { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .ct-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ct-table dil-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ct-summary { flex-wrap: wrap; gap: 8px; }
+  .liq-summary { flex-wrap: wrap; gap: 8px; }
+  .ct-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .ct-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
+  .ct-summary { grid-template-columns: 1fr !important; }
+}
 </style>

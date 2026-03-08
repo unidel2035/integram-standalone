@@ -196,4 +196,13 @@ function exportReport() { alert('Экспорт отчёта соответст�
 .fp-budget { font-size: 1rem; font-weight: 700; color: var(--p-text-color); }
 .fp-desc { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .fp-badge { display: inline-block; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; background: var(--p-primary-color); color: #fff; margin-top: 4px; }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .np-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .np-kpis { flex-wrap: wrap; gap: 8px; }
+  .np-kpi-card { flex-wrap: wrap; gap: 8px; }
+  .np-kpis { grid-template-columns: 1fr !important; }
+  .fp-grid { grid-template-columns: 1fr !important; }
+}
 </style>

@@ -759,4 +759,12 @@ onMounted(() => {
   font-weight: 600;
   color: var(--p-text-color);
 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .fst-proto-score { flex-wrap: wrap; gap: 8px; }
+  .fst-proto-decision-summary { flex-wrap: wrap; gap: 8px; }
+  .fst-proto-vote { grid-template-columns: 1fr !important; }
+  .fst-proto-policy { grid-template-columns: 1fr !important; }
+}
 </style>

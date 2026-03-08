@@ -526,4 +526,12 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fft-ai-forecast { background: var(--p-surface-section); border-radius: 8px; padding: 10px }
 .fft-af-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px }
 .fft-af-verdict { font-size: 11px; margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: color-mix(in srgb, var(--p-primary-color) 10%, transparent); display: flex; align-items: center; gap: 5px; line-height: 1.4 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .fft-kpi-bar { flex-wrap: wrap; gap: 8px; }
+  .fft-top-kpi { flex-wrap: wrap; gap: 8px; }
+  .fft-main { grid-template-columns: 1fr !important; }
+  .fft-subfunds { grid-template-columns: 1fr !important; }
+}
 </style>

@@ -1181,4 +1181,14 @@ h1 { font-size: 1rem; font-weight: 600; margin: 0; }
   color: #fff; border: none; cursor: pointer; font-size: 0.95rem;
   display: flex; align-items: center; gap: 0.5rem;
 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .predictions-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .header-stats { flex-wrap: wrap; gap: 8px; }
+  .school-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .school-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
+  .leaderboard-grid { grid-template-columns: 1fr !important; }
+  .markets-grid { grid-template-columns: 1fr !important; }
+}
 </style>

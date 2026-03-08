@@ -254,4 +254,10 @@ function exportCsv() {
 
 /* — Unified page title — */
 .df-header h2 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); line-height: 1.3; }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .df-stats { flex-wrap: wrap; gap: 8px; }
+  .df-card-score { flex-wrap: wrap; gap: 8px; }
+}
 </style>

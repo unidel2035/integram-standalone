@@ -1007,4 +1007,16 @@ function initNetworkGraph() {
 .detail-section a:hover { text-decoration: underline; }
 .rating-detail { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
 .rating-detail span { font-size: 0.75rem; color: var(--p-text-color); }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .syn-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .heatmap-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .syn-summary { flex-wrap: wrap; gap: 8px; }
+  .inv-stats { flex-wrap: wrap; gap: 8px; }
+  .syn-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .syn-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
+  .syn-summary { grid-template-columns: 1fr !important; }
+  .investor-grid { grid-template-columns: 1fr !important; }
+}
 </style>

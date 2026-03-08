@@ -333,4 +333,11 @@ function exportExitAnalysis() {
 .rec-icon { font-size: 1rem; font-weight: 900; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.1); }
 .rec-title { font-weight: 700; font-size: 0.95rem; color: var(--p-text-color); margin-bottom: 4px; }
 .rec-desc  { font-size: 0.8rem; color: var(--p-text-muted-color); }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .ev-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .params-grid { grid-template-columns: 1fr !important; }
+  .exit-scenarios { grid-template-columns: 1fr !important; }
+}
 </style>

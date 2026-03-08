@@ -1217,4 +1217,13 @@ function unlockTranche() {
 .fex-ev-body { flex: 1; }
 .fex-ev-title { font-size: 11px; color: var(--p-text-color); }
 .fex-ev-sub { font-size: 10px; color: var(--p-text-muted-color); }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .fex-kpi-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .fex-compliance-score { flex-wrap: wrap; gap: 8px; }
+  .fex-kpi-bar { flex-wrap: wrap; gap: 8px; }
+  .fex-fund-body { grid-template-columns: 1fr !important; }
+  .fex-actions-grid { grid-template-columns: 1fr !important; }
+}
 </style>

@@ -203,4 +203,9 @@ function openChat() {
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .workspace-grid { grid-template-columns: 1fr !important; }
+}
 </style>

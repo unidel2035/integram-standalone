@@ -740,4 +740,12 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fdt-tl-stage.active .fdt-tl-stage-dot { border-color: #42a5f5; box-shadow: 0 0 6px #42a5f5 }
 .fdt-tl-stage-label { font-size: 10px; color: var(--p-text-muted-color) }
 .fdt-tl-stage.active .fdt-tl-stage-label { color: #42a5f5; font-weight: 600 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .fdt-health-score { flex-wrap: wrap; gap: 8px; }
+  .fdt-kpi-list { flex-wrap: wrap; gap: 8px; }
+  .fdt-main { grid-template-columns: 1fr !important; }
+  .fdt-vitals-grid { grid-template-columns: 1fr !important; }
+}
 </style>

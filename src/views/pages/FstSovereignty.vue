@@ -346,4 +346,12 @@ function generateReport() { window.print() }
 .rm-dims { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .rm-impact { font-size: 0.72rem; color: #66bb6a; margin-top: 2px; }
 .rm-deadline { font-size: 0.72rem; color: var(--p-text-muted-color); white-space: nowrap; }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .sv-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .sv-summary-bar { flex-wrap: wrap; gap: 8px; }
+  .sv-total-score { flex-wrap: wrap; gap: 8px; }
+  .sv-dims-grid { grid-template-columns: 1fr !important; }
+}
 </style>

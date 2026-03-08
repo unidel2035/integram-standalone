@@ -1262,4 +1262,12 @@ onMounted(() => {
 .sourcing-input:focus {
   border-color: var(--p-primary-color);
 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .sourcing-stats { flex-wrap: wrap; gap: 8px; }
+  .sourcing-card-score { flex-wrap: wrap; gap: 8px; }
+  .sourcing-stats { grid-template-columns: 1fr !important; }
+  .sourcing-cards { grid-template-columns: 1fr !important; }
+}
 </style>

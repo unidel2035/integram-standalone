@@ -767,4 +767,14 @@ function sendOffer(buyer) {
 
 .network-list { list-style: none; padding: 0; margin: 16px 0; }
 .network-list li { padding: 8px 0; border-bottom: 1px solid var(--surface-border); font-size: 0.9rem; }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .sec-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .sec-history-summary { flex-wrap: wrap; gap: 8px; }
+  .sec-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .sec-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
+  .sec-pos-cards { grid-template-columns: 1fr !important; }
+  .sec-offers-grid { grid-template-columns: 1fr !important; }
+}
 </style>

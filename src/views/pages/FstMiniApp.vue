@@ -357,4 +357,12 @@ onUnmounted(() => {
 }
 .action-btn.primary { background: #7c6af7; color: #fff; }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .kpi-row { flex-wrap: wrap; gap: 8px; }
+  .kpi-card { flex-wrap: wrap; gap: 8px; }
+  .kpi-row { grid-template-columns: 1fr !important; }
+  .detail-grid { grid-template-columns: 1fr !important; }
+}
 </style>

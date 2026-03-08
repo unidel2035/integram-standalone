@@ -566,4 +566,10 @@ function startSession(mode) {
 .help-row span {
   color: var(--p-text-color);
 }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .help-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .help-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
 </style>

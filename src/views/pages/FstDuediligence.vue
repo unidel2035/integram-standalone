@@ -300,4 +300,14 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .modal-form label { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .modal-form input, .modal-form select { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── Mobile adaptive ── */
+@media (max-width: 768px) {
+  .ti-score-bar { flex-wrap: wrap; gap: 8px; }
+  .ti-score { flex-wrap: wrap; gap: 8px; }
+  .dd-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .dd-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
+  .fin-metrics { grid-template-columns: 1fr !important; }
+  .tech-item { grid-template-columns: 1fr !important; }
+}
 </style>
