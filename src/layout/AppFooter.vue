@@ -1,6 +1,6 @@
 <template>
     <div class="layout-footer">
-        <span class="footer-copy">&copy; 2026 ФСТ НТИ &middot; DronDoc Platform</span>
+        <span class="footer-copy">&copy; 2026 ФСТ НТИ &middot; <a href="https://drondoc.ru" target="_blank" rel="noopener noreferrer">DronDoc Platform</a></span>
         <span class="footer-sep">&middot;</span>
         <nav class="footer-links">
             <router-link to="/legal/terms-of-service">Условия</router-link>
@@ -15,6 +15,16 @@
   color: var(--p-text-muted-color);
   font-size: 0.75rem;
   white-space: nowrap;
+}
+
+.footer-copy a {
+  color: var(--p-text-muted-color);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.footer-copy a:hover {
+  color: var(--p-primary-color);
 }
 
 .footer-sep {
