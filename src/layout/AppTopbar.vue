@@ -421,12 +421,12 @@ onBeforeUnmount(() => {
 }*/
 
 .topbar-avatar-initials {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
   border-radius: 50%;
   border: 1.5px solid currentColor;
   color: inherit;
-  font-size: 0.625rem;
+  font-size: 0.5rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
