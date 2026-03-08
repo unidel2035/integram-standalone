@@ -17,6 +17,10 @@ import { runAgentLoop, resetLoopTokenCache } from './AgentLoop.js'
 import { DebateRoom } from './DebateRoom.js'
 import { annotateArg, detectContradictions, assembleConditionalDecision, deriveConditionsFromContradictions } from './fstCommitteeOntology.js'
 import {
+  createDebateSession, setDebatePhase, publishToDebate,
+  castDebateVote, concludeDebateSession, connectDebateSocket,
+} from '@/services/debateSessionService.js'
+import {
   detectPortfolioOverlap,
   tagSessionWithConcepts,
   recordSessionDecision,
@@ -224,12 +228,55 @@ export class FstCommitteeEngine {
     this._running = false
     this._timers.forEach(t => clearTimeout(t))
     this._timers = []
+    if (this._debateSocket) this._debateSocket.disconnect()
+    if (this._backendSessionId) {
+      concludeDebateSession(this._backendSessionId).catch(() => {})
+    }
+  }
+
+  /** Create backend session + connect Socket.IO (non-blocking) */
+  async _initBackendSession() {
+    try {
+      const agents = this.session.agents.map(a => a.id)
+      const resp = await createDebateSession(this.session.project, agents, {
+        speedProfile: this.session.speedProfile,
+        maxRounds: 5,
+      })
+      this._backendSessionId = resp.id
+      this._debateSocket = connectDebateSocket(resp.id, {
+        onMessage: (msg) => this.emit('BackendDebateMessage', msg),
+      })
+    } catch (e) {
+      console.warn('[Engine] Backend session unavailable, continuing local-only:', e.message)
+      this._backendSessionId = null
+    }
+  }
+
+  /** Sync phase change to backend */
+  async _syncPhase(phase) {
+    if (!this._backendSessionId) return
+    setDebatePhase(this._backendSessionId, phase).catch(() => {})
+  }
+
+  /** Mirror publish to backend */
+  async _syncPublish(agentId, payload) {
+    if (!this._backendSessionId) return
+    publishToDebate(this._backendSessionId, agentId, payload).catch(() => {})
+  }
+
+  /** Mirror vote to backend */
+  async _syncVote(agentId, vote) {
+    if (!this._backendSessionId) return
+    castDebateVote(this._backendSessionId, agentId, vote).catch(() => {})
   }
 
   async start() {
     this._running = true
     this.session.startedAt = Date.now()
     this.emit('SessionStarted', { sessionId: this.session.id })
+
+    // Sync session to backend (non-blocking)
+    this._initBackendSession()
 
     // Загружаем KAG-контекст прошлых решений (не блокирует старт)
     clearKagCache()
@@ -448,6 +495,7 @@ export class FstCommitteeEngine {
       }
 
       this.session.votes.push(vote)
+      this._syncVote(agent.id, vote)
       agentVotes.push({ agent, score, verdict })
       this.emit('VoteCast', { vote })
 
@@ -994,6 +1042,7 @@ export class FstCommitteeEngine {
     const annotated = annotateArg(arg, this.session.arguments)
 
     this.session.arguments.push(annotated)
+    this._syncPublish(agent.id, annotated)
     this._setPipeline(agent.id, { save: 'done' })
     this.emit('ArgumentRaised', {
       argument:    annotated,
@@ -1012,6 +1061,7 @@ export class FstCommitteeEngine {
     this.session.phase = phase
     this.session.phaseIndex = PHASE_ORDER.indexOf(phase)
     this.emit('PhaseTransitioned', { prevPhase: prev, nextPhase: phase })
+    this._syncPhase(phase)
   }
 
   _setAgentStatus(agentId, update) {
