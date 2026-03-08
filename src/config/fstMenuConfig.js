@@ -1,4 +1,9 @@
 // FST Platform — меню навигации
+// SVG icons from Lucide (free, MIT license) for items missing in PrimeIcons
+
+const svgHandshake = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>'
+const svgLeaf = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 19 2c1 2 2 4.5 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>'
+
 export const fstMenuConfig = [
   {
     label: 'Обзор',
@@ -14,7 +19,7 @@ export const fstMenuConfig = [
       { label: 'Дилфлоу', icon: 'pi pi-filter', to: '/fst-dealflow' },
       { label: 'Меморандум', icon: 'pi pi-file-word', to: '/fst-memo' },
       { label: 'Инвесткомитет', icon: 'pi pi-users', to: '/fst-committee' },
-      { label: 'Сделка', icon: 'pi pi-file-check', to: '/fst-deal' },
+      { label: 'Сделка', svgIcon: svgHandshake, to: '/fst-deal' },
       { label: 'Совет директоров', icon: 'pi pi-sitemap', to: '/fst-board' },
     ]
   },
@@ -32,7 +37,7 @@ export const fstMenuConfig = [
   {
     label: 'Аналитика',
     items: [
-      { label: 'ESG', icon: 'pi pi-leaf', to: '/fst-esg' },
+      { label: 'ESG', svgIcon: svgLeaf, to: '/fst-esg' },
       { label: 'Суверенитет', icon: 'pi pi-shield', to: '/fst-sovereignty' },
       { label: 'Нацпроект', icon: 'pi pi-flag', to: '/fst-natproject' },
       { label: 'GR-панель', icon: 'pi pi-building', to: '/fst-gov' },
