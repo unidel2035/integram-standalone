@@ -369,44 +369,44 @@ const handleKeyDown = (event, path) => {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.1s ease;
-  background: var(--surface-0);
+  background: var(--p-surface-card);
 }
 
 .search-item:hover {
-  background: var(--surface-100);
+  background: var(--p-surface-hover);
   transform: translateX(2px);
 }
 
 .search-item.integram-item {
-  background: linear-gradient(135deg, var(--blue-50) 0%, var(--blue-100) 100%);
-  border: 1px solid var(--blue-200);
+  background: color-mix(in srgb, var(--p-blue-500) 12%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--p-blue-500) 25%, transparent);
 }
 
 .search-section-header.integram-header {
-  color: var(--blue-600);
-  border-bottom-color: var(--blue-200);
+  color: var(--p-blue-400);
+  border-bottom-color: color-mix(in srgb, var(--p-blue-500) 25%, transparent);
 }
 
 /* Document Results Styling (Issue #7106) */
 .search-item.document-item {
-  background: linear-gradient(135deg, var(--green-50) 0%, var(--teal-50) 100%);
-  border: 1px solid var(--green-200);
+  background: color-mix(in srgb, var(--p-green-500) 12%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--p-green-500) 25%, transparent);
 }
 
 .search-section-header.documents-header {
-  color: var(--green-700);
-  border-bottom-color: var(--green-200);
+  color: var(--p-green-400);
+  border-bottom-color: color-mix(in srgb, var(--p-green-500) 25%, transparent);
 }
 
 .search-item-icon.document-icon {
-  background: var(--green-500);
+  background: var(--p-green-500);
   color: white;
 }
 
 /* AI Results Styling (Issue #4878) */
 .search-item.ai-item {
-  background: linear-gradient(135deg, var(--purple-50) 0%, var(--purple-100) 100%);
-  border: 1px solid var(--purple-200);
+  background: color-mix(in srgb, var(--p-purple-500) 12%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--p-purple-500) 25%, transparent);
   position: relative;
   overflow: hidden;
 }
@@ -418,12 +418,12 @@ const handleKeyDown = (event, path) => {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--purple-400), var(--pink-400));
+  background: linear-gradient(90deg, var(--p-purple-400), var(--p-pink-400));
 }
 
 .search-section-header.ai-header {
-  color: var(--purple-600);
-  border-bottom-color: var(--purple-200);
+  color: var(--p-purple-400);
+  border-bottom-color: color-mix(in srgb, var(--p-purple-500) 25%, transparent);
 }
 
 .ai-emoji {
@@ -431,7 +431,7 @@ const handleKeyDown = (event, path) => {
 }
 
 .search-item-icon.ai-icon {
-  background: var(--purple-500);
+  background: var(--p-purple-500);
   color: white;
 }
 
@@ -448,14 +448,14 @@ const handleKeyDown = (event, path) => {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: var(--surface-100);
-  color: var(--primary-color);
+  background: var(--p-surface-hover);
+  color: var(--p-primary-color);
   flex-shrink: 0;
   font-size: 0.875rem;
 }
 
 .integram-item .search-item-icon {
-  background: var(--blue-500);
+  background: var(--p-blue-500);
   color: white;
 }
 
@@ -496,8 +496,8 @@ const handleKeyDown = (event, path) => {
 }
 
 .search-highlight {
-  background: var(--yellow-100);
-  color: var(--yellow-900);
+  background: color-mix(in srgb, var(--p-yellow-500) 20%, var(--p-surface-card));
+  color: var(--p-yellow-400);
   padding: 0.125rem 0.25rem;
   border-radius: 3px;
   font-weight: 600;
