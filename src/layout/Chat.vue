@@ -2115,12 +2115,6 @@ onMounted(() => {
       .catch(() => {})
   }
 
-  // Force PrimeVue TabView ink bar recalculation after DOM is ready
-  nextTick(() => {
-    const idx = activeTabIndex.value
-    activeTabIndex.value = -1
-    nextTick(() => { activeTabIndex.value = idx })
-  })
 })
 
 onUnmounted(() => {

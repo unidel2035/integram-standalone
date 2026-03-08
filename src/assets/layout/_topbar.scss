@@ -133,6 +133,12 @@
         padding-left: 1.25rem;
     }
 
+    // When sidebar is hidden (hamburger toggle) — shrink logo container so breadcrumbs shift left
+    .layout-wrapper.layout-static-inactive .layout-topbar .layout-topbar-logo-container {
+        width: 5rem;
+        padding-left: 1.25rem;
+    }
+
 }
 
 @media (max-width: 991px) {
