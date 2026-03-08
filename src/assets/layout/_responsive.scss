@@ -84,6 +84,12 @@
 }
 
 @media (max-width: 991px) {
+    // Профиль — прижать к правому краю на мобильных
+    .p-popover.profile-overlay {
+        left: auto !important;
+        right: 0.5rem !important;
+    }
+
     .blocked-scroll {
         overflow: hidden;
     }

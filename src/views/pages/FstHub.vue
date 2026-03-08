@@ -70,23 +70,25 @@
     <div class="hub-section">
       <div class="hub-section-label">Модули платформы</div>
       <div class="hub-modules">
-        <div
-          v-for="mod in modules"
-          :key="mod.id"
-          class="hub-mod"
-          :style="{ '--mc': mod.color }"
-          @click="go(mod.path)"
-        >
-          <div class="hub-mod-left">
-            <div class="hub-mod-icon"><i :class="mod.icon"></i></div>
-          </div>
-          <div class="hub-mod-body">
-            <div class="hub-mod-name">{{ mod.name }}</div>
-            <div class="hub-mod-phase">{{ mod.phase }}</div>
-          </div>
-          <div class="hub-mod-right">
-            <span class="hub-mod-status" :class="'hub-mod-status--' + mod.status">{{ mod.status }}</span>
-            <i class="pi pi-chevron-right hub-mod-arrow"></i>
+        <div v-for="group in modulesByPhase" :key="group.phase" class="hub-phase-group">
+          <div class="hub-phase-label">{{ group.phase }}</div>
+          <div
+            v-for="mod in group.items"
+            :key="mod.id"
+            class="hub-mod"
+            :style="{ '--mc': mod.color }"
+            @click="go(mod.path)"
+          >
+            <div class="hub-mod-left">
+              <div class="hub-mod-icon"><i :class="mod.icon"></i></div>
+            </div>
+            <div class="hub-mod-body">
+              <div class="hub-mod-name">{{ mod.name }}</div>
+            </div>
+            <div class="hub-mod-right">
+              <span class="hub-mod-status" :class="'hub-mod-status--' + mod.status">{{ mod.status }}</span>
+              <i class="pi pi-chevron-right hub-mod-arrow"></i>
+            </div>
           </div>
         </div>
       </div>
@@ -161,6 +163,30 @@ const modules = [
   { id: 'secondary',      name: 'Secondary Market',       phase: 'Фаза 6 — Ликвидность',    icon: 'pi pi-refresh',       color: '#26c6da', path: '/fst-secondary',      status: 'live' },
   { id: 'fund',           name: 'Цифровой двойник фонда', phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-building',      color: '#38bdf8', path: '/fst-fund',           status: 'live' },
 ]
+
+const phaseNames = {
+  'Фаза 0': 'Поиск',
+  'Фаза 1': 'Оценка',
+  'Фаза 2': 'Структурирование',
+  'Фаза 3': 'Постинвестмент',
+  'Фаза 4': 'Мониторинг',
+  'Фаза 5': 'Управление фондом',
+  'Фаза 6': 'Ликвидность',
+}
+
+const modulesByPhase = computed(() => {
+  const order = []
+  const map = {}
+  for (const mod of modules) {
+    const key = mod.phase.replace(/\s*—.*/, '')
+    if (!map[key]) {
+      map[key] = { phase: `${key} · ${phaseNames[key] || ''}`, items: [] }
+      order.push(key)
+    }
+    map[key].items.push(mod)
+  }
+  return order.map(k => map[k])
+})
 
 </script>
 
@@ -253,7 +279,7 @@ const modules = [
 /* ═══════════════════════════════════════════════ METRICS */
 .hub-metrics {
   display: flex;
-  padding: 16px 24px;
+  padding: 20px 24px;
   gap: 16px;
 }
 .hub-metric {
@@ -300,7 +326,7 @@ const modules = [
 
 /* ═══════════════════════════════════════════════ SECTION */
 .hub-section {
-  padding: 24px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .hub-section-label {
@@ -309,7 +335,7 @@ const modules = [
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--p-text-muted-color);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 /* ═══════════════════════════════════════════════ PIPELINE */
@@ -375,21 +401,41 @@ const modules = [
 .hub-modules {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+}
+.hub-phase-group {
+  display: flex;
+  flex-direction: column;
   gap: 2px;
+}
+.hub-phase-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--p-text-muted-color);
+  letter-spacing: 0.03em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--p-content-border-color);
+  margin-bottom: 4px;
 }
 .hub-mod {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0 -12px;
+  border-radius: 6px;
   cursor: pointer;
-  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
   transition: all 0.15s;
 }
 .hub-mod:hover {
   background: var(--p-surface-hover);
-  border-color: var(--p-content-border-color);
+  border-left-color: var(--mc, #38bdf8);
+  border-right-color: var(--mc, #38bdf8);
+}
+.hub-mod:hover .hub-mod-name {
+  color: var(--mc, #38bdf8);
 }
 .hub-mod-left {
   flex-shrink: 0;
@@ -411,11 +457,6 @@ const modules = [
   font-size: 14px;
   font-weight: 500;
   color: var(--p-text-color);
-}
-.hub-mod-phase {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-  margin-top: 1px;
 }
 .hub-mod-right {
   display: flex;

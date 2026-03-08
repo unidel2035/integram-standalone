@@ -548,9 +548,9 @@ onBeforeUnmount(() => {
             @keydown.enter="item.items && item.items.length > 0 ? itemClick($event, item) : null"
             @keydown.space.prevent="item.items && item.items.length > 0 ? itemClick($event, item) : null"
         >
-            <i v-if="isDraggable()" class="pi pi-bars drag-handle"></i>
-            <span v-html="highlightedLabel"></span>
             <i v-if="item.items && item.items.length > 0" class="pi pi-fw layout-group-toggler" :class="isActiveMenu ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+            <span v-html="highlightedLabel"></span>
+            <i v-if="isDraggable()" class="pi pi-bars drag-handle"></i>
         </div>
         <!-- Root section as clickable icon (visible when collapsed) -->
         <a v-if="root && item.visible !== false && collapsed && (item.icon || item.svgIcon)"
@@ -570,7 +570,6 @@ onBeforeUnmount(() => {
         </a>
         <!-- Regular menu item (non-root or root with children when expanded) -->
         <a v-if="!root && (!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item, index)" @keydown="onKeyDown" @keypress="onKeyPress" :class="item.class" :target="item.target" tabindex="0" :data-key="itemKey" :data-parent="parentItemKey" :aria-label="item.label" v-tooltip.right="collapsed ? item.label : null">
-            <i v-if="isDraggable() && !collapsed" class="pi pi-bars drag-handle"></i>
             <span v-if="item.svgIcon" class="layout-menuitem-icon" v-html="item.svgIcon"></span>
             <i v-else-if="item.icon" :class="item.icon" class="layout-menuitem-icon"></i>
             <span v-if="!isEditing && !collapsed" class="layout-menuitem-text" v-html="highlightedLabel"></span>
@@ -585,9 +584,9 @@ onBeforeUnmount(() => {
                 style="width: 100%; max-width: 200px;"
             />
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items && !collapsed"></i>
+            <i v-if="isDraggable() && !collapsed" class="pi pi-bars drag-handle"></i>
         </a>
         <router-link v-if="item.to && !item.items && item.visible !== false" @click="itemClick($event, item, index)" @keydown="onKeyDown" @keypress="onKeyPress" @mouseenter="onLinkHover(item.to)" @mouseleave="onLinkLeave(item.to)" :class="[item.class, { 'active-route': checkActiveRoute(item) }]" tabindex="0" :to="item.to" :data-key="itemKey" :data-parent="parentItemKey" :aria-label="item.label" :aria-current="checkActiveRoute(item) ? 'page' : undefined" v-tooltip.right="collapsed ? item.label : null">
-            <i v-if="!root && isDraggable() && !collapsed" class="pi pi-bars drag-handle"></i>
             <span v-if="item.svgIcon" class="layout-menuitem-icon" v-html="item.svgIcon"></span>
             <i v-else-if="item.icon" :class="item.icon" class="layout-menuitem-icon"></i>
             <span v-if="!isEditing && !collapsed" class="layout-menuitem-text" v-html="highlightedLabel"></span>
@@ -602,6 +601,7 @@ onBeforeUnmount(() => {
                 style="width: 100%; max-width: 200px;"
             />
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items && !collapsed"></i>
+            <i v-if="!root && isDraggable() && !collapsed" class="pi pi-bars drag-handle"></i>
         </router-link>
         <Transition v-if="item.items && item.visible !== false && !collapsed" name="layout-submenu">
             <ul v-show="isActiveMenu" class="layout-submenu" role="group">
@@ -685,6 +685,7 @@ onBeforeUnmount(() => {
     opacity: 0;
     transition: opacity 0.2s;
     cursor: grab;
+    margin-left: auto;
     margin-right: 0.5rem;
     font-size: 0.875rem;
     color: var(--text-color-secondary);
@@ -707,7 +708,7 @@ li:hover .drag-handle {
     cursor: move;
 
     .drag-handle {
-        margin-right: 0.5rem;
+        margin-left: auto;
     }
 }
 
@@ -719,8 +720,8 @@ li:hover .drag-handle {
 .collapsible-group {
     cursor: pointer;
     user-select: none;
-    padding: 0.5rem 0.75rem;
-    margin: 0 -0.75rem;
+    padding: 0.75rem 1rem;
+    margin: 0 -1rem;
     border-radius: 6px;
     transition: background-color 0.2s ease;
 
@@ -739,7 +740,7 @@ li:hover .drag-handle {
 }
 
 .layout-group-toggler {
-    margin-left: auto;
+    margin-right: 0.25rem;
     font-size: 0.75rem;
     color: var(--text-color-secondary);
     transition: transform 0.2s ease;

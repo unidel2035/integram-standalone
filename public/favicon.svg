@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <style>
+    rect { fill: #e8eaf0; }
+    text { fill: #4f8ef7; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #1a1a2e; }
+      text { fill: #6ab0ff; }
+    }
+  </style>
+  <rect width="32" height="32" rx="8"/>
+  <text x="16" y="24.5" font-family="Arial,sans-serif" font-size="24" font-weight="bold" text-anchor="middle">Ф</text>
+</svg>

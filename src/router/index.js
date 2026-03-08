@@ -7,7 +7,7 @@ const routes = [
     component: AppLayout,
     children: [
       { path: '', redirect: '/fst-hub' },
-      { path: 'fst-hub', component: () => import('@/views/pages/FstHub.vue'), meta: { title: 'ФСТ НТИ — Главная' } },
+      { path: 'fst-hub', component: () => import('@/views/pages/FstHub.vue'), meta: { title: 'ФСТ НТИ — Главная', public: true } },
       { path: 'fst-committee', component: () => import('@/views/pages/FstCommittee.vue'), meta: { title: 'AI-инвесткомитет' } },
       { path: 'fst-protocol', component: () => import('@/views/pages/FstProtocol.vue'), meta: { title: 'Протоколы инвесткомитета' } },
       { path: 'fst-contract/:id', component: () => import('@/views/pages/FstSmartContract.vue'), meta: { title: 'Смарт контракт' } },
@@ -54,7 +54,7 @@ const routes = [
       { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
     ]
   },
-  { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },
+  { path: '/fst', redirect: '/fst-hub' },
   { path: '/login', component: () => import('@/views/pages/FstLogin.vue'), meta: { title: 'Вход', public: true } },
   { path: '/:pathMatch(.*)*', redirect: '/fst-hub' }
 ]
