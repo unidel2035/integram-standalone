@@ -6,7 +6,6 @@
 Покрывает полный цикл: заявка → AI-инвесткомитет → сделка → мониторинг → выход.
 
 **Live demo:** https://ai2fund.ru
-**Issues / Roadmap:** https://github.com/unidel2035/found/issues
 
 ---
 
@@ -180,44 +179,3 @@ GITHUB_TOKEN=...         # для Koda (бесплатный AI)
 YANDEX_API_KEY=...
 YANDEX_FOLDER_ID=...
 ```
-
----
-
-## Roadmap issues
-
-https://github.com/unidel2035/found/issues — 47+ задач с приоритетами P0/P1/P2/P3
-
-**P0 (критический путь):**
-- #35 Waterfall & carried interest
-- #40 ILPA LP-отчётность
-- #36 Government relations dashboard
-- #46 Back-office & ФСБУ 4/2023
-
-**P1 (следующий квартал):**
-- #33 AML/KYC compliance
-- #34 ESG scoring
-- #38 Нацпроект БАС tracker
-- #41 AI-ускоренный due diligence
-- #45 Реестр БПЛА (Постановление №1726)
-
----
-
-Issue to solve: https://github.com/unidel2035/found/issues/26
-Your prepared branch: issue-26-11145280476b
-Your prepared working directory: /tmp/gh-issue-solver-1772845772883
-
-Proceed.
-
-
-Run timestamp: 2026-03-07T01:09:37.114Z
-
----
-
-Issue to solve: https://github.com/unidel2035/fund/issues/113
-Your prepared branch: issue-113-5938b686dce4
-Your prepared working directory: /tmp/gh-issue-solver-1772896153669
-
-Proceed.
-
-
-Run timestamp: 2026-03-07T15:09:21.542Z

@@ -19,6 +19,7 @@ import { annotateArg, detectContradictions, assembleConditionalDecision, deriveC
 import {
   createDebateSession, setDebatePhase, publishToDebate,
   castDebateVote, concludeDebateSession, connectDebateSocket,
+  startOrchestratedDebate, stopOrchestratedDebate,
 } from '@/services/debateSessionService.js'
 import {
   detectPortfolioOverlap,
@@ -164,6 +165,7 @@ export function createSession(project, options = {}) {
     speed,
     useAI:        options.useAI        !== false,  // по умолчанию включён
     useAgentLoop: options.useAgentLoop === true,   // agentic loop (opt-in)
+    useOrchestrator: options.useOrchestrator === true, // server-side orchestration (opt-in)
     // Настройки оркестратора моделей
     speedProfile:   options.speedProfile   || 'fast',
     modelOverrides: options.modelOverrides || {},  // { [agentId]: modelId }
@@ -230,7 +232,96 @@ export class FstCommitteeEngine {
     this._timers = []
     if (this._debateSocket) this._debateSocket.disconnect()
     if (this._backendSessionId) {
+      if (this.session.useOrchestrator) {
+        stopOrchestratedDebate(this._backendSessionId).catch(() => {})
+      }
       concludeDebateSession(this._backendSessionId).catch(() => {})
+    }
+  }
+
+
+  /**
+   * Server-side orchestrated mode.
+   * Backend drives all phases — frontend is a thin real-time viewer.
+   * All agent loops run on the server via DebateOrchestrator.
+   */
+  async _runOrchestrated() {
+    try {
+      // Wait for backend session to be ready
+      await this._initBackendSession()
+      if (!this._backendSessionId) {
+        console.error('[Engine] Cannot start orchestrated mode: no backend session')
+        this.emit('OrchestratedError', { error: 'Backend session unavailable' })
+        return
+      }
+
+      // Connect Socket.IO with full event handlers
+      this._debateSocket = connectDebateSocket(this._backendSessionId, {
+        onMessage: (msg) => {
+          // Mirror server messages into local session
+          this.session.arguments.push(msg)
+          this.room.publish(msg.agentId, msg)
+          this.emit('ArgumentPublished', {
+            agentId: msg.agentId,
+            argument: msg,
+            source: 'server',
+          })
+        },
+        onPhaseChange: ({ prevPhase, nextPhase }) => {
+          this.session.phase = nextPhase
+          this.session.phaseIndex = PHASE_ORDER.indexOf(nextPhase)
+          this.emit('PhaseTransition', { phase: nextPhase, from: prevPhase })
+          // Update agent statuses
+          for (const agent of this.session.agents) {
+            this.session.agentStatus[agent.id].thinking = false
+            this.session.agentStatus[agent.id].done = false
+          }
+        },
+        onVote: (vote) => {
+          this.session.votes.push(vote)
+          this.emit('VoteCast', vote)
+        },
+        onEnd: (data) => {
+          this.session.decision = data.decision || null
+          this.session.concludedAt = Date.now()
+          this.session.phase = 'CONCLUDED'
+          this.emit('SessionConcluded', {
+            decision: data.decision,
+            beliefDrift: data.beliefDrift,
+            elapsed: data.elapsed,
+          })
+          this._running = false
+        },
+        onAgentProgress: (data) => {
+          if (data.type === 'tool_start') {
+            const status = this.session.agentStatus[data.agentId]
+            if (status) {
+              status.thinking = true
+              status.thinkText = `Использую ${data.tool}...`
+            }
+            this.emit('AgentLoopProgress', data)
+          } else if (data.type === 'tool_done') {
+            this.emit('AgentLoopProgress', data)
+          } else if (data.type === 'publish') {
+            const status = this.session.agentStatus[data.agentId]
+            if (status) {
+              status.thinking = false
+              status.done = true
+            }
+          }
+        },
+        onConvergence: (data) => {
+          this.emit('ConvergenceDetected', data)
+        },
+      })
+
+      // Kick off server-side orchestration
+      await startOrchestratedDebate(this._backendSessionId)
+      this.emit('OrchestratedStarted', { sessionId: this._backendSessionId })
+
+    } catch (e) {
+      console.error('[Engine] Orchestrated mode error:', e.message)
+      this.emit('OrchestratedError', { error: e.message })
     }
   }
 
@@ -285,6 +376,11 @@ export class FstCommitteeEngine {
       fetchKagContext(this.session.project).then(ctx => {
         this.session._kagContext = ctx || ''
       }).catch(() => { this.session._kagContext = '' })
+    }
+
+    // ── Server-side orchestration mode ──────────────────────────────────
+    if (this.session.useOrchestrator) {
+      return this._runOrchestrated()
     }
 
     try {

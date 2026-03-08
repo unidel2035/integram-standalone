@@ -70,6 +70,17 @@ export async function concludeDebateSession(sessionId) {
   })
 }
 
+
+/** Start server-side orchestrated debate */
+export async function startOrchestratedDebate(sessionId) {
+  return fetchJSON(`${API_BASE}/sessions/${sessionId}/start`, { method: 'POST' })
+}
+
+/** Stop server-side orchestrated debate */
+export async function stopOrchestratedDebate(sessionId) {
+  return fetchJSON(`${API_BASE}/sessions/${sessionId}/stop`, { method: 'POST' })
+}
+
 // -- Socket.IO integration --
 
 let _socket = null
@@ -101,6 +112,8 @@ export function connectDebateSocket(sessionId, handlers = {}, lastSeq = 0) {
     _socket.on('debate:end', (data) => handlers.onEnd?.(data))
     _socket.on('debate:missed', (data) => handlers.onMissed?.(data))
     _socket.on('debate:error', (data) => console.error('[DebateSocket] Error:', data.error))
+    _socket.on('debate:agent-progress', (data) => handlers.onAgentProgress?.(data))
+    _socket.on('debate:convergence', (data) => handlers.onConvergence?.(data))
   }).catch(() => {
     console.warn('[DebateSocket] socket.io-client not available, using REST polling only')
   })
