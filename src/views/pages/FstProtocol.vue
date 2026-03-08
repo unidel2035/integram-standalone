@@ -53,15 +53,15 @@
           <div class="fst-proto-card-header">
             <div class="fst-proto-card-project">
               <i class="pi pi-briefcase" style="color:#42a5f5"></i>
-              {{ session.protocol?.decision?.projectName || session.name }}
+              {{ session.protocol?.decision?.projectName || session.projectName || session.name }}
             </div>
             <div class="fst-proto-card-badges">
-              <div class="fst-proto-score" :style="{ color: scoreColor(session.protocol?.decision?.aggregatedScore) }">
-                {{ session.protocol?.decision?.aggregatedScore || 0 }}/100
+              <div class="fst-proto-score" :style="{ color: scoreColor(session.protocol?.decision?.aggregatedScore || session.aggregatedScore) }">
+                {{ session.protocol?.decision?.aggregatedScore || session.aggregatedScore || 0 }}/100
               </div>
-              <Tag :value="decisionLabel(session.protocol?.decision?.recommendation)"
-                :severity="decisionSeverity(session.protocol?.decision?.recommendation)"
-                :style="{ background: decisionColor(session.protocol?.decision?.recommendation) }" />
+              <Tag :value="decisionLabel((session.protocol?.decision?.recommendation || session.recommendation))"
+                :severity="decisionSeverity((session.protocol?.decision?.recommendation || session.recommendation))"
+                :style="{ background: decisionColor((session.protocol?.decision?.recommendation || session.recommendation)) }" />
             </div>
           </div>
 
@@ -206,6 +206,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { agents as agentsList, loadAgents } from '@/components/fst-committee/agentProvider.js'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { getCommitteeSessions } from '@/services/fstApi'
@@ -231,15 +232,14 @@ const decisionOptions = [
   { label: 'На доработку', value: 'DEFER' }
 ]
 
-// Agent metadata (simplified)
-const AGENTS = {
-  cto: { name: 'CTO', emoji: '👨‍💻' },
-  cfo: { name: 'CFO', emoji: '💼' },
-  legal: { name: 'Юрист', emoji: '⚖️' },
-  sovereign: { name: 'Суверенность', emoji: '🇷🇺' },
-  market: { name: 'Рынок', emoji: '📊' },
-  risk: { name: 'Риски', emoji: '🎯' }
-}
+// Agent metadata from DB (reactive)
+const AGENTS_MAP = computed(() => {
+  const map = {}
+  for (const a of agentsList.value) {
+    map[a.id] = { name: a.shortName || a.name, emoji: a.avatar || '🤖' }
+  }
+  return map
+})
 
 // ── Computed ──────────────────────────────────────────────────────
 
@@ -332,11 +332,11 @@ function formatDate(date) {
 }
 
 function getAgentEmoji(agentId) {
-  return AGENTS[agentId]?.emoji || '🤖'
+  return AGENTS_MAP.value[agentId]?.emoji || '🤖'
 }
 
 function getAgentName(agentId) {
-  return AGENTS[agentId]?.name || agentId
+  return AGENTS_MAP.value[agentId]?.name || agentId
 }
 
 function argTypeLabel(type) {
@@ -370,6 +370,7 @@ function formatPolicyValue(key, val) {
 // ── Lifecycle ─────────────────────────────────────────────────────
 
 onMounted(() => {
+  loadAgents()
   loadSessions()
 })
 </script>

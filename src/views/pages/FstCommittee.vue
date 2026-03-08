@@ -446,6 +446,10 @@
           ФСТ НТИ — AI Инвестиционный Комитет
         </div>
         <p class="fst-setup-desc">6 AI-агентов анализируют проект, дебатируют и выносят решение с обоснованием</p>
+        <div class="fst-setup-actions">
+          <Button icon="pi pi-file-check" label="История заседаний" size="small" severity="secondary"
+            @click="$router.push('/fst-protocol')" />
+        </div>
         <div class="fst-setup-subfunds" v-if="Object.keys(SUBFUNDS).length">
           <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
             :style="{ borderColor: sf.color, color: sf.color }">
@@ -2064,6 +2068,9 @@ onUnmounted(() => {
   color: var(--p-text-muted-color);
   font-size: 13px;
   margin: 0 0 12px;
+}
+.fst-setup-actions {
+  margin-bottom: 12px;
 }
 .fst-setup-subfunds {
   display: flex;

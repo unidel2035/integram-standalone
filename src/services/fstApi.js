@@ -299,17 +299,18 @@ export async function updateProject(id, data) {
 export const TYPE_IC_DECISIONS = 1160
 
 export async function getDecisions(projectId) {
-  return api(`_m_list/${TYPE_IC_DECISIONS}?JSON_KV${projectId ? `&ref_1186=${projectId}` : ''}`)
+  return api(`object/${TYPE_IC_DECISIONS}?JSON_KV&l=100${projectId ? `&ref_1186=${projectId}` : ''}`)
 }
 
 export async function saveDecision(data) {
   const body = new URLSearchParams({
     [`t${TYPE_IC_DECISIONS}`]: data.name || `ИК ${new Date().toLocaleDateString('ru')}`,
-    t1161: data.votesAgainst || 0,
-    t1162: data.conditions || '',
-    t1163: data.meetingDate || new Date().toISOString(),
-    ...(data.projectId  ? { t1185: data.projectId  } : {}),
-    ...(data.decisionId ? { t1187: data.decisionId } : {})
+    up: 1,
+    t2239: data.votesAgainst || 0,
+    t3503: data.conditions || '',
+    t3504: data.meetingDate || new Date().toISOString(),
+    ...(data.projectId  ? { ref_1186: data.projectId  } : {}),
+    ...(data.decisionId ? { ref_1188: data.decisionId } : {})
   })
   return api(`_m_new/${TYPE_IC_DECISIONS}?JSON_KV`, { method: 'POST', body })
 }
@@ -387,11 +388,12 @@ export async function saveCommitteeSession(session, projectId) {
   // Создаём запись в БД
   const body = new URLSearchParams({
     [`t${TYPE_IC_DECISIONS}`]: `ИК: ${session.project?.title || session.projectId} — ${new Date().toLocaleDateString('ru')}`,
-    t1161: votesAgainst,
-    t1162: JSON.stringify(protocol, null, 2), // Полный JSON протокола
-    t1163: new Date().toISOString(),
-    ...(projectId ? { t1185: projectId } : {}),
-    ...(decisionId ? { t1187: decisionId } : {})
+    up: 1,
+    t2239: votesAgainst,
+    t3503: JSON.stringify(protocol, null, 2), // Полный JSON протокола
+    t3504: new Date().toISOString(),
+    ...(projectId ? { [`ref_1186`]: projectId } : {}),
+    ...(decisionId ? { [`ref_1188`]: decisionId } : {})
   })
 
   return api(`_m_new/${TYPE_IC_DECISIONS}?JSON_KV`, { method: 'POST', body })
@@ -401,31 +403,42 @@ export async function saveCommitteeSession(session, projectId) {
  * Получить все протоколы ИК (с парсингом JSON)
  */
 export async function getCommitteeSessions() {
-  const data = await api(`_m_list/${TYPE_IC_DECISIONS}?JSON_KV`)
+  const data = await api(`object/${TYPE_IC_DECISIONS}?JSON_KV&l=100`)
   const objects = data.object || []
   const reqs = data.reqs || {}
 
   return objects.map(obj => {
     const r = reqs[obj.id] || {}
     let protocol = null
-    try {
-      protocol = JSON.parse(r['1162'] || '{}')
-    } catch (e) {
-      console.warn(`Failed to parse protocol for decision ${obj.id}:`, e)
+    const rawProto = r['3503']
+    if (rawProto) {
+      try {
+        protocol = JSON.parse(rawProto)
+      } catch (e) {
+        console.warn(`Failed to parse protocol for decision ${obj.id}:`, e)
+      }
     }
+
+    // Map DB decision text to recommendation enum
+    const decisionText = r['1188'] || ''
+    const dbRecommendation = decisionText.includes('условиями') ? 'APPROVE_CONDITIONAL'
+      : decisionText.includes('Одобрен') ? 'APPROVE'
+      : decisionText.includes('Отклон') ? 'REJECT'
+      : decisionText.includes('доработ') ? 'DEFER'
+      : null
 
     return {
       id:             obj.id,
       name:           obj.val,
-      votesAgainst:   Number(r['1161'] || 0),
+      votesAgainst:   Number(r['2239'] || 0),
       protocol:       protocol,
-      date:           r['1163'] || null,
-      meetingDate:    r['1163'] || null,
-      projectId:      r['1185'] || null,
-      decisionId:     r['1187'] || null,
+      date:           r['3504'] || null,
+      meetingDate:    r['3504'] || null,
+      projectId:      r['ref_1186']?.split(':')?.[1] || r['1186'] || null,
+      decisionId:     r['ref_1188']?.split(':')?.[1] || r['1188'] || null,
       // Вынесено наверх для удобства
-      projectName:    protocol?.project?.title || protocol?.projectId || obj.val,
-      recommendation: protocol?.decision?.recommendation || null,
+      projectName:    protocol?.project?.title || r['1186'] || obj.val,
+      recommendation: protocol?.decision?.recommendation || dbRecommendation,
       aggregatedScore: protocol?.decision?.aggregatedScore || null,
     }
   })
@@ -436,7 +449,7 @@ export async function getCommitteeSessions() {
 export const TYPE_DEALS = 1164
 
 export async function getDeals(projectId) {
-  return api(`_m_list/${TYPE_DEALS}?JSON_KV${projectId ? `&ref_1189=${projectId}` : ''}`)
+  return api(`object/${TYPE_DEALS}?JSON_KV&l=100${projectId ? `&ref_1189=${projectId}` : ''}`)
 }
 
 export async function saveDeal(data) {
@@ -472,7 +485,7 @@ function refId(val) {
  * Включает расширенные поля: invested, nav, метрики JSON, субфонд, стадия.
  */
 export async function getPortfolio() {
-  const data = await api(`_m_list/${TYPE_PORTFOLIO}?JSON_KV`)
+  const data = await api(`object/${TYPE_PORTFOLIO}?JSON_KV&l=100`)
   const objects = data.object || []
   const reqs    = data.reqs   || {}
   // Дедупликация: если есть несколько записей для одного имени, берём с наибольшим ID (самая свежая)
@@ -536,7 +549,7 @@ export async function updatePortfolioCompany(id, { kpi, aiReport }) {
 export const TYPE_TRANCHES = 1173
 
 export async function getTranches(dealId) {
-  return api(`_m_list/${TYPE_TRANCHES}?JSON_KV${dealId ? `&ref_1199=${dealId}` : ''}`)
+  return api(`object/${TYPE_TRANCHES}?JSON_KV&l=100${dealId ? `&ref_1199=${dealId}` : ''}`)
 }
 
 export async function createTranche(data) {
@@ -557,7 +570,7 @@ export const TYPE_WEEKLY_REPORTS = 1200
  * Получить все еженедельные AI-отчёты
  */
 export async function getWeeklyReports() {
-  const data = await api(`_m_list/${TYPE_WEEKLY_REPORTS}?JSON_KV`)
+  const data = await api(`object/${TYPE_WEEKLY_REPORTS}?JSON_KV&l=100`)
   const objects = data.object || []
   const reqs = data.reqs || {}
 
