@@ -1,7 +1,6 @@
 <template>
   <div class="fst-committee">
-    <Toast position="bottom-center" />
-
+    <!-- Toast provided by AppLayout.vue — no duplicate needed -->
 
     <!-- ═══ Conclusion Dialog ═══ -->
     <Dialog v-model:visible="conclusionVisible" :header="conclusionHeader" modal
@@ -1097,7 +1096,7 @@ async function submitNewProject() {
     const newId = result?.obj || result?.id
     // Reload projects and auto-select
     await loadProjects(true)
-    if (newId) selectedProjectId.value = newId
+    if (newId) selectedProjectId.value = String(newId) // Integram returns number, list uses string
     newProjectDialog.value = false
     newProj.value = _newProjDefaults()
     toast.add({ severity: 'success', summary: 'Заявка создана', detail: d.name, life: 3000 })
