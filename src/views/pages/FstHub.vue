@@ -305,8 +305,8 @@ const tools = [
   white-space: nowrap;
 }
 .hub-skeleton {
-  color: var(--p-surface-400) !important;
-  background: var(--p-surface-200);
+  color: transparent !important;
+  background: var(--p-content-border-color);
   border-radius: 4px;
   animation: shimmer 1.5s infinite;
 }
@@ -409,7 +409,7 @@ const tools = [
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: var(--p-surface-section);
+  background: var(--p-surface-ground);
   border: 1px solid var(--p-content-border-color);
   display: flex;
   align-items: center;
@@ -443,14 +443,14 @@ const tools = [
   letter-spacing: 0.05em;
 }
 .hub-mod-status--live {
-  background: rgba(34,211,238,0.1);
+  background: rgba(34,211,238,0.15);
   color: #22d3ee;
-  border: 1px solid rgba(34,211,238,0.2);
+  border: 1px solid rgba(34,211,238,0.3);
 }
 .hub-mod-status--beta {
-  background: rgba(251,191,36,0.1);
+  background: rgba(251,191,36,0.15);
   color: #fbbf24;
-  border: 1px solid rgba(251,191,36,0.2);
+  border: 1px solid rgba(251,191,36,0.3);
 }
 .hub-mod-arrow {
   color: var(--p-text-muted-color);
@@ -489,6 +489,7 @@ const tools = [
   font-size: 11px;
   color: var(--p-text-muted-color);
 }
+
 
 /* ═══════════════════════════════════════════════ RESPONSIVE */
 @media (max-width: 768px) {
