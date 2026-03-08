@@ -421,7 +421,7 @@ onBeforeUnmount(() => {
             <span>{{ $t('nav.chat', 'Чат') }}</span>
           </button>
           <button
-            @click="handleToggle(); topbarMenuVisible = false"
+            @click="handleToggle($event); topbarMenuVisible = false"
             type="button"
             class="layout-topbar-action"
             :title="profileTooltip"
