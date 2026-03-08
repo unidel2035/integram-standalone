@@ -3990,6 +3990,20 @@ AI-помощник по продажам активирован! Полный �
 
     localStorage.setItem('savedChats', JSON.stringify(savedChats.value))
     logger.info('[useChatLogic] Chat quick-saved:', autoName)
+
+    // Сохраняем в fst (non-blocking)
+    import('@/services/fstApi.js').then(({ saveChatSession }) => {
+      const userId = localStorage.getItem('my_user') || localStorage.getItem('user') || 'default'
+      saveChatSession({
+        id: _fstChatRecordId || null,
+        sessionId: currentSessionId.value || `chat_${Date.now()}`,
+        messages: aiChat.messages,
+        model: selectedModel.value || '',
+        userId,
+      }).then(res => {
+        if (res?.obj) _fstChatRecordId = res.obj
+      }).catch(() => {})
+    }).catch(() => {})
   }
 
   /**
@@ -4333,73 +4347,25 @@ AI-помощник по продажам активирован! Полный �
    * Загружает историю чата из Integram (primary storage)
    * @returns {Promise<Array|null>} Массив сообщений или null если загрузка не удалась
    */
+  // Integram fst record ID для текущей сессии чата (для обновления)
+  let _fstChatRecordId = null
+
   const loadChatFromIntegram = async () => {
     try {
-      logger.info('[useChatLogic] Attempting to load chat history from Integram...')
-
-      // Initialize integram service
-      const tokenId = localStorage.getItem('current_ai_token_id') || '206099'
-      integramChatSessionService.setCurrentToken(tokenId)
-
-      // Получаем последнюю сессию
-      const sessions = await integramChatSessionService.loadSessionHistory(1)
-
-      if (!sessions || sessions.length === 0) {
-        logger.info('[useChatLogic] No sessions found in Integram')
+      logger.info('[useChatLogic] Loading chat history from fst...')
+      const { loadChatSession } = await import('@/services/fstApi.js')
+      const userId = localStorage.getItem('my_user') || localStorage.getItem('user') || 'default'
+      const session = await loadChatSession(userId)
+      if (!session?.messages?.length) {
+        logger.info('[useChatLogic] No chat sessions found in fst')
         return null
       }
-
-      const lastSession = sessions[0]
-      const integramId = lastSession.id
-      logger.info('[useChatLogic] Found last session, Integram ID:', integramId)
-
-      // Получаем данные сессии напрямую через integramApiClient
-      const result = await integramApiClient.getObjectEditData(integramId)
-
-      if (!result || !result.reqs) {
-        logger.info('[useChatLogic] Failed to load session data')
-        return null
-      }
-
-      // Извлекаем sessionId и messages из реквизитов
-      const SESSION_REQUISITES = {
-        SESSION_ID: 205921,
-        MESSAGES_JSON: 205926
-      }
-
-      const sessionId = result.reqs?.[SESSION_REQUISITES.SESSION_ID]?.value
-      const messagesJson = result.reqs?.[SESSION_REQUISITES.MESSAGES_JSON]?.value
-
-      if (!messagesJson) {
-        logger.info('[useChatLogic] Session has no messages')
-        return null
-      }
-
-      let messages
-      try {
-        messages = JSON.parse(messagesJson)
-      } catch (error) {
-        logger.warn('[useChatLogic] Failed to parse messages JSON:', error)
-        return null
-      }
-
-      if (!messages || messages.length === 0) {
-        logger.info('[useChatLogic] Session messages array is empty')
-        return null
-      }
-
-      logger.info('[useChatLogic] Successfully loaded', messages.length, 'messages from Integram')
-
-      // Сохраняем sessionId для дальнейшего использования
-      if (sessionId) {
-        currentSessionId.value = sessionId
-        // Обновляем кэш сессий
-        integramChatSessionService.sessionsCache.set(sessionId, integramId)
-      }
-
-      return messages
+      _fstChatRecordId = session.id
+      if (session.sessionId) currentSessionId.value = session.sessionId
+      logger.info('[useChatLogic] Loaded', session.messages.length, 'messages from fst')
+      return session.messages
     } catch (error) {
-      logger.warn('[useChatLogic] Failed to load from Integram, will use localStorage fallback:', error)
+      logger.warn('[useChatLogic] Failed to load from fst:', error)
       return null
     }
   }

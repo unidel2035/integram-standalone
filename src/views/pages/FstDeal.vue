@@ -597,11 +597,11 @@ async function generateTermSheet() {
 <p style="color:var(--p-text-muted-color);font-size:11px">Конфиденциально · ${new Date().toLocaleDateString('ru-RU')} · Не является офертой</p>
 <table style="width:100%;border-collapse:collapse;font-size:12px">
   <tr><td style="padding:4px 8px;font-weight:600;width:45%;color:var(--p-text-muted-color)">Эмитент</td><td style="padding:4px 8px">${d.companyName}</td></tr>
-  <tr style="background:var(--p-surface-100)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Инвестор</td><td style="padding:4px 8px">Фонд Суверенных Технологий НТИ (${d.spvName})</td></tr>
+  <tr style="background:var(--p-surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Инвестор</td><td style="padding:4px 8px">Фонд Суверенных Технологий НТИ (${d.spvName})</td></tr>
   <tr><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Инструмент</td><td style="padding:4px 8px">${dealTypes.find(t=>t.v===d.type)?.l}</td></tr>
-  <tr style="background:var(--p-surface-100)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Сумма</td><td style="padding:4px 8px"><b>${d.totalAmount} млн ₽</b> (${d.tranches.length} транша)</td></tr>
+  <tr style="background:var(--p-surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Сумма</td><td style="padding:4px 8px"><b>${d.totalAmount} млн ₽</b> (${d.tranches.length} транша)</td></tr>
   <tr><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Условия</td><td style="padding:4px 8px">${shareText}</td></tr>
-  <tr style="background:var(--p-surface-100)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Срок</td><td style="padding:4px 8px">${d.termMonths} месяцев</td></tr>
+  <tr style="background:var(--p-surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Срок</td><td style="padding:4px 8px">${d.termMonths} месяцев</td></tr>
   <tr><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">SPV</td><td style="padding:4px 8px">${d.spvName} (${d.spvJurisdiction})</td></tr>
 </table>
 <h4 style="margin:10px 0 4px;color:var(--p-text-color)">Транши</h4>

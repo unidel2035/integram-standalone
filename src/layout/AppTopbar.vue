@@ -2,7 +2,6 @@
 import { logger } from '@/utils/logger'
 import { useLayout } from '@/layout/composables/layout'
 import { useRoute } from 'vue-router'
-import Badge from 'primevue/badge'
 import FstBreadcrumb from './FstBreadcrumb.vue'
 import Avatar from 'primevue/avatar'
 // Lazy load AppConfigurator - only shown when theme settings are opened
@@ -10,14 +9,11 @@ import { defineAsyncComponent } from 'vue'
 const AppConfigurator = defineAsyncComponent(() => import('./AppConfigurator.vue'))
 // Lazy load ProfileMenu - only shown when profile is clicked
 const ProfileMenu = defineAsyncComponent(() => import('./Profile.vue'))
-// Lazy load NotificationCenter - only shown when notifications are opened
-const NotificationCenter = defineAsyncComponent(() => import('@/components/NotificationCenter.vue'))
 // Lazy load AgentStatusPanel - only shown when agents button is clicked
 const AgentStatusPanel = defineAsyncComponent(() => import('@/components/AgentStatusPanel.vue'))
 // Issue #6934: Logo moved to sidebar, no longer needed here
 // import LogoDisplay from '@/components/LogoDisplay.vue'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
-import { useNotifications } from '@/composables/notifications'
 import { usePwaInstall } from '@/composables/usePwaInstall'
 import { useWorkspaceAgentStore } from '@/stores/workspaceAgentStore'
 import { useLearnModeStore } from '@/stores/learnModeStore'
@@ -28,8 +24,11 @@ import { onMounted, onBeforeUnmount, ref, watch, computed, nextTick } from 'vue'
 const route = useRoute()
 
 const { t } = useI18n()
-const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout()
-const { unreadCount } = useNotifications()
+const { toggleMenu, toggleDarkMode, isDarkTheme, layoutState } = useLayout()
+
+const isMenuOpen = computed(() =>
+  layoutState.overlayMenuActive || layoutState.staticMenuMobileActive
+)
 const learnModeStore = useLearnModeStore()
 // Issue #7230: PWA install prompt
 const { canInstall, isInstalled, promptInstall } = usePwaInstall()
@@ -65,7 +64,6 @@ try {
 }
 
 const profileOverlay = ref() // Template ref for ProfileMenu component
-const notificationVisible = ref(false)
 const agentPanelVisible = ref(false)
 const configVisible = ref(false)
 const topbarMenuVisible = ref(false)
@@ -99,10 +97,6 @@ const emit = defineEmits(['chat-toggle'])
 // Agent-related computed
 const runningAgentsCount = computed(() => workspaceAgentStore?.runningAgentsCount || 0)
 const hasActiveAgents = computed(() => workspaceAgentStore?.hasActiveAgents || false)
-
-const toggleNotifications = () => {
-  notificationVisible.value = !notificationVisible.value
-}
 
 const toggleAgentPanel = () => {
   agentPanelVisible.value = !agentPanelVisible.value
@@ -197,10 +191,6 @@ const themeSettingsTooltip = computed(() => {
   return t('theme.settings', 'Настройки темы')
 })
 
-const notificationsTooltip = computed(() => {
-  return t('notifications.title', 'Уведомления')
-})
-
 const chatTooltip = computed(() => {
   return t('nav.chat', 'Чат')
 })
@@ -289,9 +279,15 @@ onBeforeUnmount(() => {
     <div class="layout-topbar-logo-container" :class="{ 'logo-hidden': isBlockEditorRoute || isIntegramRoute }">
       <button
         class="layout-menu-button layout-topbar-action"
+        :class="{ 'is-active': isMenuOpen }"
         @click="toggleMenu"
+        aria-label="Toggle menu"
       >
-        <i class="pi pi-bars"/>
+        <div class="hamburger">
+          <div class="hamburger-line"></div>
+          <div class="hamburger-line"></div>
+          <div class="hamburger-line"></div>
+        </div>
       </button>
       <!-- Issue #6934: Logo moved to sidebar, menu button stays -->
     </div>
@@ -299,6 +295,16 @@ onBeforeUnmount(() => {
     <FstBreadcrumb />
 
     <div class="layout-topbar-actions">
+      <button
+        @click="handleChat()"
+        type="button"
+        class="layout-topbar-action"
+        :class="{ 'active': isChatOpen }"
+        :title="chatTooltip"
+      >
+        <i class="pi pi-comments"/>
+      </button>
+
       <div class="layout-config-menu">
         <button
           type="button"
@@ -320,29 +326,13 @@ onBeforeUnmount(() => {
       <div class="layout-topbar-menu" :class="{ 'topbar-menu-mobile-hidden': !topbarMenuVisible }">
         <div class="layout-topbar-menu-content">
           <button
-            @click="toggleNotifications(); topbarMenuVisible = false"
-            type="button"
-            class="layout-topbar-action relative"
-            :title="notificationsTooltip"
-          >
-            <i class="pi pi-bell"/>
-            <Badge
-              v-if="unreadCount > 0"
-              :value="unreadCount > 99 ? '99+' : unreadCount.toString()"
-              severity="danger"
-              class="notification-badge-topbar"
-            />
-            <span>{{ $t('notifications.title', 'Уведомления') }}</span>
-          </button>
-          <button
-            @click="handleChat(); topbarMenuVisible = false"
+            @click="toggleDarkMode(); topbarMenuVisible = false"
             type="button"
             class="layout-topbar-action"
-            :class="{ 'active': isChatOpen }"
-            :title="chatTooltip"
+            :title="themeTooltip"
           >
-            <i class="pi pi-comments"/>
-            <span>{{ $t('nav.chat', 'Чат') }}</span>
+            <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
+            <span>{{ isDarkTheme ? 'Светлая тема' : 'Тёмная тема' }}</span>
           </button>
           <button
             @click="handleToggle($event); topbarMenuVisible = false"
@@ -357,10 +347,6 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <ProfileMenu ref="profileOverlay" />
-    <NotificationCenter
-      v-model:visible="notificationVisible"
-      @close="notificationVisible = false"
-    />
     <AgentStatusPanel
       v-model:visible="agentPanelVisible"
       @close="agentPanelVisible = false"
@@ -373,7 +359,6 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-.notification-badge-topbar,
 .agent-badge-topbar {
   position: absolute !important;
   top: 0 !important;
@@ -477,6 +462,42 @@ onBeforeUnmount(() => {
 :root.dark .layout-topbar-action-highlight {
   background: rgba(255, 193, 7, 0.15);
   color: var(--p-yellow-400, #fbbf24);
+}
+
+/* Hamburger → X animation */
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  gap: 0;
+  position: relative;
+}
+
+.hamburger-line {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  position: absolute;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
+
+.hamburger-line:nth-child(1) { transform: translateY(-6px); }
+.hamburger-line:nth-child(2) { transform: translateY(0); }
+.hamburger-line:nth-child(3) { transform: translateY(6px); }
+
+.is-active .hamburger-line:nth-child(1) {
+  transform: rotate(45deg);
+}
+.is-active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+.is-active .hamburger-line:nth-child(3) {
+  transform: rotate(-45deg);
 }
 </style>
 

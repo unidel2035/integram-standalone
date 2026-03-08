@@ -464,13 +464,13 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fft-companies { display: flex; flex-direction: column; gap: 6px }
 .fft-company-card { background: var(--p-surface-section); border-radius: 8px; padding: 8px 10px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent }
 .fft-company-card:hover { border-color: var(--p-primary-color) }
-.fft-company-card--selected { border-color: #42a5f5; background: rgba(66,165,245,0.08) }
+.fft-company-card--selected { border-color: var(--p-primary-color); background: color-mix(in srgb, var(--p-primary-color) 8%, transparent) }
 .fft-cc-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px }
 .fft-cc-name { flex: 1; font-size: 13px; font-weight: 600 }
 .fft-cc-health { color: #fff; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px }
 .fft-cc-meta { display: flex; gap: 10px; font-size: 10px; color: var(--p-text-muted-color); margin-bottom: 4px }
 .fft-cc-bars { display: flex; flex-direction: column; gap: 2px }
-.fft-cc-bar { height: 4px; background: #333; border-radius: 2px; overflow: hidden }
+.fft-cc-bar { height: 4px; background: var(--p-content-border-color); border-radius: 2px; overflow: hidden }
 .fft-cc-bar > div { height: 100%; border-radius: 2px; transition: width 0.5s }
 .fft-cc-alert { font-size: 10px; color: #ffa726; display: flex; align-items: center; gap: 4px; margin-top: 3px }
 
@@ -484,7 +484,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fft-fm-row { display: flex; align-items: center; gap: 8px }
 .fft-fm-label { font-size: 11px; min-width: 160px }
 .fft-fm-val { font-size: 12px; font-weight: 600; min-width: 60px }
-.fft-fm-bar-bg { flex: 1; height: 5px; background: #333; border-radius: 3px; overflow: hidden }
+.fft-fm-bar-bg { flex: 1; height: 5px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden }
 .fft-fm-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s }
 
 /* Subfunds */
@@ -524,5 +524,5 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 /* AI Forecast */
 .fft-ai-forecast { background: var(--p-surface-section); border-radius: 8px; padding: 10px }
 .fft-af-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px }
-.fft-af-verdict { font-size: 11px; margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: rgba(66,165,245,0.1); display: flex; align-items: center; gap: 5px; line-height: 1.4 }
+.fft-af-verdict { font-size: 11px; margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: color-mix(in srgb, var(--p-primary-color) 10%, transparent); display: flex; align-items: center; gap: 5px; line-height: 1.4 }
 </style>

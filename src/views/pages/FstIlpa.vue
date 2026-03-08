@@ -296,6 +296,6 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 
 @media print {
   .ilpa-header .ilpa-actions, .ilpa-tabs, .ilpa-status-bar { display: none; }
-  .ilpa-section { box-shadow: none; border: 1px solid #ccc; }
+  .ilpa-section { box-shadow: none; border: 1px solid var(--p-surface-300); }
 }
 </style>

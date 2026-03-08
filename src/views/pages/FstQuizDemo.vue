@@ -323,7 +323,7 @@ function openDemoQuiz(moduleId) {
 .feature-card:hover {
   border-color: var(--p-primary-color);
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 10%, transparent);
 }
 
 .feature-icon {

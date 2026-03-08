@@ -394,7 +394,7 @@ onMounted(() => {
 
 .term-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--p-text-color) 10%, transparent);
 }
 
 .term-card-header {

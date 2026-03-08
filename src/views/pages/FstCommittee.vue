@@ -601,6 +601,9 @@
           <div class="fst-setup-section-title">
             <i class="pi pi-th-large" style="color:#38bdf8"></i>
             Выберите проект для рассмотрения
+            <button class="fst-new-project-btn" @click="newProjectDialog = true" title="Новая заявка">
+              <i class="pi pi-plus"></i>
+            </button>
             <span v-if="selectedProjectId" class="fst-selected-badge">
               <i class="pi pi-check-circle"></i> Выбран
             </span>
@@ -818,6 +821,46 @@
               @click="resetPolicy" style="margin-top:4px" />
           </div>
 
+          <!-- Issue #161: IC decision thresholds -->
+          <div class="fst-ic-params">
+            <div class="fst-policy-toggle" @click="icParamsExpanded = !icParamsExpanded">
+              <i class="pi pi-sliders-v" style="color:#42a5f5"></i>
+              <span>Пороги решений ИК</span>
+              <span class="fst-policy-summary">Одобр. ≥ {{ icParams.approveThreshold }}% · Откл. &lt; {{ icParams.deferThreshold }}%</span>
+              <i :class="icParamsExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
+            </div>
+            <div v-if="icParamsExpanded" class="fst-policy-grid">
+              <div class="fst-policy-item">
+                <div class="fst-policy-label">Порог одобрения: <b>{{ icParams.approveThreshold }}%</b></div>
+                <Slider v-model="icParams.approveThreshold" :min="55" :max="90" :step="1" class="fst-policy-slider" />
+              </div>
+              <div class="fst-policy-item">
+                <div class="fst-policy-label">Порог «отложить»: <b>{{ icParams.deferThreshold }}%</b></div>
+                <Slider v-model="icParams.deferThreshold" :min="30" :max="65" :step="1" class="fst-policy-slider" />
+              </div>
+              <div class="fst-policy-item">
+                <div class="fst-policy-label">Макс итераций агента: <b>{{ icParams.maxIter }}</b></div>
+                <Slider v-model="icParams.maxIter" :min="1" :max="10" :step="1" class="fst-policy-slider" />
+              </div>
+              <div class="fst-policy-item">
+                <div class="fst-policy-label">Давление консенсуса: <b>{{ icParams.consensusPressure }}%</b></div>
+                <Slider v-model="icParams.consensusPressure" :min="50" :max="100" :step="5" class="fst-policy-slider" />
+              </div>
+              <div class="fst-policy-item">
+                <div class="fst-policy-label">Кворум (мин. агентов): <b>{{ icParams.quorum }}</b></div>
+                <Slider v-model="icParams.quorum" :min="3" :max="12" :step="1" class="fst-policy-slider" />
+              </div>
+              <div style="display:flex;gap:6px;margin-top:4px">
+                <Button label="Сброс" icon="pi pi-refresh" size="small" severity="secondary" text
+                  @click="icParams = { ...IC_PARAMS_DEFAULTS }" />
+                <Button label="Сохранить в БД" icon="pi pi-save" size="small" severity="info" text
+                  :loading="icParamsSaving"
+                  @click="saveICParams" />
+              </div>
+            </div>
+          </div>
+
           <div class="fst-setup-launch">
             <Button
               label="Запустить инвесткомитет"
@@ -837,12 +880,109 @@
 
   <!-- Page Help Drawer -->
   <PageHelpDrawer v-model:visible="helpOpen" :page-help="pageHelp" />
+
+  <!-- Issue #163: Новая заявка -->
+  <Dialog v-model:visible="newProjectDialog" header="Новая заявка в ИК" :modal="true" :style="{ width: '680px' }" :closable="true">
+    <div class="fst-newproj-form">
+      <div class="fst-newproj-section">Основное</div>
+      <div class="fst-newproj-row">
+        <label>Название компании *</label>
+        <input v-model="newProj.name" class="fst-newproj-input" placeholder="ООО ДронТех" />
+      </div>
+      <div class="fst-newproj-row">
+        <label>ОГРН</label>
+        <input v-model="newProj.ogrn" class="fst-newproj-input" placeholder="1234567890123" maxlength="13" />
+      </div>
+      <div class="fst-newproj-row">
+        <label>Описание проекта</label>
+        <textarea v-model="newProj.description" class="fst-newproj-input fst-newproj-textarea" rows="3" placeholder="Краткое описание технологии и продукта"></textarea>
+      </div>
+      <div class="fst-newproj-row2">
+        <div>
+          <label>Субфонд *</label>
+          <select v-model="newProj.subfundId" class="fst-newproj-input">
+            <option value="1096">БАС</option>
+            <option value="1098">Робот</option>
+            <option value="1100">МЭ</option>
+          </select>
+        </div>
+        <div>
+          <label>Стадия *</label>
+          <select v-model="newProj.stageId" class="fst-newproj-input">
+            <option value="1102">Pre-seed</option>
+            <option value="1103">Seed</option>
+            <option value="1104">Round A</option>
+            <option value="1105">Round B</option>
+            <option value="1106">Round C</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fst-newproj-section">Финансы</div>
+      <div class="fst-newproj-row2">
+        <div>
+          <label>Сумма запроса, млн руб *</label>
+          <input v-model.number="newProj.amountMln" type="number" min="0" class="fst-newproj-input" placeholder="15" />
+        </div>
+        <div>
+          <label>Прогноз IRR, %</label>
+          <input v-model.number="newProj.projectedIRR" type="number" min="0" max="200" class="fst-newproj-input" placeholder="35" />
+        </div>
+      </div>
+      <div class="fst-newproj-row">
+        <label>Размер рынка (TAM), млн руб</label>
+        <input v-model.number="newProj.marketSizeMln" type="number" min="0" class="fst-newproj-input" placeholder="10000" />
+      </div>
+
+      <div class="fst-newproj-section">Технологии</div>
+      <div class="fst-newproj-row3">
+        <div>
+          <label>TRL (1-9) *</label>
+          <input v-model.number="newProj.trl" type="number" min="1" max="9" class="fst-newproj-input" placeholder="5" />
+        </div>
+        <div>
+          <label>MRL (1-10)</label>
+          <input v-model.number="newProj.mrl" type="number" min="1" max="10" class="fst-newproj-input" placeholder="3" />
+        </div>
+        <div>
+          <label>Суверенность (0-9)</label>
+          <input v-model.number="newProj.sovereigntyScore" type="number" min="0" max="9" class="fst-newproj-input" placeholder="6" />
+        </div>
+      </div>
+
+      <div class="fst-newproj-section">Команда</div>
+      <div class="fst-newproj-row3">
+        <div>
+          <label>Сила команды (0-10)</label>
+          <input v-model.number="newProj.teamStrength" type="number" min="0" max="10" class="fst-newproj-input" placeholder="7" />
+        </div>
+        <div>
+          <label>Сотрудников</label>
+          <input v-model.number="newProj.employees" type="number" min="0" class="fst-newproj-input" placeholder="12" />
+        </div>
+        <div>
+          <label>Патентов</label>
+          <input v-model.number="newProj.patents" type="number" min="0" class="fst-newproj-input" placeholder="2" />
+        </div>
+      </div>
+    </div>
+    <template #footer>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="fst-btn fst-btn--secondary" @click="newProjectDialog = false">Отмена</button>
+        <button class="fst-btn fst-btn--primary" :disabled="!newProj.name || !newProj.trl || !newProj.amountMln || newProjSaving" @click="submitNewProject">
+          <i v-if="newProjSaving" class="pi pi-spin pi-spinner"></i>
+          {{ newProjSaving ? 'Создание...' : 'Создать и выбрать' }}
+        </button>
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Slider from 'primevue/slider'
+import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import { FstCommitteeEngine, createSession } from '@/components/fst-committee/FstCommitteeEngine.js'
 import {
@@ -854,7 +994,7 @@ import { agents as AGENTS, loadAgents } from '@/components/fst-committee/agentPr
 import {
   COMMITTEE_MODELS, SPEED_PROFILES, buildModelMap, getModelSummary, resolveModel
 } from '@/components/fst-committee/fstCommitteeModelOrchestrator.js'
-import { saveDecision, createProject, saveCommitteeSession, authenticate, STATUSES, loadCommitteeConfigs, saveCommitteeConfig } from '@/services/fstApi'
+import { saveDecision, createProject, saveCommitteeSession, authenticate, STATUSES, loadCommitteeConfigs, saveCommitteeConfig, loadCommitteeParams, saveCommitteeParams, IC_PARAMS_DEFAULTS } from '@/services/fstApi'
 import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-committee/fstCommitteeAI.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
@@ -879,6 +1019,8 @@ onMounted(async () => {
   if (PROJECTS_POOL.value.length > 0 && !selectedProjectId.value) {
     selectedProjectId.value = PROJECTS_POOL.value[0].id
   }
+  // Issue #161: load IC thresholds from Integram
+  loadCommitteeParams().then(p => { icParams.value = p }).catch(() => {})
 })
 
 // ── State ─────────────────────────────────────────────────────
@@ -906,6 +1048,65 @@ const policyExpanded = ref(false)
 // Issue #160: agent diagnostics
 const devMode = ref(new URLSearchParams(window.location.search).has('debug'))
 const agentStats = ref({})  // { [agentId]: { agentLoop, iterCount, toolsUsed, model, forcedPublish } }
+
+// Issue #161: committee decision thresholds from Integram
+const icParams = ref({ ...IC_PARAMS_DEFAULTS })
+const icParamsSaving = ref(false)
+const icParamsExpanded = ref(false)
+
+async function saveICParams() {
+  icParamsSaving.value = true
+  try {
+    await saveCommitteeParams(icParams.value)
+  } finally { icParamsSaving.value = false }
+}
+
+// ── Issue #163: Новая заявка ──────────────────────────────────────
+const newProjectDialog = ref(false)
+const newProjSaving = ref(false)
+const _newProjDefaults = () => ({
+  name: '', ogrn: '', description: '',
+  subfundId: '1096', stageId: '1103',
+  amountMln: null, projectedIRR: null, marketSizeMln: null,
+  trl: null, mrl: null, sovereigntyScore: null,
+  teamStrength: null, employees: null, patents: null,
+})
+const newProj = ref(_newProjDefaults())
+
+async function submitNewProject() {
+  newProjSaving.value = true
+  try {
+    const d = newProj.value
+    const result = await createProject({
+      name: d.name,
+      ogrn: d.ogrn,
+      description: d.description ? `<p>${d.description}</p>` : '',
+      subfundId: d.subfundId,
+      stageId: d.stageId,
+      statusId: '1115', // New
+      amount: (d.amountMln || 0) * 1_000_000,
+      trl: d.trl || 0,
+      mrl: d.mrl || 0,
+      sovereigntyScore: d.sovereigntyScore || 0,
+      projectedIRR: d.projectedIRR || 0,
+      marketSizeMln: d.marketSizeMln || 0,
+      teamStrength: d.teamStrength || 0,
+      employees: d.employees || 0,
+      patents: d.patents || 0,
+    })
+    const newId = result?.obj || result?.id
+    // Reload projects and auto-select
+    await loadProjects(true)
+    if (newId) selectedProjectId.value = newId
+    newProjectDialog.value = false
+    newProj.value = _newProjDefaults()
+    toast.add({ severity: 'success', summary: 'Заявка создана', detail: d.name, life: 3000 })
+  } catch (err) {
+    toast.add({ severity: 'error', summary: 'Ошибка', detail: err.message, life: 5000 })
+  } finally {
+    newProjSaving.value = false
+  }
+}
 
 // ── Оркестратор моделей ────────────────────────────────────────
 const modelPanelExpanded = ref(false)
@@ -1243,6 +1444,7 @@ function startSession() {
     votingMode:      votingMode.value,
     speedProfile:   selectedSpeedProfile.value,
     modelOverrides: { ...agentModelOverrides.value },
+    icParams:       { ...icParams.value },
   })
   session.value = sess
   agentActivity.value = {}
@@ -1916,7 +2118,7 @@ onUnmounted(() => {
 /* Contradictions */
 .fst-contradictions-list { display: flex; flex-direction: column; gap: 8px; }
 .fst-contradiction-item {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 12px;
@@ -1937,9 +2139,9 @@ onUnmounted(() => {
   border-radius: 8px;
   font-weight: 600;
 }
-.fst-contradiction-severity.sev-high { background: #ffcdd2; color: #c62828; }
-.fst-contradiction-severity.sev-medium { background: #fff3e0; color: #e65100; }
-.fst-contradiction-severity.sev-low { background: #e8f5e9; color: #2e7d32; }
+.fst-contradiction-severity.sev-high { background: color-mix(in srgb, #ef5350 15%, var(--p-surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card)); color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-low { background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card)); color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
 .fst-contradiction-thesis { margin-top: 4px; color: var(--p-text-color); }
 .fst-contradiction-antithesis { color: var(--p-text-muted-color); font-style: italic; }
 
@@ -1958,9 +2160,9 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
 }
-.fst-cond-type.type-MILESTONE { background: #e3f2fd; color: #1565c0; }
-.fst-cond-type.type-GOVERNANCE { background: #f3e5f5; color: #7b1fa2; }
-.fst-cond-type.type-RISK { background: #fce4ec; color: #c62828; }
+.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card)); color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--p-surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--p-surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
 .fst-cond-text { flex: 1; color: var(--p-text-color); }
 .fst-cond-metric { color: var(--p-text-muted-color); font-size: 11px; }
 
@@ -1971,7 +2173,7 @@ onUnmounted(() => {
   gap: 8px;
 }
 .fst-drift-card {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 8px 10px;
 }
@@ -1999,8 +2201,8 @@ onUnmounted(() => {
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 6px;
-  background: #fff3e0;
-  color: #e65100;
+  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
   font-weight: 600;
   margin-left: auto;
 }
@@ -2399,11 +2601,11 @@ onUnmounted(() => {
 .fst-pcard:hover {
   border-color: var(--pc);
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 0 0 1px var(--pc);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--p-text-color) 15%, transparent), 0 0 0 1px var(--pc);
 }
 .fst-pcard--selected {
   border-color: var(--pc);
-  box-shadow: 0 0 0 2px var(--pc), 0 4px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 0 0 2px var(--pc), 0 4px 16px color-mix(in srgb, var(--p-text-color) 10%, transparent);
 }
 .fst-pcard-checkmark {
   position: absolute;
@@ -2605,7 +2807,7 @@ onUnmounted(() => {
 }
 .fst-speed-btn {
   padding: 6px 14px;
-  border: 1px solid #333;
+  border: 1px solid var(--p-surface-border);
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
@@ -3336,7 +3538,7 @@ onUnmounted(() => {
 /* Contradictions */
 .fst-contradictions-list { display: flex; flex-direction: column; gap: 8px; }
 .fst-contradiction-item {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 12px;
@@ -3357,9 +3559,9 @@ onUnmounted(() => {
   border-radius: 8px;
   font-weight: 600;
 }
-.fst-contradiction-severity.sev-high { background: #ffcdd2; color: #c62828; }
-.fst-contradiction-severity.sev-medium { background: #fff3e0; color: #e65100; }
-.fst-contradiction-severity.sev-low { background: #e8f5e9; color: #2e7d32; }
+.fst-contradiction-severity.sev-high { background: color-mix(in srgb, #ef5350 15%, var(--p-surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card)); color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-low { background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card)); color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
 .fst-contradiction-thesis { margin-top: 4px; color: var(--p-text-color); }
 .fst-contradiction-antithesis { color: var(--p-text-muted-color); font-style: italic; }
 
@@ -3378,9 +3580,9 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
 }
-.fst-cond-type.type-MILESTONE { background: #e3f2fd; color: #1565c0; }
-.fst-cond-type.type-GOVERNANCE { background: #f3e5f5; color: #7b1fa2; }
-.fst-cond-type.type-RISK { background: #fce4ec; color: #c62828; }
+.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card)); color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--p-surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--p-surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
 .fst-cond-text { flex: 1; color: var(--p-text-color); }
 .fst-cond-metric { color: var(--p-text-muted-color); font-size: 11px; }
 
@@ -3391,7 +3593,7 @@ onUnmounted(() => {
   gap: 8px;
 }
 .fst-drift-card {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 8px 10px;
 }
@@ -3419,8 +3621,8 @@ onUnmounted(() => {
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 6px;
-  background: #fff3e0;
-  color: #e65100;
+  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
   font-weight: 600;
   margin-left: auto;
 }
@@ -3801,4 +4003,71 @@ onUnmounted(() => {
 .fst-debug-val { color: var(--p-text-muted-color); font-size: 10px; }
 .fst-debug-model { color: #ab47bc; font-size: 9px; }
 .fst-debug-forced { color: #ff9800; font-size: 9px; font-weight: 600; }
+
+/* Issue #163: New project button & form */
+.fst-new-project-btn {
+  background: var(--p-primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  margin-left: 8px;
+  vertical-align: middle;
+  transition: background .15s;
+}
+.fst-new-project-btn:hover { filter: brightness(1.15); }
+
+.fst-newproj-form { display: flex; flex-direction: column; gap: 10px; }
+.fst-newproj-section {
+  font-weight: 600; font-size: 13px;
+  color: var(--p-primary-color);
+  border-bottom: 1px solid var(--p-surface-border);
+  padding-bottom: 4px; margin-top: 6px;
+}
+.fst-newproj-row { display: flex; flex-direction: column; gap: 3px; }
+.fst-newproj-row label,
+.fst-newproj-row2 label,
+.fst-newproj-row3 label {
+  font-size: 12px; color: var(--p-text-muted-color); font-weight: 500;
+}
+.fst-newproj-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fst-newproj-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.fst-newproj-row2 > div,
+.fst-newproj-row3 > div { display: flex; flex-direction: column; gap: 3px; }
+.fst-newproj-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--p-surface-border);
+  border-radius: 6px;
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .15s;
+}
+.fst-newproj-input:focus { border-color: var(--p-primary-color); }
+.fst-newproj-textarea { resize: vertical; min-height: 60px; font-family: inherit; }
+
+.fst-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background .15s;
+}
+.fst-btn--primary {
+  background: var(--p-primary-color); color: #fff;
+}
+.fst-btn--primary:disabled { opacity: .5; cursor: not-allowed; }
+.fst-btn--primary:not(:disabled):hover { filter: brightness(1.1); }
+.fst-btn--secondary {
+  background: var(--p-surface-200); color: var(--p-text-color);
+}
+.fst-btn--secondary:hover { background: var(--p-surface-300); }
 </style>

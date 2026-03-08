@@ -846,7 +846,7 @@ onMounted(() => {
 
 .sourcing-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--p-text-color) 12%, transparent);
 }
 
 .sourcing-card-header {

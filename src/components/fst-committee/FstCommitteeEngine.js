@@ -13,7 +13,7 @@ import {
   RECOMMENDATION_TEMPLATES, REVISION_SIMULATION_STEPS, METRIC_FIELD_MAP, METRIC_CLAMP,
 } from './FstCommitteeConfig.js'
 import { getAgents } from './agentProvider.js'
-import { generateArgumentAI, fetchKagContext, clearKagCache, generateNodeProposalAI, generateNodeVoteAI } from './fstCommitteeAI.js'
+import { generateArgumentAI, fetchKagContext, clearKagCache, fetchOntologyContext, clearOntologyCache, generateNodeProposalAI, generateNodeVoteAI } from './fstCommitteeAI.js'
 import { runAgentLoop, resetLoopTokenCache } from './AgentLoop.js'
 import { DebateRoom } from './DebateRoom.js'
 import { annotateArg, detectContradictions, assembleConditionalDecision, deriveConditionsFromContradictions } from './fstCommitteeOntology.js'
@@ -81,9 +81,12 @@ function aggregateScore(agentScores) {
   return weightedSum / totalWeight
 }
 
-function scoreToVerdict(score) {
-  if (score >= 0.72) return 'APPROVE'
-  if (score >= 0.50) return 'DEFER'
+// Issue #161: thresholds from session.icParams (loaded from Integram)
+function scoreToVerdict(score, icParams) {
+  const approve = (icParams?.approveThreshold || 72) / 100
+  const defer   = (icParams?.deferThreshold   || 50) / 100
+  if (score >= approve) return 'APPROVE'
+  if (score >= defer)   return 'DEFER'
   return 'REJECT'
 }
 
@@ -169,6 +172,8 @@ export function createSession(project, options = {}) {
     useAgentLoop: options.useAgentLoop === true,   // agentic loop (opt-in)
     useOrchestrator: options.useOrchestrator === true, // server-side orchestration (opt-in)
     votingMode: options.votingMode || 'hybrid',       // 'formula' | 'hybrid' | 'llm'
+    // Issue #161: decision thresholds from Integram
+    icParams: options.icParams || null,
     // Настройки оркестратора моделей
     speedProfile:   options.speedProfile   || 'fast',
     modelOverrides: options.modelOverrides || {},  // { [agentId]: modelId }
@@ -187,6 +192,8 @@ export function createSession(project, options = {}) {
     events: [],
     startedAt: null,
     concludedAt: null,
+    _kagContext: '',           // KAG context (loaded at start)
+    _ontologyContext: '',      // Issue #162: БПЛА ontology context
     nodeProposals:  [],   // предложения агентов по нодам
     contractNodes:  [],   // финальные согласованные ноды
     nodeVotes:      [],   // протокол голосования по нодам
@@ -386,13 +393,19 @@ export class FstCommitteeEngine {
     // Sync session to backend (non-blocking)
     this._initBackendSession()
 
-    // Загружаем KAG-контекст прошлых решений (не блокирует старт)
+    // Загружаем KAG-контекст прошлых решений + онтологию БПЛА (не блокирует старт)
     clearKagCache()
     if (this.session.useAgentLoop) resetLoopTokenCache()
     if (this.session.useAI) {
+      // Issue #162: параллельная загрузка KAG-контекста и онтологии
       fetchKagContext(this.session.project).then(ctx => {
         this.session._kagContext = ctx || ''
       }).catch(() => { this.session._kagContext = '' })
+
+      fetchOntologyContext().then(onto => {
+        this.session._ontologyContext = onto || ''
+        if (onto) this.session._kagContext = [this.session._kagContext, onto].filter(Boolean).join('\n\n')
+      }).catch(() => { this.session._ontologyContext = '' })
     }
 
     // ── Server-side orchestration mode ──────────────────────────────────
@@ -587,7 +600,7 @@ export class FstCommitteeEngine {
       if (mode === 'formula') {
         // ── Чистая формула: веса + bias + шум ──
         score = agentScore(agent, dimScores)
-        verdict = scoreToVerdict(score)
+        verdict = scoreToVerdict(score, this?.session?.icParams)
         confidence = clamp(Math.abs(score - 0.6) * 2 + 0.4, 0.4, 1.0)
 
       } else if (mode === 'llm') {
@@ -601,7 +614,7 @@ export class FstCommitteeEngine {
         } else {
           // Fallback если LLM не дал stance
           score = agentScore(agent, dimScores)
-          verdict = scoreToVerdict(score)
+          verdict = scoreToVerdict(score, this?.session?.icParams)
           confidence = 0.5
         }
 
@@ -609,8 +622,9 @@ export class FstCommitteeEngine {
         // ── Гибрид (по умолчанию): LLM stance + формульный score + consensus pressure ──
         if (llmStance) {
           verdict = llmStance
-          // Consensus pressure: >70% согласны → слабые переворачиваются
-          if (dominantShare >= 0.85 && verdict !== dominantStance) {
+          // Consensus pressure: configurable threshold → слабые переворачиваются
+          const cpThreshold = (this.session.icParams?.consensusPressure || 85) / 100
+          if (dominantShare >= cpThreshold && verdict !== dominantStance) {
             const agentArg = this.session.arguments.filter(a => a.agentId === agent.id && a.type === 'SUMMARY')[0]
             if (!agentArg || agentArg.confidence < 0.6) verdict = dominantStance
           }
@@ -619,7 +633,7 @@ export class FstCommitteeEngine {
           confidence = clamp(0.6 + Math.random() * 0.3, 0.6, 0.95)
         } else {
           score = agentScore(agent, dimScores)
-          verdict = scoreToVerdict(score)
+          verdict = scoreToVerdict(score, this?.session?.icParams)
           confidence = clamp(Math.abs(score - 0.6) * 2 + 0.4, 0.4, 1.0)
         }
       }
@@ -683,7 +697,7 @@ export class FstCommitteeEngine {
 
     const agentScores = this.session.agentScores
     const agg = aggregateScore(agentScores)
-    const recommendation = scoreToVerdict(agg)
+    const recommendation = scoreToVerdict(agg, this.session.icParams)
 
     const voteCounts = { APPROVE: 0, REJECT: 0, DEFER: 0 }
     for (const { verdict } of agentScores) {
@@ -766,6 +780,12 @@ export class FstCommitteeEngine {
       finalVerdict: verdict,
       score:        this.session.decision.aggregatedScore,
     })
+
+    // Issue #162: очистка KAG/онтология кешей после завершения сессии
+    clearKagCache()
+    clearOntologyCache()
+    this.session._kagContext = ''
+    this.session._ontologyContext = ''
 
     // ── Links: зафиксировать решение как связь session → company ──
     const project = this.session.project
@@ -1258,7 +1278,9 @@ export class FstCommitteeEngine {
     if (project.localizationRatio < 0.6) conditions.push(pick(locTemplates))
     if (project.trl < 6) conditions.push(pick(trlTemplates))
     if (project.employees < 15) conditions.push(pick(teamTemplates))
-    if (score >= 0.5 && score < 0.72) conditions.push(`Подтвердить финансовую модель у 2 независимых аналитиков (текущий скоринг: ${Math.round(score*100)}/100)`)
+    const _at = (this.session.icParams?.approveThreshold || 72) / 100
+    const _dt = (this.session.icParams?.deferThreshold || 50) / 100
+    if (score >= _dt && score < _at) conditions.push(`Подтвердить финансовую модель у 2 независимых аналитиков (текущий скоринг: ${Math.round(score*100)}/100)`)
 
     // Условия из CHALLENGE/COUNTER аргументов — реальные риски, поднятые в дебатах
     const debateArgs = this.session.arguments

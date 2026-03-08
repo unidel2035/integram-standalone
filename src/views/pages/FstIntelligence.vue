@@ -500,13 +500,13 @@ onMounted(() => {
 }
 
 .fsti-stat-badge.warn {
-  background: #fff3e0;
-  color: #e65100;
+  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
 .fsti-stat-badge.info {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
 .fsti-empty-list {
@@ -594,11 +594,11 @@ onMounted(() => {
 }
 
 .fsti-highlight-col:first-child {
-  background: #e8f5e9;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
 }
 
 .fsti-highlight-col:last-child {
-  background: #ffebee;
+  background: color-mix(in srgb, #ef5350 10%, var(--p-surface-card));
 }
 
 .fsti-highlight-label {
@@ -610,11 +610,11 @@ onMounted(() => {
 }
 
 .fsti-highlight-label.positive {
-  color: #2e7d32;
+  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .fsti-highlight-label.negative {
-  color: #c62828;
+  color: color-mix(in srgb, #ef5350 70%, var(--p-text-color));
 }
 
 .fsti-highlight-col ul {
@@ -690,7 +690,7 @@ onMounted(() => {
 }
 
 .fsti-metric.warn {
-  color: #e65100;
+  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
   font-weight: 600;
 }
 

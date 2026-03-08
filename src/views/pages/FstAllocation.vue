@@ -844,7 +844,7 @@ onMounted(() => {
 .fsa-total-nav {
   text-align: center;
   padding: 12px;
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   border-radius: 6px;
   margin-bottom: 12px;
 }
@@ -939,7 +939,7 @@ onMounted(() => {
 
 .fsa-view-item {
   padding: 12px;
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   border-radius: 6px;
   border-left: 3px solid var(--p-primary-color);
 }
@@ -980,7 +980,7 @@ onMounted(() => {
 
 .fsa-metric-card {
   padding: 12px;
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   border-radius: 6px;
   text-align: center;
 }
@@ -1089,7 +1089,7 @@ onMounted(() => {
 
 .fsa-stress-card {
   padding: 12px;
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   border-radius: 6px;
   border: 1px solid var(--p-surface-border);
 }
@@ -1166,7 +1166,7 @@ onMounted(() => {
 .fsa-conc-bar-wrap {
   position: relative;
   height: 20px;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 4px;
   overflow: hidden;
 }

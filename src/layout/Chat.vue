@@ -1370,7 +1370,7 @@
       @execution-error="onExecutionError"
     />
 
-    <Toast />
+    <!-- Toast is provided by AppLayout.vue — no duplicate needed here -->
 
     <!-- Chat Help Dialog -->
     <ChatHelpDialog
@@ -1385,7 +1385,6 @@
 import { ref, nextTick, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useChatLogic } from '@/composables/useChatLogic'
-import Toast from 'primevue/toast'
 import InputSwitch from 'primevue/inputswitch'
 import ProgressSpinner from 'primevue/progressspinner'
 

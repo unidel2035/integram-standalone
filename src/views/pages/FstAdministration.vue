@@ -1237,7 +1237,7 @@ function generateAuditPackage() {
 }
 
 .admin-btn.secondary {
-  background: var(--p-surface-200);
+  background: var(--p-content-border-color);
   color: var(--p-text-color);
 }
 
@@ -1330,7 +1330,7 @@ function generateAuditPackage() {
 
 .admin-tab:hover {
   color: var(--p-text-color);
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
 }
 
 .admin-tab.active {
@@ -1367,7 +1367,7 @@ function generateAuditPackage() {
 }
 
 .admin-params-card, .admin-result-card, .admin-subsection {
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   border-radius: 6px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -1440,7 +1440,7 @@ function generateAuditPackage() {
 }
 
 .admin-table th {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   padding: 0.75rem;
   text-align: left;
   font-weight: 600;
@@ -1455,7 +1455,7 @@ function generateAuditPackage() {
 }
 
 .admin-table tbody tr:hover {
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
 }
 
 .admin-table .num {
@@ -1480,7 +1480,7 @@ function generateAuditPackage() {
 }
 
 .admin-table tfoot {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   font-weight: 600;
 }
 
@@ -1493,68 +1493,68 @@ function generateAuditPackage() {
 }
 
 .status-badge.paid, .status-badge.completed, .status-badge.ok {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .status-badge.accrued, .status-badge.partial {
-  background: #fff3e0;
-  color: #e65100;
+  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
 .status-badge.pending {
-  background: var(--p-surface-200);
+  background: var(--p-content-border-color);
   color: var(--p-text-muted-color);
 }
 
 .status-badge.warning {
-  background: #fff3e0;
-  color: #e65100;
+  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
 .category-badge.due-diligence {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
 .category-badge.legal {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .category-badge.travel {
-  background: #fff3e0;
-  color: #e65100;
+  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
 .category-badge.admin {
-  background: #f3e5f5;
-  color: #6a1b9a;
+  background: color-mix(in srgb, #ab47bc 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color));
 }
 
 .category-badge.audit {
-  background: #ffebee;
-  color: #c62828;
+  background: color-mix(in srgb, #ef5350 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ef5350 70%, var(--p-text-color));
 }
 
 .category-badge.marketing {
-  background: #e0f2f1;
-  color: #00695c;
+  background: color-mix(in srgb, #26a69a 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #26a69a 70%, var(--p-text-color));
 }
 
 .type-badge.realized-profit {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .type-badge.return-of-capital {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
 .type-badge.income {
-  background: #f3e5f5;
-  color: #6a1b9a;
+  background: color-mix(in srgb, #ab47bc 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color));
 }
 
 .link-btn, .action-btn {
@@ -1631,7 +1631,7 @@ function generateAuditPackage() {
 .exp-cat-bar-wrap {
   width: 100%;
   height: 24px;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -1671,7 +1671,7 @@ function generateAuditPackage() {
 }
 
 .carry-step.final {
-  background: #e8f5e9;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
   border-color: #66bb6a;
 }
 
@@ -1710,7 +1710,7 @@ function generateAuditPackage() {
 
 .carry-notice {
   padding: 1rem;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-left: 4px solid var(--p-primary-color);
   border-radius: 4px;
   font-size: 0.9rem;
@@ -1739,23 +1739,23 @@ function generateAuditPackage() {
 }
 
 .nav-table .nav-section-header td {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   font-weight: 600;
   padding: 0.75rem;
 }
 
 .nav-table .nav-subtotal td {
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   font-weight: 600;
   border-top: 2px solid var(--p-surface-border);
 }
 
 .nav-table .nav-total td {
-  background: #e8f5e9;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
   font-weight: 700;
   font-size: 1.05rem;
   border-top: 3px solid #66bb6a;
-  color: #2e7d32;
+  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .nav-metrics {
@@ -1811,7 +1811,7 @@ function generateAuditPackage() {
 }
 
 .bank-account-card.add-new:hover {
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   border-color: var(--p-primary-color);
 }
 
@@ -1840,7 +1840,7 @@ function generateAuditPackage() {
 
 .ba-currency {
   padding: 0.25rem 0.5rem;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -1902,7 +1902,7 @@ function generateAuditPackage() {
   font-size: 0.85rem;
   color: var(--p-text-muted-color);
   padding: 0.25rem 0.75rem;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 12px;
 }
 
@@ -1943,7 +1943,7 @@ function generateAuditPackage() {
 
 .fsbu-intro {
   padding: 1rem;
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   border-radius: 6px;
   margin-bottom: 1.5rem;
   font-size: 0.95rem;
@@ -1959,14 +1959,14 @@ function generateAuditPackage() {
 }
 
 .fsbu-table .fsbu-section td {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   font-weight: 600;
   padding: 0.75rem;
   border-top: 2px solid var(--p-surface-border);
 }
 
 .fsbu-table .fsbu-total td {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   font-weight: 700;
   font-size: 1.05rem;
   border-top: 3px solid var(--p-text-color);
@@ -2036,7 +2036,7 @@ function generateAuditPackage() {
   padding: 2rem;
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px color-mix(in srgb, var(--p-text-color) 20%, transparent);
 }
 
 .modal-box h3 {

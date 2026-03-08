@@ -193,6 +193,7 @@ export async function getProject(id) {
 export async function createProject(data) {
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: data.name,
+    up: 1, // Required for independent (top-level) objects in Integram
     t2237: data.ogrn || '',
     t2238: data.amount || 0,
     t1158: data.description || '',
@@ -211,7 +212,12 @@ export async function createProject(data) {
     ...(data.patents          != null ? { t6169: data.patents }          : {}),
     ...(data.foundedYear      != null ? { t6171: data.foundedYear }      : {}),
   })
-  return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
+  const result = await api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
+  // Integram returns array with error object on failure
+  if (Array.isArray(result) && result[0]?.error) {
+    throw new Error(result[0].error)
+  }
+  return result
 }
 
 /**
@@ -301,6 +307,7 @@ export async function createProjectFromApplication(application) {
 
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: application.companyName,
+    up: 1, // Required for independent (top-level) objects in Integram
     t2237: application.inn || '',
     t2238: (application.amount || 0) * 1_000_000,
     t1158: descriptionWithExtended,
@@ -795,4 +802,147 @@ export async function saveCommitteeConfig(config) {
  */
 export async function deleteCommitteeConfig(configId) {
   return api(`_m_del/${configId}?JSON_KV`, { method: 'POST' })
+}
+
+// ── Issue #161: Committee decision thresholds ─────────────────────────────
+
+const TYPE_IC_PARAMS = 6331
+
+/** Default thresholds (used when DB unavailable) */
+export const IC_PARAMS_DEFAULTS = {
+  approveThreshold: 72,
+  deferThreshold:   50,
+  maxIter:          5,
+  consensusPressure:85,
+  quorum:           7,
+  votingMode:       'hybrid',
+  subfundId:        0,
+}
+
+/**
+ * Load committee params from Integram. Optionally filter by subfundId.
+ * Falls back to defaults on error.
+ */
+export async function loadCommitteeParams(subfundId = 0) {
+  try {
+    const data = await api(`object/${TYPE_IC_PARAMS}?JSON_KV&l=50`)
+    const objects = data?.object || []
+    const reqs = data?.reqs || {}
+
+    const parsed = objects.map(obj => {
+      const r = reqs[obj.id] || {}
+      return {
+        id:                obj.id,
+        name:              obj.val,
+        approveThreshold:  Number(r['6333'] || 72),
+        deferThreshold:    Number(r['6335'] || 50),
+        maxIter:           Number(r['6337'] || 5),
+        consensusPressure: Number(r['6339'] || 85),
+        quorum:            Number(r['6341'] || 7),
+        votingMode:        r['6342'] || 'hybrid',
+        subfundId:         Number(r['6344'] || 0),
+      }
+    })
+
+    // Find subfund-specific config, fallback to default (subfundId=0)
+    if (subfundId) {
+      const specific = parsed.find(p => p.subfundId === subfundId)
+      if (specific) return specific
+    }
+    return parsed.find(p => p.subfundId === 0) || { ...IC_PARAMS_DEFAULTS }
+  } catch (err) {
+    console.warn('[fstApi] loadCommitteeParams failed, using defaults:', err.message)
+    return { ...IC_PARAMS_DEFAULTS }
+  }
+}
+
+/**
+ * Save committee params to Integram (update existing or create new)
+ */
+export async function saveCommitteeParams(params) {
+  if (params.id) {
+    // Update existing
+    const body = new URLSearchParams({
+      t6333: String(params.approveThreshold || 72),
+      t6335: String(params.deferThreshold || 50),
+      t6337: String(params.maxIter || 5),
+      t6339: String(params.consensusPressure || 85),
+      t6341: String(params.quorum || 7),
+      t6342: params.votingMode || 'hybrid',
+      t6344: String(params.subfundId || 0),
+    })
+    return api(`_m_set/${params.id}?JSON_KV`, { method: 'POST', body })
+  }
+  // Create new
+  const body = new URLSearchParams({
+    [`t${TYPE_IC_PARAMS}`]: params.name || 'Параметры ИК',
+    t6333: String(params.approveThreshold || 72),
+    t6335: String(params.deferThreshold || 50),
+    t6337: String(params.maxIter || 5),
+    t6339: String(params.consensusPressure || 85),
+    t6341: String(params.quorum || 7),
+    t6342: params.votingMode || 'hybrid',
+    t6344: String(params.subfundId || 0),
+  })
+  return api(`_m_new/${TYPE_IC_PARAMS}?JSON_KV`, { method: 'POST', body })
+}
+
+// ── Сессии чата (Issue #162 → fst/6377) ──────────────────────────────────────
+
+const TYPE_CHAT_SESSION = 6377
+
+/**
+ * Загрузить последнюю сессию чата пользователя из fst
+ */
+export async function loadChatSession(userId) {
+  try {
+    const data = await api(`object/${TYPE_CHAT_SESSION}?JSON_KV&l=1&s=6385&d=1`)
+    const objects = data?.objects || data?.object || []
+    if (!objects.length) return null
+    // Ищем сессию этого пользователя
+    const session = objects.find(o => {
+      const user = o.reqs?.['6388']?.value || o['6388']
+      return user === userId || user === String(userId)
+    }) || objects[0]
+    const messagesRaw = session.reqs?.['6381']?.value || session['6381'] || ''
+    if (!messagesRaw) return null
+    return {
+      id: session.id,
+      sessionId: session.reqs?.['6379']?.value || session['6379'] || '',
+      messages: JSON.parse(messagesRaw),
+      model: session.reqs?.['6383']?.value || session['6383'] || '',
+    }
+  } catch (err) {
+    console.warn('[fstApi] loadChatSession error:', err.message)
+    return null
+  }
+}
+
+/**
+ * Сохранить/обновить сессию чата в fst
+ */
+export async function saveChatSession({ id, sessionId, messages, model, userId }) {
+  const messagesJson = JSON.stringify(messages)
+  const now = new Date().toISOString()
+  if (id) {
+    // Обновить существующую
+    const body = new URLSearchParams({
+      t6381: messagesJson,
+      t6383: model || '',
+      t6385: now,
+      t6387: String(messages.length),
+    })
+    return api(`_m_set/${id}?JSON_KV`, { method: 'POST', body })
+  }
+  // Создать новую
+  const body = new URLSearchParams({
+    [`t${TYPE_CHAT_SESSION}`]: sessionId || `chat_${Date.now()}`,
+    t6379: sessionId || `chat_${Date.now()}`,
+    t6381: messagesJson,
+    t6383: model || '',
+    t6385: now,
+    t6387: String(messages.length),
+    t6388: userId || '',
+  })
+  return api(`_m_new/${TYPE_CHAT_SESSION}?JSON_KV`, { method: 'POST', body })
 }

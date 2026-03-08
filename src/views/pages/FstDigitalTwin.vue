@@ -687,7 +687,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fdt-kpi-row { display: flex; flex-direction: column; gap: 3px }
 .fdt-kpi-name { font-size: 11px }
 .fdt-kpi-bar-wrap { display: flex; align-items: center; gap: 6px }
-.fdt-kpi-bar-bg { flex: 1; height: 6px; background: #333; border-radius: 3px; overflow: hidden }
+.fdt-kpi-bar-bg { flex: 1; height: 6px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden }
 .fdt-kpi-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s }
 .fdt-kpi-pct { font-size: 10px; min-width: 28px; text-align: right }
 .fdt-kpi-target { font-size: 10px; color: var(--p-text-muted-color) }
@@ -723,7 +723,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   left: 0;
   right: 0;
   height: 2px;
-  background: #333;
+  background: var(--p-content-border-color);
   z-index: 0;
 }
 .fdt-tl-stage.done::before { background: #4caf50 }
@@ -733,7 +733,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   height: 18px;
   border-radius: 50%;
   z-index: 1;
-  border: 2px solid #444;
+  border: 2px solid var(--p-content-border-color);
   transition: all 0.3s;
 }
 .fdt-tl-stage.active .fdt-tl-stage-dot { border-color: #42a5f5; box-shadow: 0 0 6px #42a5f5 }

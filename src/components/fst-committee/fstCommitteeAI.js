@@ -20,12 +20,24 @@ const TIMEOUT_MS   = 30_000                     // таймаут (qwen-turbo б
 
 // ── KAG: поиск прошлых решений ИК ─────────────────────────────────────────────
 
-// Кеш KAG-контекста по проекту (обнуляется при новой сессии)
-const _kagCache = new Map()
+// Issue #162: TTL-кеш KAG-контекста (60 с) — автоматически инвалидируется
+const KAG_CACHE_TTL = 60_000
+const _kagCache = new Map()   // key → { value, ts }
+
+function _cacheGet(key) {
+  const entry = _kagCache.get(key)
+  if (!entry) return undefined
+  if (Date.now() - entry.ts > KAG_CACHE_TTL) { _kagCache.delete(key); return undefined }
+  return entry.value
+}
+function _cacheSet(key, value) {
+  _kagCache.set(key, { value, ts: Date.now() })
+}
 
 export async function fetchKagContext(project) {
   const key = project.title || project.company || 'unknown'
-  if (_kagCache.has(key)) return _kagCache.get(key)
+  const cached = _cacheGet(key)
+  if (cached !== undefined) return cached
   try {
     const res = await fetch(`${API_BASE}/api/kag/search`, {
       method:  'POST',
@@ -38,25 +50,69 @@ export async function fetchKagContext(project) {
         minScore:    0.25,
       }),
     })
-    if (!res.ok) { _kagCache.set(key, ''); return '' }
+    if (!res.ok) { _cacheSet(key, ''); return '' }
     const data = await res.json()
     const hits = (data.results || [])
       .filter(r => r.entity?.observations?.length)
       .slice(0, 3)
-    if (!hits.length) { _kagCache.set(key, ''); return '' }
+    if (!hits.length) { _cacheSet(key, ''); return '' }
     const text = hits
       .map(r => r.entity.observations.slice(0, 4).join(' | '))
       .join('\n')
     const result = `Прошлые решения ИК по схожим проектам:\n${text}`
-    _kagCache.set(key, result)
+    _cacheSet(key, result)
     return result
   } catch {
-    _kagCache.set(key, '')
+    _cacheSet(key, '')
     return ''
   }
 }
 
 export function clearKagCache() { _kagCache.clear() }
+
+// ── KAG: онтология БПЛА (Issue #162) ──────────────────────────────────────────
+
+let _ontologyCache = null   // { text, ts }
+
+/**
+ * Загружает топ-50 концептов БПЛА-онтологии из KAG.
+ * Используется для инициализации сессии ИК знаниями о предметной области.
+ */
+export async function fetchOntologyContext() {
+  if (_ontologyCache && Date.now() - _ontologyCache.ts < KAG_CACHE_TTL * 5) {
+    return _ontologyCache.text
+  }
+  try {
+    const res = await fetch(`${API_BASE}/api/kag/search`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal:  AbortSignal.timeout(5000),
+      body: JSON.stringify({
+        query:       'БПЛА беспилотные авиационные системы компоненты технологии',
+        limit:       50,
+        entityTypes: ['UavConcept', 'Technology', 'Component'],
+        minScore:    0.15,
+      }),
+    })
+    if (!res.ok) { _ontologyCache = { text: '', ts: Date.now() }; return '' }
+    const data = await res.json()
+    const hits = (data.results || []).filter(r => r.entity?.name).slice(0, 50)
+    if (!hits.length) { _ontologyCache = { text: '', ts: Date.now() }; return '' }
+    const concepts = hits.map(r => {
+      const e = r.entity
+      const obs = (e.observations || []).slice(0, 2).join('; ')
+      return obs ? `${e.name}: ${obs}` : e.name
+    })
+    const text = `Онтология БПЛА (${concepts.length} концептов):\n${concepts.join('\n')}`
+    _ontologyCache = { text, ts: Date.now() }
+    return text
+  } catch {
+    _ontologyCache = { text: '', ts: Date.now() }
+    return ''
+  }
+}
+
+export function clearOntologyCache() { _ontologyCache = null }
 
 // ── KAG: сохранение сессии ────────────────────────────────────────────────────
 

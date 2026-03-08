@@ -331,9 +331,9 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
 .green { color: #66bb6a; } .red { color: #ef5350; }
 .pref-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
 .pref-badge.none     { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
-.pref-badge.non_part { background: #1565c022; color: #1565c0; }
-.pref-badge.part     { background: #7b1fa222; color: #7b1fa2; }
-.pref-badge.capped   { background: #e65100 22; color: #e65100; }
+.pref-badge.non_part { background: #1565c022; color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.pref-badge.part     { background: #7b1fa222; color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.pref-badge.capped   { background: #e65100 22; color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
 .del-btn { background: none; border: none; color: var(--p-text-muted-color); cursor: pointer; font-size: 0.9rem; padding: 2px 6px; }
 .del-btn:hover { color: #ef5350; }
 

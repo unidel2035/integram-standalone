@@ -596,11 +596,11 @@ ${selectedSections.map(section => {
   if (section.id === 'financials') {
     return `<h3 style="color:var(--p-text-color);font-size:14px;margin:20px 0 10px">2. Финансовые результаты</h3>
 <table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0">
-  <tr style="background:var(--p-surface-100)"><th style="padding:6px 8px;text-align:left">Показатель</th><th style="padding:6px 8px;text-align:right">Факт</th><th style="padding:6px 8px;text-align:right">План</th><th style="padding:6px 8px;text-align:right">%</th></tr>
+  <tr style="background:var(--p-surface-card)"><th style="padding:6px 8px;text-align:left">Показатель</th><th style="padding:6px 8px;text-align:right">Факт</th><th style="padding:6px 8px;text-align:right">План</th><th style="padding:6px 8px;text-align:right">%</th></tr>
   <tr><td style="padding:6px 8px">Выручка (млн ₽)</td><td style="padding:6px 8px;text-align:right">18.2</td><td style="padding:6px 8px;text-align:right">20.0</td><td style="padding:6px 8px;text-align:right;color:#ffa726">91%</td></tr>
-  <tr style="background:var(--p-surface-50)"><td style="padding:6px 8px">EBITDA (млн ₽)</td><td style="padding:6px 8px;text-align:right">-2.1</td><td style="padding:6px 8px;text-align:right">-1.5</td><td style="padding:6px 8px;text-align:right;color:#ef5350">—</td></tr>
+  <tr style="background:var(--p-surface-card)"><td style="padding:6px 8px">EBITDA (млн ₽)</td><td style="padding:6px 8px;text-align:right">-2.1</td><td style="padding:6px 8px;text-align:right">-1.5</td><td style="padding:6px 8px;text-align:right;color:#ef5350">—</td></tr>
   <tr><td style="padding:6px 8px">Cash (млн ₽)</td><td style="padding:6px 8px;text-align:right">32.5</td><td style="padding:6px 8px;text-align:right">28.0</td><td style="padding:6px 8px;text-align:right;color:#66bb6a">116%</td></tr>
-  <tr style="background:var(--p-surface-50)"><td style="padding:6px 8px">Runway (мес.)</td><td style="padding:6px 8px;text-align:right">14</td><td style="padding:6px 8px;text-align:right">12</td><td style="padding:6px 8px;text-align:right;color:#66bb6a">117%</td></tr>
+  <tr style="background:var(--p-surface-card)"><td style="padding:6px 8px">Runway (мес.)</td><td style="padding:6px 8px;text-align:right">14</td><td style="padding:6px 8px;text-align:right">12</td><td style="padding:6px 8px;text-align:right;color:#66bb6a">117%</td></tr>
 </table>`
   }
   if (section.id === 'kpi') {
@@ -985,7 +985,7 @@ onMounted(() => {
   transition: background 0.15s;
 }
 .fstb-bp-section:hover {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
 }
 .fstb-bp-label {
   flex: 1;
@@ -1127,7 +1127,7 @@ onMounted(() => {
   font-size: 11px;
   color: var(--p-text-color);
   padding: 6px 8px;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 4px;
 }
 

@@ -891,9 +891,9 @@ function initNetworkGraph() {
 .inv-card:hover { border-color: var(--p-primary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .inv-header { display: flex; align-items: center; gap: 10px; }
 .inv-avatar { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff; }
-.inv-avatar.gov { background: #1565c0; }
-.inv-avatar.private { background: #7b1fa2; }
-.inv-avatar.corporate { background: #ef6c00; }
+.inv-avatar.gov { background: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.inv-avatar.private { background: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.inv-avatar.corporate { background: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
 .inv-info { flex: 1; }
 .inv-name { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }
 .inv-type { font-size: 0.72rem; color: var(--p-text-muted-color); }
@@ -946,9 +946,9 @@ function initNetworkGraph() {
 .network-graph { margin: 16px 0; }
 .graph-legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px; font-size: 0.75rem; color: var(--p-text-muted-color); }
 .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
-.legend-dot.gov { background: #1565c0; }
-.legend-dot.private { background: #7b1fa2; }
-.legend-dot.corporate { background: #ef6c00; }
+.legend-dot.gov { background: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.legend-dot.private { background: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.legend-dot.corporate { background: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
 .legend-dot.fst { background: var(--p-primary-color); }
 
 /* Heatmap */

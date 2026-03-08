@@ -1026,7 +1026,7 @@ function unlockTranche() {
   width: 480px;
   max-width: 90vw;
   border: 1px solid var(--p-surface-border);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 40px color-mix(in srgb, var(--p-text-color) 30%, transparent);
 }
 .fex-task-dialog-header {
   display: flex;

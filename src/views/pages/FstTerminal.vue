@@ -265,6 +265,7 @@ function handleResize() {
 // ── User actions ──────────────────────────────────────────
 
 const showHelp = ref(false)
+const isAdmin = computed(() => localStorage.getItem('is_admin') === 'true')
 
 function startSession(mode) {
   if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
@@ -404,6 +405,7 @@ function startSession(mode) {
           </div>
         </div>
 
+        <template v-if="isAdmin">
         <h4>URL-параметры WebSocket</h4>
         <p class="help-note">Терминал подключается к <code>/wsclaude</code> со следующими параметрами:</p>
         <div class="help-table">
@@ -444,6 +446,7 @@ function startSession(mode) {
             <span><code>claude_clientId_{userId}</code> — для reconnect к живому PTY</span>
           </div>
         </div>
+        </template>
       </div>
     </Dialog>
   </div>

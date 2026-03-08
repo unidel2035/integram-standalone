@@ -272,7 +272,7 @@ function exportPdf() {
 .memo-progress-steps span.done { color: #66bb6a; }
 .memo-progress-steps span.active { color: var(--p-primary-color); }
 .memo-doc { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 12px; overflow: hidden; }
-.memo-doc-header { background: #0d47a1; color: #fff; padding: 20px 24px; display: flex; align-items: center; gap: 20px; }
+.memo-doc-header { background: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); color: #fff; padding: 20px 24px; display: flex; align-items: center; gap: 20px; }
 .memo-doc-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 1px; opacity: .9; }
 .memo-doc-title { font-size: 1.1rem; font-weight: 800; letter-spacing: 2px; }
 .memo-doc-subtitle { font-size: 0.82rem; opacity: .8; margin-top: 2px; }

@@ -31,7 +31,7 @@ const isFstPage = computed(() =>
   route.path.startsWith('/fst-') && route.path !== '/fst-hub'
 )
 
-// Строим маппинг slug → { category, categoryRoute, isFirst } из fstMenuConfig
+// Строим маппинг slug → { category, categoryRoute } из fstMenuConfig
 const CRUMB_MAP = {}
 for (const group of fstMenuConfig) {
   if (!group.items) continue
@@ -42,7 +42,6 @@ for (const group of fstMenuConfig) {
     CRUMB_MAP[slug] = {
       category: group.label,
       categoryRoute: firstRoute,
-      isFirst: item.to === firstRoute
     }
   }
 }
@@ -53,35 +52,31 @@ const ORPHAN_MAP = {
   'fst-sourcing':       { category: 'Сделки',         categoryRoute: '/fst-dealflow' },
   'fst-execution':      { category: 'Сделки',         categoryRoute: '/fst-dealflow' },
   'fst-founders':       { category: 'Сделки',         categoryRoute: '/fst-dealflow' },
-  'fst-fund':           { category: 'Обзор',           categoryRoute: '/fst-hub' },
+  'fst-contract':       { category: 'Сделки',         categoryRoute: '/fst-deal' },
+  'fst-fund':           { category: 'Обзор',          categoryRoute: '/fst-hub' },
   'fst-transparency':   { category: 'Инфраструктура', categoryRoute: '/fst-ilpa' },
   'fst-administration': { category: 'Инфраструктура', categoryRoute: '/fst-ilpa' },
   'fst-intelligence':   { category: 'Аналитика',      categoryRoute: '/fst-esg' },
   'fst-allocation':     { category: 'Финансы',        categoryRoute: '/fst-lp' },
   'fst-learning':       { category: 'Обучение',       categoryRoute: '/fst-dev-guide' },
+  'fst-miniapp':        { category: 'Обучение',       categoryRoute: '/fst-dev-guide' },
+  'fst-network':        { category: 'Сделки',         categoryRoute: '/fst-dealflow' },
 }
 
-const slug = computed(() => route.path.replace('/', ''))
+// slug: берём первый сегмент пути (для /fst-contract/:id → fst-contract)
+const slug = computed(() => route.path.split('/').filter(Boolean)[0] || '')
 
 const crumb = computed(() => {
   const s = slug.value
   const mapped = CRUMB_MAP[s]
   const orphan = ORPHAN_MAP[s]
+  const entry = mapped || orphan
 
-  if (mapped) {
+  if (entry) {
     return {
       title: route.meta?.title || s,
-      category: mapped.category,
-      // Если текущая страница — первая в группе, категория не кликабельна
-      categoryRoute: mapped.isFirst ? null : mapped.categoryRoute,
-    }
-  }
-
-  if (orphan) {
-    return {
-      title: route.meta?.title || s,
-      category: orphan.category,
-      categoryRoute: orphan.categoryRoute,
+      category: entry.category,
+      categoryRoute: entry.categoryRoute,
     }
   }
 

@@ -335,13 +335,13 @@ function sendCapCall() {
 .green { color: #66bb6a; } .red { color: #ef5350; }
 
 .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
-.badge.бас  { background: #1565c022; color: #1565c0; }
-.badge.робо { background: #7b1fa222; color: #7b1fa2; }
-.badge.мэ   { background: #1b5e2022; color: #2e7d32; }
+.badge.бас  { background: #1565c022; color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.badge.робо { background: #7b1fa222; color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.badge.мэ   { background: #1b5e2022; color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
 
 .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; }
 .status-pill.active { background: #66bb6a22; color: #66bb6a; }
-.status-pill.watch  { background: #ff980022; color: #f57c00; }
+.status-pill.watch  { background: #ff980022; color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
 .status-pill.exit   { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
 
 .cf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }

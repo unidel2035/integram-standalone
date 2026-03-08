@@ -546,7 +546,7 @@ onMounted(() => {
 }
 
 .fst-proto-detail-section {
-  background: var(--p-surface-50);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 16px;
 }
@@ -645,7 +645,7 @@ onMounted(() => {
 .fst-proto-conf-bar-bg {
   width: 100px;
   height: 6px;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -714,7 +714,7 @@ onMounted(() => {
 }
 
 .fst-proto-arg-type {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 11px;

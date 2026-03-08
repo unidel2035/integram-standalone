@@ -896,7 +896,7 @@ onMounted(() => {
 }
 
 .fst-founders-tab:not(.active) .fst-tab-badge {
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
 }
 
@@ -968,7 +968,7 @@ onMounted(() => {
 
 .fst-founder-card:hover {
   border-color: var(--p-primary-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 8%, transparent);
   transform: translateY(-2px);
 }
 
@@ -976,7 +976,7 @@ onMounted(() => {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1023,13 +1023,13 @@ onMounted(() => {
 }
 
 .fst-founder-status.active {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .fst-founder-status.alumni {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
 .fst-founder-tags {
@@ -1040,7 +1040,7 @@ onMounted(() => {
 
 .fst-tag {
   padding: 4px 10px;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   font-size: 11px;
   border-radius: 6px;
@@ -1075,7 +1075,7 @@ onMounted(() => {
 
 .fst-mentor-card:hover {
   border-color: #66bb6a;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 8%, transparent);
   transform: translateY(-2px);
 }
 
@@ -1083,7 +1083,7 @@ onMounted(() => {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1141,8 +1141,8 @@ onMounted(() => {
 
 .fst-spec-tag {
   padding: 4px 10px;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
   font-size: 11px;
   border-radius: 6px;
   font-weight: 500;
@@ -1150,7 +1150,7 @@ onMounted(() => {
 
 .fst-spec-more {
   padding: 4px 10px;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   font-size: 11px;
   border-radius: 6px;
@@ -1344,13 +1344,13 @@ onMounted(() => {
 }
 
 .fst-request-status.open {
-  background: #fff3e0;
-  color: #f57c00;
+  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
 .fst-request-status.matched {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .fst-request-expertise {
@@ -1417,7 +1417,7 @@ onMounted(() => {
 
 .fst-event-card:hover {
   border-color: var(--p-primary-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 8%, transparent);
 }
 
 .fst-event-header {
@@ -1507,7 +1507,7 @@ onMounted(() => {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--p-surface-100);
+  background: var(--p-surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1647,18 +1647,18 @@ onMounted(() => {
 
 .fst-history-outcome.exit,
 .fst-history-outcome.acquired {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .fst-history-outcome.active {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
 .fst-history-outcome.closed {
-  background: #ffebee;
-  color: #c62828;
+  background: color-mix(in srgb, #ef5350 10%, var(--p-surface-card));
+  color: color-mix(in srgb, #ef5350 70%, var(--p-text-color));
 }
 
 .fst-interaction-header {

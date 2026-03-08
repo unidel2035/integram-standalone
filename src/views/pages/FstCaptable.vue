@@ -352,11 +352,11 @@ function exportCsv() {
 .green { color: #66bb6a; } .red { color: #ef5350; } .warn { color: #ff9800; } .gray { color: var(--p-text-muted-color); }
 
 .type-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
-.type-badge.founder { background: #1565c022; color: #1565c0; }
+.type-badge.founder { background: #1565c022; color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
 .type-badge.fst     { background: var(--p-primary-color); color: #fff; }
-.type-badge.vc      { background: #7b1fa222; color: #7b1fa2; }
-.type-badge.corp    { background: #1b5e2022; color: #2e7d32; }
-.type-badge.esop    { background: #e65100 22; color: #e65100; }
+.type-badge.vc      { background: #7b1fa222; color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.type-badge.corp    { background: #1b5e2022; color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
+.type-badge.esop    { background: #e65100 22; color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
 .type-badge.debt    { background: #37474f22; color: #546e7a; }
 
 .round-badge { font-size: 0.75rem; color: var(--p-text-muted-color); }

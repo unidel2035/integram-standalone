@@ -22,7 +22,7 @@ import {
 } from './AgentToolRegistry.js'
 
 const API_BASE      = ''
-const MAX_ITER      = 5           // Максимум tool_call итераций до публикации
+let   MAX_ITER      = 5           // Issue #161: configurable via session.icParams.maxIter
 const TIMEOUT_MS    = 45_000
 const MAX_PARALLEL  = 4           // Максимум агентов одновременно (concurrency limit)
 const MAX_TOKENS    = 600         // Достаточно для JSON + аргумент 3-4 предложения
@@ -363,6 +363,8 @@ async function callLLM({ agent, argType, conversationHistory, systemPrompt, mode
  * @returns {Object|null}         — аргумент для session.arguments
  */
 export async function runAgentLoop(agent, argType, room, project, targetArg = null, session = {}, opts = {}, onProgress = null) {
+  // Issue #161: configurable max iterations from DB
+  const maxIter   = session.icParams?.maxIter || MAX_ITER
   const tools     = getToolsForAgent(agent.id)
   const toolsDesc = formatToolsForPrompt(tools)
   const modelId   = resolveModel(agent.id, argType, opts.speedProfile || 'balanced', opts.modelOverrides || {})
@@ -420,7 +422,7 @@ ${toolsDesc}
   })
 
   // ── Основной loop ─────────────────────────────────────────────────────────
-  while (iterNum < MAX_ITER) {
+  while (iterNum < maxIter) {
     const rawResponse = await callLLM({
       agent, argType,
       conversationHistory: history,

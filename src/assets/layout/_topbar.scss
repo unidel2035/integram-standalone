@@ -135,7 +135,7 @@
         }
 
         .layout-config-menu {
-            gap: 0.25rem;
+            display: none;
         }
 
         .layout-topbar-menu {
@@ -195,10 +195,6 @@
         }
 
         .layout-topbar-actions {
-            gap: 0.25rem;
-        }
-
-        .layout-config-menu {
             gap: 0.25rem;
         }
 

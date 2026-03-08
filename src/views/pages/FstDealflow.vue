@@ -232,7 +232,7 @@ function exportCsv() {
 .df-col-badge { background: var(--p-surface-border); border-radius: 20px; padding: 2px 8px; font-size: 0.75rem; color: var(--p-text-muted-color); }
 .df-col-body { padding: 8px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .df-card { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 10px; cursor: pointer; transition: transform .15s, box-shadow .15s; }
-.df-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+.df-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 15%, transparent); }
 .df-card-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 4px; }
 .df-card-name { font-size: 0.82rem; font-weight: 700; color: var(--p-text-color); }
 .df-card-subfund { font-size: 0.65rem; color: #fff; padding: 2px 6px; border-radius: 4px; }
