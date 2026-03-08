@@ -69,3 +69,46 @@ html.block-editor-page .layout-main > * {
 html.block-editor-page .layout-footer {
     display: none;
 }
+
+/* =====================================================
+   Committee page — full-bleed mode (no scroll)
+   Applied via html.committee-page class from FstCommittee.vue
+   ===================================================== */
+html.committee-page,
+html.committee-page body {
+    overflow: hidden;
+    height: 100%;
+}
+
+html.committee-page .layout-wrapper {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+html.committee-page .layout-main-container {
+    padding: 4rem 0 0 0;
+    min-height: unset;
+    height: unset;
+    flex: 1 1 0;
+    overflow: hidden;
+    justify-content: flex-start;
+}
+
+html.committee-page .layout-main {
+    height: 100%;
+    overflow: hidden;
+    padding: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+html.committee-page .layout-main > * {
+    pointer-events: auto;
+}
+
+html.committee-page .layout-footer {
+    display: none;
+}

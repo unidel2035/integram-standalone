@@ -53,8 +53,20 @@ export const LINK_TYPES = {
 }
 
 async function ensureDb() {
-  if (!integramApiClient.isAuthenticated()) integramApiClient.loadSession()
-  if (integramApiClient.getDatabase() !== LINKS_DATABASE) {
+  if (!integramApiClient.isAuthenticated()) {
+    integramApiClient.loadSession()
+  }
+  if (!integramApiClient.isAuthenticated()) {
+    // Auto-auth with system credentials (no user login required)
+    const login = import.meta.env.VITE_INTEGRAM_LOGIN || import.meta.env.VITE_FST_LOGIN || ''
+    const password = import.meta.env.VITE_INTEGRAM_PASSWORD || import.meta.env.VITE_FST_PASSWORD || ''
+    if (login && password) {
+      try {
+        await integramApiClient.authenticate(LINKS_DATABASE, login, password)
+      } catch {}
+    }
+  }
+  if (integramApiClient.isAuthenticated() && integramApiClient.getDatabase() !== LINKS_DATABASE) {
     integramApiClient.setDatabase(LINKS_DATABASE)
   }
   return integramApiClient.isAuthenticated()

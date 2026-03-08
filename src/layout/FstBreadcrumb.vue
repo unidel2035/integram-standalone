@@ -16,17 +16,6 @@
     <i class="pi pi-chevron-right fst-bc-sep"></i>
     <span class="fst-bc-current">{{ crumb.title }}</span>
 
-    <!-- Pipeline nav: prev / next -->
-    <div class="fst-bc-pipeline" v-if="prevStep || nextStep">
-      <router-link v-if="prevStep" :to="prevStep.path" class="fst-bc-nav fst-bc-nav--prev" :title="prevStep.title">
-        <i class="pi pi-chevron-left"></i>
-        {{ prevStep.shortTitle }}
-      </router-link>
-      <router-link v-if="nextStep" :to="nextStep.path" class="fst-bc-nav fst-bc-nav--next" :title="nextStep.title">
-        {{ nextStep.shortTitle }}
-        <i class="pi pi-chevron-right"></i>
-      </router-link>
-    </div>
   </nav>
 </template>
 

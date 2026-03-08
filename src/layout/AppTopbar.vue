@@ -357,30 +357,6 @@ onBeforeUnmount(() => {
 
     <div class="layout-topbar-actions">
       <div class="layout-config-menu">
-        <LanguageSwitcher />
-
-        <!-- Issue #109: Learning mode toggle -->
-        <button
-          type="button"
-          class="layout-topbar-action"
-          :class="{ 'layout-topbar-action-highlight': learnModeStore.isLearningMode }"
-          @click="learnModeStore.toggleLearningMode"
-          v-tooltip.bottom="learnModeTooltip"
-        >
-          <i class="pi pi-lightbulb"></i>
-        </button>
-
-        <!-- Issue #7230: PWA install button — only on /welcome -->
-        <button
-          v-if="!isInstalled && route.path === '/welcome'"
-          type="button"
-          class="layout-topbar-action pwa-install-btn"
-          @click="handleInstallClick"
-          v-tooltip.bottom="'Скачать приложение'"
-        >
-          <i class="pi pi-download"></i>
-        </button>
-
         <button
           type="button"
           class="layout-topbar-action"
@@ -389,21 +365,6 @@ onBeforeUnmount(() => {
         >
           <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
         </button>
-
-        <div v-if="configVisible" class="relative">
-          <button
-            ref="paletteBtn"
-            type="button"
-            class="layout-topbar-action layout-topbar-action-highlight"
-            :title="themeSettingsTooltip"
-            @click="toggleConfig"
-          >
-            <i class="pi pi-palette"></i>
-          </button>
-          <div v-show="configVisible" class="config-panel-dropdown" ref="configPanelRef">
-            <AppConfigurator />
-          </div>
-        </div>
       </div>
 
       <button

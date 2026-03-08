@@ -131,115 +131,209 @@ function extractIssue(text) {
   return null
 }
 
-// Запускает solve в screen-сессии и мониторит вывод (как dronedoc2025)
-// Возвращает Promise, который резолвится когда solve завершится (success: bool)
-async function runSolve(bot, chatId, issueUrl, requester) {
-  const sessionId = `fst-solve-${chatId}-${Date.now()}`
-  const logPath = path.join(SOLVE_LOGS, `${sessionId}.log`)
-
-  const HOME = process.env.HOME || '/home/hive'
-  const NVM_DIR = `${HOME}/.nvm`
-  const env = {
-    ...process.env,
-    NVM_DIR,
-    GH_CONFIG_DIR: `${HOME}/.config/gh`,
-    GIT_TERMINAL_PROMPT: '0',
-    HOME,
-    PATH: `${NVM_DIR}/versions/node/v20.20.0/bin:/usr/local/bin:/usr/bin:/bin:${process.env.PATH || ''}`,
-    CLAUDECODE: undefined,  // allow nested claude invocation from solve
-  }
-  delete env.CLAUDECODE
-  if (GITHUB_TOKEN) { env.GH_TOKEN = GITHUB_TOKEN; env.GITHUB_TOKEN = GITHUB_TOKEN }
-
-  const cmd = [
-    `export NVM_DIR="${NVM_DIR}"`,
-    '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"',
-    `solve "${issueUrl}"`,
-  ].join(' && ')
-  const screenArgs = ['-dmS', sessionId, '-L', '-Logfile', logPath, 'bash', '-c', cmd]
-
+// Читает свежий OAuth токен из .credentials.json (обновляется текущей сессией Claude Code)
+function getFreshClaudeToken() {
   try {
-    await new Promise((res, rej) => {
-      const p = spawn('screen', screenArgs, { env, detached: true, stdio: 'ignore' })
-      p.on('close', code => (code === 0 || code === null ? res() : rej(new Error(`screen code ${code}`))))
-      p.on('error', rej)
+    const data = JSON.parse(fs.readFileSync('/home/hive/.claude/.credentials.json', 'utf8'))
+    const oa = data?.claudeAiOauth
+    if (!oa?.accessToken) return null
+    const expired = oa.expiresAt && oa.expiresAt < Date.now()
+    if (expired) return null
+    return oa.accessToken
+  } catch { return null }
+}
+
+// Выполняет bash-команду в контексте репозитория
+async function runBash(cmd, cwd = '/home/hive/fund') {
+  const HOME = process.env.HOME || '/home/hive'
+  const NVM_BIN = `${HOME}/.nvm/versions/node/v20.20.0/bin`
+  const ghEnv = {
+    HOME, PATH: `${NVM_BIN}:/usr/local/bin:/usr/bin:/bin`,
+    GIT_TERMINAL_PROMPT: '0',
+    GH_TOKEN: GITHUB_TOKEN, GITHUB_TOKEN,
+    GH_CONFIG_DIR: `${HOME}/.config/gh`,
+  }
+  try {
+    const { stdout, stderr } = await execFileAsync('bash', ['-c', cmd], {
+      cwd, env: ghEnv, timeout: 60000, maxBuffer: 1024 * 1024 * 4
     })
+    return (stdout + (stderr ? `\n[stderr]: ${stderr}` : '')).slice(0, 8000)
   } catch (err) {
-    await bot.sendMessage(chatId, `❌ Не удалось запустить solve: ${err.message}`)
+    return `[error exit ${err.code}]: ${(err.stdout || '') + (err.stderr || '') || err.message}`.slice(0, 4000)
+  }
+}
+
+// Агентный solve через Claude API напрямую (без CLI-бинаря)
+// Возвращает Promise → { success: bool }
+async function runSolve(bot, chatId, issueUrl, requester) {
+  const token = getFreshClaudeToken()
+  if (!token) {
+    await bot.sendMessage(chatId, '❌ Нет свежего токена Claude. Запустите новую сессию Claude Code.')
     return { success: false }
   }
 
+  // Парсим owner/repo/number из URL
+  const urlMatch = issueUrl.match(/github\.com\/([\w-]+)\/([\w-]+)\/issues\/(\d+)/)
+  if (!urlMatch) {
+    await bot.sendMessage(chatId, `❌ Неверный URL issue: ${issueUrl}`)
+    return { success: false }
+  }
+  const [, owner, repo, issueNum] = urlMatch
+  const repoDir = '/home/hive/fund'
+
+  // Получаем данные issue
+  let issueTitle = `Issue #${issueNum}`, issueBody = ''
+  try {
+    const { stdout } = await execFileAsync('gh', [
+      'issue', 'view', issueNum, '--repo', `${owner}/${repo}`,
+      '--json', 'title,body,labels,comments',
+    ], { env: { GH_TOKEN: GITHUB_TOKEN, HOME: process.env.HOME || '/home/hive', PATH: process.env.PATH } })
+    const data = JSON.parse(stdout)
+    issueTitle = data.title || issueTitle
+    issueBody = data.body || ''
+    if (data.comments?.length) {
+      issueBody += '\n\n--- Comments ---\n' + data.comments.map(c => `@${c.author?.login}: ${c.body}`).join('\n')
+    }
+  } catch (e) {
+    console.error('[FST Solve] Failed to fetch issue:', e.message)
+  }
+
+  // Статусное сообщение
   const startMsg = await bot.sendMessage(chatId,
-    `⏳ *Solve запущен*\n\n🔗 Issue: ${issueUrl}\n👤 ${requester}\n🕐 Начат: ${new Date().toLocaleTimeString('ru-RU')}`,
+    `⚙️ *Solve #${issueNum}*\n\n📋 ${issueTitle.slice(0, 80)}\n👤 ${requester}\n🕐 ${new Date().toLocaleTimeString('ru-RU')}`,
     { parse_mode: 'Markdown' }
   )
   const statusMsgId = startMsg.message_id
-
   const editStatus = async (text) => {
+    try { await bot.editMessageText(text, { chat_id: chatId, message_id: statusMsgId, parse_mode: 'Markdown' }) } catch {}
+  }
+
+  // Создаём ветку для работы
+  const branch = `issue-${issueNum}-${Date.now().toString(36)}`
+  await runBash(`git fetch origin main && git checkout -b ${branch} origin/main 2>&1 || git checkout -b ${branch} 2>&1`, repoDir)
+
+  // Системный промпт
+  const systemPrompt = `You are a coding agent working on the VentureOS venture fund platform (Vue 3 + Node.js).
+Repository: /home/hive/fund (already cloned and on branch ${branch})
+Your job: implement the GitHub issue fully, then commit and create a PR.
+
+Rules:
+- Work only in /home/hive/fund
+- Use bash tool to read files, make changes, run git commands
+- After all changes: git add -A && git commit -m "fix: <short description> (closes #${issueNum})"
+- Then: gh pr create --repo ${owner}/${repo} --title "<title>" --body "Closes #${issueNum}\n\n<description>" --head ${branch} --base main
+- Do NOT ask questions — implement directly
+- PrimeVue CSS variables only (var(--p-...)), no hardcoded colors
+- ESM modules (import/export), no CommonJS`
+
+  const userMessage = `Solve this GitHub issue:
+
+**#${issueNum}: ${issueTitle}**
+
+${issueBody}
+
+Implement the changes, commit, and create a PR. Branch: ${branch}`
+
+  // Агентный цикл
+  const messages = [{ role: 'user', content: userMessage }]
+  const tools = [{
+    name: 'bash',
+    description: 'Execute a bash command in the repository directory. Use for file operations, git, npm, etc.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        command: { type: 'string', description: 'The bash command to run' }
+      },
+      required: ['command']
+    }
+  }]
+
+  let toolCount = 0, prUrl = null, success = false
+  const MAX_ITERATIONS = 30
+  const startTime = Date.now()
+
+  try {
+    for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
+      const mins = Math.round((Date.now() - startTime) / 60000)
+      await editStatus(`⚙️ *Solve #${issueNum}* (${mins} мин, ${toolCount} шагов)\n\n📋 ${issueTitle.slice(0, 60)}\n👤 ${requester}`)
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': token,
+          'anthropic-version': '2023-06-01',
+          'anthropic-beta': 'interleaved-thinking-2025-05-14',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 16000,
+          system: systemPrompt,
+          tools,
+          messages,
+        }),
+        signal: AbortSignal.timeout(120000),
+      })
+
+      if (!response.ok) {
+        const err = await response.text()
+        throw new Error(`API ${response.status}: ${err.slice(0, 200)}`)
+      }
+
+      const result = await response.json()
+
+      // Сохраняем ответ ассистента
+      messages.push({ role: 'assistant', content: result.content })
+
+      if (result.stop_reason === 'end_turn') {
+        success = true
+        break
+      }
+
+      if (result.stop_reason !== 'tool_use') break
+
+      // Обрабатываем вызовы инструментов
+      const toolResults = []
+      for (const block of result.content) {
+        if (block.type !== 'tool_use') continue
+        toolCount++
+        console.log(`[FST Solve #${issueNum}] bash: ${block.input.command.slice(0, 100)}`)
+        const output = await runBash(block.input.command, repoDir)
+        // Ищем URL PR в выводе
+        const prMatch = output.match(/https:\/\/github\.com\/[\w-]+\/[\w-]+\/pull\/\d+/)
+        if (prMatch) prUrl = prMatch[0]
+        toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: output })
+      }
+      messages.push({ role: 'user', content: toolResults })
+    }
+  } catch (err) {
+    console.error('[FST Solve] Agent error:', err.message)
+    const mins = Math.round((Date.now() - startTime) / 60000)
+    await editStatus(`❌ *Solve #${issueNum} — ошибка*\n\n${err.message.slice(0, 200)}\n⏱ ${mins} мин`)
+    return { success: false }
+  }
+
+  // Проверяем результат
+  const mins = Math.round((Date.now() - startTime) / 60000)
+  if (!prUrl) {
+    // Пробуем найти PR через gh
     try {
-      await bot.editMessageText(text, { chat_id: chatId, message_id: statusMsgId, parse_mode: 'Markdown' })
+      const { stdout } = await execFileAsync('gh', [
+        'pr', 'list', '--repo', `${owner}/${repo}`,
+        '--head', branch, '--json', 'url,number,title', '--limit', '1',
+      ], { env: { GH_TOKEN: GITHUB_TOKEN, HOME: process.env.HOME || '/home/hive', PATH: process.env.PATH } })
+      const prs = JSON.parse(stdout)
+      if (prs[0]?.url) prUrl = prs[0].url
     } catch {}
   }
 
-  // Мониторинг — возвращает Promise, который резолвится когда сессия завершена
-  return new Promise((resolve) => {
-    let checks = 0
-    const MAX_CHECKS = 120
-    const startTime = Date.now()
-
-    const timer = setInterval(async () => {
-      checks++
-      const mins = Math.round((Date.now() - startTime) / 60000)
-
-      if (checks > MAX_CHECKS) {
-        clearInterval(timer)
-        await editStatus(`⏰ *Таймаут solve* (2 ч)\n\n🔗 Issue: ${issueUrl}\n\`screen -r ${sessionId}\``)
-        resolve({ success: false, timeout: true })
-        return
-      }
-
-      // Проверяем, жива ли screen-сессия
-      let running = false
-      try {
-        const { stdout } = await execFileAsync('screen', ['-list'])
-        running = stdout.includes(sessionId)
-      } catch { running = false }
-
-      if (!running) {
-        clearInterval(timer)
-
-        // Читаем лог и определяем статус
-        let logContent = ''
-        try {
-          if (fs.existsSync(logPath)) logContent = fs.readFileSync(logPath, 'utf8')
-        } catch {}
-
-        const logLower = logContent.toLowerCase()
-        const success = logLower.includes('pr is ready') || logLower.includes('pull request') || logLower.includes('completed successfully')
-        const failed = logLower.includes('system checks failed') || logLower.includes('insufficient disk space') || logLower.includes('❌')
-
-        const statusLine = success ? '✅ Готово!' : failed ? '❌ Ошибка' : '🏁 Завершён'
-        await editStatus(`${statusLine}\n\n🔗 Issue: ${issueUrl}\n👤 ${requester}\n⏱ Время: ${mins} мин`)
-
-        // Отправляем лог как документ
-        if (logContent && fs.existsSync(logPath)) {
-          try {
-            await bot.sendDocument(chatId, logPath, {
-              caption: `📄 Лог: ${sessionId}`,
-            }, { filename: `${sessionId}.log`, contentType: 'text/plain' })
-          } catch (docErr) {
-            console.error('[FST Bot] sendDocument error:', docErr.message)
-          }
-        }
-
-        resolve({ success })
-        return
-      }
-
-      // Сессия жива — обновляем статус в том же сообщении
-      await editStatus(`⏳ *Solve в процессе...* (${mins} мин)\n\n🔗 Issue: ${issueUrl}\n👤 ${requester}`)
-    }, 60000)
-  })
+  if (prUrl) {
+    await editStatus(`✅ *Solve #${issueNum} — готово!*\n\n📋 ${issueTitle.slice(0, 60)}\n🔗 ${prUrl}\n⏱ ${mins} мин | ${toolCount} шагов`)
+    return { success: true }
+  } else {
+    await editStatus(`🏁 *Solve #${issueNum} — завершён*\n\n📋 ${issueTitle.slice(0, 60)}\n⚠️ PR не создан\n⏱ ${mins} мин | ${toolCount} шагов`)
+    return { success: false }
+  }
 }
 
 // Автомерж PR связанного с issue
