@@ -158,6 +158,6 @@ const getStatusText = (status) => {
 <style scoped>
 .deployment-info {
   padding: 0.5rem 0;
-  border-top: 1px solid var(--surface-border);
+
 }
 </style>
