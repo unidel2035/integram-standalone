@@ -691,14 +691,9 @@ onBeforeUnmount(() => {
     color: var(--text-color-secondary);
 }
 
-// Show drag handle on hover for regular menu items
-a:hover .drag-handle,
-.router-link-active .drag-handle {
+// Show drag handle on hover — only on the hovered element, not parent li
+a:hover > .drag-handle {
     opacity: 0.6;
-}
-
-li:hover .drag-handle {
-    opacity: 1;
 }
 
 // Show drag handle on hover for root sections
@@ -712,7 +707,7 @@ li:hover .drag-handle {
     }
 }
 
-.layout-root-menuitem:hover .layout-menuitem-root-text .drag-handle {
+.layout-menuitem-root-text:hover > .drag-handle {
     opacity: 0.8;
 }
 
