@@ -3,6 +3,7 @@ import { logger } from '@/utils/logger'
 import { useLayout } from '@/layout/composables/layout'
 import { useRoute } from 'vue-router'
 import Badge from 'primevue/badge'
+import FstBreadcrumb from './FstBreadcrumb.vue'
 import Avatar from 'primevue/avatar'
 // Lazy load AppConfigurator - only shown when theme settings are opened
 import { defineAsyncComponent } from 'vue'
@@ -295,6 +296,8 @@ onBeforeUnmount(() => {
       <!-- Issue #6934: Logo moved to sidebar, menu button stays -->
     </div>
 
+    <FstBreadcrumb />
+
     <div class="layout-topbar-actions">
       <div class="layout-config-menu">
         <button
@@ -418,12 +421,12 @@ onBeforeUnmount(() => {
 }*/
 
 .topbar-avatar-initials {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: 50%;
   border: 1.5px solid currentColor;
   color: inherit;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
