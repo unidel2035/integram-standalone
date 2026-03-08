@@ -129,6 +129,30 @@ function serializeExtendedData(description, extended) {
   return `${description}\n<!--FST_EXTENDED_DATA:${json}-->`
 }
 
+/**
+ * Estimate IRR from extended project data when not stored (issue #151)
+ */
+function estimateIRRFromExtended(ext, proj) {
+  const trl = ext.trl || 5
+  const marketSize = ext.marketSize || 10_000_000_000
+  const amount = proj.amount || 100_000_000
+
+  // Higher market/amount ratio → higher IRR potential
+  const marketRatio = marketSize / Math.max(amount, 1)
+  let irr = 0.25
+
+  if (marketRatio > 200) irr = 0.45
+  else if (marketRatio > 100) irr = 0.35
+  else if (marketRatio > 50) irr = 0.28
+  else irr = 0.20
+
+  // TRL adjustment
+  if (trl >= 7) irr -= 0.04
+  else if (trl <= 3) irr += 0.06
+
+  return Math.round(Math.min(0.65, Math.max(0.12, irr)) * 100) / 100
+}
+
 // ── API Methods ───────────────────────────────────────────────────
 
 /**
@@ -160,7 +184,7 @@ export async function getEnrichedProjects() {
       sovereigntyScore: extended.sovereigntyScore || 6,
       localizationRatio: extended.localizationRatio || 0.5,
       marketSize: extended.marketSize || 10_000_000_000,
-      projectedIRR: extended.projectedIRR || 0.25,
+      projectedIRR: extended.projectedIRR || estimateIRRFromExtended(extended, proj),
       teamStrength: extended.teamStrength || 0.7,
       employees: extended.employees || 15,
       founded: extended.founded || 2020,

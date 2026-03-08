@@ -103,6 +103,42 @@ export const SUBFUNDS = { БАС: 1096, РОБО: 1098, МЭ: 1100 }
 export const STAGES   = { 'Pre-seed': 1102, Seed: 1103, 'Round A': 1104, 'Round B': 1105, 'Round C': 1106 }
 export const STATUSES = { Новый: 1115, 'На рассмотрении ИК': 1117, Одобрен: 1119, 'На доработке': 1123, 'В работе': 1125, Закрыт: 1127 }
 
+
+/**
+ * Estimate projected IRR from application data (issue #151)
+ * Uses stage, TAM, TRL and requested amount to produce a per-project estimate
+ * instead of the old hardcoded 0.25.
+ */
+function estimateIRR(app) {
+  // Base IRR by investment stage — earlier stage = higher target return
+  const stageIRR = {
+    'Pre-Seed': 0.55,
+    'Seed':     0.40,
+    'A':        0.30,
+    'B':        0.22,
+    'C':        0.18,
+  }
+  let base = 0.30 // default if stage unknown
+  const stage = app.stage || ''
+  for (const [key, val] of Object.entries(stageIRR)) {
+    if (stage.includes(key)) { base = val; break }
+  }
+
+  // Market size adjustment: larger TAM → slightly higher IRR potential
+  const tamB = (app.tam || 10) // TAM in billions
+  if (tamB >= 50) base += 0.05
+  else if (tamB >= 20) base += 0.03
+  else if (tamB < 5) base -= 0.03
+
+  // TRL adjustment: higher TRL → lower risk → slightly lower IRR
+  const trl = app.trl || 5
+  if (trl >= 7) base -= 0.04
+  else if (trl <= 3) base += 0.05
+
+  // Clamp to reasonable venture range [0.12, 0.65]
+  return Math.round(Math.min(0.65, Math.max(0.12, base)) * 100) / 100
+}
+
 // ── Projects ──────────────────────────────────────────────────────────────
 
 export const TYPE_PROJECTS = 1155
@@ -192,7 +228,7 @@ export async function createProjectFromApplication(application) {
     sovereigntyScore: Math.floor(application.sovereignty / 11.11) || 6, // 0-100 → 0-9
     localizationRatio: (application.sovereignty || 60) / 100,
     marketSize: (application.tam || 10) * 1_000_000_000, // млрд → руб
-    projectedIRR: 0.25, // Дефолтное значение, будет рассчитано на ИК
+    projectedIRR: estimateIRR(application),
     teamStrength: Math.min(1, (application.teamSize || 5) / 20),
     employees: application.teamSize || 5,
     founded: application.foundedYear || new Date().getFullYear(),
