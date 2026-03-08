@@ -1,20 +1,14 @@
 <template>
-  <div class="bm-root">
-    <div class="bm-header">
-      <div>
-        <h1>Бенчмаркинг портфеля</h1>
-        <span class="bm-sub">Сравнение с отраслевыми мультипликаторами и пирами</span>
-      </div>
-      <div class="bm-actions">
-        <select v-model="sector" class="bm-select">
+  <FstPageLayout title="Бенчмаркинг портфеля" subtitle="Сравнение с отраслевыми мультипликаторами и пирами">
+    <template #actions>
+      <select v-model="sector" class="bm-select">
           <option value="bas">БАС / БПЛА</option>
           <option value="robo">Робототехника</option>
           <option value="medtech">MedTech</option>
           <option value="agritech">AgriTech</option>
         </select>
         <button class="bm-btn secondary" @click="exportBenchmark">Экспорт</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Мультипликаторы рынка -->
     <div class="bm-section">
@@ -236,11 +230,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const sector = ref('bas')
 const sectorLabel = computed(() => ({ bas: 'БАС / БПЛА', robo: 'Робототехника', medtech: 'MedTech', agritech: 'AgriTech' })[sector.value])
@@ -542,8 +537,8 @@ function initTrendChart() {
 <style scoped>
 .bm-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .bm-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.bm-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.bm-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.bm-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.bm-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .bm-actions { display: flex; gap: 8px; align-items: center; }
 .bm-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
 .bm-btn.secondary { background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }

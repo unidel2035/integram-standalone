@@ -1,7 +1,7 @@
 <template>
-  <div class="fdt-root">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="fdt-header">
+    <template #header>
       <div class="fdt-header-left">
         <div class="fdt-logo">
           <i class="pi pi-building" style="color:#42a5f5;font-size:20px"></i>
@@ -29,7 +29,7 @@
         <SelectButton :modelValue="speed" :options="speedOpts" optionLabel="l" optionValue="v"
           :allowEmpty="false" @update:modelValue="v => speed = v" size="small" />
       </div>
-    </div>
+    </template>
 
     <!-- Main Grid -->
     <div class="fdt-main">
@@ -212,11 +212,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Chart from 'chart.js/auto'
 
 // ── Company Definition ────────────────────────────────────────

@@ -1,15 +1,9 @@
 <template>
-  <div class="gr-root">
-    <div class="gr-header">
-      <div>
-        <h1>Трекер грантов</h1>
-        <span class="gr-sub">Меры господдержки для портфельных компаний ФСТ НТИ</span>
-      </div>
-      <div class="gr-actions">
-        <button class="gr-btn secondary" @click="exportGrants">Экспорт</button>
+  <FstPageLayout title="Трекер грантов" subtitle="Меры господдержки для портфельных компаний ФСТ НТИ">
+    <template #actions>
+      <button class="gr-btn secondary" @click="exportGrants">Экспорт</button>
         <button class="gr-btn primary" @click="showAdd = true">+ Грант</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Сводка -->
     <div class="gr-summary">
@@ -112,11 +106,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const showAdd   = ref(false)
 const activeFilter = ref('all')
@@ -197,8 +192,8 @@ function exportGrants() {
 <style scoped>
 .gr-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .gr-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.gr-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.gr-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.gr-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.gr-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .gr-actions { display: flex; gap: 8px; }
 .gr-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .gr-btn.primary  { background: var(--p-primary-color); color: #fff; }

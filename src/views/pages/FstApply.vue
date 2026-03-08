@@ -1,5 +1,5 @@
 <template>
-  <div class="apply-root">
+  <FstPageLayout title="Подать заявку в ФСТ НТИ">
     <Toast position="bottom-center" />
     <div class="apply-hero">
       <h1>Подать заявку в ФСТ НТИ</h1>
@@ -241,11 +241,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useToast } from 'primevue/usetoast'
 import { createProjectFromApplication } from '@/services/fstApi'
 
@@ -341,7 +342,7 @@ async function submitApplication() {
 .apply-root { padding: 24px; display: flex; flex-direction: column; gap: 24px; min-height: 100vh; background: var(--surface-ground); }
 
 .apply-hero { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 32px; text-align: center; }
-.apply-hero h1 { margin: 0 0 8px; font-size: 1.8rem; color: var(--p-text-color); }
+.apply-hero h1 { margin: 0 0 8px; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .apply-hero p { font-size: 0.95rem; color: var(--p-text-muted-color); max-width: 600px; margin: 0 auto 20px; }
 .apply-criteria { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
 .ac-item { display: flex; align-items: center; gap: 10px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; }

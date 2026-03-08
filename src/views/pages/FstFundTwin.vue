@@ -1,7 +1,7 @@
 <template>
-  <div class="fft-root">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="fft-header">
+    <template #header>
       <div class="fft-header-left">
         <div class="fft-logo">
           <i class="pi pi-building-columns" style="color:#ffa726;font-size:20px"></i>
@@ -35,7 +35,7 @@
           <Button label="ИК" icon="pi pi-comments" size="small" severity="secondary" text />
         </router-link>
       </div>
-    </div>
+    </template>
 
     <!-- 3-Column Layout -->
     <div class="fft-main">
@@ -186,11 +186,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Chart from 'chart.js/auto'
 import { useRouter } from 'vue-router'
 

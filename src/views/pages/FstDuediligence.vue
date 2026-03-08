@@ -1,15 +1,9 @@
 <template>
-  <div class="dd-root">
-    <div class="dd-header">
-      <div>
-        <h1>AI Due Diligence</h1>
-        <span class="dd-sub">Ускоренная проверка с правовым, финансовым и технологическим анализом</span>
-      </div>
-      <div class="dd-actions">
-        <button class="dd-btn secondary" @click="exportDd">Экспорт DD-отчёта</button>
+  <FstPageLayout title="AI Due Diligence" subtitle="Ускоренная проверка с правовым, финансовым и технологическим анализом">
+    <template #actions>
+      <button class="dd-btn secondary" @click="exportDd">Экспорт DD-отчёта</button>
         <button class="dd-btn primary" @click="showNewDd = true">+ Новая проверка</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Активные DD -->
     <div class="dd-active-list">
@@ -131,11 +125,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const showNewDd  = ref(false)
 const ddActiveTab = ref('legal')
@@ -224,8 +219,8 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 <style scoped>
 .dd-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .dd-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.dd-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.dd-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.dd-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.dd-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .dd-actions { display: flex; gap: 8px; }
 .dd-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .dd-btn.primary  { background: var(--p-primary-color); color: #fff; }

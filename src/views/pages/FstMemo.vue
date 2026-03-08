@@ -1,18 +1,12 @@
 <template>
-  <div class="memo-root">
-    <div class="memo-header">
-      <div>
-        <h2 class="memo-title">AI Инвест-меморандум</h2>
-        <p class="memo-subtitle">Генерация профессионального инвестиционного меморандума за 60 секунд</p>
-      </div>
-      <div class="memo-actions">
-        <button class="memo-btn secondary" @click="exportPdf" :disabled="!generated">Экспорт PDF</button>
+  <FstPageLayout title="AI Инвест-меморандум" subtitle="Генерация профессионального инвестиционного меморандума за 60 секунд">
+    <template #actions>
+      <button class="memo-btn secondary" @click="exportPdf" :disabled="!generated">Экспорт PDF</button>
         <button class="memo-btn primary" @click="generate" :disabled="generating">
           <span v-if="generating">⏳ Генерация...</span>
           <span v-else>✨ Сгенерировать за 60 сек</span>
         </button>
-      </div>
-    </div>
+    </template>
 
     <!-- Форма параметров -->
     <div class="memo-form" v-if="!generated">
@@ -141,11 +135,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const params = ref({
   company: 'ООО АвиаЛогик',
@@ -249,9 +244,9 @@ function exportPdf() {
 
 <style scoped>
 .memo-root { padding: 24px; max-width: 1100px; margin: 0 auto; }
-.memo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-.memo-title { font-size: 1.6rem; font-weight: 700; color: var(--p-text-color); margin: 0; }
-.memo-subtitle { color: var(--p-text-muted-color); font-size: 0.9rem; margin-top: 4px; }
+.memo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; flex-wrap: wrap; gap: 12px; }
+.memo-title { font-size: 1rem; font-weight: 600; color: var(--p-text-color); margin: 0; }
+.memo-subtitle { color: var(--p-text-muted-color); font-size: 0.8rem; margin-top: 4px; }
 .memo-actions { display: flex; gap: 8px; }
 .memo-btn { padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: opacity .15s; }
 .memo-btn:disabled { opacity: .5; cursor: not-allowed; }
@@ -304,4 +299,7 @@ function exportPdf() {
 .memo-rec-icon { font-size: 1.2rem; }
 .memo-rec-conditions { display: flex; flex-direction: column; gap: 4px; }
 .memo-rec-cond { font-size: 0.82rem; color: var(--p-text-muted-color); padding-left: 12px; }
+
+/* — Unified page title — */
+.memo-header h2 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); line-height: 1.3; }
 </style>

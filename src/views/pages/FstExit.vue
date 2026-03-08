@@ -1,12 +1,8 @@
 <template>
-  <div class="exit-root">
-    <div class="exit-header">
-      <div>
-        <h1>Сценарии выхода</h1>
-        <span class="exit-sub">M&A, IPO, Buyback — расчёт доходности и оптимальной стратегии</span>
-      </div>
+  <FstPageLayout title="Сценарии выхода" subtitle="M&A, IPO, Buyback — расчёт доходности и оптимальной стратегии">
+    <template #actions>
       <button class="exit-btn primary" @click="exportExitAnalysis">Экспорт анализа</button>
-    </div>
+    </template>
 
     <!-- Выбор компании -->
     <div class="exit-company-bar">
@@ -188,11 +184,12 @@
         <div class="rec-desc">{{ bestScenarioDesc }}</div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const selectedCo = ref('agrodr')
 
@@ -281,8 +278,8 @@ function exportExitAnalysis() {
 <style scoped>
 .exit-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .exit-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.exit-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.exit-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.exit-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.exit-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .exit-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .exit-btn.primary { background: var(--p-primary-color); color: #fff; }
 

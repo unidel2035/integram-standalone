@@ -1,18 +1,12 @@
 <template>
-  <div class="admin-root">
-    <div class="admin-header">
-      <div>
-        <h1>Бэк-офис фонда</h1>
-        <span class="admin-subtitle">Управленческий учёт и ФСБУ 4/2023</span>
-      </div>
-      <div class="admin-actions">
-        <select v-model="selectedPeriod" class="admin-select" @change="loadData">
+  <FstPageLayout title="Бэк-офис фонда" subtitle="Управленческий учёт и ФСБУ 4/2023">
+    <template #actions>
+      <select v-model="selectedPeriod" class="admin-select" @change="loadData">
           <option v-for="p in periods" :key="p" :value="p">{{ p }}</option>
         </select>
         <button class="admin-btn secondary" @click="exportToExcel">Экспорт в Excel</button>
         <button class="admin-btn primary" @click="generateAuditPackage">Аудиторский пакет</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Статус ФСБУ 4/2023 -->
     <div class="admin-compliance-bar">
@@ -786,11 +780,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const activeTab = ref('mgmt-fee')
 const selectedPeriod = ref('2025')
@@ -1191,8 +1186,8 @@ function generateAuditPackage() {
 }
 
 .admin-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--p-text-color);
   margin: 0 0 0.5rem 0;
 }
@@ -1346,7 +1341,7 @@ function generateAuditPackage() {
 }
 
 .admin-section h2 {
-  font-size: 1.5rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--p-text-color);
   margin: 0 0 1.5rem 0;
@@ -1780,8 +1775,8 @@ function generateAuditPackage() {
 }
 
 .nav-metric-value {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--p-text-color);
 }
 

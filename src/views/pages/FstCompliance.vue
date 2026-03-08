@@ -1,15 +1,9 @@
 <template>
-  <div class="cpl-root">
-    <div class="cpl-header">
-      <div>
-        <h1>AML/KYC Комплаенс</h1>
-        <span class="cpl-sub">Проверка LP-партнёров и соответствие ФЗ-115, FATF, ЕКС</span>
-      </div>
-      <div class="cpl-actions">
-        <button class="cpl-btn secondary" @click="exportReport">Отчёт AML</button>
+  <FstPageLayout title="AML/KYC Комплаенс" subtitle="Проверка LP-партнёров и соответствие ФЗ-115, FATF, ЕКС">
+    <template #actions>
+      <button class="cpl-btn secondary" @click="exportReport">Отчёт AML</button>
         <button class="cpl-btn primary" @click="showAddLp = true">+ Онбординг LP</button>
-      </div>
-    </div>
+    </template>
 
     <!-- KPI compliance -->
     <div class="cpl-kpis">
@@ -143,11 +137,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const showAddLp = ref(false)
 const scanQuery = ref('')
@@ -238,8 +233,8 @@ function exportReport() { alert('Экспорт AML-отчёта') }
 <style scoped>
 .cpl-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .cpl-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.cpl-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.cpl-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.cpl-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.cpl-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .cpl-actions { display: flex; gap: 8px; }
 .cpl-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .cpl-btn.primary  { background: var(--p-primary-color); color: #fff; }

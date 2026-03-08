@@ -1,7 +1,7 @@
 <template>
-  <div class="fst-founders-root">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="fst-founders-header">
+    <template #header>
       <div class="fst-founders-header-left">
         <div class="fst-founders-logo">
           <i class="pi pi-users" style="color:#667eea;font-size:20px"></i>
@@ -17,7 +17,7 @@
         <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="refreshAll" :loading="loading" />
         <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="showAddDialog = true" />
       </div>
-    </div>
+    </template>
 
     <!-- Tabs -->
     <div class="fst-founders-tabs">
@@ -397,11 +397,12 @@
       </div>
     </Dialog>
 
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
@@ -837,7 +838,7 @@ onMounted(() => {
 }
 
 .fst-founders-subtitle {
-  font-size: 14px;
+  font-size: 0.85rem;
   color: var(--p-text-muted-color);
   margin-left: 32px;
 }

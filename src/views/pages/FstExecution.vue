@@ -1,7 +1,7 @@
 <template>
-  <div class="fex-root">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="fex-header">
+    <template #header>
       <div class="fex-header-left">
         <div class="fex-logo">
           <i class="pi pi-list-check" style="color:#66bb6a;font-size:20px"></i>
@@ -38,7 +38,7 @@
         <Button icon="pi pi-home" label="ФСТ" size="small" severity="secondary" text @click="$router.push('/fst')" />
         <Button icon="pi pi-arrow-left" label="Портфель" size="small" severity="secondary" text @click="$router.push('/fst-portfolio')" />
       </div>
-    </div>
+    </template>
 
     <!-- KPI Dashboard (always visible) -->
     <div class="fex-kpi-bar">
@@ -290,11 +290,12 @@
     <!-- Page Tutor -->
     <PageTutorButton pageId="fst-execution" :getContext="getPageContext" />
 
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import SelectButton from 'primevue/selectbutton'

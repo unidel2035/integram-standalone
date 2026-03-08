@@ -1,18 +1,12 @@
 <template>
-  <div class="ilpa-root">
-    <div class="ilpa-header">
-      <div>
-        <h1>ILPA Отчётность</h1>
-        <span class="ilpa-subtitle">Отчёты в стандарте ILPA Principles 3.0 для институциональных инвесторов</span>
-      </div>
-      <div class="ilpa-actions">
-        <select v-model="selectedQuarter" class="ilpa-select" @change="loadReport">
+  <FstPageLayout title="ILPA Отчётность" subtitle="Отчёты в стандарте ILPA Principles 3.0 для институциональных инвесторов">
+    <template #actions>
+      <select v-model="selectedQuarter" class="ilpa-select" @change="loadReport">
           <option v-for="q in quarters" :key="q" :value="q">{{ q }}</option>
         </select>
         <button class="ilpa-btn secondary" @click="generatePdf">Сформировать PDF</button>
         <button class="ilpa-btn primary" @click="sendToLps">Отправить LP</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Статус отчётности -->
     <div class="ilpa-status-bar">
@@ -149,11 +143,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const activeTab = ref('capital')
 const selectedQuarter = ref('Q4 2025')
@@ -242,8 +237,8 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 <style scoped>
 .ilpa-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .ilpa-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.ilpa-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.ilpa-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.ilpa-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.ilpa-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .ilpa-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .ilpa-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .ilpa-btn.primary  { background: var(--p-primary-color); color: #fff; }

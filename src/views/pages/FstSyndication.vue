@@ -1,12 +1,7 @@
 <template>
-  <div class="syn-root">
-    <div class="syn-header">
-      <div>
-        <h1>🤝 Сеть со-инвесторов</h1>
-        <span class="syn-sub">Управление синдикацией с РФРИТ, Сколково, Ростех Венчурс, Росинфокоминвест</span>
-      </div>
-      <div class="syn-actions">
-        <button class="syn-btn secondary" @click="showAnalytics = !showAnalytics">
+  <FstPageLayout title="🤝 Сеть со-инвесторов" subtitle="Управление синдикацией с РФРИТ, Сколково, Ростех Венчурс, Росинфокоминвест">
+    <template #actions>
+      <button class="syn-btn secondary" @click="showAnalytics = !showAnalytics">
           <i class="pi pi-chart-line"></i> Аналитика
         </button>
         <button class="syn-btn secondary" @click="exportSyndication">
@@ -18,8 +13,7 @@
         <button class="syn-btn primary" @click="showAddDeal = true">
           <i class="pi pi-plus"></i> + Сделка
         </button>
-      </div>
-    </div>
+    </template>
 
     <!-- Сводка синдикации -->
     <div class="syn-summary">
@@ -411,11 +405,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 // UI State
 const showAddDeal = ref(false)
@@ -858,8 +853,8 @@ function initNetworkGraph() {
 <style scoped>
 .syn-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .syn-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.syn-header h1 { margin: 0; font-size: 1.5rem; color: var(--p-text-color); }
-.syn-sub { font-size: 0.85rem; color: var(--p-text-muted-color); }
+.syn-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.syn-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .syn-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .syn-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
 .syn-btn.primary { background: var(--p-primary-color); color: #fff; }

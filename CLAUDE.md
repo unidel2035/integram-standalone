@@ -144,6 +144,8 @@ XSRF:     в теле запроса, НЕ в заголовке
    - `sudo systemctl restart dronedoc-backend`
    - `sudo systemctl restart dronedoc-frontend`
 3. **Тема:** Только PrimeVue CSS переменные (`var(--p-surface-card)`), никаких хардкод цветов
+   - **Запрещено:** PrimeVue токены шкалы 0/50/100/200 (слишком светлые/тёмные, ломают тему). Используй semantic-токены: `--p-text-color`, `--p-text-muted-color`, `--p-surface-card`, `--p-content-border-color`, `--p-primary-color`
+   - **Шаблон страницы:** Все sidebar-страницы должны использовать `<FstPageLayout>` из `src/components/fst-shared/FstPageLayout.vue` (PrimeVue Toolbar + единый скелет)
 4. **БД:** Только Integram MCP — никакого PostgreSQL/MySQL
 5. **AI:** Только через token router `/api/ai-tokens/chat` — никаких прямых API-ключей на фронте
 6. **Новый маршрут → обязательно добавить в:**

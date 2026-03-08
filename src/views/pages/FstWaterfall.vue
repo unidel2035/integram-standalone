@@ -1,12 +1,8 @@
 <template>
-  <div class="wf-root">
-    <div class="wf-header">
-      <div>
-        <h1>Waterfall Калькулятор</h1>
-        <span class="wf-subtitle">Распределение выручки от выхода по очерёдности</span>
-      </div>
+  <FstPageLayout title="Waterfall Калькулятор" subtitle="Распределение выручки от выхода по очерёдности">
+    <template #actions>
       <button class="wf-btn secondary" @click="exportWaterfall">Экспорт</button>
-    </div>
+    </template>
 
     <!-- Параметры выхода -->
     <div class="wf-inputs-card">
@@ -170,11 +166,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const showAddInvestor = ref(false)
 
@@ -302,8 +299,8 @@ function exportWaterfall() {
 <style scoped>
 .wf-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .wf-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.wf-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.wf-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.wf-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.wf-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .wf-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .wf-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .wf-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
@@ -337,7 +334,7 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
 .del-btn { background: none; border: none; color: var(--p-text-muted-color); cursor: pointer; font-size: 0.9rem; padding: 2px 6px; }
 .del-btn:hover { color: #ef5350; }
 
-.wf-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.wf-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
 .wf-step { display: grid; grid-template-columns: 30px 1fr auto 150px; align-items: center; gap: 12px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 12px 16px; }
 .step-num { font-size: 1.1rem; font-weight: 900; color: var(--p-primary-color); }
 .step-title { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }

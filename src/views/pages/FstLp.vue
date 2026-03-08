@@ -1,15 +1,9 @@
 <template>
-  <div class="lp-root">
-    <div class="lp-header">
-      <div class="lp-title-block">
-        <h1>LP Dashboard</h1>
-        <span class="lp-subtitle">Отчётность для партнёров с ограниченной ответственностью</span>
-      </div>
-      <div class="lp-actions">
-        <button class="lp-btn secondary" @click="exportReport">Экспорт ILPA</button>
+  <FstPageLayout title="LP Dashboard" subtitle="Отчётность для партнёров с ограниченной ответственностью">
+    <template #actions>
+      <button class="lp-btn secondary" @click="exportReport">Экспорт ILPA</button>
         <button class="lp-btn primary" @click="showCapCall = true">Кэпитал-колл</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Сводная панель LP -->
     <div class="lp-summary-grid">
@@ -161,11 +155,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const activeTab = ref('portfolio')
 const showCapCall = ref(false)
@@ -292,8 +287,8 @@ function sendCapCall() {
   flex-wrap: wrap;
   gap: 12px;
 }
-.lp-title-block h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.lp-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.lp-title-block h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.lp-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .lp-actions { display: flex; gap: 8px; }
 .lp-btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
 .lp-btn.primary  { background: var(--p-primary-color); color: #fff; }
@@ -344,7 +339,7 @@ function sendCapCall() {
 .status-pill.watch  { background: #ff980022; color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
 .status-pill.exit   { background: var(--surface-ground); color: var(--p-text-muted-color); }
 
-.cf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.cf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
 .cf-block { display: flex; flex-direction: column; gap: 8px; }
 .cf-title { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); margin-bottom: 4px; }
 .cf-row { display: flex; gap: 12px; font-size: 0.83rem; color: var(--p-text-color); }
@@ -390,4 +385,7 @@ function sendCapCall() {
   width: 100%; resize: vertical;
 }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* — Unified page title — */
+.lp-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); line-height: 1.3; }
 </style>

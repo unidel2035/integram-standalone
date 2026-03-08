@@ -1,7 +1,7 @@
 <template>
-  <div class="fst-deal-root">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="fst-deal-header">
+    <template #header>
       <div class="fst-deal-header-left">
         <div class="fst-deal-logo">
           <i class="pi pi-file-edit" style="color:#ffa726;font-size:20px"></i>
@@ -46,7 +46,7 @@
         </LearnTooltip>
         <Button icon="pi pi-question-circle" severity="secondary" size="small" text @click="toggleHelp" title="Помощь по странице" />
       </div>
-    </div>
+    </template>
 
     <!-- Main Grid -->
     <div class="fst-deal-main">
@@ -387,11 +387,12 @@
     <!-- Page Help Drawer -->
     <PageHelpDrawer v-model:visible="helpOpen" :page-help="pageHelp" />
 
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { saveDeal as saveDealToFst } from '@/services/fstApi'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'

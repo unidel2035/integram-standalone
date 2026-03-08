@@ -1,7 +1,7 @@
 <template>
-  <div class="fsp-root">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="fsp-header">
+    <template #header>
       <div class="fsp-header-left">
         <div class="fsp-logo">
           <i class="pi pi-chart-scatter" style="color:#42a5f5;font-size:20px"></i>
@@ -50,7 +50,7 @@
           <Button icon="pi pi-building" label="ЦД Фонда" size="small" severity="secondary" text @click="$router.push('/fst-fund')" />
         </LearnTooltip>
       </div>
-    </div>
+    </template>
 
     <!-- Portfolio Grid -->
     <div class="fsp-body">
@@ -246,11 +246,12 @@
     <!-- Page Tutor -->
     <PageTutorButton pageId="fst-portfolio" :getContext="getPageContext" />
 
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'

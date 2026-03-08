@@ -1,7 +1,7 @@
 <template>
-  <div class="fstb-root">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="fstb-header">
+    <template #header>
       <div class="fstb-header-left">
         <div class="fstb-logo">
           <i class="pi pi-sitemap" style="color:#ab47bc;font-size:20px"></i>
@@ -18,7 +18,7 @@
         <Button icon="pi pi-home" label="ФСТ" severity="secondary" size="small" text @click="$router.push('/fst-hub')" />
         <Button icon="pi pi-arrow-left" label="Портфель" severity="secondary" size="small" text @click="$router.push('/fst-portfolio')" />
       </div>
-    </div>
+    </template>
 
     <!-- Main Content -->
     <div class="fstb-main">
@@ -295,11 +295,12 @@
 
     </div>
 
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Select from 'primevue/select'

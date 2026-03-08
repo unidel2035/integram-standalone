@@ -1,15 +1,9 @@
 <template>
-  <div class="gov-root">
-    <div class="gov-header">
-      <div>
-        <h1>GR-Панель</h1>
-        <span class="gov-subtitle">Государственные отношения и регуляторный мониторинг</span>
-      </div>
-      <div class="gov-actions">
-        <button class="gov-btn secondary" @click="exportGr">Экспорт GR-отчёта</button>
+  <FstPageLayout title="GR-Панель" subtitle="Государственные отношения и регуляторный мониторинг">
+    <template #actions>
+      <button class="gov-btn secondary" @click="exportGr">Экспорт GR-отчёта</button>
         <button class="gov-btn primary" @click="showAddEvent = true">+ Событие</button>
-      </div>
-    </div>
+    </template>
 
     <!-- KPI GR -->
     <div class="gov-kpi-row">
@@ -129,11 +123,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const showAddEvent = ref(false)
 
@@ -211,8 +206,8 @@ function exportGr() {
 <style scoped>
 .gov-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .gov-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.gov-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.gov-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.gov-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.gov-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .gov-actions { display: flex; gap: 8px; }
 .gov-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .gov-btn.primary  { background: var(--p-primary-color); color: #fff; }

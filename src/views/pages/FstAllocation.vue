@@ -1,9 +1,9 @@
 <template>
-  <div class="fst-allocation">
+  <FstPageLayout>
     <Toast position="bottom-center" />
 
     <!-- Header -->
-    <div class="fsa-header">
+    <template #header>
       <div class="fsa-header-left">
         <div class="fsa-logo">
           <i class="pi pi-chart-pie" style="color:#ab47bc;font-size:20px"></i>
@@ -20,7 +20,7 @@
         <Button icon="pi pi-check" label="Применить аллокацию" size="small" severity="success" @click="applyAllocation" :disabled="!hasChanges" />
         <Button icon="pi pi-building" label="Портфель" size="small" severity="secondary" text @click="$router.push('/fst-portfolio')" />
       </div>
-    </div>
+    </template>
 
     <!-- Body: 3 columns -->
     <div class="fsa-body">
@@ -276,11 +276,12 @@
         <Button label="Понятно" @click="showCorrelationInfo = false" />
       </template>
     </Dialog>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import Chart from 'chart.js/auto'

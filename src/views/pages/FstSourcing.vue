@@ -1,20 +1,13 @@
 <template>
-  <div class="sourcing-root">
-    <!-- Header -->
-    <div class="sourcing-header">
-      <div>
-        <h2 class="sourcing-title">AI Deal Sourcing</h2>
-        <p class="sourcing-subtitle">Автоматический поиск перспективных стартапов в секторе БАС/РОБО/МЭ</p>
-      </div>
-      <div class="sourcing-actions">
-        <button class="sourcing-btn secondary" @click="showSettings = true">
+  <FstPageLayout title="AI Deal Sourcing" subtitle="Автоматический поиск перспективных стартапов в секторе БАС/РОБО/МЭ">
+    <template #actions>
+      <button class="sourcing-btn secondary" @click="showSettings = true">
           <i class="pi pi-cog"></i> Настройки
         </button>
         <button class="sourcing-btn primary" @click="runScan">
           <i class="pi pi-refresh"></i> Обновить данные
         </button>
-      </div>
-    </div>
+    </template>
 
     <!-- Stats -->
     <div class="sourcing-stats">
@@ -318,11 +311,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -673,8 +667,8 @@ onMounted(() => {
 }
 
 .sourcing-title {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--p-text-color);
   margin: 0;
 }

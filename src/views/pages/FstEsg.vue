@@ -1,18 +1,12 @@
 <template>
-  <div class="esg-root">
-    <div class="esg-header">
-      <div>
-        <h1>ESG-скоринг портфеля</h1>
-        <span class="esg-sub">Оценка экологического, социального и управленческого факторов по TCFD/GRI</span>
-      </div>
-      <div class="esg-actions">
-        <select v-model="view" class="esg-select">
+  <FstPageLayout title="ESG-скоринг портфеля" subtitle="Оценка экологического, социального и управленческого факторов по TCFD/GRI">
+    <template #actions>
+      <select v-model="view" class="esg-select">
           <option value="portfolio">Портфель целиком</option>
           <option value="company">По компании</option>
         </select>
         <button class="esg-btn primary" @click="exportEsg">Отчёт TCFD</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Общий ESG-рейтинг портфеля -->
     <div class="esg-portfolio-score">
@@ -127,11 +121,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const view = ref('portfolio')
 
@@ -202,8 +197,8 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 <style scoped>
 .esg-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .esg-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.esg-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.esg-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.esg-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.esg-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .esg-actions { display: flex; gap: 8px; align-items: center; }
 .esg-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .esg-btn.primary { background: var(--p-primary-color); color: #fff; }

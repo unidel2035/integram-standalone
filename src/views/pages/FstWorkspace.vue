@@ -1,7 +1,7 @@
 <template>
-  <div class="fst-workspace-page">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="page-header">
+    <template #header>
       <div class="header-content">
         <div class="title-section">
           <i class="pi pi-desktop" style="font-size: 2rem; color: var(--p-primary-color)"></i>
@@ -11,7 +11,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </template>
 
     <!-- Workspace Cards -->
     <div class="workspace-grid">
@@ -104,7 +104,7 @@
         </template>
       </Card>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
@@ -137,7 +137,7 @@ function openChat() {
 
 .title-section h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1rem;
   color: var(--p-text-color);
 }
 

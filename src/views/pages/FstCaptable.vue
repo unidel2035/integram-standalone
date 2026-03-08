@@ -1,18 +1,12 @@
 <template>
-  <div class="ct-root">
-    <div class="ct-header">
-      <div>
-        <h1>Cap Table</h1>
-        <span class="ct-subtitle">Реестр прав и конвертационные сценарии</span>
-      </div>
-      <div class="ct-actions">
+  <FstPageLayout title="Cap Table" subtitle="Реестр прав и конвертационные сценарии">
+    <template #actions>
         <select v-model="selectedCompany" class="ct-select">
           <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
         </select>
         <button class="ct-btn secondary" @click="exportCsv">Экспорт CSV</button>
         <button class="ct-btn primary" @click="showAddRound = true">+ Раунд</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Общая сводка -->
     <div class="ct-summary">
@@ -196,11 +190,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const activeTab = ref('captable')
 const showAddRound = ref(false)
@@ -321,8 +316,8 @@ function exportCsv() {
 <style scoped>
 .ct-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .ct-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.ct-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.ct-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.ct-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.ct-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .ct-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .ct-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .ct-btn.primary  { background: var(--p-primary-color); color: #fff; }

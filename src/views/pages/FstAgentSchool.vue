@@ -1,7 +1,7 @@
 <template>
-  <div class="agent-school fst-page-bg">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="school-header">
+    <template #header>
       <div class="header-left">
         <span class="school-icon">🎓</span>
         <div>
@@ -15,7 +15,7 @@
           <span class="stat-lbl">{{ s.label }}</span>
         </div>
       </div>
-    </div>
+    </template>
 
     <!-- Tabs -->
     <div class="school-tabs">
@@ -517,11 +517,12 @@
         <Button label="Запустить турнир агентов" icon="pi pi-bolt" @click="startTournament" />
       </template>
     </Dialog>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, reactive, onMounted, nextTick } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import { AGENTS } from '@/components/fst-committee/FstCommitteeConfig.js'
@@ -892,8 +893,8 @@ function _algoName(id) {
 }
 .header-left { display: flex; align-items: center; gap: 1rem; }
 .school-icon { font-size: 2.5rem; }
-h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
-.subtitle { color: var(--p-text-muted-color); font-size: 0.9rem; margin: 0.2rem 0 0; }
+h1 { font-size: 1rem; font-weight: 600; margin: 0; }
+.subtitle { color: var(--p-text-muted-color); font-size: 0.85rem; margin: 0.2rem 0 0; }
 .header-stats { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .stat-pill {
   display: flex; flex-direction: column; align-items: center;

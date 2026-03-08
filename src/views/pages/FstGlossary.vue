@@ -1,7 +1,7 @@
 <template>
-  <div class="fst-glossary-page">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="page-header">
+    <template #header>
       <div class="header-content">
         <div class="title-section">
           <i class="pi pi-book" style="font-size: 2rem; color: var(--p-primary-color);"></i>
@@ -20,7 +20,7 @@
           />
         </div>
       </div>
-    </div>
+    </template>
 
     <!-- Search and Filters -->
     <Card class="search-card">
@@ -198,11 +198,12 @@
 
     <!-- Financial Calculator -->
     <FinancialCalculator v-model:visible="calculatorVisible" />
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -449,7 +450,7 @@ onMounted(() => {
   }
 
   .title-section h1 {
-    font-size: 1.5rem;
+    font-size: 1rem;
   }
 
   .stat-value {

@@ -1,14 +1,8 @@
 <template>
-  <div class="np-root">
-    <div class="np-header">
-      <div>
-        <h1>Нацпроект БАС 2024–2030</h1>
-        <span class="np-sub">Соответствие портфеля ФСТ НТИ целевым показателям Национального проекта</span>
-      </div>
-      <div class="np-actions">
-        <button class="np-btn secondary" @click="exportReport">Отчёт соответствия</button>
-      </div>
-    </div>
+  <FstPageLayout title="Нацпроект БАС 2024–2030" subtitle="Соответствие портфеля ФСТ НТИ целевым показателям Национального проекта">
+    <template #actions>
+      <button class="np-btn secondary" @click="exportReport">Отчёт соответствия</button>
+    </template>
 
     <!-- Прогресс по годам -->
     <div class="np-timeline">
@@ -85,11 +79,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const years = ref([
   { y: 2024, pct: 100, current: false },
@@ -148,8 +143,8 @@ function exportReport() { alert('Экспорт отчёта соответст�
 <style scoped>
 .np-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .np-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.np-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.np-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.np-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.np-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .np-actions { display: flex; gap: 8px; }
 .np-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .np-btn.secondary { background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }

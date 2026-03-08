@@ -1,7 +1,7 @@
 <template>
-  <div class="fst-transparency-root">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="fst-tr-header">
+    <template #header>
       <div class="fst-tr-header-left">
         <div class="fst-tr-logo">
           <i class="pi pi-shield" style="color:#42a5f5;font-size:20px"></i>
@@ -17,7 +17,7 @@
         <Button icon="pi pi-download" label="Скачать IM" size="small" severity="secondary" @click="downloadIM" />
         <Button icon="pi pi-lock" label="Investor Data Room" size="small" severity="info" @click="showDataRoom = true" />
       </div>
-    </div>
+    </template>
 
     <!-- Hero Section -->
     <div class="fst-tr-hero">
@@ -202,11 +202,12 @@
       </div>
     </Dialog>
 
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'

@@ -1,5 +1,5 @@
 <template>
-  <div class="dev-guide">
+  <FstPageLayout title="Курс для управляющих фондом">
 
     <div class="guide-hero">
       <div class="hero-badge">Курс для управляющих фондом</div>
@@ -471,7 +471,7 @@
       </div>
     </section>
 
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
@@ -949,7 +949,7 @@ code { font-family: monospace; background: color-mix(in srgb, var(--p-text-color
 
 @media (max-width: 640px) {
   .dev-guide { padding: 1rem; }
-  .guide-hero h1 { font-size: 1.5rem; }
+  .guide-hero h1 { font-size: 1rem; font-weight: 600; }
   .hero-days { gap: 0.5rem; }
   .hero-day { min-width: 110px; }
   .lesson { flex-direction: column; gap: 0.75rem; }

@@ -1,12 +1,7 @@
 <template>
-  <div class="sec-root">
-    <div class="sec-header">
-      <div>
-        <h1>🔄 Secondary Market</h1>
-        <span class="sec-subtitle">Вторичные сделки: продажа доли фонда другим инвесторам</span>
-      </div>
-      <div class="sec-actions">
-        <select v-model="selectedCompany" class="sec-select">
+  <FstPageLayout title="🔄 Secondary Market" subtitle="Вторичные сделки: продажа доли фонда другим инвесторам">
+    <template #actions>
+      <select v-model="selectedCompany" class="sec-select">
           <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
         </select>
         <button class="sec-btn secondary" @click="showNetworkDialog = true">
@@ -15,8 +10,7 @@
         <button class="sec-btn primary" @click="openSellDialog">
           <i class="pi pi-dollar"></i> Продать долю
         </button>
-      </div>
-    </div>
+    </template>
 
     <!-- Сводка текущей позиции -->
     <div class="sec-position">
@@ -350,11 +344,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -625,8 +620,8 @@ function sendOffer(buyer) {
 
 /* Header */
 .sec-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-.sec-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.sec-subtitle { font-size: 0.9rem; color: var(--p-text-muted-color); margin-top: 4px; }
+.sec-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.sec-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); margin-top: 4px; }
 .sec-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
 /* Buttons */
@@ -689,7 +684,7 @@ function sendOffer(buyer) {
 .sec-offer-actions { display: flex; gap: 8px; }
 
 /* Valuation */
-.sec-val-methods { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.sec-val-methods { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
 .sec-val-method { background: var(--surface-ground); border: 2px solid var(--surface-border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; }
 .sec-val-method:hover { border-color: var(--p-primary-color); }
 .sec-val-method.active { border-color: var(--p-primary-color); background: var(--p-primary-color)11; }

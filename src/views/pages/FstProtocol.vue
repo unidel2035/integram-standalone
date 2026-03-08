@@ -1,9 +1,9 @@
 <template>
-  <div class="fst-protocol">
+  <FstPageLayout>
     <Toast position="bottom-center" />
 
     <!-- Header -->
-    <div class="fst-proto-header">
+    <template #header>
       <div class="fst-proto-header-left">
         <div class="fst-proto-logo">
           <i class="pi pi-file-check" style="color:#ffa726;font-size:20px"></i>
@@ -20,7 +20,7 @@
         <Button icon="pi pi-building" label="Новая сессия" size="small" severity="success"
           @click="$router.push('/fst-committee')" />
       </div>
-    </div>
+    </template>
 
     <!-- Filters -->
     <div class="fst-proto-filters">
@@ -201,11 +201,12 @@
       </div>
     </Dialog>
 
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { agents as agentsList, loadAgents } from '@/components/fst-committee/agentProvider.js'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
@@ -408,7 +409,7 @@ onMounted(() => {
 }
 
 .fst-proto-subtitle {
-  font-size: 13px;
+  font-size: 0.85rem;
   color: var(--p-text-muted-color);
   margin-left: 32px;
 }

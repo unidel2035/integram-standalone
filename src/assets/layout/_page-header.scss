@@ -1,0 +1,130 @@
+/* =====================================================
+   Unified FST page header styles
+   Usage: <div class="fst-page-header"> ... </div>
+   ===================================================== */
+
+/* Page header bar — transparent, bottom border, flex */
+.fst-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: transparent;
+  border-bottom: 1px solid var(--p-content-border-color);
+  flex-shrink: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Page title block — compact, matches Hub topbar style */
+.fst-page-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  line-height: 1.3;
+}
+
+.fst-page-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Page logo line — icon + title + badges */
+.fst-page-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+
+.fst-page-logo i,
+.fst-page-logo svg {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* Page actions row — buttons */
+.fst-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Page KPI cards row */
+.fst-page-kpis {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  flex-wrap: wrap;
+}
+
+.fst-page-kpi {
+  flex: 1;
+  min-width: 100px;
+  padding: 14px 16px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.fst-page-kpi-val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  line-height: 1.2;
+}
+
+.fst-page-kpi-label {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  margin-top: 4px;
+}
+
+/* Page content section with consistent spacing */
+.fst-page-content {
+  padding: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fst-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+  }
+  .fst-page-actions {
+    width: 100%;
+  }
+  .fst-page-title {
+    font-size: 0.9rem;
+  }
+  .fst-page-kpis {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  .fst-page-kpi {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 80px;
+    padding: 10px 12px;
+  }
+  .fst-page-kpi-val {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .fst-page-header {
+    padding: 8px 12px;
+  }
+  .fst-page-title {
+    font-size: 0.85rem;
+  }
+}

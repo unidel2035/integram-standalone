@@ -1,7 +1,7 @@
 <template>
-  <div class="fst-learning-page">
+  <FstPageLayout>
     <!-- Header -->
-    <div class="page-header">
+    <template #header>
       <div class="header-content">
         <div class="title-section">
           <i class="pi pi-brain" style="font-size: 2rem; color: var(--p-primary-color);"></i>
@@ -17,7 +17,7 @@
           severity="success"
         />
       </div>
-    </div>
+    </template>
 
     <!-- Stats Overview -->
     <div class="stats-grid">
@@ -145,7 +145,7 @@
               >
                 <Column field="agentAvatar" header="" style="width: 50px;">
                   <template #body="slotProps">
-                    <span style="font-size: 1.5rem;">{{ slotProps.data.agentAvatar }}</span>
+                    <span style="font-size: 1rem;">{{ slotProps.data.agentAvatar }}</span>
                   </template>
                 </Column>
                 <Column field="agentName" header="Агент" sortable></Column>
@@ -384,11 +384,12 @@
         />
       </div>
     </Dialog>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useToast } from 'primevue/usetoast'
 import fstLearningService from '@/services/fstLearningService'
 

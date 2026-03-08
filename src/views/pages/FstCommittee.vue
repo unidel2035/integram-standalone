@@ -1768,7 +1768,6 @@ onUnmounted(() => {
   overflow: hidden;
   background: var(--surface-ground);
   color: var(--p-text-color);
-  font-family: 'Inter', sans-serif;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2408,7 +2407,7 @@ onUnmounted(() => {
   overflow-y: auto;
 }
 .fst-setup-header {
-  padding: 24px 28px 18px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--p-content-border-color);
   background: transparent;
 }
@@ -2416,14 +2415,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 17px;
-  font-weight: 700;
-  color: #ffa726;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--p-text-color);
   margin-bottom: 5px;
 }
 .fst-setup-desc {
   color: var(--p-text-muted-color);
-  font-size: 13px;
+  font-size: 0.85rem;
   margin: 0 0 12px;
 }
 .fst-setup-actions {
@@ -2524,10 +2523,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 8px;
-  color: #ffa726;
+  color: var(--p-text-color);
 }
 .fst-intro-text {
   font-size: 13px;
@@ -2845,7 +2844,7 @@ onUnmounted(() => {
 .fst-logo {
   font-size: 13px;
   font-weight: 700;
-  color: #ffa726;
+  color: var(--p-text-color);
   white-space: nowrap;
   display: flex;
   align-items: center;

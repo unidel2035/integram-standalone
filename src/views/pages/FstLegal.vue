@@ -1,12 +1,8 @@
 <template>
-  <div class="legal-root">
-    <div class="legal-header">
-      <div>
-        <h1>Юридические документы</h1>
-        <span class="legal-sub">Генератор шаблонов: term sheet, SPA, SHA, NDA, опционные соглашения</span>
-      </div>
+  <FstPageLayout title="Юридические документы" subtitle="Генератор шаблонов: term sheet, SPA, SHA, NDA, опционные соглашения">
+    <template #actions>
       <button class="legal-btn primary" @click="showGenerator = true">Создать документ</button>
-    </div>
+    </template>
 
     <!-- Библиотека документов -->
     <div class="legal-section">
@@ -104,11 +100,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const showGenerator = ref(false)
 const selectedTemplate = ref(null)
@@ -171,8 +168,8 @@ function generateDoc() {
 <style scoped>
 .legal-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .legal-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.legal-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.legal-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.legal-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.legal-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .legal-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .legal-btn.primary  { background: var(--p-primary-color); color: #fff; }
 .legal-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }

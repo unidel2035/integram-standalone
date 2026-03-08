@@ -1,15 +1,9 @@
 <template>
-  <div class="reg-root">
-    <div class="reg-header">
-      <div>
-        <h1>Реестр производителей БПЛА</h1>
-        <span class="reg-sub">Интеграция с реестром отечественных БПЛА по Постановлению Правительства №1726</span>
-      </div>
-      <div class="reg-actions">
-        <button class="reg-btn secondary" @click="syncRegistry">Синхронизировать</button>
+  <FstPageLayout title="Реестр производителей БПЛА" subtitle="Интеграция с реестром отечественных БПЛА по Постановлению Правительства №1726">
+    <template #actions>
+      <button class="reg-btn secondary" @click="syncRegistry">Синхронизировать</button>
         <button class="reg-btn primary" @click="showApplication = true">Подать заявку</button>
-      </div>
-    </div>
+    </template>
 
     <!-- Статус синхронизации -->
     <div class="reg-sync-bar">
@@ -124,11 +118,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const showApplication = ref(false)
 const searchQuery     = ref('')
@@ -208,8 +203,8 @@ function syncRegistry() { syncStatus.value[3].status = 'ok'; syncStatus.value[3]
 <style scoped>
 .reg-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .reg-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.reg-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
-.reg-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
+.reg-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.reg-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .reg-actions { display: flex; gap: 8px; }
 .reg-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .reg-btn.primary  { background: var(--p-primary-color); color: #fff; }

@@ -1,15 +1,9 @@
 <template>
-  <div class="df-root">
-    <div class="df-header">
-      <div>
-        <h2 class="df-title">Воронка входящих заявок</h2>
-        <p class="df-subtitle">Deal Flow — управление потоком заявок от первичного контакта до ИК</p>
-      </div>
-      <div class="df-actions">
-        <button class="df-btn primary" @click="showNewDeal = true">+ Новая заявка</button>
-        <button class="df-btn secondary" @click="exportCsv">Экспорт CSV</button>
-      </div>
-    </div>
+  <FstPageLayout title="Воронка входящих заявок" subtitle="Deal Flow — управление потоком заявок от первичного контакта до ИК">
+    <template #actions>
+      <button class="df-btn primary" @click="showNewDeal = true">+ Новая заявка</button>
+      <button class="df-btn secondary" @click="exportCsv">Экспорт CSV</button>
+    </template>
 
     <!-- Статистика воронки -->
     <div class="df-stats">
@@ -126,11 +120,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const columns = [
   { id: 'new',       label: 'Новые',            color: '#90a4ae' },
@@ -209,12 +204,12 @@ function exportCsv() {
 </script>
 
 <style scoped>
-.df-root { padding: 24px; max-width: 1400px; margin: 0 auto; }
-.df-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-.df-title { font-size: 1.6rem; font-weight: 700; color: var(--p-text-color); margin: 0; }
-.df-subtitle { color: var(--p-text-muted-color); font-size: 0.9rem; margin-top: 4px; }
+.df-root { padding: 0 24px 24px; max-width: 1400px; margin: 0 auto; }
+.df-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); gap: 12px; }
+.df-title { font-size: 1rem; font-weight: 600; color: var(--p-text-color); margin: 0; }
+.df-subtitle { color: var(--p-text-muted-color); font-size: 0.8rem; margin: 2px 0 0; }
 .df-actions { display: flex; gap: 8px; }
-.df-btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: opacity .15s; }
+.df-btn { padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: opacity .15s; }
 .df-btn:hover { opacity: .85; }
 .df-btn.primary { background: var(--p-primary-color); color: #fff; }
 .df-btn.secondary { background: var(--surface-ground); color: var(--p-text-color); border: 1px solid var(--surface-border); }
@@ -256,4 +251,7 @@ function exportCsv() {
 .df-form-row label { font-size: 0.78rem; color: var(--p-text-muted-color); }
 .df-form-row input, .df-form-row select, .df-form-row textarea { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 8px; color: var(--p-text-color); font-size: 0.85rem; outline: none; }
 .df-form-row input:focus, .df-form-row select:focus, .df-form-row textarea:focus { border-color: var(--p-primary-color); }
+
+/* — Unified page title — */
+.df-header h2 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); line-height: 1.3; }
 </style>

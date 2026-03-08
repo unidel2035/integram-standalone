@@ -1,11 +1,5 @@
 <template>
-  <div class="fst-quiz-demo">
-    <div class="demo-header">
-      <h1>🎯 Система интерактивных квизов</h1>
-      <p class="subtitle">
-        Интерактивные мини-квизы с геймификацией для проверки знаний после изучения модулей
-      </p>
-    </div>
+  <FstPageLayout title="🎯 Система интерактивных квизов" subtitle="Интерактивные мини-квизы с геймификацией для проверки знаний после изучения модулей">
 
     <!-- Gamification Panel -->
     <GamificationPanel />
@@ -115,6 +109,7 @@
 
 &lt;script setup&gt;
 import QuizButton from '@/components/QuizButton.vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 &lt;/script&gt;</code></pre>
           </TabPanel>
 
@@ -220,7 +215,7 @@ function onQuizComplete(result) {
         </div>
       </template>
     </Card>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>

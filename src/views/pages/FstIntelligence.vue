@@ -1,9 +1,9 @@
 <template>
-  <div class="fst-intelligence">
+  <FstPageLayout>
     <Toast position="bottom-center" />
 
     <!-- Header -->
-    <div class="fsti-header">
+    <template #header>
       <div class="fsti-header-left">
         <div class="fsti-logo">
           <i class="pi pi-chart-line" style="color:#5c6bc0;font-size:20px"></i>
@@ -19,7 +19,7 @@
         <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="loadReports" :loading="loading" />
         <Button icon="pi pi-sparkles" label="Генерировать отчёт" size="small" severity="success" @click="generateReport" :loading="generating" />
       </div>
-    </div>
+    </template>
 
     <!-- Main Content -->
     <div class="fsti-body">
@@ -251,11 +251,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Checkbox from 'primevue/checkbox'
