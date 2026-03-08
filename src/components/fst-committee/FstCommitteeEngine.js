@@ -8,10 +8,11 @@
  */
 
 import {
-  AGENTS, SCORING_DIMS, ARGUMENT_TEMPLATES,
+  SCORING_DIMS, ARGUMENT_TEMPLATES,
   PHASES, PHASE_ORDER, VERDICTS, TIMING, SPEED_MULTIPLIERS,
   RECOMMENDATION_TEMPLATES, REVISION_SIMULATION_STEPS, METRIC_FIELD_MAP, METRIC_CLAMP,
 } from './FstCommitteeConfig.js'
+import { getAgents } from './agentProvider.js'
 import { generateArgumentAI, fetchKagContext, clearKagCache, generateNodeProposalAI, generateNodeVoteAI } from './fstCommitteeAI.js'
 import { runAgentLoop, resetLoopTokenCache } from './AgentLoop.js'
 import { DebateRoom } from './DebateRoom.js'
@@ -92,7 +93,7 @@ function generateRecommendations(decision, project) {
   const verdict = decision.recommendation
   const key = verdict  // APPROVE | DEFER | REJECT
   const recs = []
-  for (const agent of AGENTS) {
+  for (const agent of getAgents()) {
     const templates = RECOMMENDATION_TEMPLATES[agent.id]?.[key] || []
     for (const fn of templates) {
       try {
@@ -172,7 +173,7 @@ export function createSession(project, options = {}) {
     speedProfile:   options.speedProfile   || 'fast',
     modelOverrides: options.modelOverrides || {},  // { [agentId]: modelId }
     roundNumber: project._roundNumber || 1,
-    agents: AGENTS,
+    agents: getAgents(),
     arguments: [],
     votes: [],
     decision: null,
@@ -180,7 +181,7 @@ export function createSession(project, options = {}) {
     revisionProgress: 0,        // 0..1 during REVISION phase
     revisionStep: '',
     revisedProject: null,       // project after applying recs
-    agentStatus: Object.fromEntries(AGENTS.map(a => [a.id, { thinking: false, done: false, thinkText: '', pipeline: { integram: 'idle', calc: 'idle', llm: 'idle', save: 'idle' } }])),
+    agentStatus: Object.fromEntries(getAgents().map(a => [a.id, { thinking: false, done: false, thinkText: '', pipeline: { integram: 'idle', calc: 'idle', llm: 'idle', save: 'idle' } }])),
     dimScores: computeDimScores(project),
     agentScores: [],
     events: [],
@@ -441,7 +442,7 @@ export class FstCommitteeEngine {
     }).catch(() => {})
 
     // All agents "read documents" in parallel (staggered start)
-    const agentPromises = AGENTS.map(async (agent, idx) => {
+    const agentPromises = getAgents().map(async (agent, idx) => {
       await this.delay(idx * 400)
       this._setAgentStatus(agent.id, { thinking: true, done: false })
       this.emit('AgentAnalysisStarted', { agentId: agent.id })
@@ -471,12 +472,12 @@ export class FstCommitteeEngine {
     if (this.session.useAgentLoop) {
       // ── BATCHED PARALLEL: агенты по 4 одновременно — не flood ──────────
       const BATCH = 4
-      for (let i = 0; i < AGENTS.length; i += BATCH) {
+      for (let i = 0; i < getAgents().length; i += BATCH) {
         if (!this._running) break
-        await Promise.all(AGENTS.slice(i, i + BATCH).map(agent => this._agentSpeak(agent, 'OPENING')))
+        await Promise.all(getAgents().slice(i, i + BATCH).map(agent => this._agentSpeak(agent, 'OPENING')))
       }
     } else {
-      for (const agent of AGENTS) {
+      for (const agent of getAgents()) {
         if (!this._running) return
         await this._agentSpeak(agent, 'OPENING')
       }
@@ -494,7 +495,7 @@ export class FstCommitteeEngine {
 
     for (let round = 0; round < 3; round++) {
       if (!this._running) return
-      const challengers = [...AGENTS].sort(() => Math.random() - 0.5).slice(0, 3)
+      const challengers = [...getAgents()].sort(() => Math.random() - 0.5).slice(0, 3)
 
       // ── Sequential challengers: каждый видит свежие сообщения предыдущих ──
       for (const agent of challengers) {
@@ -512,8 +513,8 @@ export class FstCommitteeEngine {
         if (!this.session.useAgentLoop) await this.delay(TIMING.ARGUMENT_DELAY)
 
         // Counter: владелец атакуемого аргумента отвечает
-        const targetOwner = target ? AGENTS.find(a => a.id === target.agentId) : null
-        const counterAgent = targetOwner ?? AGENTS.find(a => a.id !== agent.id)
+        const targetOwner = target ? getAgents().find(a => a.id === target.agentId) : null
+        const counterAgent = targetOwner ?? getAgents().find(a => a.id !== agent.id)
         if (counterAgent && this._running) await this._agentSpeak(counterAgent, 'COUNTER', arg.id)
       }
     }
@@ -531,12 +532,12 @@ export class FstCommitteeEngine {
     if (this.session.useAgentLoop) {
       // ── BATCHED PARALLEL: по 4 агента, не flood ─────────────────────────
       const BATCH = 4
-      for (let i = 0; i < AGENTS.length; i += BATCH) {
+      for (let i = 0; i < getAgents().length; i += BATCH) {
         if (!this._running) break
-        await Promise.all(AGENTS.slice(i, i + BATCH).map(agent => this._agentSpeak(agent, 'SUMMARY')))
+        await Promise.all(getAgents().slice(i, i + BATCH).map(agent => this._agentSpeak(agent, 'SUMMARY')))
       }
     } else {
-      for (const agent of AGENTS) {
+      for (const agent of getAgents()) {
         if (!this._running) return
         await this._agentSpeak(agent, 'SUMMARY')
       }
@@ -573,9 +574,9 @@ export class FstCommitteeEngine {
     const stanceCounts = { APPROVE: 0, DEFER: 0, REJECT: 0 }
     for (const st of Object.values(summaryStances)) stanceCounts[st] = (stanceCounts[st] || 0) + 1
     const dominantStance = Object.entries(stanceCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null
-    const dominantShare = dominantStance ? stanceCounts[dominantStance] / AGENTS.length : 0
+    const dominantShare = dominantStance ? stanceCounts[dominantStance] / getAgents().length : 0
 
-    for (const agent of AGENTS) {
+    for (const agent of getAgents()) {
       if (!this._running) return
       await this.delay(TIMING.VOTE_DELAY)
 
@@ -663,7 +664,7 @@ export class FstCommitteeEngine {
       if (arg.type === 'SUMMARY') summaryStances[arg.agentId] = arg.stance
     }
     const deltas = {}
-    for (const agent of AGENTS) {
+    for (const agent of getAgents()) {
       const from = openingStances[agent.id] || null
       const to   = summaryStances[agent.id]  || null
       deltas[agent.id] = { from, to, changed: from && to && from !== to }
@@ -848,7 +849,7 @@ export class FstCommitteeEngine {
     const debateNumbers = this._extractDebateNumbers()
 
     // Раунд 1: каждый агент предлагает параметры нод (с контекстом из дебатов)
-    for (const agent of AGENTS) {
+    for (const agent of getAgents()) {
       if (!this._running) return
       this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Формирую ноды контракта...' })
       let proposal = null
@@ -864,7 +865,7 @@ export class FstCommitteeEngine {
     }
 
     // Раунд 2: 3 агента вносят правки (challenge)
-    const challengers = [...AGENTS].sort(() => Math.random() - 0.5).slice(0, 3)
+    const challengers = [...getAgents()].sort(() => Math.random() - 0.5).slice(0, 3)
     for (const agent of challengers) {
       if (!this._running) return
       this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Уточняю параметры...' })
@@ -938,7 +939,7 @@ export class FstCommitteeEngine {
     for (let round = 1; round <= MAX_ROUNDS; round++) {
       if (!this._running) return
       const roundVotes = []
-      for (const agent of AGENTS) {
+      for (const agent of getAgents()) {
         if (!this._running) return
         this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Голосую по нодам...' })
         let vote = null

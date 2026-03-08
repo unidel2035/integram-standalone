@@ -170,7 +170,8 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { AGENTS, PHASES, VERDICTS } from './FstCommitteeConfig.js'
+import { PHASES, VERDICTS } from './FstCommitteeConfig.js'
+import { agents } from './agentProvider.js'
 
 const TOOL_META = {
   query_data:       { icon: 'pi pi-database',   label: 'query_data',       color: '#42a5f5' },
@@ -203,7 +204,7 @@ const streamEl    = ref(null)
 const activeFilter = ref('all')
 
 // ── Agent map ──────────────────────────────────────────────────
-const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]))
+const AGENT_MAP = computed(() => Object.fromEntries(agents.value.map(a => [a.id, a])))
 
 // ── Argument type labels ───────────────────────────────────────
 const ARG_TYPE_LABEL = {
@@ -275,7 +276,7 @@ const allItems = computed(() => {
       }
 
       case 'AgentAnalysisStarted': {
-        const agent = AGENT_MAP[ev.agentId]
+        const agent = AGENT_MAP.value[ev.agentId]
         if (!agent) break
         const pipeline = PIPELINE_STEPS.map(s => ({
           ...s, state: s.id === 'integram' ? 'active' : 'idle',
@@ -308,7 +309,7 @@ const allItems = computed(() => {
 
       case 'ArgumentRaised': {
         const arg   = ev.argument || argMap[ev.argId] || {}
-        const agent = AGENT_MAP[arg.agentId || ev.agentId]
+        const agent = AGENT_MAP.value[arg.agentId || ev.agentId]
         if (!agent || !arg.text) break
 
         // Reply context
@@ -316,7 +317,7 @@ const allItems = computed(() => {
         if (arg.targetArgId) {
           const target = argMap[arg.targetArgId]
           if (target) {
-            const ta = AGENT_MAP[target.agentId]
+            const ta = AGENT_MAP.value[target.agentId]
             replyText  = (target.text || '').slice(0, 100) + (target.text?.length > 100 ? '…' : '')
             replyName  = ta?.shortName || '?'
             replyColor = ta?.color
@@ -349,7 +350,7 @@ const allItems = computed(() => {
 
       case 'VoteCast': {
         const vote  = ev.vote
-        const agent = AGENT_MAP[vote?.agentId]
+        const agent = AGENT_MAP.value[vote?.agentId]
         if (!agent || !vote) break
         const verdict = VERDICTS[vote.verdict]
         const fromDebateSuffix = vote.fromDebate ? ' (из дебатов)' : ''
@@ -374,7 +375,7 @@ const allItems = computed(() => {
         let deltaText = 'Все голоса поданы'
         if (changed.length > 0) {
           const parts = changed.map(([agentId, d]) => {
-            const ag = AGENT_MAP[agentId]
+            const ag = AGENT_MAP.value[agentId]
             const fi = d.from === 'APPROVE' ? '✅' : d.from === 'REJECT' ? '❌' : '⏳'
             const ti = d.to   === 'APPROVE' ? '✅' : d.to   === 'REJECT' ? '❌' : '⏳'
             return `${ag?.shortName || agentId}: ${fi}→${ti}`
@@ -405,7 +406,7 @@ const allItems = computed(() => {
         break
 
       case 'NodeProposed': {
-        const agent = AGENT_MAP[ev.agentId]
+        const agent = AGENT_MAP.value[ev.agentId]
         if (!agent) break
         items.push({ ...base, kind: 'node',
           avatar:    agent.avatar,

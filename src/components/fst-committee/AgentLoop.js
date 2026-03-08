@@ -372,7 +372,7 @@ export async function runAgentLoop(agent, argType, room, project, targetArg = nu
   const VALID_STANCES = ['APPROVE','DEFER','REJECT']
 
   // ── Системный промпт: роль + инструменты + протокол ──────────────────────
-  const baseRole = LOOP_SYSTEM_PROMPTS[agent.id] || `Ты аналитик инвесткомитета ФСТ НТИ. Роль: ${agent.name}.`
+  const baseRole = agent.systemPrompt || LOOP_SYSTEM_PROMPTS[agent.id] || `Ты аналитик инвесткомитета ФСТ НТИ. Роль: ${agent.name}.`
   const phaseDesc = {
     OPENING:   'ПЕРВИЧНЫЕ ПОЗИЦИИ — дай свою первичную позицию (2-3 конкретных предложения). Назови 1 сильную сторону и 1 ключевой риск.',
     CHALLENGE: 'ПЕРЕКРЁСТНЫЕ ДЕБАТЫ — выдвини ВЫЗОВ. Атакуй конкретное уязвимое место. Будь конкретен, используй числа.',

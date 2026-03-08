@@ -773,10 +773,11 @@ import Slider from 'primevue/slider'
 import { useToast } from 'primevue/usetoast'
 import { FstCommitteeEngine, createSession } from '@/components/fst-committee/FstCommitteeEngine.js'
 import {
-  AGENTS, SCORING_DIMS, PHASES, PHASE_ORDER, VERDICTS,
+  SCORING_DIMS, PHASES, PHASE_ORDER, VERDICTS,
   SPEED_MULTIPLIERS,
   FST_POLICY_DEFAULTS, FST_POLICY_RANGES,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
+import { agents as AGENTS, loadAgents } from '@/components/fst-committee/agentProvider.js'
 import {
   COMMITTEE_MODELS, SPEED_PROFILES, buildModelMap, getModelSummary, resolveModel
 } from '@/components/fst-committee/fstCommitteeModelOrchestrator.js'
@@ -799,8 +800,7 @@ const toast = useToast()
 
 // Load data on component mount
 onMounted(async () => {
-  await loadProjects()
-  await loadSubfunds()
+  await Promise.all([loadProjects(), loadSubfunds(), loadAgents()])
   // Set initial project after data loads
   if (PROJECTS_POOL.value.length > 0 && !selectedProjectId.value) {
     selectedProjectId.value = PROJECTS_POOL.value[0].id
@@ -829,7 +829,7 @@ const selectedSpeedProfile = ref('fast')
 const agentModelOverrides = ref({})  // { [agentId]: modelId } — переопределения пользователя
 
 const resolvedModels = computed(() =>
-  buildModelMap(AGENTS.map(a => a.id), selectedSpeedProfile.value, agentModelOverrides.value)
+  buildModelMap(AGENTS.value.map(a => a.id), selectedSpeedProfile.value, agentModelOverrides.value)
 )
 
 const activeProfileLabel = computed(() => {
@@ -970,7 +970,7 @@ const radarPoints = computed(() => {
 // ── Methods ───────────────────────────────────────────────────
 
 function agentById(id) {
-  return AGENTS.find(a => a.id === id)
+  return AGENTS.value.find(a => a.id === id)
 }
 
 function describeToolCall(tool, args, reasoning) {
@@ -1232,15 +1232,15 @@ function handleEvent(event) {
 
 
 function agentColor(id) {
-  const a = AGENTS.find(a => a.id === id)
+  const a = AGENTS.value.find(a => a.id === id)
   return a?.color || '#64748b'
 }
 function agentAvatar(id) {
-  const a = AGENTS.find(a => a.id === id)
+  const a = AGENTS.value.find(a => a.id === id)
   return a?.avatar || '🤖'
 }
 function agentShortName(id) {
-  const a = AGENTS.find(a => a.id === id)
+  const a = AGENTS.value.find(a => a.id === id)
   return a?.shortName || id
 }
 function stanceColor(stance) {

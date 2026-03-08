@@ -108,7 +108,8 @@ import cytoscape from 'cytoscape'
 import dagre from 'cytoscape-dagre'
 import fcose from 'cytoscape-fcose'
 import cola from 'cytoscape-cola'
-import { AGENTS, PHASES, VERDICTS } from './FstCommitteeConfig.js'
+import { PHASES, VERDICTS } from './FstCommitteeConfig.js'
+import { agents } from './agentProvider.js'
 
 cytoscape.use(dagre)
 cytoscape.use(fcose)
@@ -252,7 +253,7 @@ const EDGE_TYPE_LEGEND = [
 ]
 
 // ── Agent color map ────────────────────────────────────────────
-const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]))
+const AGENT_MAP = computed(() => Object.fromEntries(agents.value.map(a => [a.id, a])))
 
 // ── State ──────────────────────────────────────────────────────
 const cyEl         = ref(null)
@@ -677,7 +678,7 @@ function buildElements() {
     if (seen.has('phase_LOADING')) {
       const analysisStarted = events.filter(e => e.type === 'AgentAnalysisStarted')
       for (const ev of analysisStarted) {
-        const agent = AGENT_MAP[ev.agentId]
+        const agent = AGENT_MAP.value[ev.agentId]
         if (!agent) continue
         const nodeId = `analysis_${ev.agentId}`
         addNode(nodeId, {
@@ -723,7 +724,7 @@ function buildElements() {
     if (filter === 'all') {
       const toolUsedEvts = events.filter(e => e.type === 'AgentToolsUsed')
       for (const ev of toolUsedEvts) {
-        const agent = AGENT_MAP[ev.agentId]
+        const agent = AGENT_MAP.value[ev.agentId]
         if (!agent) continue
         for (const toolName of (ev.tools || [])) {
           const tId = `agtool_${ev.agentId}_${toolName}`
@@ -816,7 +817,7 @@ function buildElements() {
     }
 
     for (const arg of args) {
-      const agent = AGENT_MAP[arg.agentId]
+      const agent = AGENT_MAP.value[arg.agentId]
       if (!agent) continue
       const conf = arg.confidence || arg.strength || 0.7
 
@@ -905,7 +906,7 @@ function buildElements() {
   // ── VOTES ────────────────────────────────────────────────────
   if (filter !== 'flow' && filter !== 'arguments') {
     for (const vote of votes) {
-      const agent   = AGENT_MAP[vote.agentId]
+      const agent   = AGENT_MAP.value[vote.agentId]
       if (!agent) continue
       const verdict = VERDICTS[vote.verdict]
       const voteId  = `vote_${vote.id}`
@@ -985,7 +986,7 @@ function buildElements() {
       // One proposal node per agent (collapsed — many events → one node each)
       const proposersSeen = new Set()
       for (const ev of nodeProposedEvts) {
-        const agent = AGENT_MAP[ev.agentId]
+        const agent = AGENT_MAP.value[ev.agentId]
         if (!agent || proposersSeen.has(ev.agentId)) continue
         proposersSeen.add(ev.agentId)
         const nId = `node_proposal_${ev.agentId}`
@@ -1019,7 +1020,7 @@ function buildElements() {
         if (nodeVoteEvts.length > 0 && seen.has('phase_NODE_VOTING')) {
           const voteAgentsSeen = new Set()
           for (const ev of nodeVoteEvts) {
-            const agent = AGENT_MAP[ev.agentId]
+            const agent = AGENT_MAP.value[ev.agentId]
             if (!agent || voteAgentsSeen.has(ev.agentId)) continue
             voteAgentsSeen.add(ev.agentId)
             const vId = `node_vote_${ev.agentId}`
