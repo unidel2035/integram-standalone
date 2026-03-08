@@ -67,6 +67,7 @@ const profileOverlay = ref() // Template ref for ProfileMenu component
 const notificationVisible = ref(false)
 const agentPanelVisible = ref(false)
 const configVisible = ref(false)
+const topbarMenuVisible = ref(false)
 const configPanelRef = ref(null) // Ref for config panel (click-outside detection)
 const pendingProfileToggle = ref(null) // Сохраняет событие клика, если компонент ещё не загружен
 const profileMenuReady = ref(false) // Флаг готовности компонента
@@ -117,6 +118,11 @@ const toggleAgentPanel = () => {
 const toggleConfig = (event) => {
   configVisible.value = !configVisible.value
   event.stopPropagation()
+}
+
+
+const toggleTopbarMenu = () => {
+  topbarMenuVisible.value = !topbarMenuVisible.value
 }
 
 const isChatOpen = ref(localStorage.getItem('chat') === 'true')
@@ -300,6 +306,19 @@ onMounted(() => {
   document.addEventListener('click', handleConfigClickOutside)
   configClickOutsideCleanup = () => document.removeEventListener('click', handleConfigClickOutside)
 
+
+  // Close topbar menu on outside click (mobile)
+  const handleTopbarMenuClickOutside = (e) => {
+    if (topbarMenuVisible.value) {
+      const menu = document.querySelector('.layout-topbar-menu')
+      const btn = document.querySelector('.layout-topbar-menu-button')
+      if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+        topbarMenuVisible.value = false
+      }
+    }
+  }
+  document.addEventListener('click', handleTopbarMenuClickOutside)
+
   // Open theme settings from Profile menu
   // Use setTimeout to defer past the current click event's document bubbling.
   // If we set configVisible=true synchronously, the click that triggered this event
@@ -369,22 +388,15 @@ onBeforeUnmount(() => {
 
       <button
         class="layout-topbar-menu-button layout-topbar-action"
-        v-styleclass="{
-          selector: '@next',
-          enterFromClass: 'hidden',
-          enterActiveClass: 'animate-scalein',
-          leaveToClass: 'hidden',
-          leaveActiveClass: 'animate-fadeout',
-          hideOnOutsideClick: true,
-        }"
+        @click.stop="toggleTopbarMenu"
       >
         <i class="pi pi-ellipsis-v"/>
       </button>
 
-      <div class="layout-topbar-menu hidden lg:block">
+      <div class="layout-topbar-menu" :class="{ 'topbar-menu-mobile-hidden': !topbarMenuVisible }">
         <div class="layout-topbar-menu-content">
           <button
-            @click="toggleNotifications"
+            @click="toggleNotifications(); topbarMenuVisible = false"
             type="button"
             class="layout-topbar-action relative"
             :title="notificationsTooltip"
@@ -399,7 +411,7 @@ onBeforeUnmount(() => {
             <span>{{ $t('notifications.title', 'Уведомления') }}</span>
           </button>
           <button
-            @click="handleChat"
+            @click="handleChat(); topbarMenuVisible = false"
             type="button"
             class="layout-topbar-action"
             :class="{ 'active': isChatOpen }"
@@ -409,7 +421,7 @@ onBeforeUnmount(() => {
             <span>{{ $t('nav.chat', 'Чат') }}</span>
           </button>
           <button
-            @click="handleToggle"
+            @click="handleToggle(); topbarMenuVisible = false"
             type="button"
             class="layout-topbar-action"
             :title="profileTooltip"
@@ -594,5 +606,14 @@ onBeforeUnmount(() => {
 :root.dark .layout-topbar-action-highlight {
   background: rgba(255, 193, 7, 0.15);
   color: var(--p-yellow-400, #fbbf24);
+}
+</style>
+
+<style>
+/* Mobile topbar menu toggle — hidden only on small screens */
+@media (max-width: 991px) {
+  .layout-topbar-menu.topbar-menu-mobile-hidden {
+    display: none !important;
+  }
 }
 </style>
