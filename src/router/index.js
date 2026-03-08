@@ -2,12 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '@/layout/AppLayout.vue'
 
 const routes = [
+  { path: '/', component: () => import('@/views/pages/FstRoot.vue'), meta: { title: 'ФСТ НТИ', public: true } },
   {
     path: '/',
     component: AppLayout,
     children: [
-      { path: '', component: () => import('@/views/pages/FstHub.vue'), meta: { title: 'ФСТ НТИ — Главная', public: true } },
-      { path: 'fst-hub', redirect: '/' },
+      { path: 'fst-hub', component: () => import('@/views/pages/FstHub.vue'), meta: { title: 'ФСТ НТИ — Главная' } },
       { path: 'fst-committee', component: () => import('@/views/pages/FstCommittee.vue'), meta: { title: 'AI-инвесткомитет' } },
       { path: 'fst-protocol', component: () => import('@/views/pages/FstProtocol.vue'), meta: { title: 'Протоколы инвесткомитета' } },
       { path: 'fst-contract/:id', component: () => import('@/views/pages/FstSmartContract.vue'), meta: { title: 'Смарт контракт' } },
@@ -54,9 +54,9 @@ const routes = [
       { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
     ]
   },
-  { path: '/fst', redirect: '/' },
+  { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },
   { path: '/login', component: () => import('@/views/pages/FstLogin.vue'), meta: { title: 'Вход', public: true } },
-  { path: '/:pathMatch(.*)*', redirect: '/' }
+  { path: '/:pathMatch(.*)*', component: () => import('@/views/pages/NotFound.vue'), meta: { title: '404', public: true } }
 ]
 
 const router = createRouter({
@@ -65,8 +65,8 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  if (to.meta.public) return true
   const token = localStorage.getItem('token')
+  if (to.meta.public) return true
   if (!token) return { path: '/login', query: { redirect: to.fullPath } }
   return true
 })
