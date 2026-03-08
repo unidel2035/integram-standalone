@@ -753,7 +753,7 @@ function unlockTranche() {
 
 <style scoped>
 .fex-root {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -766,8 +766,8 @@ function unlockTranche() {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -822,8 +822,8 @@ function unlockTranche() {
 .fex-kpi-bar {
   display: flex;
   gap: 0;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
   padding: 8px 16px;
   flex-shrink: 0;
   overflow-x: auto;
@@ -832,7 +832,7 @@ function unlockTranche() {
   flex: 1;
   min-width: 100px;
   padding: 0 12px;
-  border-right: 1px solid var(--p-surface-border);
+  border-right: 1px solid var(--surface-border);
 }
 .fex-kpi-item:last-child { border-right: none; }
 .fex-kpi-tranche {
@@ -858,7 +858,7 @@ function unlockTranche() {
 .fex-kpi-progress { margin-bottom: 3px; }
 .fex-kpi-bar-track {
   height: 4px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -883,8 +883,8 @@ function unlockTranche() {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -901,8 +901,8 @@ function unlockTranche() {
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   cursor: pointer;
   transition: all 0.15s;
   color: var(--p-text-color);
@@ -938,14 +938,14 @@ function unlockTranche() {
   font-weight: 600;
   color: var(--p-text-color);
   padding: 8px 10px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px 6px 0 0;
   border-top: 3px solid #78909c;
   margin-bottom: 4px;
 }
 .fex-kanban-count {
   font-size: 10px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 10px;
   padding: 1px 7px;
   color: var(--p-text-muted-color);
@@ -954,8 +954,8 @@ function unlockTranche() {
 
 /* Task Card */
 .fex-task-card {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 10px;
   cursor: pointer;
@@ -998,7 +998,7 @@ function unlockTranche() {
 }
 .fex-task-progress {
   height: 3px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 2px;
   overflow: hidden;
   margin-top: 4px;
@@ -1020,12 +1020,12 @@ function unlockTranche() {
   justify-content: center;
 }
 .fex-task-dialog {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 10px;
   padding: 20px;
   width: 480px;
   max-width: 90vw;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   box-shadow: 0 10px 40px color-mix(in srgb, var(--p-text-color) 30%, transparent);
 }
 .fex-task-dialog-header {
@@ -1077,8 +1077,8 @@ function unlockTranche() {
 .fex-fund-col { display: flex; flex-direction: column; gap: 10px; }
 .fex-fund-col-wide {}
 .fex-fund-panel {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 12px;
 }
@@ -1091,7 +1091,7 @@ function unlockTranche() {
   color: var(--p-text-color);
   margin-bottom: 10px;
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 /* Alerts */
@@ -1101,7 +1101,7 @@ function unlockTranche() {
   gap: 10px;
   padding: 8px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   margin-bottom: 6px;
 }
 .fex-alert.critical { border-left: 3px solid #ef5350; }
@@ -1131,7 +1131,7 @@ function unlockTranche() {
 }
 .fex-action-btn { width: 100%; }
 .fex-action-log {
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   padding-top: 8px;
 }
 .fex-log-entry {
@@ -1153,15 +1153,15 @@ function unlockTranche() {
 .fex-kpi-table th {
   text-align: center;
   padding: 4px 6px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-muted-color);
   font-weight: 600;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fex-kpi-table td {
   text-align: center;
   padding: 5px 6px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   color: var(--p-text-color);
 }
 .fex-kpi-tname {
@@ -1178,7 +1178,7 @@ function unlockTranche() {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fex-cond-body { flex: 1; }
 .fex-cond-name { font-size: 12px; font-weight: 500; color: var(--p-text-color); }
@@ -1209,7 +1209,7 @@ function unlockTranche() {
   align-items: flex-start;
   gap: 8px;
   padding: 5px 0;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 .fex-ev:last-child { border-bottom: none; }
 .fex-ev-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }

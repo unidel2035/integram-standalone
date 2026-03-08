@@ -597,11 +597,11 @@ async function generateTermSheet() {
 <p style="color:var(--p-text-muted-color);font-size:11px">Конфиденциально · ${new Date().toLocaleDateString('ru-RU')} · Не является офертой</p>
 <table style="width:100%;border-collapse:collapse;font-size:12px">
   <tr><td style="padding:4px 8px;font-weight:600;width:45%;color:var(--p-text-muted-color)">Эмитент</td><td style="padding:4px 8px">${d.companyName}</td></tr>
-  <tr style="background:var(--p-surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Инвестор</td><td style="padding:4px 8px">Фонд Суверенных Технологий НТИ (${d.spvName})</td></tr>
+  <tr style="background:var(--surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Инвестор</td><td style="padding:4px 8px">Фонд Суверенных Технологий НТИ (${d.spvName})</td></tr>
   <tr><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Инструмент</td><td style="padding:4px 8px">${dealTypes.find(t=>t.v===d.type)?.l}</td></tr>
-  <tr style="background:var(--p-surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Сумма</td><td style="padding:4px 8px"><b>${d.totalAmount} млн ₽</b> (${d.tranches.length} транша)</td></tr>
+  <tr style="background:var(--surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Сумма</td><td style="padding:4px 8px"><b>${d.totalAmount} млн ₽</b> (${d.tranches.length} транша)</td></tr>
   <tr><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Условия</td><td style="padding:4px 8px">${shareText}</td></tr>
-  <tr style="background:var(--p-surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Срок</td><td style="padding:4px 8px">${d.termMonths} месяцев</td></tr>
+  <tr style="background:var(--surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Срок</td><td style="padding:4px 8px">${d.termMonths} месяцев</td></tr>
   <tr><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">SPV</td><td style="padding:4px 8px">${d.spvName} (${d.spvJurisdiction})</td></tr>
 </table>
 <h4 style="margin:10px 0 4px;color:var(--p-text-color)">Транши</h4>
@@ -710,11 +710,12 @@ function applyFinmodelToAI() {
 
 <style scoped>
 .fst-deal-root {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   font-family: var(--p-font-family);
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -723,8 +724,8 @@ function applyFinmodelToAI() {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -759,8 +760,8 @@ function applyFinmodelToAI() {
 
 /* Panel */
 .fst-deal-panel {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 14px;
   margin-bottom: 12px;
@@ -775,7 +776,7 @@ function applyFinmodelToAI() {
   color: var(--p-text-color);
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 /* Form */
@@ -802,11 +803,11 @@ function applyFinmodelToAI() {
 
 /* Tranches */
 .fst-tranche {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 8px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fst-tranche-header {
   display: flex;
@@ -830,7 +831,7 @@ function applyFinmodelToAI() {
   justify-content: space-between;
   font-size: 12px;
   padding: 8px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 4px;
   margin-top: 4px;
   color: var(--p-text-color);
@@ -912,7 +913,7 @@ function applyFinmodelToAI() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   flex-shrink: 0;
   font-size: 11px;
 }
@@ -930,7 +931,7 @@ function applyFinmodelToAI() {
   margin-bottom: 10px;
 }
 .fst-ai-metric {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 6px;
   padding: 8px;
   text-align: center;
@@ -965,8 +966,8 @@ function applyFinmodelToAI() {
   gap: 8px;
   padding: 8px;
   justify-content: center;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
 }
 
@@ -981,10 +982,12 @@ function applyFinmodelToAI() {
 /* FinModel Section */
 .fst-deal-finmodel-section {
   margin: 0 12px 16px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .fst-deal-finmodel-header {
   display: flex;
@@ -997,10 +1000,10 @@ function applyFinmodelToAI() {
   transition: background 0.15s;
 }
 .fst-deal-finmodel-header:hover {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fst-deal-finmodel-section:has(.fst-deal-finmodel-body) .fst-deal-finmodel-header {
-  border-bottom-color: var(--p-surface-border);
+  border-bottom-color: var(--surface-border);
 }
 .fst-deal-finmodel-title {
   display: flex;
@@ -1014,11 +1017,12 @@ function applyFinmodelToAI() {
   font-size: 12px;
   font-weight: 600;
   padding: 2px 8px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 4px;
 }
 .fst-deal-finmodel-body {
   padding: 16px;
+  overflow-x: auto;
 }
 .fst-fm-info {
   display: flex;
@@ -1037,6 +1041,6 @@ function applyFinmodelToAI() {
   gap: 10px;
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
 }
 </style>

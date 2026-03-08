@@ -596,11 +596,11 @@ ${selectedSections.map(section => {
   if (section.id === 'financials') {
     return `<h3 style="color:var(--p-text-color);font-size:14px;margin:20px 0 10px">2. Финансовые результаты</h3>
 <table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0">
-  <tr style="background:var(--p-surface-card)"><th style="padding:6px 8px;text-align:left">Показатель</th><th style="padding:6px 8px;text-align:right">Факт</th><th style="padding:6px 8px;text-align:right">План</th><th style="padding:6px 8px;text-align:right">%</th></tr>
+  <tr style="background:var(--surface-card)"><th style="padding:6px 8px;text-align:left">Показатель</th><th style="padding:6px 8px;text-align:right">Факт</th><th style="padding:6px 8px;text-align:right">План</th><th style="padding:6px 8px;text-align:right">%</th></tr>
   <tr><td style="padding:6px 8px">Выручка (млн ₽)</td><td style="padding:6px 8px;text-align:right">18.2</td><td style="padding:6px 8px;text-align:right">20.0</td><td style="padding:6px 8px;text-align:right;color:#ffa726">91%</td></tr>
-  <tr style="background:var(--p-surface-card)"><td style="padding:6px 8px">EBITDA (млн ₽)</td><td style="padding:6px 8px;text-align:right">-2.1</td><td style="padding:6px 8px;text-align:right">-1.5</td><td style="padding:6px 8px;text-align:right;color:#ef5350">—</td></tr>
+  <tr style="background:var(--surface-card)"><td style="padding:6px 8px">EBITDA (млн ₽)</td><td style="padding:6px 8px;text-align:right">-2.1</td><td style="padding:6px 8px;text-align:right">-1.5</td><td style="padding:6px 8px;text-align:right;color:#ef5350">—</td></tr>
   <tr><td style="padding:6px 8px">Cash (млн ₽)</td><td style="padding:6px 8px;text-align:right">32.5</td><td style="padding:6px 8px;text-align:right">28.0</td><td style="padding:6px 8px;text-align:right;color:#66bb6a">116%</td></tr>
-  <tr style="background:var(--p-surface-card)"><td style="padding:6px 8px">Runway (мес.)</td><td style="padding:6px 8px;text-align:right">14</td><td style="padding:6px 8px;text-align:right">12</td><td style="padding:6px 8px;text-align:right;color:#66bb6a">117%</td></tr>
+  <tr style="background:var(--surface-card)"><td style="padding:6px 8px">Runway (мес.)</td><td style="padding:6px 8px;text-align:right">14</td><td style="padding:6px 8px;text-align:right">12</td><td style="padding:6px 8px;text-align:right;color:#66bb6a">117%</td></tr>
 </table>`
   }
   if (section.id === 'kpi') {
@@ -635,7 +635,7 @@ ${selectedSections.map(section => {
   return ''
 }).join('')}
 
-<div style="margin-top:30px;padding-top:15px;border-top:1px solid var(--p-surface-border);font-size:10px;color:var(--p-text-muted-color)">
+<div style="margin-top:30px;padding-top:15px;border-top:1px solid var(--surface-border);font-size:10px;color:var(--p-text-muted-color)">
 Документ сгенерирован автоматически платформой ФСТ НТИ · Конфиденциально
 </div>
 </div>`
@@ -711,7 +711,7 @@ onMounted(() => {
 
 <style scoped>
 .fstb-root {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -724,8 +724,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -763,8 +763,8 @@ onMounted(() => {
 .fstb-tabs {
   display: flex;
   gap: 0;
-  background: var(--p-surface-card);
-  border-bottom: 2px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 2px solid var(--surface-border);
   padding: 0 12px;
 }
 .fstb-tab {
@@ -782,7 +782,7 @@ onMounted(() => {
 }
 .fstb-tab:hover {
   color: var(--p-text-color);
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fstb-tab.active {
   color: var(--p-primary-color);
@@ -798,8 +798,8 @@ onMounted(() => {
 
 /* Panel */
 .fstb-panel {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 14px;
   margin-bottom: 12px;
@@ -813,7 +813,7 @@ onMounted(() => {
   color: var(--p-text-color);
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 /* Calendar Grid */
@@ -829,8 +829,8 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 10px;
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   margin-bottom: 8px;
   transition: all 0.15s;
@@ -903,8 +903,8 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   padding: 10px;
-  background: var(--p-surface-ground);
-  border-left: 3px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border-left: 3px solid var(--surface-border);
   border-radius: 4px;
   margin-bottom: 8px;
 }
@@ -979,13 +979,13 @@ onMounted(() => {
   align-items: flex-start;
   gap: 8px;
   padding: 8px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s;
 }
 .fstb-bp-section:hover {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 .fstb-bp-label {
   flex: 1;
@@ -1004,7 +1004,7 @@ onMounted(() => {
 
 /* Board Pack Preview */
 .fstb-boardpack-preview {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -1013,8 +1013,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: var(--p-surface-ground);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border-bottom: 1px solid var(--surface-border);
 }
 .fstb-bp-content {
   padding: 16px;
@@ -1033,8 +1033,8 @@ onMounted(() => {
 
 /* Right Card */
 .fstb-right-card {
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 8px;
@@ -1061,7 +1061,7 @@ onMounted(() => {
   font-size: 10px;
   color: var(--p-text-muted-color);
   padding-top: 6px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
 }
 .fstb-right-threshold {
   font-weight: 600;
@@ -1071,7 +1071,7 @@ onMounted(() => {
   color: var(--p-text-muted-color);
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1084,8 +1084,8 @@ onMounted(() => {
 
 /* Approval Card */
 .fstb-approval-card {
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 8px;
@@ -1127,7 +1127,7 @@ onMounted(() => {
   font-size: 11px;
   color: var(--p-text-color);
   padding: 6px 8px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 4px;
 }
 
@@ -1179,8 +1179,8 @@ onMounted(() => {
 
 /* Voting Card */
 .fstb-voting-card {
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 12px;
   margin-bottom: 10px;
@@ -1239,7 +1239,7 @@ onMounted(() => {
 }
 .fstb-history-item {
   padding: 10px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 6px;
   margin-bottom: 8px;
 }

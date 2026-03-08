@@ -315,7 +315,7 @@ function openDemoQuiz(moduleId) {
 .feature-card {
   text-align: center;
   padding: 1.5rem;
-  border: 2px solid var(--p-surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 12px;
   transition: all 0.3s ease;
 }
@@ -356,14 +356,14 @@ function openDemoQuiz(moduleId) {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border: 2px solid var(--p-surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 12px;
   transition: all 0.2s ease;
 }
 
 .quiz-item:hover {
   border-color: var(--p-primary-color);
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
 }
 
 .quiz-info h3 {
@@ -394,7 +394,7 @@ function openDemoQuiz(moduleId) {
 }
 
 pre {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   padding: 1.5rem;
   border-radius: 8px;
   overflow-x: auto;

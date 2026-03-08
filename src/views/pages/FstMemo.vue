@@ -256,14 +256,14 @@ function exportPdf() {
 .memo-btn { padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: opacity .15s; }
 .memo-btn:disabled { opacity: .5; cursor: not-allowed; }
 .memo-btn.primary { background: var(--p-primary-color); color: #fff; }
-.memo-btn.secondary { background: var(--p-surface-ground); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
-.memo-form { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 12px; padding: 20px; }
+.memo-btn.secondary { background: var(--surface-ground); color: var(--p-text-color); border: 1px solid var(--surface-border); }
+.memo-form { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 20px; }
 .memo-section-title { font-size: 1rem; font-weight: 700; color: var(--p-text-color); margin-bottom: 16px; }
 .memo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
 .memo-field { display: flex; flex-direction: column; gap: 4px; }
 .memo-wide { grid-column: 1 / -1; }
 .memo-field label { font-size: 0.78rem; color: var(--p-text-muted-color); }
-.memo-field input, .memo-field select, .memo-field textarea { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 6px; padding: 8px; color: var(--p-text-color); font-size: 0.85rem; outline: none; }
+.memo-field input, .memo-field select, .memo-field textarea { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 8px; color: var(--p-text-color); font-size: 0.85rem; outline: none; }
 .memo-field input:focus, .memo-field select:focus { border-color: var(--p-primary-color); }
 .memo-progress { margin: 20px 0; }
 .memo-progress-bar { height: 6px; background: var(--p-primary-color); border-radius: 3px; transition: width .4s; }
@@ -271,7 +271,7 @@ function exportPdf() {
 .memo-progress-steps span { font-size: 0.82rem; color: var(--p-text-muted-color); }
 .memo-progress-steps span.done { color: #66bb6a; }
 .memo-progress-steps span.active { color: var(--p-primary-color); }
-.memo-doc { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 12px; overflow: hidden; }
+.memo-doc { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; overflow: hidden; }
 .memo-doc-header { background: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); color: #fff; padding: 20px 24px; display: flex; align-items: center; gap: 20px; }
 .memo-doc-logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 1px; opacity: .9; }
 .memo-doc-title { font-size: 1.1rem; font-weight: 800; letter-spacing: 2px; }
@@ -282,7 +282,7 @@ function exportPdf() {
 .memo-chapter-title { font-size: 1rem; font-weight: 700; color: var(--p-text-color); margin-bottom: 8px; }
 .memo-chapter-body { font-size: 0.88rem; color: var(--p-text-muted-color); line-height: 1.6; }
 .memo-kpi-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
-.memo-kpi { background: var(--p-surface-ground); border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 100px; }
+.memo-kpi { background: var(--surface-ground); border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 100px; }
 .memo-kpi-val { font-size: 1.2rem; font-weight: 700; }
 .memo-kpi-label { font-size: 0.72rem; color: var(--p-text-muted-color); margin-top: 2px; }
 .memo-market-bar { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
@@ -290,8 +290,8 @@ function exportPdf() {
 .memo-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .memo-badge { color: #fff; font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; }
 .memo-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
-.memo-table th, .memo-table td { padding: 8px 12px; border: 1px solid var(--p-surface-border); text-align: right; }
-.memo-table th { background: var(--p-surface-ground); color: var(--p-text-muted-color); font-weight: 600; text-align: center; }
+.memo-table th, .memo-table td { padding: 8px 12px; border: 1px solid var(--surface-border); text-align: right; }
+.memo-table th { background: var(--surface-ground); color: var(--p-text-muted-color); font-weight: 600; text-align: center; }
 .memo-table td:first-child { text-align: center; font-weight: 600; }
 .memo-risks-table { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .memo-risk-row { display: flex; align-items: flex-start; gap: 10px; font-size: 0.84rem; }

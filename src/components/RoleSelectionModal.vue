@@ -176,8 +176,8 @@ defineExpose({
 
 .role-card {
   position: relative;
-  background: var(--p-surface-card);
-  border: 2px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 2px solid var(--surface-border);
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
@@ -195,7 +195,7 @@ defineExpose({
 
 .role-card.selected {
   border-color: var(--p-primary-color);
-  background: color-mix(in srgb, var(--p-primary-color) 10%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--p-primary-color) 10%, var(--surface-card));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-primary-color) 20%, transparent);
 }
 
@@ -231,7 +231,7 @@ defineExpose({
 }
 
 .role-path-preview {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
   padding: 1rem;
   margin-top: 0.5rem;

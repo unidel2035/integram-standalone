@@ -809,7 +809,7 @@ onMounted(() => {
    ══════════════════════════════════════════════════════════════════════════ */
 .fst-founders-root {
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   padding: 24px;
 }
 
@@ -822,9 +822,9 @@ onMounted(() => {
   align-items: flex-start;
   margin-bottom: 24px;
   padding: 20px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 12px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .fst-founders-logo {
@@ -854,10 +854,10 @@ onMounted(() => {
   display: flex;
   gap: 4px;
   margin-bottom: 24px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   padding: 4px;
   border-radius: 12px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .fst-founders-tab {
@@ -877,7 +877,7 @@ onMounted(() => {
 }
 
 .fst-founders-tab:hover {
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
   color: var(--p-text-color);
 }
 
@@ -896,7 +896,7 @@ onMounted(() => {
 }
 
 .fst-founders-tab:not(.active) .fst-tab-badge {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-muted-color);
 }
 
@@ -920,9 +920,9 @@ onMounted(() => {
   gap: 12px;
   margin-bottom: 20px;
   padding: 16px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 12px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .fst-search-wrap {
@@ -932,7 +932,7 @@ onMounted(() => {
   flex: 1;
   max-width: 400px;
   padding: 0 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
 }
 
@@ -959,8 +959,8 @@ onMounted(() => {
   display: flex;
   gap: 16px;
   padding: 20px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
@@ -976,7 +976,7 @@ onMounted(() => {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1023,12 +1023,12 @@ onMounted(() => {
 }
 
 .fst-founder-status.active {
-  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
   color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .fst-founder-status.alumni {
-  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #42a5f5 10%, var(--surface-card));
   color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
@@ -1040,7 +1040,7 @@ onMounted(() => {
 
 .fst-tag {
   padding: 4px 10px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-color);
   font-size: 11px;
   border-radius: 6px;
@@ -1066,8 +1066,8 @@ onMounted(() => {
   display: flex;
   gap: 16px;
   padding: 20px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
@@ -1083,7 +1083,7 @@ onMounted(() => {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1105,7 +1105,7 @@ onMounted(() => {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid var(--p-surface-card);
+  border: 2px solid var(--surface-card);
 }
 
 .fst-mentor-status-dot.active {
@@ -1141,7 +1141,7 @@ onMounted(() => {
 
 .fst-spec-tag {
   padding: 4px 10px;
-  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #42a5f5 10%, var(--surface-card));
   color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
   font-size: 11px;
   border-radius: 6px;
@@ -1150,7 +1150,7 @@ onMounted(() => {
 
 .fst-spec-more {
   padding: 4px 10px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-muted-color);
   font-size: 11px;
   border-radius: 6px;
@@ -1187,8 +1187,8 @@ onMounted(() => {
 }
 
 .fst-matching-panel {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   padding: 24px;
 }
@@ -1230,7 +1230,7 @@ onMounted(() => {
 .fst-matching-results {
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
 }
 
 .fst-results-title {
@@ -1242,7 +1242,7 @@ onMounted(() => {
 
 .fst-matching-result {
   padding: 16px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
   margin-bottom: 12px;
 }
@@ -1291,8 +1291,8 @@ onMounted(() => {
 }
 
 .fst-matching-sidebar {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   padding: 20px;
   height: fit-content;
@@ -1313,14 +1313,14 @@ onMounted(() => {
 
 .fst-request-item {
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .fst-request-item:hover {
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
 }
 
 .fst-request-header {
@@ -1344,12 +1344,12 @@ onMounted(() => {
 }
 
 .fst-request-status.open {
-  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
   color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
 .fst-request-status.matched {
-  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
   color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
@@ -1372,9 +1372,9 @@ onMounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 20px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 12px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   margin-bottom: 24px;
 }
 
@@ -1409,8 +1409,8 @@ onMounted(() => {
 
 .fst-event-card {
   padding: 20px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   transition: all 0.2s;
 }
@@ -1497,8 +1497,8 @@ onMounted(() => {
 
 .fst-alumni-card {
   padding: 20px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   text-align: center;
 }
@@ -1507,7 +1507,7 @@ onMounted(() => {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1551,8 +1551,8 @@ onMounted(() => {
 .fst-empty-state {
   text-align: center;
   padding: 64px 20px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
 }
 
@@ -1587,7 +1587,7 @@ onMounted(() => {
   color: var(--p-text-color);
   margin: 0 0 12px 0;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 .fst-detail-row {
@@ -1609,7 +1609,7 @@ onMounted(() => {
 .fst-interaction-item,
 .fst-session-item {
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
   margin-bottom: 8px;
 }
@@ -1647,17 +1647,17 @@ onMounted(() => {
 
 .fst-history-outcome.exit,
 .fst-history-outcome.acquired {
-  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
   color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .fst-history-outcome.active {
-  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #42a5f5 10%, var(--surface-card));
   color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
 .fst-history-outcome.closed {
-  background: color-mix(in srgb, #ef5350 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ef5350 10%, var(--surface-card));
   color: color-mix(in srgb, #ef5350 70%, var(--p-text-color));
 }
 

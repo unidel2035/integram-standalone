@@ -369,16 +369,16 @@ const handleKeyDown = (event, path) => {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.1s ease;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 
 .search-item:hover {
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
   transform: translateX(2px);
 }
 
 .search-item.integram-item {
-  background: color-mix(in srgb, var(--p-blue-500) 12%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--p-blue-500) 12%, var(--surface-card));
   border: 1px solid color-mix(in srgb, var(--p-blue-500) 25%, transparent);
 }
 
@@ -389,7 +389,7 @@ const handleKeyDown = (event, path) => {
 
 /* Document Results Styling (Issue #7106) */
 .search-item.document-item {
-  background: color-mix(in srgb, var(--p-green-500) 12%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--p-green-500) 12%, var(--surface-card));
   border: 1px solid color-mix(in srgb, var(--p-green-500) 25%, transparent);
 }
 
@@ -405,7 +405,7 @@ const handleKeyDown = (event, path) => {
 
 /* AI Results Styling (Issue #4878) */
 .search-item.ai-item {
-  background: color-mix(in srgb, var(--p-purple-500) 12%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--p-purple-500) 12%, var(--surface-card));
   border: 1px solid color-mix(in srgb, var(--p-purple-500) 25%, transparent);
   position: relative;
   overflow: hidden;
@@ -448,7 +448,7 @@ const handleKeyDown = (event, path) => {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
   color: var(--p-primary-color);
   flex-shrink: 0;
   font-size: 0.875rem;
@@ -496,7 +496,7 @@ const handleKeyDown = (event, path) => {
 }
 
 .search-highlight {
-  background: color-mix(in srgb, var(--p-yellow-500) 20%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--p-yellow-500) 20%, var(--surface-card));
   color: var(--p-yellow-400);
   padding: 0.125rem 0.25rem;
   border-radius: 3px;

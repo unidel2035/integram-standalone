@@ -306,7 +306,7 @@ const modules = [
 <style scoped>
 /* ════════════════════════════════════════════════════════ BASE */
 .land {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-color);
   font-family: 'Onest', -apple-system, sans-serif;
   min-height: 100vh;

@@ -240,18 +240,18 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 </script>
 
 <style scoped>
-.ilpa-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
+.ilpa-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .ilpa-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .ilpa-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
 .ilpa-subtitle { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .ilpa-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .ilpa-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .ilpa-btn.primary  { background: var(--p-primary-color); color: #fff; }
-.ilpa-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
-.ilpa-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.ilpa-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
+.ilpa-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
-.ilpa-status-bar { display: flex; gap: 0; overflow-x: auto; background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; }
-.ilpa-status-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 16px; border-right: 1px solid var(--p-surface-border); flex: 1; min-width: 90px; }
+.ilpa-status-bar { display: flex; gap: 0; overflow-x: auto; background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; }
+.ilpa-status-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 16px; border-right: 1px solid var(--surface-border); flex: 1; min-width: 90px; }
 .ilpa-status-item:last-child { border-right: none; }
 .status-icon { font-size: 1.1rem; font-weight: 700; }
 .status-icon.done     { color: #66bb6a; }
@@ -261,20 +261,20 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .status-date  { font-size: 0.65rem; color: var(--p-text-muted-color); }
 
 .ilpa-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-.ilpa-tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
+.ilpa-tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
 .ilpa-tab.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
 
-.ilpa-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 20px; overflow-x: auto; }
+.ilpa-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px; overflow-x: auto; }
 .ilpa-section h2 { margin: 0 0 8px; font-size: 1.1rem; color: var(--p-text-color); }
 .ilpa-note { font-size: 0.8rem; color: var(--p-text-muted-color); margin: 0 0 14px; }
 .cas-period { font-size: 0.8rem; color: var(--p-text-muted-color); margin-bottom: 14px; }
 
 .ilpa-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
-.ilpa-table th { padding: 8px 12px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-surface-border); font-size: 0.75rem; font-weight: 600; }
-.ilpa-table td { padding: 9px 12px; border-bottom: 1px solid var(--p-surface-border); color: var(--p-text-color); }
-.ilpa-table tfoot td { border-top: 2px solid var(--p-surface-border); border-bottom: none; background: var(--p-surface-ground); }
-.ilpa-table tr.cas-total { background: var(--p-surface-ground); }
-.ilpa-table tr.cas-sub td { color: var(--p-text-muted-color); font-style: italic; font-size: 0.8rem; background: var(--p-surface-ground); padding-top: 12px; }
+.ilpa-table th { padding: 8px 12px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.75rem; font-weight: 600; }
+.ilpa-table td { padding: 9px 12px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
+.ilpa-table tfoot td { border-top: 2px solid var(--surface-border); border-bottom: none; background: var(--surface-ground); }
+.ilpa-table tr.cas-total { background: var(--surface-ground); }
+.ilpa-table tr.cas-sub td { color: var(--p-text-muted-color); font-style: italic; font-size: 0.8rem; background: var(--surface-ground); padding-top: 12px; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .bold { font-weight: 700; }
 .green { color: #66bb6a; } .red { color: #ef5350; } .orange { color: #ff9800; } .gray { color: var(--p-text-muted-color); } .blue { color: #42a5f5; }
@@ -284,7 +284,7 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .perf-block h3 { font-size: 0.9rem; margin: 0 0 10px; color: var(--p-text-color); }
 
 .portco-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-.portco-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 14px; }
+.portco-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; }
 .portco-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .portco-name { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); }
 .portco-stage { font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; background: var(--p-primary-color); color: #fff; }

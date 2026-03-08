@@ -357,10 +357,10 @@ function renderChart() {
         }
       },
       scales: {
-        x: { ticks: { color: 'var(--p-text-muted-color)', font: { size: 11 } }, grid: { color: 'var(--p-surface-border)' } },
+        x: { ticks: { color: 'var(--p-text-muted-color)', font: { size: 11 } }, grid: { color: 'var(--surface-border)' } },
         y: {
           ticks: { color: 'var(--p-text-muted-color)', font: { size: 11 } },
-          grid:  { color: 'var(--p-surface-border)' },
+          grid:  { color: 'var(--surface-border)' },
           title: { display: true, text: 'NPV, млн ₽', color: 'var(--p-text-muted-color)', font: { size: 11 } }
         }
       }
@@ -397,8 +397,8 @@ onMounted(() => {
 
 <style scoped>
 .fc-root {
-  background: var(--p-content-background);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   padding: 16px;
   display: flex;
@@ -422,12 +422,12 @@ onMounted(() => {
   gap: 4px;
 }
 .fc-tab {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 3px 10px;
   font-size: 0.78rem;
   cursor: pointer;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-muted-color);
   transition: all 0.15s;
 }
@@ -454,8 +454,8 @@ onMounted(() => {
 }
 .fc-input-group input,
 .fc-cf-input {
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 5px 8px;
   color: var(--p-text-color);
@@ -491,8 +491,8 @@ onMounted(() => {
 .fc-metric {
   flex: 1;
   min-width: 80px;
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 8px 10px;
   text-align: center;
@@ -535,7 +535,7 @@ onMounted(() => {
 
 /* Венчурные метрики */
 .fc-venture-section {
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   padding-top: 10px;
   display: flex;
   flex-direction: column;
@@ -556,8 +556,8 @@ onMounted(() => {
 .fc-vm {
   flex: 1;
   min-width: 72px;
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   padding: 7px 8px;
   text-align: center;

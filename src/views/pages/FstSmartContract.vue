@@ -302,8 +302,8 @@ onMounted(async () => {
 }
 
 .fst-metric-card {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   display: flex;
@@ -325,8 +325,8 @@ onMounted(async () => {
 .fst-metric-value.negative { color: var(--p-red-500); }
 
 .fst-chart-section {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1.5rem;

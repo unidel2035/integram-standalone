@@ -1470,7 +1470,7 @@ onMounted(() => nextTick(initCy))
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   overflow: hidden;
 }
 
@@ -1480,7 +1480,7 @@ onMounted(() => nextTick(initCy))
   inset: 0;
   z-index: 9999;
   height: 100dvh;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 
 /* ── Toolbar ─────────────────────────────────────────────────── */
@@ -1489,7 +1489,7 @@ onMounted(() => nextTick(initCy))
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   flex-wrap: wrap;
 }
@@ -1508,8 +1508,8 @@ onMounted(() => nextTick(initCy))
 .dgp-btn-group {
   display: flex;
   gap: 2px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 2px;
 }
@@ -1528,7 +1528,7 @@ onMounted(() => nextTick(initCy))
   transition: all 0.15s;
   white-space: nowrap;
 }
-.dgp-btn:hover { background: var(--p-surface-hover); color: var(--p-text-color); }
+.dgp-btn:hover { background: var(--surface-hover); color: var(--p-text-color); }
 .dgp-btn--active { background: var(--p-primary-color, #42a5f5); color: #fff; }
 .dgp-btn--active:hover { opacity: 0.9; }
 
@@ -1543,7 +1543,7 @@ onMounted(() => nextTick(initCy))
   display: inline-block;
   width: 11px; height: 11px;
   border-radius: 50%;
-  border: 2px solid var(--p-surface-border);
+  border: 2px solid var(--surface-border);
   flex-shrink: 0;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
 }
@@ -1554,10 +1554,10 @@ onMounted(() => nextTick(initCy))
   align-items: center;
   gap: 10px;
   padding: 4px 10px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   flex-wrap: wrap;
-  background: var(--p-surface-section, var(--p-surface-card));
+  background: var(--p-surface-section, var(--surface-card));
 }
 
 .dgp-leg-item {
@@ -1578,7 +1578,7 @@ onMounted(() => nextTick(initCy))
 }
 .dgp-leg-sep {
   width: 1px; height: 12px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   margin: 0 2px;
 }
 
@@ -1593,7 +1593,7 @@ onMounted(() => nextTick(initCy))
   display: flex;
   gap: 16px;
   padding: 3px 10px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   font-size: 10px;
   color: var(--p-text-muted-color);
   flex-shrink: 0;
@@ -1608,8 +1608,8 @@ onMounted(() => nextTick(initCy))
   gap: 5px;
   padding: 4px 9px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   pointer-events: none;
   white-space: nowrap;

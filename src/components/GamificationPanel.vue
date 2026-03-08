@@ -326,7 +326,7 @@ function badgesByCategory(category) {
 
 <style scoped>
 .gamification-panel {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 
 .panel-header {
@@ -458,7 +458,7 @@ function badgesByCategory(category) {
   flex: 1;
   text-align: center;
   padding: 1rem;
-  border: 2px solid var(--p-surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -503,11 +503,11 @@ function badgesByCategory(category) {
 
 .collection-badge {
   padding: 1.5rem;
-  border: 2px solid var(--p-surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 12px;
   text-align: center;
   transition: all 0.2s ease;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 
 .collection-badge.locked {

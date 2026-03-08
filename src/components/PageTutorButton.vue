@@ -250,8 +250,8 @@ watch(isLoading, async () => {
   max-width: calc(100vw - 48px);
   height: 600px;
   max-height: calc(100vh - 48px);
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: var(--p-border-radius-lg);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   display: flex;
@@ -266,7 +266,7 @@ watch(isLoading, async () => {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   background: var(--p-surface-50);
 }
 
@@ -382,7 +382,7 @@ watch(isLoading, async () => {
 /* ========== Quick Questions ========== */
 .tutor-quick-questions {
   padding: 12px 16px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   background: var(--p-surface-50);
 }
 
@@ -415,8 +415,8 @@ watch(isLoading, async () => {
   display: flex;
   gap: 8px;
   padding: 12px 16px;
-  border-top: 1px solid var(--p-surface-border);
-  background: var(--p-surface-card);
+  border-top: 1px solid var(--surface-border);
+  background: var(--surface-card);
 }
 
 .tutor-input {

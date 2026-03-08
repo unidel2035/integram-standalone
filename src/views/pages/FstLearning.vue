@@ -683,7 +683,7 @@ onMounted(() => {
 }
 
 .stat-card {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 
 .stat-title {
@@ -740,7 +740,7 @@ onMounted(() => {
 }
 
 .export-code-container {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   padding: 1rem;
   border-radius: 6px;
   max-height: 500px;

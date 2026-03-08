@@ -721,7 +721,7 @@ function initChart() {
             callback: (val) => (val * 100).toFixed(0) + '%',
             color: 'var(--p-text-muted-color)'
           },
-          grid: { color: 'var(--p-surface-border)' }
+          grid: { color: 'var(--surface-border)' }
         },
         y: {
           title: { display: true, text: 'Доходность (IRR)', color: 'var(--p-text-muted-color)' },
@@ -729,7 +729,7 @@ function initChart() {
             callback: (val) => (val * 100).toFixed(0) + '%',
             color: 'var(--p-text-muted-color)'
           },
-          grid: { color: 'var(--p-surface-border)' }
+          grid: { color: 'var(--surface-border)' }
         }
       }
     }
@@ -761,7 +761,7 @@ onMounted(() => {
 <style scoped>
 .fst-allocation {
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   display: flex;
   flex-direction: column;
 }
@@ -775,8 +775,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -821,8 +821,8 @@ onMounted(() => {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fsa-panel {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 20px;
 }
@@ -844,7 +844,7 @@ onMounted(() => {
 .fsa-total-nav {
   text-align: center;
   padding: 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
   margin-bottom: 12px;
 }
@@ -939,7 +939,7 @@ onMounted(() => {
 
 .fsa-view-item {
   padding: 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
   border-left: 3px solid var(--p-primary-color);
 }
@@ -980,7 +980,7 @@ onMounted(() => {
 
 .fsa-metric-card {
   padding: 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
   text-align: center;
 }
@@ -1089,9 +1089,9 @@ onMounted(() => {
 
 .fsa-stress-card {
   padding: 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .fsa-stress-header {
@@ -1166,7 +1166,7 @@ onMounted(() => {
 .fsa-conc-bar-wrap {
   position: relative;
   height: 20px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 4px;
   overflow: hidden;
 }

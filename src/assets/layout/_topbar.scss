@@ -133,6 +133,12 @@
         padding-left: 0;
         justify-content: center;
     }
+
+    .layout-wrapper.layout-static-inactive .layout-topbar .layout-topbar-logo-container {
+        width: 3.5rem;
+        padding-left: 0.5rem;
+        justify-content: center;
+    }
 }
 
 @media (max-width: 991px) {

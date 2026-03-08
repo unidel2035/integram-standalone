@@ -189,6 +189,9 @@ onMounted(() => {
 .template-renderer {
   font-family: var(--font-family, 'Inter', sans-serif);
   color: var(--text-color, #333);
+  max-width: 100%;
+  overflow-x: auto;
+  box-sizing: border-box;
 }
 
 .sheet-tabs {
@@ -251,6 +254,7 @@ onMounted(() => {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.82rem;
+  table-layout: fixed;
 }
 
 .items-table th {
@@ -271,7 +275,7 @@ onMounted(() => {
   color: var(--text-color, #333);
 }
 
-.col-name { width: 55%; }
+.col-name { width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .col-value { width: 30%; text-align: right; }
 .col-mu { width: 15%; text-align: right; color: var(--text-color-secondary, #999); font-size: 0.75rem; }
 

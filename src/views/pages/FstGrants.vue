@@ -195,32 +195,32 @@ function exportGrants() {
 </script>
 
 <style scoped>
-.gr-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
+.gr-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .gr-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .gr-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
 .gr-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .gr-actions { display: flex; gap: 8px; }
 .gr-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .gr-btn.primary  { background: var(--p-primary-color); color: #fff; }
-.gr-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
+.gr-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
 
 .gr-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-.gr-sum-card { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 14px; text-align: center; }
+.gr-sum-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 14px; text-align: center; }
 .gs-val { font-size: 1.6rem; font-weight: 700; }
 .gs-val.green  { color: #66bb6a; } .gs-val.orange { color: #ff9800; } .gs-val.red { color: #ef5350; } .gs-val.blue { color: var(--p-primary-color); }
 .gs-lbl { font-size: 0.72rem; color: var(--p-text-muted-color); margin-top: 4px; }
 
 .gr-filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.gr-filter { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.82rem; }
+.gr-filter { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.82rem; }
 .gr-filter.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
-.gr-search { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.82rem; flex: 1; max-width: 260px; }
+.gr-search { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.82rem; flex: 1; max-width: 260px; }
 
-.gr-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
+.gr-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
 .gr-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
 
 .gr-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 760px; }
-.gr-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-surface-border); font-size: 0.72rem; }
-.gr-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-surface-border); color: var(--p-text-color); }
+.gr-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; }
+.gr-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
 .gr-table tr:last-child td { border: none; }
 .g-name { font-weight: 600; max-width: 200px; }
 .g-org, .g-co { font-size: 0.75rem; color: var(--p-text-muted-color); }
@@ -236,14 +236,14 @@ function exportGrants() {
 .g-status.review   { background: #42a5f522; color: #42a5f5; }
 .g-status.denied   { background: #ef535022; color: #ef5350; }
 .rep-badge.submitted { background: #66bb6a22; color: #66bb6a; }
-.rep-badge.pending   { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.rep-badge.pending   { background: var(--surface-ground); color: var(--p-text-muted-color); }
 .rep-badge.overdue   { background: #ef535022; color: #ef5350; }
-.rep-badge.na        { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.rep-badge.na        { background: var(--surface-ground); color: var(--p-text-muted-color); }
 .usage-bar-wrap { display: flex; align-items: center; gap: 6px; }
 .usage-bar { height: 6px; border-radius: 3px; min-width: 4px; max-width: 50px; }
 
 .deadlines { display: flex; flex-direction: column; gap: 8px; }
-.deadline-item { display: flex; align-items: center; gap: 14px; background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 10px 14px; }
+.deadline-item { display: flex; align-items: center; gap: 14px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; }
 .deadline-item.critical { border-color: #ef5350; }
 .deadline-item.warning  { border-color: #ff9800; }
 .dl-urgency { font-size: 1.1rem; font-weight: 900; min-width: 60px; }
@@ -256,10 +256,10 @@ function exportGrants() {
 .dl-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-box { background: var(--p-content-background); border-radius: 12px; padding: 24px; width: 400px; max-width: 95vw; }
+.modal-box { background: var(--surface-card); border-radius: 12px; padding: 24px; width: 400px; max-width: 95vw; }
 .modal-box h3 { margin: 0 0 16px; }
 .modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .modal-form label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.modal-form input, .modal-form select { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
+.modal-form input, .modal-form select { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 </style>

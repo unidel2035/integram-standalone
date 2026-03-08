@@ -194,7 +194,7 @@ const modulesByPhase = computed(() => {
 /* ═══════════════════════════════════════════════ BASE */
 .hub {
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-color);
   font-family: var(--p-font-family, 'Onest', 'Inter', sans-serif);
 }
@@ -206,7 +206,7 @@ const modulesByPhase = computed(() => {
   justify-content: space-between;
   padding: 12px 24px;
   border-bottom: 1px solid var(--p-content-border-color);
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -252,7 +252,7 @@ const modulesByPhase = computed(() => {
   cursor: pointer;
   transition: all 0.2s;
 }
-.hub-btn:hover { background: var(--p-surface-hover); }
+.hub-btn:hover { background: var(--surface-hover); }
 .hub-btn--accent {
   background: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
   border-color: color-mix(in srgb, var(--p-primary-color) 40%, transparent);
@@ -290,7 +290,7 @@ const modulesByPhase = computed(() => {
   align-items: center;
   text-align: center;
   padding: 14px 8px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-bottom: 2px solid transparent;
 }
 .hub-metric-icon {
@@ -354,12 +354,12 @@ const modulesByPhase = computed(() => {
   cursor: pointer;
   border-right: 1px solid var(--p-content-border-color);
   transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   min-width: 110px;
 }
 .hub-pipe-step:last-child { border-right: none; }
 .hub-pipe-step:hover {
-  background: color-mix(in srgb, var(--c, #38bdf8) 8%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--c, #38bdf8) 8%, var(--surface-card));
   box-shadow: inset 0 -3px 0 var(--c, #38bdf8);
 }
 .hub-pipe-step:hover .hub-pipe-name {
@@ -430,7 +430,7 @@ const modulesByPhase = computed(() => {
   transition: all 0.15s;
 }
 .hub-mod:hover {
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
   border-left-color: var(--mc, #38bdf8);
   border-right-color: var(--mc, #38bdf8);
 }
@@ -444,7 +444,7 @@ const modulesByPhase = computed(() => {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border: 1px solid var(--p-content-border-color);
   display: flex;
   align-items: center;

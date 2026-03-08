@@ -276,9 +276,9 @@ function startScenario() {
 
 .scenario-card {
   padding: 1.25rem;
-  border: 2px solid var(--p-surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -382,7 +382,7 @@ function startScenario() {
 .progress-bar {
   flex: 1;
   height: 6px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -470,7 +470,7 @@ function startScenario() {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--p-surface-50);
 }

@@ -169,19 +169,19 @@ function generateDoc() {
 </script>
 
 <style scoped>
-.legal-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
+.legal-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
 .legal-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .legal-header h1 { margin: 0; font-size: 1.75rem; color: var(--p-text-color); }
 .legal-sub { font-size: 0.9375rem; color: var(--p-text-muted-color); }
 .legal-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
 .legal-btn.primary  { background: var(--p-primary-color); color: #fff; }
-.legal-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-surface-border); }
+.legal-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
 
-.legal-section { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
+.legal-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
 .legal-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
 
 .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.doc-card { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 14px; cursor: pointer; transition: border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }
+.doc-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; cursor: pointer; transition: border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }
 .doc-card:hover { border-color: var(--p-primary-color); }
 .doc-icon { font-size: 1.8rem; }
 .doc-name { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
@@ -194,30 +194,30 @@ function generateDoc() {
 .doc-pages { font-size: 0.68rem; color: var(--p-text-muted-color); }
 
 .legal-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 600px; }
-.legal-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-surface-border); font-size: 0.72rem; }
-.legal-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-surface-border); color: var(--p-text-color); }
+.legal-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; }
+.legal-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
 .doc-title { font-weight: 600; }
 .doc-co { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .doc-type-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
 .doc-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .doc-status { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
 .doc-status.signed { background: #66bb6a22; color: #66bb6a; }
-.doc-status.draft  { background: var(--p-surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--p-surface-border); }
+.doc-status.draft  { background: var(--surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--surface-border); }
 .doc-status.review { background: #ff980022; color: #ff9800; }
 .doc-actions { display: flex; gap: 6px; }
-.action-btn { padding: 3px 10px; border-radius: 5px; border: 1px solid var(--p-surface-border); background: var(--p-surface-card); color: var(--p-text-color); cursor: pointer; font-size: 0.72rem; }
+.action-btn { padding: 3px 10px; border-radius: 5px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); cursor: pointer; font-size: 0.72rem; }
 
 .ts-conditions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.ts-cond { display: grid; grid-template-columns: 220px 1fr; gap: 10px; align-items: center; padding: 8px; background: var(--p-surface-ground); border-radius: 6px; }
+.ts-cond { display: grid; grid-template-columns: 220px 1fr; gap: 10px; align-items: center; padding: 8px; background: var(--surface-ground); border-radius: 6px; }
 .tsc-term  { font-size: 0.82rem; font-weight: 600; color: var(--p-text-color); }
-.tsc-input input, .tsc-input select { background: var(--p-content-background); border: 1px solid var(--p-surface-border); border-radius: 6px; padding: 5px 10px; color: var(--p-text-color); font-size: 0.82rem; width: 100%; }
+.tsc-input input, .tsc-input select { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 6px; padding: 5px 10px; color: var(--p-text-color); font-size: 0.82rem; width: 100%; }
 .tsc-note  { font-size: 0.68rem; color: var(--p-text-muted-color); grid-column: 1 / -1; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-box { background: var(--p-content-background); border-radius: 12px; padding: 24px; width: 380px; max-width: 95vw; }
+.modal-box { background: var(--surface-card); border-radius: 12px; padding: 24px; width: 380px; max-width: 95vw; }
 .modal-box h3 { margin: 0 0 16px; }
 .modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .modal-form label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.modal-form input, .modal-form select { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
+.modal-form input, .modal-form select { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 </style>

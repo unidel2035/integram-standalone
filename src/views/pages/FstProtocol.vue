@@ -379,7 +379,7 @@ onMounted(() => {
 /* ── Root ─────────────────────────────────────────────────────── */
 .fst-protocol {
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   padding: 20px;
 }
 
@@ -390,7 +390,7 @@ onMounted(() => {
   align-items: flex-start;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 .fst-proto-header-left {
@@ -434,8 +434,8 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
 }
 
@@ -470,8 +470,8 @@ onMounted(() => {
 }
 
 .fst-proto-session-card {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 16px;
   cursor: pointer;
@@ -546,7 +546,7 @@ onMounted(() => {
 }
 
 .fst-proto-detail-section {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
   padding: 16px;
 }
@@ -556,7 +556,7 @@ onMounted(() => {
   font-weight: 600;
   color: var(--p-text-color);
   margin-bottom: 12px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   padding-bottom: 8px;
 }
 
@@ -614,7 +614,7 @@ onMounted(() => {
   grid-template-columns: 1fr auto auto 1fr;
   gap: 16px;
   align-items: center;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   padding: 12px;
   border-radius: 6px;
 }
@@ -645,7 +645,7 @@ onMounted(() => {
 .fst-proto-conf-bar-bg {
   width: 100px;
   height: 6px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -690,7 +690,7 @@ onMounted(() => {
 }
 
 .fst-proto-arg {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-left: 3px solid #42a5f5;
   border-radius: 4px;
   padding: 10px 12px;
@@ -714,7 +714,7 @@ onMounted(() => {
 }
 
 .fst-proto-arg-type {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 11px;
@@ -740,7 +740,7 @@ onMounted(() => {
 }
 
 .fst-proto-policy-item {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   padding: 10px 12px;
   border-radius: 4px;
   display: flex;

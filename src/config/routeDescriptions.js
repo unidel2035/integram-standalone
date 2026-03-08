@@ -2482,11 +2482,6 @@ export const routeDescriptions = {
     tags: ['ФСТ', 'НТИ', 'Сеть', 'Контакты', 'Соинвесторы', 'Менторы', 'Партнёры', 'CRM', 'Венчур', 'found']
   },
 
-  '/fst-workspace': {
-    description: 'ФСТ НТИ — Рабочие пространства: Claude CLI, терминал, обучение и инструменты разработки. Хаб для работы с AI-ассистентами и управления проектами.',
-    category: 'ai',
-    tags: ['ФСТ', 'НТИ', 'Workspace', 'Claude', 'CLI', 'Терминал', 'Обучение', 'AI', 'found']
-  },
 
   '/fst-terminal': {
     description: 'ФСТ НТИ — Claude Code CLI: интерактивный терминал с AI-ассистентом Claude. WebSocket TTY через xterm.js, полноценная работа с кодом, git и файловой системой.',

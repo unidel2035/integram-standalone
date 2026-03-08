@@ -50,7 +50,6 @@ const routes = [
       { path: 'fst-school', component: () => import('@/views/pages/FstAgentSchool.vue'), meta: { title: 'Школа агентов ИК' } },
       { path: 'fst-miniapp', component: () => import('@/views/pages/FstMiniApp.vue'), meta: { title: 'Telegram Mini App' } },
       { path: 'fst-network', component: () => import('@/views/pages/FstNetwork.vue'), meta: { title: 'Сеть контактов' } },
-      { path: 'fst-workspace', component: () => import('@/views/pages/FstWorkspace.vue'), meta: { title: 'Рабочие пространства' } },
       { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
     ]
   },

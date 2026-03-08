@@ -165,7 +165,7 @@
               cx="75"
               cy="75"
               r="65"
-              stroke="var(--p-surface-border)"
+              stroke="var(--surface-border)"
               stroke-width="10"
               fill="none"
             />
@@ -631,11 +631,11 @@ watch(() => props.visible, (newVal) => {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  border: 2px solid var(--p-surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   position: relative;
 }
 
@@ -665,7 +665,7 @@ watch(() => props.visible, (newVal) => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -756,7 +756,7 @@ watch(() => props.visible, (newVal) => {
 .correct-answer-hint {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
 }
 
 .question-actions {

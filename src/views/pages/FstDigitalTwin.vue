@@ -516,7 +516,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 <style scoped>
 .fdt-root {
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-color);
   font-family: 'Inter', sans-serif;
   display: flex;
@@ -529,7 +529,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   align-items: center;
   gap: 16px;
   padding: 10px 16px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .fdt-header-left { flex: 1 }
@@ -699,7 +699,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 
 /* Timeline */
 .fdt-timeline {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-top: 1px solid var(--p-content-border-color);
   padding: 8px 16px;
 }

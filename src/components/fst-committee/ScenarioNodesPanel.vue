@@ -559,8 +559,8 @@ ${conds || '(условия не определены)'}
 
 <style scoped>
 .snp-root {
-  background: var(--p-content-background);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -596,7 +596,7 @@ ${conds || '(условия не определены)'}
   display: flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   padding: 5px 12px;
   font-size: 0.78rem;
@@ -606,8 +606,8 @@ ${conds || '(условия не определены)'}
 .snp-btn:disabled { opacity: 0.5; cursor: default; }
 .snp-btn-ai { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
 .snp-btn-ai:hover:not(:disabled) { opacity: 0.85; }
-.snp-btn-save { background: var(--p-surface-ground); color: var(--p-text-color); }
-.snp-btn-save:hover:not(:disabled) { background: var(--p-surface-hover); }
+.snp-btn-save { background: var(--surface-ground); color: var(--p-text-color); }
+.snp-btn-save:hover:not(:disabled) { background: var(--surface-hover); }
 
 /* Сетка */
 .snp-grid { display: flex; gap: 0; min-width: 620px; }
@@ -616,7 +616,7 @@ ${conds || '(условия не определены)'}
   flex: 0 0 185px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--p-surface-border);
+  border-right: 1px solid var(--surface-border);
 }
 
 .snp-col-header {
@@ -626,7 +626,7 @@ ${conds || '(условия не определены)'}
   justify-content: center;
   gap: 6px;
   padding-bottom: 8px;
-  border-bottom: 2px solid var(--p-surface-border);
+  border-bottom: 2px solid var(--surface-border);
   font-weight: 600;
   font-size: 0.8rem;
 }
@@ -651,12 +651,12 @@ ${conds || '(условия не определены)'}
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 7px 4px 2px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   margin-top: 2px;
 }
 .snp-section-spacer {
   height: 28px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   margin-top: 2px;
 }
 
@@ -690,7 +690,7 @@ ${conds || '(условия не определены)'}
   flex: 1;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--p-surface-border);
+  border-right: 1px solid var(--surface-border);
 }
 .snp-scenario-col:last-child { border-right: none; }
 
@@ -703,7 +703,7 @@ ${conds || '(условия не определены)'}
   border-bottom: 1px solid var(--p-surface-50, rgba(0,0,0,0.04));
 }
 .snp-cell-input {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border: 1px solid transparent;
   border-radius: 4px;
   padding: 3px 5px;
@@ -739,10 +739,10 @@ ${conds || '(условия не определены)'}
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
   padding: 10px 16px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .snp-ev-label { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .snp-ev-value { font-size: 1.1rem; font-weight: 700; }
@@ -782,8 +782,8 @@ ${conds || '(условия не определены)'}
 }
 
 .snp-negotiation-log {
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 0.75rem;
@@ -794,9 +794,9 @@ ${conds || '(условия не определены)'}
 .snp-neg-title { font-weight: 700; color: var(--p-text-muted-color); margin-bottom: 4px; }
 .snp-neg-item { display: flex; align-items: center; gap: 6px; color: var(--p-text-color); }
 .snp-neg-agent { font-weight: 600; min-width: 110px; }
-.snp-neg-round { background: var(--p-surface-border); border-radius: 4px; padding: 1px 5px; font-size: 0.68rem; color: var(--p-text-muted-color); }
+.snp-neg-round { background: var(--surface-border); border-radius: 4px; padding: 1px 5px; font-size: 0.68rem; color: var(--p-text-muted-color); }
 .snp-neg-params { color: var(--p-text-muted-color); }
-.snp-neg-votes { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--p-surface-border); }
+.snp-neg-votes { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--surface-border); }
 .snp-vote-chip { font-size: 0.7rem; border-radius: 4px; padding: 2px 7px; }
 .vote-accept { background: #66bb6a22; color: #66bb6a; }
 .vote-reject { background: #ef535022; color: #ef5350; }

@@ -253,18 +253,18 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
 <style scoped>
 .lgv-wrap {
   position: relative;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .lgv-toolbar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--p-surface-border);
-  background: var(--p-surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
 }
 .lgv-title {
   font-weight: 600;
@@ -313,8 +313,8 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
   position: absolute;
   bottom: 12px;
   left: 12px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 10px 14px;
   min-width: 160px;

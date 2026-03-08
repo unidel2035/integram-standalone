@@ -25,7 +25,7 @@
                   cx="60"
                   cy="60"
                   r="52"
-                  stroke="var(--p-surface-border)"
+                  stroke="var(--surface-border)"
                   stroke-width="8"
                   fill="none"
                 />
@@ -335,8 +335,8 @@ onMounted(() => {
 
 .step-card {
   position: relative;
-  background: var(--p-surface-card);
-  border: 2px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 2px solid var(--surface-border);
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
@@ -359,7 +359,7 @@ onMounted(() => {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -435,7 +435,7 @@ onMounted(() => {
   top: 70px;
   width: 2px;
   height: calc(100% - 20px);
-  background: var(--p-surface-border);
+  background: var(--surface-border);
 }
 
 .completion-card {

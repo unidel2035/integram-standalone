@@ -1179,7 +1179,7 @@ function generateAuditPackage() {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   min-height: 100vh;
 }
 
@@ -1210,9 +1210,9 @@ function generateAuditPackage() {
 
 .admin-select {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-color);
   font-size: 0.95rem;
 }
@@ -1254,11 +1254,11 @@ function generateAuditPackage() {
   display: flex;
   gap: 1.5rem;
   padding: 1rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
   margin-bottom: 1.5rem;
   align-items: center;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .compliance-title {
@@ -1313,7 +1313,7 @@ function generateAuditPackage() {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--p-surface-border);
+  border-bottom: 2px solid var(--surface-border);
 }
 
 .admin-tab {
@@ -1330,7 +1330,7 @@ function generateAuditPackage() {
 
 .admin-tab:hover {
   color: var(--p-text-color);
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 
 .admin-tab.active {
@@ -1339,10 +1339,10 @@ function generateAuditPackage() {
 }
 
 .admin-section {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
   padding: 2rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .admin-section h2 {
@@ -1367,7 +1367,7 @@ function generateAuditPackage() {
 }
 
 .admin-params-card, .admin-result-card, .admin-subsection {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -1390,9 +1390,9 @@ function generateAuditPackage() {
 .param-field input, .param-field select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-color);
   font-size: 0.95rem;
 }
@@ -1435,27 +1435,27 @@ function generateAuditPackage() {
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   font-size: 0.9rem;
 }
 
 .admin-table th {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   padding: 0.75rem;
   text-align: left;
   font-weight: 600;
   color: var(--p-text-color);
-  border-bottom: 2px solid var(--p-surface-border);
+  border-bottom: 2px solid var(--surface-border);
 }
 
 .admin-table td {
   padding: 0.75rem;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   color: var(--p-text-color);
 }
 
 .admin-table tbody tr:hover {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 
 .admin-table .num {
@@ -1480,7 +1480,7 @@ function generateAuditPackage() {
 }
 
 .admin-table tfoot {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   font-weight: 600;
 }
 
@@ -1493,12 +1493,12 @@ function generateAuditPackage() {
 }
 
 .status-badge.paid, .status-badge.completed, .status-badge.ok {
-  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
   color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .status-badge.accrued, .status-badge.partial {
-  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
   color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
@@ -1508,52 +1508,52 @@ function generateAuditPackage() {
 }
 
 .status-badge.warning {
-  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
   color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
 .category-badge.due-diligence {
-  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #42a5f5 10%, var(--surface-card));
   color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
 .category-badge.legal {
-  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
   color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .category-badge.travel {
-  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
   color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
 }
 
 .category-badge.admin {
-  background: color-mix(in srgb, #ab47bc 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ab47bc 10%, var(--surface-card));
   color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color));
 }
 
 .category-badge.audit {
-  background: color-mix(in srgb, #ef5350 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ef5350 10%, var(--surface-card));
   color: color-mix(in srgb, #ef5350 70%, var(--p-text-color));
 }
 
 .category-badge.marketing {
-  background: color-mix(in srgb, #26a69a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #26a69a 10%, var(--surface-card));
   color: color-mix(in srgb, #26a69a 70%, var(--p-text-color));
 }
 
 .type-badge.realized-profit {
-  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
   color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
 }
 
 .type-badge.return-of-capital {
-  background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #42a5f5 10%, var(--surface-card));
   color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
 }
 
 .type-badge.income {
-  background: color-mix(in srgb, #ab47bc 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ab47bc 10%, var(--surface-card));
   color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color));
 }
 
@@ -1599,9 +1599,9 @@ function generateAuditPackage() {
 
 .filter-group select {
   padding: 0.4rem 0.8rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-color);
   font-size: 0.9rem;
 }
@@ -1631,7 +1631,7 @@ function generateAuditPackage() {
 .exp-cat-bar-wrap {
   width: 100%;
   height: 24px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -1660,9 +1660,9 @@ function generateAuditPackage() {
   gap: 1rem;
   align-items: center;
   padding: 1rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .carry-step.highlight {
@@ -1671,7 +1671,7 @@ function generateAuditPackage() {
 }
 
 .carry-step.final {
-  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
   border-color: #66bb6a;
 }
 
@@ -1710,7 +1710,7 @@ function generateAuditPackage() {
 
 .carry-notice {
   padding: 1rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-left: 4px solid var(--p-primary-color);
   border-radius: 4px;
   font-size: 0.9rem;
@@ -1732,26 +1732,26 @@ function generateAuditPackage() {
 
 .nav-period-select input {
   padding: 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-color);
 }
 
 .nav-table .nav-section-header td {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   font-weight: 600;
   padding: 0.75rem;
 }
 
 .nav-table .nav-subtotal td {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   font-weight: 600;
-  border-top: 2px solid var(--p-surface-border);
+  border-top: 2px solid var(--surface-border);
 }
 
 .nav-table .nav-total td {
-  background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
   font-weight: 700;
   font-size: 1.05rem;
   border-top: 3px solid #66bb6a;
@@ -1767,9 +1767,9 @@ function generateAuditPackage() {
 
 .nav-metric {
   padding: 1rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   text-align: center;
 }
 
@@ -1794,9 +1794,9 @@ function generateAuditPackage() {
 
 .bank-account-card {
   padding: 1rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .bank-account-card.add-new {
@@ -1811,7 +1811,7 @@ function generateAuditPackage() {
 }
 
 .bank-account-card.add-new:hover {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-color: var(--p-primary-color);
 }
 
@@ -1840,7 +1840,7 @@ function generateAuditPackage() {
 
 .ba-currency {
   padding: 0.25rem 0.5rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -1880,9 +1880,9 @@ function generateAuditPackage() {
   align-items: center;
   gap: 1rem;
   padding: 0.75rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 4px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .audit-check-item input[type="checkbox"] {
@@ -1902,7 +1902,7 @@ function generateAuditPackage() {
   font-size: 0.85rem;
   color: var(--p-text-muted-color);
   padding: 0.25rem 0.75rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 12px;
 }
 
@@ -1927,23 +1927,23 @@ function generateAuditPackage() {
 .audit-trail-filters input {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-color);
 }
 
 .audit-trail-filters select {
   padding: 0.5rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   color: var(--p-text-color);
 }
 
 .fsbu-intro {
   padding: 1rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
   margin-bottom: 1.5rem;
   font-size: 0.95rem;
@@ -1959,14 +1959,14 @@ function generateAuditPackage() {
 }
 
 .fsbu-table .fsbu-section td {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   font-weight: 600;
   padding: 0.75rem;
-  border-top: 2px solid var(--p-surface-border);
+  border-top: 2px solid var(--surface-border);
 }
 
 .fsbu-table .fsbu-total td {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   font-weight: 700;
   font-size: 1.05rem;
   border-top: 3px solid var(--p-text-color);
@@ -1983,9 +1983,9 @@ function generateAuditPackage() {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 6px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 .note-num {
@@ -2031,7 +2031,7 @@ function generateAuditPackage() {
 }
 
 .modal-box {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
   padding: 2rem;
   width: 90%;
@@ -2061,9 +2061,9 @@ function generateAuditPackage() {
 
 .modal-form input, .modal-form select {
   padding: 0.6rem;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-color);
   font-size: 0.95rem;
 }

@@ -54,26 +54,36 @@ const FST_DB = import.meta.env.VITE_FST_DB || 'fst-api'
 
 let _token = null
 let _xsrf = null
+let _authPromise = null
 
 // ── Auth ──────────────────────────────────────────────────────────────────
 
 export async function authenticate() {
   if (_token) return { token: _token, xsrf: _xsrf }
+  if (_authPromise) return _authPromise
 
-  const login = import.meta.env.VITE_FST_LOGIN || import.meta.env.VITE_INTEGRAM_LOGIN || ''
-  const password = import.meta.env.VITE_FST_PASSWORD || import.meta.env.VITE_INTEGRAM_PASSWORD || ''
+  _authPromise = (async () => {
+    const login = import.meta.env.VITE_FST_LOGIN || import.meta.env.VITE_INTEGRAM_LOGIN || ''
+    const password = import.meta.env.VITE_FST_PASSWORD || import.meta.env.VITE_INTEGRAM_PASSWORD || ''
 
-  const res = await fetch(`${FST_SERVER}/${FST_DB}/auth?JSON_KV`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `login=${encodeURIComponent(login)}&pwd=${encodeURIComponent(password)}`
-  })
-  const data = await res.json()
-  if (data.error) throw new Error(data.error)
+    const res = await fetch(`${FST_SERVER}/${FST_DB}/auth?JSON_KV`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `login=${encodeURIComponent(login)}&pwd=${encodeURIComponent(password)}`
+    })
+    const data = await res.json()
+    if (data.error) throw new Error(data.error)
 
-  _token = data.token
-  _xsrf = data._xsrf
-  return { token: _token, xsrf: _xsrf }
+    _token = data.token
+    _xsrf = data._xsrf
+    return { token: _token, xsrf: _xsrf }
+  })()
+
+  try {
+    return await _authPromise
+  } finally {
+    _authPromise = null
+  }
 }
 
 async function api(path, options = {}) {

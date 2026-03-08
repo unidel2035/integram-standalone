@@ -203,7 +203,7 @@
               <span class="fst-step-label">{{ ph.label }}</span>
             </div>
             <div v-if="idx < visiblePhases.length - 1" class="fst-step-line"
-              :style="{ background: phaseIdx > idx ? ph.color : 'var(--p-surface-border)' }"></div>
+              :style="{ background: phaseIdx > idx ? ph.color : 'var(--surface-border)' }"></div>
           </template>
         </div>
 
@@ -313,12 +313,12 @@
             <div class="fst-rs-title"><i class="pi pi-chart-bar"></i> Скоринг</div>
             <svg viewBox="0 0 200 200" class="fst-radar">
               <circle v-for="r in [20,40,60,80]" :key="r" cx="100" cy="100" :r="r"
-                fill="none" stroke="var(--p-surface-border)" stroke-width="0.5" stroke-dasharray="3,3"/>
+                fill="none" stroke="var(--surface-border)" stroke-width="0.5" stroke-dasharray="3,3"/>
               <line v-for="(ax, i) in radarAxes" :key="'a'+i"
                 x1="100" y1="100"
                 :x2="100 + Math.cos(ax.angle - Math.PI/2) * 80"
                 :y2="100 + Math.sin(ax.angle - Math.PI/2) * 80"
-                stroke="var(--p-surface-border)" stroke-width="0.5"/>
+                stroke="var(--surface-border)" stroke-width="0.5"/>
               <polygon :points="radarPoints" fill="rgba(66,165,245,0.15)" stroke="#42a5f5" stroke-width="1.5"/>
               <text v-for="(ax, i) in radarAxes" :key="'l'+i"
                 :x="100 + Math.cos(ax.angle - Math.PI/2) * 95"
@@ -1766,7 +1766,7 @@ onUnmounted(() => {
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-color);
   font-family: 'Inter', sans-serif;
 }
@@ -1788,8 +1788,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 7px 16px;
-  border-bottom: 1px solid var(--p-surface-border);
-  background: var(--p-surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
   flex-shrink: 0;
   min-height: 50px;
 }
@@ -1910,7 +1910,7 @@ onUnmounted(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--p-surface-border);
+  border-right: 1px solid var(--surface-border);
   overflow: hidden;
 }
 .fst-tabs-bar {
@@ -1918,8 +1918,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 3px;
   padding: 6px 10px;
-  border-bottom: 1px solid var(--p-surface-border);
-  background: var(--p-surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
   flex-shrink: 0;
 }
 .fst-tab {
@@ -1935,7 +1935,7 @@ onUnmounted(() => {
   border-radius: 6px;
   transition: all 0.15s;
 }
-.fst-tab:hover { background: var(--p-surface-hover); color: var(--p-text-color); }
+.fst-tab:hover { background: var(--surface-hover); color: var(--p-text-color); }
 .fst-tab--on { background: var(--p-primary-color, #42a5f5); color: #fff; }
 .fst-tab-count {
   font-size: 10px;
@@ -1958,11 +1958,11 @@ onUnmounted(() => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fst-rs {
   padding: 12px 14px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 .fst-rs-title {
   display: flex;
@@ -1985,9 +1985,9 @@ onUnmounted(() => {
 .fst-kpi {
   text-align: center;
   padding: 8px 3px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-kpi-v {
   font-size: 17px;
@@ -2035,7 +2035,7 @@ onUnmounted(() => {
 .fst-dim-track {
   flex: 1;
   height: 4px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -2071,7 +2071,7 @@ onUnmounted(() => {
 .fst-vc-s { font-weight: 700; }
 
 /* Decision */
-.fst-rs--decision { background: var(--p-surface-card); }
+.fst-rs--decision { background: var(--surface-card); }
 .fst-decision-score {
   font-size: 44px;
   font-weight: 900;
@@ -2117,7 +2117,7 @@ onUnmounted(() => {
 /* Contradictions */
 .fst-contradictions-list { display: flex; flex-direction: column; gap: 8px; }
 .fst-contradiction-item {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 12px;
@@ -2138,9 +2138,9 @@ onUnmounted(() => {
   border-radius: 8px;
   font-weight: 600;
 }
-.fst-contradiction-severity.sev-high { background: color-mix(in srgb, #ef5350 15%, var(--p-surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
-.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card)); color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
-.fst-contradiction-severity.sev-low { background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card)); color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-high { background: color-mix(in srgb, #ef5350 15%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, #ff9800 10%, var(--surface-card)); color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-low { background: color-mix(in srgb, #66bb6a 10%, var(--surface-card)); color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
 .fst-contradiction-thesis { margin-top: 4px; color: var(--p-text-color); }
 .fst-contradiction-antithesis { color: var(--p-text-muted-color); font-style: italic; }
 
@@ -2159,9 +2159,9 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
 }
-.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card)); color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
-.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--p-surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--p-surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
+.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, #42a5f5 10%, var(--surface-card)); color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
 .fst-cond-text { flex: 1; color: var(--p-text-color); }
 .fst-cond-metric { color: var(--p-text-muted-color); font-size: 11px; }
 
@@ -2172,7 +2172,7 @@ onUnmounted(() => {
   gap: 8px;
 }
 .fst-drift-card {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
   padding: 8px 10px;
 }
@@ -2200,7 +2200,7 @@ onUnmounted(() => {
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 6px;
-  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
   color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
   font-weight: 600;
   margin-left: auto;
@@ -2270,8 +2270,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 5px;
   padding: 5px 12px;
-  border-top: 1px solid var(--p-surface-border);
-  background: var(--p-surface-card);
+  border-top: 1px solid var(--surface-border);
+  background: var(--surface-card);
   overflow-x: auto;
   flex-shrink: 0;
   min-height: 52px;
@@ -2282,8 +2282,8 @@ onUnmounted(() => {
   gap: 5px;
   padding: 5px 10px;
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
-  background: var(--p-surface-ground);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-ground);
   flex-shrink: 0;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -2328,8 +2328,8 @@ onUnmounted(() => {
   flex-wrap: wrap;
   gap: 6px;
   padding: 6px 10px;
-  background: color-mix(in srgb, var(--p-surface-ground) 80%, transparent);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: color-mix(in srgb, var(--surface-ground) 80%, transparent);
+  border-bottom: 1px solid var(--surface-border);
   border-radius: 6px 6px 0 0;
   animation: fadeIn .2s ease;
 }
@@ -2339,8 +2339,8 @@ onUnmounted(() => {
   gap: 4px;
   font-size: 10px;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
   padding: 2px 7px;
 }
@@ -2356,7 +2356,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   max-width: 280px;
 }
-.fst-activity-item--result { background: color-mix(in srgb, #4caf50 8%, var(--p-surface-card)); }
+.fst-activity-item--result { background: color-mix(in srgb, #4caf50 8%, var(--surface-card)); }
 .fst-activity-item--result .fst-activity-tool { color: #4caf50; }
 .fst-activity-result-arrow { color: #4caf50; font-weight: bold; flex-shrink: 0; }
 .fst-ac-delta {
@@ -2386,8 +2386,8 @@ onUnmounted(() => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  border: 1px solid var(--p-surface-border);
-  background: var(--p-surface-border);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-border);
   transition: all 0.3s;
 }
 
@@ -2410,8 +2410,8 @@ onUnmounted(() => {
 }
 .fst-setup-header {
   padding: 24px 28px 18px;
-  border-bottom: 1px solid var(--p-surface-border);
-  background: var(--p-surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
 }
 .fst-setup-brand {
   display: flex;
@@ -2445,7 +2445,7 @@ onUnmounted(() => {
   overflow-y: auto;
 }
 .fst-setup-col--projects {
-  border-right: 1px solid var(--p-surface-border);
+  border-right: 1px solid var(--surface-border);
 }
 .fst-setup-section-title {
   display: flex;
@@ -2469,7 +2469,7 @@ onUnmounted(() => {
 .fst-setup-launch {
   margin-top: 24px;
   padding-top: 18px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -2580,8 +2580,8 @@ onUnmounted(() => {
 }
 .fst-pcard {
   position: relative;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;
@@ -2634,7 +2634,7 @@ onUnmounted(() => {
 .fst-pcard-stage {
   font-size: 10px;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
   padding: 2px 7px;
   border-radius: 4px;
 }
@@ -2694,7 +2694,7 @@ onUnmounted(() => {
 .fst-pmodal-stage {
   font-size: 12px;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
   padding: 4px 10px;
   border-radius: 6px;
 }
@@ -2709,7 +2709,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  background: var(--p-surface-section, var(--p-surface-hover));
+  background: var(--p-surface-section, var(--surface-hover));
   border-radius: 10px;
   padding: 14px;
 }
@@ -2732,7 +2732,7 @@ onUnmounted(() => {
   color: var(--p-text-muted-color);
   line-height: 1.6;
   padding: 12px;
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
   border-radius: 8px;
 }
 .fst-pmodal-tags {
@@ -2744,8 +2744,8 @@ onUnmounted(() => {
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 20px;
-  background: var(--p-surface-hover);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-hover);
+  border: 1px solid var(--surface-border);
   color: var(--p-text-muted-color);
 }
 .fst-pmodal-check {
@@ -2754,7 +2754,7 @@ onUnmounted(() => {
   gap: 6px;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-pmodal-check-item {
   display: flex;
@@ -2806,7 +2806,7 @@ onUnmounted(() => {
 }
 .fst-speed-btn {
   padding: 6px 14px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
@@ -2832,8 +2832,8 @@ onUnmounted(() => {
   align-items: center;
   padding: 0 16px;
   height: 52px;
-  border-bottom: 1px solid var(--p-surface-border);
-  background: var(--p-surface-ground);
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-ground);
   flex-shrink: 0;
   gap: 12px;
 }
@@ -2904,7 +2904,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   z-index: 1;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fst-phase-step--done .fst-phase-dot,
 .fst-phase-step--active .fst-phase-dot {
@@ -2940,7 +2940,7 @@ onUnmounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 12px 14px 8px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2974,14 +2974,14 @@ onUnmounted(() => {
   gap: 6px;
 }
 .fst-agent-card {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 8px 10px;
   display: flex;
   align-items: flex-start;
   gap: 8px;
   transition: all 0.2s;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   position: relative;
 }
 .fst-agent-card--thinking {
@@ -3079,10 +3079,10 @@ onUnmounted(() => {
 /* ── Project Mini ─────────────────────────────────────────── */
 .fst-project-mini {
   margin: auto 8px 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 10px 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 .fst-project-mini-title {
   font-size: 11px;
@@ -3118,7 +3118,7 @@ onUnmounted(() => {
 /* Loading phase */
 .fst-loading-phase {
   padding: 16px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 10px;
   margin-bottom: 12px;
 }
@@ -3142,7 +3142,7 @@ onUnmounted(() => {
 .fst-la-name { font-size: 10px; color: var(--p-text-muted-color); margin-bottom: 3px; }
 .fst-la-bar {
   height: 4px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -3160,10 +3160,10 @@ onUnmounted(() => {
   gap: 10px;
 }
 .fst-argument {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 10px 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   transition: all 0.3s;
 }
 .fst-argument--counter {
@@ -3179,7 +3179,7 @@ onUnmounted(() => {
 }
 .fst-arg-type--summary {
   border-color: rgba(102,187,106,0.2);
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fst-arg-header {
   display: flex;
@@ -3193,7 +3193,7 @@ onUnmounted(() => {
   font-size: 10px;
   padding: 1px 6px;
   border-radius: 3px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   color: var(--p-text-muted-color);
 }
 .fst-arg-ai-badge {
@@ -3227,8 +3227,8 @@ onUnmounted(() => {
   align-items: baseline;
   gap: 4px;
   font-size: 10px;
-  background: var(--p-surface-ground);
-  border-left: 2px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border-left: 2px solid var(--surface-border);
   border-radius: 0 4px 4px 0;
   padding: 4px 8px;
   margin-bottom: 6px;
@@ -3256,9 +3256,9 @@ onUnmounted(() => {
 .fst-vote-stream {
   margin-top: 16px;
   padding: 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 10px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-vote-title {
   font-size: 12px;
@@ -3287,7 +3287,7 @@ onUnmounted(() => {
 .fst-vote-conf-bar {
   flex: 1;
   height: 4px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -3352,7 +3352,7 @@ onUnmounted(() => {
 .fst-dim-bar-bg {
   flex: 1;
   height: 5px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -3372,10 +3372,10 @@ onUnmounted(() => {
 .fst-agg-score {
   text-align: center;
   padding: 12px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   margin-bottom: 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 .fst-agg-score-label {
   font-size: 11px;
@@ -3421,7 +3421,7 @@ onUnmounted(() => {
 .fst-vd-bar-bg {
   flex: 1;
   height: 8px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -3537,7 +3537,7 @@ onUnmounted(() => {
 /* Contradictions */
 .fst-contradictions-list { display: flex; flex-direction: column; gap: 8px; }
 .fst-contradiction-item {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 12px;
@@ -3558,9 +3558,9 @@ onUnmounted(() => {
   border-radius: 8px;
   font-weight: 600;
 }
-.fst-contradiction-severity.sev-high { background: color-mix(in srgb, #ef5350 15%, var(--p-surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
-.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card)); color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
-.fst-contradiction-severity.sev-low { background: color-mix(in srgb, #66bb6a 10%, var(--p-surface-card)); color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-high { background: color-mix(in srgb, #ef5350 15%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, #ff9800 10%, var(--surface-card)); color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-low { background: color-mix(in srgb, #66bb6a 10%, var(--surface-card)); color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
 .fst-contradiction-thesis { margin-top: 4px; color: var(--p-text-color); }
 .fst-contradiction-antithesis { color: var(--p-text-muted-color); font-style: italic; }
 
@@ -3579,9 +3579,9 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
 }
-.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, #42a5f5 10%, var(--p-surface-card)); color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
-.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--p-surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--p-surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
+.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, #42a5f5 10%, var(--surface-card)); color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
+.fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
 .fst-cond-text { flex: 1; color: var(--p-text-color); }
 .fst-cond-metric { color: var(--p-text-muted-color); font-size: 11px; }
 
@@ -3592,7 +3592,7 @@ onUnmounted(() => {
   gap: 8px;
 }
 .fst-drift-card {
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
   padding: 8px 10px;
 }
@@ -3620,7 +3620,7 @@ onUnmounted(() => {
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 6px;
-  background: color-mix(in srgb, #ff9800 10%, var(--p-surface-card));
+  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
   color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
   font-weight: 600;
   margin-left: auto;
@@ -3676,13 +3676,13 @@ onUnmounted(() => {
   margin-top: 10px;
   padding: 10px 12px;
   background: var(--fst-glass-xs);
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
 }
 .fst-ai-toggle {
   width: 40px; height: 22px;
   border-radius: 11px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   position: relative;
   cursor: pointer;
   transition: background 0.2s;
@@ -3724,7 +3724,7 @@ onUnmounted(() => {
   transition: all 0.15s;
 }
 .fst-dtab:hover {
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
   color: var(--p-text-color);
 }
 .fst-dtab--active {
@@ -3777,8 +3777,8 @@ onUnmounted(() => {
   gap: 0.75rem;
   padding: 0.6rem 0.75rem;
   border-radius: 6px;
-  border-left: 3px solid var(--p-surface-border);
-  background: var(--p-surface-ground);
+  border-left: 3px solid var(--surface-border);
+  background: var(--surface-ground);
 }
 .fst-rec-item.priority-critical,
 .fst-rec-item.priority-high {
@@ -3851,8 +3851,8 @@ onUnmounted(() => {
   flex: 1;
   padding: 5px 8px;
   border-radius: 6px;
-  border: 1px solid var(--p-surface-border);
-  background: var(--p-surface-card);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
   color: var(--p-text-color);
   font-size: 11px;
   text-align: center;
@@ -3860,7 +3860,7 @@ onUnmounted(() => {
   transition: all 0.15s;
 }
 .fst-profile-btn:hover {
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
 }
 .fst-profile-btn--active {
   background: var(--p-primary-color, #42a5f5);
@@ -3895,8 +3895,8 @@ onUnmounted(() => {
   font-size: 10px;
   padding: 3px 5px;
   border-radius: 5px;
-  border: 1px solid var(--p-surface-border);
-  background: var(--p-surface-card);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
   color: var(--p-text-color);
   cursor: pointer;
   width: 100%;
@@ -3905,7 +3905,7 @@ onUnmounted(() => {
 .fst-model-reset-btn {
   align-self: flex-start;
   background: none;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 5px;
   padding: 3px 8px;
   font-size: 11px;
@@ -3915,7 +3915,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 4px;
 }
-.fst-model-reset-btn:hover { background: var(--p-surface-hover); }
+.fst-model-reset-btn:hover { background: var(--surface-hover); }
 .fst-preset-row {
   display: flex;
   gap: 6px;
@@ -3932,14 +3932,14 @@ onUnmounted(() => {
   font-size: 0.72rem;
   padding: 2px 8px;
   border-radius: 10px;
-  border: 1px solid var(--p-surface-border);
-  background: var(--p-surface-ground);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-ground);
   color: var(--p-text-color);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 .fst-preset-chip:hover {
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
 }
 .fst-preset-chip.active {
   background: var(--p-primary-color);
@@ -3955,8 +3955,8 @@ onUnmounted(() => {
 }
 /* Issue #160: debug panel */
 .fst-debug-panel {
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 8px 10px;
   margin: 4px 8px;
@@ -3988,8 +3988,8 @@ onUnmounted(() => {
   gap: 4px;
   padding: 2px 6px;
   border-radius: 4px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
 }
 .fst-debug-name { font-weight: 600; font-size: 10px; }
 .fst-debug-mode {
@@ -4023,7 +4023,7 @@ onUnmounted(() => {
 .fst-newproj-section {
   font-weight: 600; font-size: 13px;
   color: var(--p-primary-color);
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   padding-bottom: 4px; margin-top: 6px;
 }
 .fst-newproj-row { display: flex; flex-direction: column; gap: 3px; }
@@ -4039,9 +4039,9 @@ onUnmounted(() => {
 .fst-newproj-input {
   width: 100%;
   padding: 7px 10px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-color);
   font-size: 13px;
   outline: none;

@@ -153,10 +153,10 @@ watch(() => props.entityId, load)
 
 <style scoped>
 .entity-links-panel {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 12px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 .links-header {
   display: flex;
@@ -179,7 +179,7 @@ watch(() => props.entityId, load)
   gap: 8px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   font-size: 0.85rem;
 }
 .link-target { flex: 1; color: var(--p-text-color); }

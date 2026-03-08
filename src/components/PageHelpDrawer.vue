@@ -200,7 +200,7 @@ function navigateTo(path) {
 
 .page-help-scenario {
   padding: 12px;
-  background: var(--p-content-background);
+  background: var(--surface-card);
   border: 1px solid var(--p-content-border-color);
   border-left: 3px solid var(--p-primary-500);
   border-radius: 6px;
@@ -238,7 +238,7 @@ function navigateTo(path) {
 .page-help-flow {
   margin-top: 8px;
   padding: 8px 12px;
-  background: var(--p-content-background);
+  background: var(--surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   font-size: 0.75rem;

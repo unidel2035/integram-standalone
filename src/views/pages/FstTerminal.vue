@@ -457,7 +457,7 @@ function startSession(mode) {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 60px);
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 12px;
   overflow: hidden;
   margin: -1.5rem;
@@ -468,7 +468,7 @@ function startSession(mode) {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-bottom: 1px solid var(--p-content-border-color);
 }
 
@@ -545,7 +545,7 @@ function startSession(mode) {
 }
 
 .help-row code {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   font-size: 0.8rem;
@@ -554,7 +554,7 @@ function startSession(mode) {
 }
 
 .help-row kbd {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border: 1px solid var(--p-content-border-color);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;

@@ -675,7 +675,7 @@ async function generateAiReport() {
 
 <style scoped>
 .fsp-root {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -688,8 +688,8 @@ async function generateAiReport() {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -763,8 +763,8 @@ async function generateAiReport() {
 
 /* Card */
 .fsp-card {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 12px;
   cursor: pointer;
@@ -811,7 +811,7 @@ async function generateAiReport() {
 
 .fsp-health-bar-wrap {
   height: 6px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 3px;
   overflow: hidden;
   position: relative;
@@ -840,10 +840,10 @@ async function generateAiReport() {
 
 /* Detail panel */
 .fsp-detail {
-  border-left: 1px solid var(--p-surface-border);
+  border-left: 1px solid var(--surface-border);
   overflow-y: auto;
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fsp-detail-empty {
   display: flex;
@@ -857,8 +857,8 @@ async function generateAiReport() {
 }
 
 .fsp-detail-panel {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 10px;
@@ -872,7 +872,7 @@ async function generateAiReport() {
   color: var(--p-text-color);
   margin-bottom: 10px;
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 .fsp-detail-company-header {
@@ -903,7 +903,7 @@ async function generateAiReport() {
 .fsp-kpi-bar-wrap {
   flex: 1;
   height: 6px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -918,7 +918,7 @@ async function generateAiReport() {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fsp-source-icon { font-size: 14px; color: var(--p-text-muted-color); width: 20px; }
 .fsp-source-info { flex: 1; }
@@ -933,7 +933,7 @@ async function generateAiReport() {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 .fsp-sensor-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .fsp-sensor-info { flex: 1; }
@@ -947,7 +947,7 @@ async function generateAiReport() {
   align-items: center;
   gap: 10px;
   padding: 5px 0;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 .fsp-event:last-child { border-bottom: none; }
 .fsp-event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -986,6 +986,6 @@ async function generateAiReport() {
 
 @media (max-width: 900px) {
   .fsp-body { grid-template-columns: 1fr; }
-  .fsp-detail { border-left: none; border-top: 1px solid var(--p-surface-border); }
+  .fsp-detail { border-left: none; border-top: 1px solid var(--surface-border); }
 }
 </style>

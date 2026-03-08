@@ -713,9 +713,9 @@ onMounted(() => {
 }
 
 .sourcing-btn.secondary {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-color);
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 /* Stats */
@@ -727,8 +727,8 @@ onMounted(() => {
 }
 
 .sourcing-stat-card {
-  background: var(--p-content-background);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -786,8 +786,8 @@ onMounted(() => {
 }
 
 .sourcing-filter select {
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 8px 12px;
   color: var(--p-text-color);
@@ -836,8 +836,8 @@ onMounted(() => {
 }
 
 .sourcing-card {
-  background: var(--p-content-background);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;
@@ -899,7 +899,7 @@ onMounted(() => {
 .sourcing-score-bar-wrapper {
   flex: 1;
   height: 6px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -949,7 +949,7 @@ onMounted(() => {
 
 .sourcing-signal {
   font-size: 0.7rem;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-color);
   padding: 4px 8px;
   border-radius: 6px;
@@ -965,7 +965,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
 }
 
 .sourcing-card-date {
@@ -996,7 +996,7 @@ onMounted(() => {
 }
 
 .sourcing-btn-add:disabled {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   color: var(--p-text-muted-color);
   cursor: not-allowed;
 }
@@ -1014,7 +1014,7 @@ onMounted(() => {
 }
 
 .sourcing-detail {
-  background: var(--p-content-background);
+  background: var(--surface-card);
   border-radius: 12px;
   width: 600px;
   max-width: 100%;
@@ -1027,10 +1027,10 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 20px 12px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   position: sticky;
   top: 0;
-  background: var(--p-content-background);
+  background: var(--surface-card);
   z-index: 1;
 }
 
@@ -1057,7 +1057,7 @@ onMounted(() => {
 }
 
 .sourcing-close:hover {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
 }
 
 .sourcing-detail-body {
@@ -1094,7 +1094,7 @@ onMounted(() => {
   font-size: 0.9rem;
   color: var(--p-text-muted-color);
   padding-bottom: 8px;
-  border-bottom: 1px dashed var(--p-surface-border);
+  border-bottom: 1px dashed var(--surface-border);
 }
 
 .sourcing-detail-row:last-child {
@@ -1143,7 +1143,7 @@ onMounted(() => {
 .sourcing-analysis-bar {
   flex: 1;
   height: 8px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -1171,7 +1171,7 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
 }
 
@@ -1199,7 +1199,7 @@ onMounted(() => {
   gap: 8px;
   flex-wrap: wrap;
   padding-top: 12px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
 }
 
 /* Settings */
@@ -1220,14 +1220,14 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .sourcing-checkbox:hover {
-  background: var(--p-surface-hover);
+  background: var(--surface-hover);
 }
 
 .sourcing-checkbox input[type="checkbox"] {
@@ -1244,7 +1244,7 @@ onMounted(() => {
   font-size: 0.75rem;
   padding: 3px 8px;
   border-radius: 6px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   color: var(--p-text-muted-color);
 }
 
@@ -1254,8 +1254,8 @@ onMounted(() => {
 }
 
 .sourcing-input {
-  background: var(--p-surface-ground);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 10px 12px;
   color: var(--p-text-color);

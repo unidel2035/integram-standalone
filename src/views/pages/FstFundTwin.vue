@@ -439,9 +439,9 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 </script>
 
 <style scoped>
-.fft-root { min-height: 100vh; background: var(--p-surface-ground); color: var(--p-text-color); font-family: 'Inter', sans-serif; display: flex; flex-direction: column }
+.fft-root { min-height: 100vh; background: var(--surface-ground); color: var(--p-text-color); font-family: 'Inter', sans-serif; display: flex; flex-direction: column }
 
-.fft-header { display: flex; align-items: center; gap: 16px; padding: 10px 16px; background: var(--p-surface-card); border-bottom: 1px solid var(--p-content-border-color) }
+.fft-header { display: flex; align-items: center; gap: 16px; padding: 10px 16px; background: var(--surface-card); border-bottom: 1px solid var(--p-content-border-color) }
 .fft-header-left { min-width: 180px }
 .fft-header-center { flex: 1 }
 .fft-header-right { display: flex; gap: 6px; align-items: center }
@@ -476,7 +476,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 
 /* Fund index */
 .fft-fund-index-row { display: flex; gap: 12px; align-items: flex-start }
-.fft-fund-index { display: flex; flex-direction: column; align-items: center; background: var(--p-surface-card); border-radius: 10px; padding: 12px 16px; min-width: 80px }
+.fft-fund-index { display: flex; flex-direction: column; align-items: center; background: var(--surface-card); border-radius: 10px; padding: 12px 16px; min-width: 80px }
 .fft-fi-grade { font-size: 28px; font-weight: 900 }
 .fft-fi-val { font-size: 14px; font-weight: 600 }
 .fft-fi-label { font-size: 10px; color: var(--p-text-muted-color); text-transform: uppercase }
@@ -489,7 +489,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 
 /* Subfunds */
 .fft-subfunds { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px }
-.fft-subfund { background: var(--p-surface-card); border-radius: 8px; padding: 8px; }
+.fft-subfund { background: var(--surface-card); border-radius: 8px; padding: 8px; }
 .fft-sf-header { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 4px }
 .fft-sf-budget { font-size: 12px; font-weight: 600 }
 .fft-sf-companies { font-size: 10px; color: var(--p-text-muted-color); margin-top: 4px }
@@ -503,7 +503,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 /* Company detail */
 .fft-company-detail { background: var(--p-surface-section); border-radius: 8px; padding: 10px }
 .fft-cd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px }
-.fft-cd-item { background: var(--p-surface-card); border-radius: 6px; padding: 7px }
+.fft-cd-item { background: var(--surface-card); border-radius: 6px; padding: 7px }
 .fft-cd-label { font-size: 10px; color: var(--p-text-muted-color) }
 .fft-cd-val { font-size: 15px; font-weight: 700 }
 .fft-cd-risks { margin-top: 8px }

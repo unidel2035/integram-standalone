@@ -444,7 +444,7 @@ function statusLabel(status) {
 
 <style scoped>
 .fst-transparency-root {
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -457,8 +457,8 @@ function statusLabel(status) {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -487,7 +487,7 @@ function statusLabel(status) {
 /* Hero */
 .fst-tr-hero {
   background: linear-gradient(135deg, rgba(66,165,245,0.08) 0%, rgba(102,187,106,0.08) 100%);
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   padding: 40px 24px;
 }
 .fst-tr-hero-content {
@@ -515,9 +515,9 @@ function statusLabel(status) {
 .fst-tr-stat {
   text-align: center;
   padding: 16px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-tr-stat-val {
   font-size: 24px;
@@ -542,8 +542,8 @@ function statusLabel(status) {
 
 /* Panel */
 .fst-tr-panel {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 16px;
@@ -557,7 +557,7 @@ function statusLabel(status) {
   color: var(--p-text-color);
   margin-bottom: 16px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 /* Overview Grid */
@@ -568,9 +568,9 @@ function statusLabel(status) {
 }
 .fst-tr-overview-item {
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 6px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-tr-ov-label {
   font-size: 11px;
@@ -592,9 +592,9 @@ function statusLabel(status) {
 }
 .fst-tr-strategy-item {
   padding: 14px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-left: 3px solid currentColor;
 }
 .fst-tr-strategy-header {
@@ -620,9 +620,9 @@ function statusLabel(status) {
 }
 .fst-tr-principle {
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-tr-pr-header {
   display: flex;
@@ -679,9 +679,9 @@ function statusLabel(status) {
   display: flex;
   gap: 12px;
   padding: 14px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-tr-esg-icon {
   width: 40px;
@@ -716,9 +716,9 @@ function statusLabel(status) {
 }
 .fst-tr-gov-item {
   padding: 14px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-tr-gov-role {
   font-size: 14px;
@@ -747,9 +747,9 @@ function statusLabel(status) {
 .fst-tr-team-member {
   text-align: center;
   padding: 16px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-tr-tm-avatar {
   width: 60px;
@@ -791,9 +791,9 @@ function statusLabel(status) {
   display: flex;
   gap: 12px;
   padding: 14px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 8px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 .fst-tr-reg-icon {
   font-size: 24px;
@@ -858,9 +858,9 @@ function statusLabel(status) {
   display: flex;
   align-items: flex-start;
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--surface-ground);
   border-radius: 6px;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
 }
 
 @media (max-width: 768px) {

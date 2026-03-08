@@ -516,10 +516,10 @@ watch(() => allItems.value.length, () => {
   align-items: center;
   gap: 4px;
   padding: 5px 10px;
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--surface-border);
   flex-shrink: 0;
   flex-wrap: wrap;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
 }
 
 .dt-filter-btn {
@@ -535,7 +535,7 @@ watch(() => allItems.value.length, () => {
   cursor: pointer;
   transition: all 0.12s;
 }
-.dt-filter-btn:hover { background: var(--p-surface-hover); color: var(--p-text-color); }
+.dt-filter-btn:hover { background: var(--surface-hover); color: var(--p-text-color); }
 .dt-filter-btn--active { background: var(--p-primary-color, #42a5f5); color: #fff; }
 
 .dt-filter-count {
@@ -546,7 +546,7 @@ watch(() => allItems.value.length, () => {
 }
 .dt-filter-btn--active .dt-filter-count { background: rgba(255,255,255,0.25); }
 .dt-filter-btn:not(.dt-filter-btn--active) .dt-filter-count {
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   color: var(--p-text-muted-color);
 }
 
@@ -584,7 +584,7 @@ watch(() => allItems.value.length, () => {
   gap: 8px;
   margin: 8px 0 4px;
 }
-.dt-phase-line { flex: 1; height: 1px; background: var(--p-surface-border); }
+.dt-phase-line { flex: 1; height: 1px; background: var(--surface-border); }
 .dt-phase-badge {
   display: flex;
   align-items: center;
@@ -606,7 +606,7 @@ watch(() => allItems.value.length, () => {
   padding: 8px 12px;
   border-radius: 8px;
   border-left: 3px solid;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   font-size: 12px;
 }
 .dt-session-text { display: flex; flex-direction: column; gap: 1px; }
@@ -651,7 +651,7 @@ watch(() => allItems.value.length, () => {
   display: flex; align-items: center; justify-content: center;
   width: 16px; height: 16px;
   border-radius: 3px;
-  background: var(--p-surface-border);
+  background: var(--surface-border);
   color: var(--p-text-muted-color);
   font-size: 8px;
 }
@@ -674,10 +674,10 @@ watch(() => allItems.value.length, () => {
 
 /* ── Argument card ───────────────────────────────────────────── */
 .dt-argument {
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 8px 10px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   transition: border-color 0.2s;
 }
 .dt-argument--reply {
@@ -687,7 +687,7 @@ watch(() => allItems.value.length, () => {
 }
 .dt-arg--challenge { border-color: rgba(239,83,80,0.3); }
 .dt-arg--counter   { border-color: rgba(126,87,194,0.3); }
-.dt-arg--summary   { border-color: rgba(102,187,106,0.2); background: var(--p-surface-ground); }
+.dt-arg--summary   { border-color: rgba(102,187,106,0.2); background: var(--surface-ground); }
 
 .dt-arg-header {
   display: flex;
@@ -704,7 +704,7 @@ watch(() => allItems.value.length, () => {
 }
 .dt-arg-dim {
   font-size: 9px; color: var(--p-text-muted-color);
-  background: var(--p-surface-border); padding: 1px 5px; border-radius: 3px;
+  background: var(--surface-border); padding: 1px 5px; border-radius: 3px;
 }
 .dt-arg-ai {
   font-size: 9px; color: #a78bfa; font-weight: 700;
@@ -714,8 +714,8 @@ watch(() => allItems.value.length, () => {
 }
 .dt-arg-reply {
   font-size: 10px; color: var(--p-text-muted-color);
-  background: var(--p-surface-ground);
-  border-left: 2px solid var(--p-surface-border);
+  background: var(--surface-ground);
+  border-left: 2px solid var(--surface-border);
   padding: 3px 8px; border-radius: 0 4px 4px 0;
   margin-bottom: 5px; line-height: 1.4;
 }
@@ -725,7 +725,7 @@ watch(() => allItems.value.length, () => {
 /* Tool calls block */
 .dt-tools-block {
   margin-top: 6px;
-  border-top: 1px solid var(--p-surface-border);
+  border-top: 1px solid var(--surface-border);
   padding-top: 5px;
 }
 .dt-tools-toggle {
@@ -735,13 +735,13 @@ watch(() => allItems.value.length, () => {
   font-size: 9px;
   color: var(--p-text-muted-color);
   background: none;
-  border: 1px solid var(--p-surface-border);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
   padding: 2px 7px;
   cursor: pointer;
   transition: background .15s;
 }
-.dt-tools-toggle:hover { background: var(--p-surface-hover); }
+.dt-tools-toggle:hover { background: var(--surface-hover); }
 .dt-tools-toggle .pi-wrench { font-size: 9px; color: #ff9800; }
 .dt-tools-list {
   margin-top: 5px;
@@ -771,8 +771,8 @@ watch(() => allItems.value.length, () => {
   gap: 6px;
   padding: 5px 10px;
   border-radius: 6px;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-surface-border);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
 }
 .dt-verdict-pill {
   font-size: 10px; font-weight: 700;
@@ -781,7 +781,7 @@ watch(() => allItems.value.length, () => {
 .dt-vote-score { font-size: 11px; color: var(--p-text-muted-color); min-width: 40px; }
 .dt-vote-bar {
   flex: 1; height: 4px;
-  background: var(--p-surface-border); border-radius: 2px; overflow: hidden;
+  background: var(--surface-border); border-radius: 2px; overflow: hidden;
 }
 .dt-vote-bar > div { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
 
@@ -790,7 +790,7 @@ watch(() => allItems.value.length, () => {
   border: 2px solid;
   border-radius: 10px;
   padding: 10px 14px;
-  background: var(--p-surface-card);
+  background: var(--surface-card);
   margin: 4px 0;
 }
 .dt-decision-header {
