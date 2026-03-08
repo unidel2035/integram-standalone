@@ -96,314 +96,284 @@
     <!-- ═══ Main Dashboard ═══ -->
     <div v-if="session" class="fst-dashboard">
 
-      <!-- Top Toolbar -->
-      <div class="fst-toolbar">
-        <div class="fst-toolbar-left">
-          <span class="fst-logo">
-            <i class="pi pi-building" style="color:#ffa726"></i>
-            ФСТ НТИ · Инвесткомитет
+      <!-- ── Header ───────────────────────────────────────────── -->
+      <div class="fst-header">
+        <div class="fst-header-project">
+          <i class="pi pi-building" style="color:#ffa726"></i>
+          <span class="fst-header-title">{{ session.project.title }}</span>
+          <span class="fst-header-subfund"
+            :style="{ background: SUBFUNDS[session.project.subFund]?.color || '#666' }">
+            {{ SUBFUNDS[session.project.subFund]?.shortName || session.project.subFund }}
           </span>
-          <span class="fst-project-name">{{ session.project.title }}</span>
         </div>
-        <div class="fst-toolbar-center">
-          <div class="fst-phase-track">
-            <div v-for="(ph, idx) in visiblePhases" :key="ph.id"
-              :class="['fst-phase-step', {
-                'fst-phase-step--done': phaseIdx > idx,
-                'fst-phase-step--active': phaseIdx === idx,
-              }]">
-              <div class="fst-phase-dot" :style="{ background: phaseIdx >= idx ? ph.color : 'transparent', borderColor: ph.color }">
-                <i v-if="phaseIdx > idx" class="pi pi-check" style="font-size:9px;color:#fff"></i>
+
+        <!-- Phase stepper -->
+        <div class="fst-stepper">
+          <template v-for="(ph, idx) in visiblePhases" :key="ph.id">
+            <div :class="['fst-step', { 'fst-step--done': phaseIdx > idx, 'fst-step--active': phaseIdx === idx }]">
+              <div class="fst-step-dot"
+                :style="{ background: phaseIdx >= idx ? ph.color : 'transparent', borderColor: ph.color }">
+                <i v-if="phaseIdx > idx" class="pi pi-check" style="font-size:7px;color:#fff"></i>
               </div>
-              <div class="fst-phase-label">{{ ph.label }}</div>
+              <span class="fst-step-label">{{ ph.label }}</span>
             </div>
-          </div>
+            <div v-if="idx < visiblePhases.length - 1" class="fst-step-line"
+              :style="{ background: phaseIdx > idx ? ph.color : 'var(--p-surface-border)' }"></div>
+          </template>
         </div>
-        <div class="fst-toolbar-right">
-          <Tag :value="currentPhase.label" :style="{ background: currentPhase.color }" class="fst-phase-tag" />
-          <Button v-if="running" icon="pi pi-pause" size="small" text severity="secondary" @click="pauseSession" />
-          <Button icon="pi pi-sliders-h" label="Настройки" size="small" text severity="secondary"
+
+        <div class="fst-header-right">
+          <div v-if="session.decision" class="fst-score-badge"
+            :style="{ color: scoreColor(session.decision.aggregatedScore) }">
+            {{ session.decision.aggregatedScore }}<span class="fst-score-denom">/100</span>
+          </div>
+          <div v-if="running" class="fst-running-pill">
+            <i class="pi pi-spin pi-spinner"></i> AI
+          </div>
+          <Tag v-else-if="session.phase !== 'IDLE'" :value="currentPhase.label"
+            :style="{ background: currentPhase.color, fontSize: '10px' }" />
+          <Button v-if="running" icon="pi pi-pause" size="small" rounded text severity="secondary" @click="pauseSession" />
+          <Button icon="pi pi-sliders-h" size="small" rounded text severity="secondary"
             @click="policyExpanded = !policyExpanded" title="Параметры оценки ФСТ" />
-          <Button icon="pi pi-question-circle" size="small" text severity="secondary" @click="toggleHelp" title="Помощь по странице" />
-          <Button icon="pi pi-times" size="small" text severity="secondary" @click="resetSession" />
+          <Button icon="pi pi-question-circle" size="small" rounded text severity="secondary" @click="toggleHelp" />
+          <Button icon="pi pi-times" size="small" rounded text severity="secondary" @click="resetSession" title="Новая сессия" />
         </div>
       </div>
 
-      <!-- Main Layout -->
-      <div class="fst-main">
+      <!-- ── Body: center + right ─────────────────────────────── -->
+      <div class="fst-body">
 
-        <!-- Left: Agents Panel -->
-        <div class="fst-agents-panel">
-          <div class="fst-panel-title">AI Агенты комитета</div>
-          <div class="fst-agents-list">
-            <div v-for="agent in AGENTS" :key="agent.id"
-              :class="['fst-agent-card', {
-                'fst-agent-card--thinking': agentStatus(agent.id).thinking,
-                'fst-agent-card--voted': agentStatus(agent.id).vote,
-              }]"
-              :style="{ '--agent-color': agent.color }">
-              <div class="fst-agent-avatar">
-                <span class="fst-agent-emoji">{{ agent.avatar }}</span>
-                <span v-if="agentStatus(agent.id).thinking" class="fst-agent-thinking-pulse"></span>
-              </div>
-              <div class="fst-agent-info">
-                <div class="fst-agent-name">{{ agent.name }}</div>
-                <div class="fst-agent-role-label">{{ agent.description.slice(0, 50) }}...</div>
-                <div v-if="agentStatus(agent.id).thinking" class="fst-agent-think-text">
-                  <i class="pi pi-spin pi-spinner" style="font-size:10px"></i>
-                  {{ agentStatus(agent.id).thinkText }}
-                </div>
-                <div v-else-if="agentStatus(agent.id).vote" class="fst-agent-vote-badge"
-                  :style="{ background: VERDICTS[agentStatus(agent.id).vote]?.color }">
-                  <i :class="VERDICTS[agentStatus(agent.id).vote]?.icon"></i>
-                  {{ agentStatus(agent.id).voteScore }}/100
-                </div>
-                <div v-else-if="agentStatus(agent.id).done" class="fst-agent-ready">
-                  <i class="pi pi-check" style="color:#4caf50;font-size:10px"></i> Готов
-                </div>
-                <!-- Pipeline nodes -->
-                <div v-if="agentStatus(agent.id).thinking || agentStatus(agent.id).done" class="fst-agent-pipeline">
-                  <span :class="['fst-pnode', agentStatus(agent.id).pipeline?.integram || 'idle']"
-                    :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.integram, '#42a5f5')"
-                    title="Integram: данные проекта">🗄</span>
-                  <span class="fst-parrow" title="данные проекта">──›</span>
-                  <span :class="['fst-pnode', agentStatus(agent.id).pipeline?.calc || 'idle']"
-                    :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.calc, '#ff9800')"
-                    title="Фреймворк агента">🧮</span>
-                  <span class="fst-parrow" title="расчёты">──›</span>
-                  <span :class="['fst-pnode', agentStatus(agent.id).pipeline?.llm || 'idle']"
-                    :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.llm, '#ab47bc')"
-                    title="DeepSeek LLM">🤖</span>
-                  <span class="fst-parrow" title="аргумент">──›</span>
-                  <span :class="['fst-pnode', agentStatus(agent.id).pipeline?.save || 'idle']"
-                    :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.save, '#66bb6a')"
-                    title="Сохранить в Integram">💾</span>
-                </div>
-              </div>
-              <div class="fst-agent-weight">{{ Math.round(agent.weight * 100) }}%</div>
-            </div>
-          </div>
-
-          <!-- Project Mini Card -->
-          <div class="fst-project-mini">
-            <div class="fst-project-mini-title">{{ session.project.title }}</div>
-            <div class="fst-project-mini-row">
-              <span>Субфонд:</span>
-              <span :style="{ color: SUBFUNDS[session.project.subFund]?.color }">
-                {{ SUBFUNDS[session.project.subFund]?.name }}
+        <!-- Center: debate / graph / links -->
+        <div class="fst-center">
+          <div class="fst-tabs-bar">
+            <button :class="['fst-tab', { 'fst-tab--on': debateTab === 'timeline' }]"
+              @click="debateTab = 'timeline'">
+              <i class="pi pi-comments"></i> Дебаты
+              <span v-if="session.arguments.length" class="fst-tab-count">{{ session.arguments.length }}</span>
+            </button>
+            <button :class="['fst-tab', { 'fst-tab--on': debateTab === 'graph' }]"
+              @click="debateTab = 'graph'">
+              <i class="pi pi-sitemap"></i> Граф
+            </button>
+            <button :class="['fst-tab', { 'fst-tab--on': debateTab === 'links' }]"
+              @click="debateTab = 'links'">
+              <i class="pi pi-share-alt"></i> Связи
+              <span v-if="portfolioOverlaps.length" class="fst-tab-count fst-tab-count--red">
+                {{ portfolioOverlaps.length }}
               </span>
-            </div>
-            <div class="fst-project-mini-row">
-              <span>Запрос:</span>
-              <strong>{{ (session.project.requestedAmount / 1e6).toFixed(0) }} млн ₽</strong>
-            </div>
-            <div class="fst-project-mini-row">
-              <span>TRL / MRL:</span>
-              <span>{{ session.project.trl }} / {{ session.project.mrl }}</span>
-            </div>
-            <div class="fst-project-mini-row">
-              <span>Суверенность:</span>
-              <span :class="sovClass(session.project.sovereigntyScore)">{{ session.project.sovereigntyScore }}/9</span>
-            </div>
-            <div class="fst-project-mini-row">
-              <span>Рынок:</span>
-              <span>{{ (session.project.marketSize / 1e9).toFixed(1) }} млрд ₽</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Center: Debate Timeline / Graph -->
-        <div class="fst-debate-panel">
-          <div class="fst-panel-title">
-            <div class="fst-debate-tabs">
-              <button :class="['fst-dtab', { 'fst-dtab--active': debateTab === 'timeline' }]"
-                @click="debateTab = 'timeline'">
-                <i class="pi pi-comments"></i> Дебаты
-                <span class="fst-arg-count">{{ session.arguments.length }}</span>
-              </button>
-              <button :class="['fst-dtab', { 'fst-dtab--active': debateTab === 'graph' }]"
-                @click="debateTab = 'graph'">
-                <i class="pi pi-sitemap"></i> Граф событий
-              </button>
-              <button :class="['fst-dtab', { 'fst-dtab--active': debateTab === 'links' }]"
-                @click="debateTab = 'links'">
-                <i class="pi pi-share-alt"></i> Граф связей
-                <span v-if="portfolioOverlaps.length" class="fst-arg-count" style="background:#ef4444">
-                  {{ portfolioOverlaps.length }}
-                </span>
-              </button>
-            </div>
+            </button>
           </div>
 
-          <!-- Portfolio overlap alert -->
           <div v-if="portfolioOverlaps.length && debateTab !== 'links'" class="fst-overlap-alert">
-            <i class="pi pi-exclamation-triangle" style="color:#ffa726" />
-            <span>Пересечение с портфелем:</span>
+            <i class="pi pi-exclamation-triangle" style="color:#ffa726"></i>
+            Пересечение с портфелем:
             <span v-for="(o, i) in portfolioOverlaps.slice(0,3)" :key="i" class="fst-overlap-pill">
               {{ o.companyName }} → {{ o.conceptName }}
             </span>
             <button class="fst-overlap-link" @click="debateTab = 'links'">Граф →</button>
           </div>
 
-          <!-- Graph Panel -->
-          <DebateGraphPanel v-if="debateTab === 'graph'" :session="session" class="fst-graph-panel" />
+          <!-- Живая лента: что делают агенты прямо сейчас -->
+          <div v-if="running && Object.keys(agentActivity).length" class="fst-activity-feed">
+            <div v-for="(act, agId) in agentActivity" :key="agId"
+              :class="['fst-activity-item', { 'fst-activity-item--result': act.result }]">
+              <span class="fst-activity-dot" :style="{ background: AGENTS.find(a=>a.id===agId)?.color || '#888' }"></span>
+              <span class="fst-activity-agent">{{ AGENTS.find(a=>a.id===agId)?.shortName }}</span>
+              <span class="fst-activity-tool">{{ act.tool }}</span>
+              <span v-if="act.result" class="fst-activity-result-arrow">→</span>
+              <span v-if="act.reasoning" class="fst-activity-reason">{{ act.reasoning }}</span>
+            </div>
+          </div>
 
-          <!-- Links Graph Panel -->
-          <LinksGraphViz v-if="debateTab === 'links'" class="fst-graph-panel" />
+          <DebateGraphPanel v-if="debateTab === 'graph'" :session="session" class="fst-panel-fill" />
+          <LinksGraphViz v-if="debateTab === 'links'" class="fst-panel-fill" />
+          <DebateTimeline v-if="debateTab === 'timeline'" :session="session" :running="running" class="fst-panel-fill" />
+        </div>
 
-          <DebateTimeline v-if="debateTab === 'timeline'"
-            :session="session" :running="running"
-            class="fst-graph-panel" />
-        </div><!-- /fst-debate-panel -->
+        <!-- Right: scoring + decision -->
+        <div class="fst-right">
 
-        <!-- Right: Scoring + Decision -->
-        <div class="fst-score-panel">
-          <div class="fst-panel-title">Скоринг проекта</div>
+          <!-- Project KPIs -->
+          <div class="fst-rs">
+            <div class="fst-rs-title"><i class="pi pi-building"></i> Проект</div>
+            <div class="fst-kpis">
+              <div class="fst-kpi">
+                <div class="fst-kpi-v">{{ (session.project.requestedAmount / 1e6).toFixed(0) }}</div>
+                <div class="fst-kpi-u">млн ₽</div>
+                <div class="fst-kpi-l">Запрос</div>
+              </div>
+              <div class="fst-kpi">
+                <div class="fst-kpi-v" :class="trlClass(session.project.trl)">{{ session.project.trl }}</div>
+                <div class="fst-kpi-u">/9</div>
+                <div class="fst-kpi-l">TRL</div>
+              </div>
+              <div class="fst-kpi">
+                <div class="fst-kpi-v" :class="sovClass(session.project.sovereigntyScore)">
+                  {{ session.project.sovereigntyScore }}
+                </div>
+                <div class="fst-kpi-u">/9</div>
+                <div class="fst-kpi-l">Суверен.</div>
+              </div>
+              <div class="fst-kpi">
+                <div class="fst-kpi-v" :class="irrClass(session.project.projectedIRR)">
+                  {{ (session.project.projectedIRR * 100).toFixed(0) }}%
+                </div>
+                <div class="fst-kpi-l">IRR</div>
+              </div>
+            </div>
+          </div>
 
-          <!-- Radar-style score display -->
-          <div class="fst-radar-container">
-            <svg viewBox="0 0 200 200" class="fst-radar-svg">
-              <!-- Background rings -->
-              <circle cx="100" cy="100" r="80" fill="none" stroke="#333" stroke-width="0.5" stroke-dasharray="3,3"/>
-              <circle cx="100" cy="100" r="60" fill="none" stroke="#333" stroke-width="0.5" stroke-dasharray="3,3"/>
-              <circle cx="100" cy="100" r="40" fill="none" stroke="#333" stroke-width="0.5" stroke-dasharray="3,3"/>
-              <circle cx="100" cy="100" r="20" fill="none" stroke="#333" stroke-width="0.5" stroke-dasharray="3,3"/>
-
-              <!-- Axes -->
-              <line v-for="(ax, i) in radarAxes" :key="i"
+          <!-- Scoring: radar + dims -->
+          <div class="fst-rs">
+            <div class="fst-rs-title"><i class="pi pi-chart-bar"></i> Скоринг</div>
+            <svg viewBox="0 0 200 200" class="fst-radar">
+              <circle v-for="r in [20,40,60,80]" :key="r" cx="100" cy="100" :r="r"
+                fill="none" stroke="var(--p-surface-border)" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line v-for="(ax, i) in radarAxes" :key="'a'+i"
                 x1="100" y1="100"
                 :x2="100 + Math.cos(ax.angle - Math.PI/2) * 80"
                 :y2="100 + Math.sin(ax.angle - Math.PI/2) * 80"
-                stroke="#444" stroke-width="0.5"/>
-
-              <!-- Score polygon -->
-              <polygon :points="radarPoints" fill="rgba(66,165,245,0.2)" stroke="#42a5f5" stroke-width="1.5"/>
-
-              <!-- Labels -->
+                stroke="var(--p-surface-border)" stroke-width="0.5"/>
+              <polygon :points="radarPoints" fill="rgba(66,165,245,0.15)" stroke="#42a5f5" stroke-width="1.5"/>
               <text v-for="(ax, i) in radarAxes" :key="'l'+i"
-                :x="100 + Math.cos(ax.angle - Math.PI/2) * 92"
-                :y="100 + Math.sin(ax.angle - Math.PI/2) * 92"
+                :x="100 + Math.cos(ax.angle - Math.PI/2) * 95"
+                :y="100 + Math.sin(ax.angle - Math.PI/2) * 95"
                 text-anchor="middle" dominant-baseline="middle"
-                fill="#aaa" font-size="8">{{ ax.label }}</text>
+                :fill="ax.color" font-size="7.5" font-weight="600">{{ ax.label }}</text>
             </svg>
-          </div>
-
-          <!-- Dim scores bars -->
-          <div class="fst-dim-bars">
-            <div v-for="(dim, key) in SCORING_DIMS" :key="key" class="fst-dim-bar-row">
-              <div class="fst-dim-label">{{ dim.label }}</div>
-              <div class="fst-dim-bar-bg">
-                <div class="fst-dim-bar-fill"
-                  :style="{ width: ((session.dimScores[key] || 0) * 100) + '%', background: dim.color }">
+            <div class="fst-dims">
+              <div v-for="(dim, key) in SCORING_DIMS" :key="key" class="fst-dim-row">
+                <span class="fst-dim-lbl">{{ dim.label }}</span>
+                <div class="fst-dim-track">
+                  <div class="fst-dim-fill"
+                    :style="{ width: ((session.dimScores[key] || 0) * 100) + '%', background: dim.color }"></div>
                 </div>
-              </div>
-              <div class="fst-dim-value" :style="{ color: dim.color }">
-                {{ Math.round((session.dimScores[key] || 0) * 100) }}
+                <span class="fst-dim-num" :style="{ color: dim.color }">
+                  {{ Math.round((session.dimScores[key] || 0) * 100) }}
+                </span>
               </div>
             </div>
           </div>
 
-          <!-- Aggregate Score -->
-          <div v-if="session.decision" class="fst-agg-score">
-            <div class="fst-agg-score-label">Итоговый балл</div>
-            <div class="fst-agg-score-value" :style="{ color: scoreColor(session.decision.aggregatedScore) }">
-              {{ session.decision.aggregatedScore }}<span style="font-size:16px;opacity:0.6">/100</span>
+          <!-- Votes -->
+          <div v-if="session.votes.length" class="fst-rs">
+            <div class="fst-rs-title"><i class="pi pi-check-square"></i> Голоса</div>
+            <div class="fst-vote-grid">
+              <div v-for="vote in session.votes" :key="vote.id" class="fst-vc"
+                :style="{ borderColor: VERDICTS[vote.verdict]?.color,
+                  background: (VERDICTS[vote.verdict]?.color || '#888') + '18' }">
+                <i :class="VERDICTS[vote.verdict]?.icon"
+                  :style="{ color: VERDICTS[vote.verdict]?.color, fontSize: '10px' }"></i>
+                <span class="fst-vc-n">{{ agentById(vote.agentId)?.shortName }}</span>
+                <span class="fst-vc-s" :style="{ color: VERDICTS[vote.verdict]?.color }">{{ vote.score }}</span>
+              </div>
             </div>
-            <div class="fst-agg-rec" :style="{ background: VERDICTS[session.decision.recommendation]?.color }">
+          </div>
+
+          <!-- Decision -->
+          <div v-if="session.decision" class="fst-rs fst-rs--decision">
+            <div class="fst-rs-title"><i class="pi pi-gavel"></i> Решение комитета</div>
+            <div class="fst-decision-score"
+              :style="{ color: scoreColor(session.decision.aggregatedScore) }">
+              {{ session.decision.aggregatedScore }}<span class="fst-decision-denom">/100</span>
+            </div>
+            <div class="fst-decision-rec"
+              :style="{ background: VERDICTS[session.decision.recommendation]?.color }">
               <i :class="VERDICTS[session.decision.recommendation]?.icon"></i>
               {{ VERDICTS[session.decision.recommendation]?.label }}
             </div>
-          </div>
-
-          <!-- Vote distribution -->
-          <div v-if="session.votes.length > 0" class="fst-vote-dist">
-            <div class="fst-panel-subtitle">Распределение голосов</div>
-            <div class="fst-vote-dist-bars">
-              <div v-for="(v, id) in VERDICTS" :key="id" class="fst-vote-dist-row">
-                <span class="fst-vd-label">{{ v.label }}</span>
-                <div class="fst-vd-bar-bg">
-                  <div class="fst-vd-bar-fill" :style="{ width: voteBarWidth(id), background: v.color }"></div>
-                </div>
-                <span class="fst-vd-count">{{ voteCount(id) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Conditions -->
-          <div v-if="session.decision?.conditions?.length" class="fst-conditions">
-            <div class="fst-panel-subtitle">Условия одобрения</div>
-            <ul class="fst-cond-list">
-              <li v-for="c in session.decision.conditions" :key="c" class="fst-cond-item">
-                <i class="pi pi-angle-right" style="color:#ffa726;font-size:10px"></i> {{ c }}
+            <ul v-if="session.decision.conditions?.length" class="fst-decision-conds">
+              <li v-for="c in session.decision.conditions.slice(0, 3)" :key="c">
+                <i class="pi pi-angle-right" style="color:#ffa726;font-size:9px"></i> {{ c }}
               </li>
             </ul>
-          </div>
-
-          <!-- Key Risks -->
-          <div v-if="session.decision?.risks?.length" class="fst-risks">
-            <div class="fst-panel-subtitle">Ключевые риски</div>
-            <ul class="fst-risk-list">
-              <li v-for="r in session.decision.risks.slice(0,3)" :key="r" class="fst-risk-item">
-                <i class="pi pi-exclamation-triangle" style="color:#ef5350;font-size:10px"></i> {{ r }}
-              </li>
-            </ul>
-          </div>
-
-          <!-- Financial Calculator -->
-          <div class="fst-fin-calc-wrap">
-            <FinancialCalculator
-              :initial-ic="currentProject?.askRub || 100"
-              :initial-wacc="fstPolicy.wacc || 18"
-              :initial-cf="currentProject?.projectedCf || [0, 20, 40, 60, 80]"
-              @metrics="onFinMetrics"
-            />
-          </div>
-
-          <!-- Human Approval Panel -->
-          <div v-if="session.phase === 'HUMAN_APPROVAL'" class="fst-human-panel">
-            <div class="fst-panel-subtitle" style="color:#ffa726">
-              <i class="pi pi-users"></i> Утверждение инвесткомитета
+            <div v-if="session.decision.humanApproval" class="fst-human-result">
+              <i class="pi pi-check-circle" style="color:#4caf50"></i>
+              Утверждено: <strong>{{ VERDICTS[session.decision.humanApproval.verdict]?.label }}</strong>
             </div>
-            <p class="fst-human-prompt">
-              AI-агенты вынесли рекомендацию. Члены комитета принимают окончательное решение:
-            </p>
-            <div class="fst-human-comment-row">
-              <InputText v-model="humanComment" placeholder="Комментарий (опционально)" class="fst-human-comment" size="small" />
+            <Button label="Полный отчёт" icon="pi pi-arrow-right" icon-pos="right"
+              size="small" outlined severity="secondary"
+              style="width:100%;margin-top:10px;justify-content:center"
+              @click="conclusionVisible = true" />
+          </div>
+
+          <!-- Human Approval -->
+          <div v-if="session.phase === 'HUMAN_APPROVAL'" class="fst-rs fst-rs--approval">
+            <div class="fst-rs-title" style="color:#ffa726">
+              <i class="pi pi-users"></i> Утверждение ИК
             </div>
-            <div class="fst-human-buttons">
-              <LearnTooltip
-                label="Утвердить"
+            <p class="fst-approval-hint">AI-агенты вынесли рекомендацию. Примите финальное решение:</p>
+            <InputText v-model="humanComment" placeholder="Комментарий (опционально)"
+              size="small" style="width:100%;margin-bottom:10px" />
+            <div class="fst-approval-btns">
+              <LearnTooltip label="Утвердить"
                 what="Председатель комитета утверждает рекомендацию AI-агентов. Проект переходит к структурированию сделки."
                 when="Когда согласны с решением агентов и готовы двигаться к Term Sheet"
-                :terms="['Одобрение', 'Term Sheet', 'Инвесткомитет']"
-              >
+                :terms="['Одобрение', 'Term Sheet', 'Инвесткомитет']">
                 <Button label="Утвердить" icon="pi pi-check" severity="success" size="small"
-                  @click="humanDecide('APPROVE')" />
+                  style="width:100%" @click="humanDecide('APPROVE')" />
               </LearnTooltip>
-              <LearnTooltip
-                label="Отложить"
-                what="Откладывает решение — проект остаётся в воронке для повторного рассмотрения после получения доп. информации"
+              <LearnTooltip label="Отложить"
+                what="Откладывает решение — проект остаётся в воронке для повторного рассмотрения"
                 when="Когда нужна дополнительная информация: финмодель, DD, юр. проверка"
-                :terms="['Due Diligence', 'Воронка сделок', 'Скрининг']"
-              >
+                :terms="['Due Diligence', 'Воронка сделок', 'Скрининг']">
                 <Button label="Отложить" icon="pi pi-clock" severity="warning" size="small"
-                  @click="humanDecide('DEFER')" />
+                  style="width:100%" @click="humanDecide('DEFER')" />
               </LearnTooltip>
-              <LearnTooltip
-                label="Отклонить"
+              <LearnTooltip label="Отклонить"
                 what="Проект не проходит критерии ФСТ НТИ. Решение фиксируется в протоколе."
                 when="Когда проект не соответствует стратегии фонда или минимальным критериям отбора"
-                :terms="['Критерии отбора', 'Протокол ИК', 'Политика фонда']"
-              >
+                :terms="['Критерии отбора', 'Протокол ИК', 'Политика фонда']">
                 <Button label="Отклонить" icon="pi pi-times" severity="danger" size="small"
-                  @click="humanDecide('REJECT')" />
+                  style="width:100%" @click="humanDecide('REJECT')" />
               </LearnTooltip>
             </div>
           </div>
 
+        </div><!-- /fst-right -->
+      </div><!-- /fst-body -->
+
+      <!-- ── Agents Bar (bottom strip) ────────────────────────── -->
+      <div class="fst-agents-bar">
+        <div v-for="agent in AGENTS" :key="agent.id"
+          :class="['fst-ac',
+            agentStatus(agent.id).thinking ? 'fst-ac--thinking' : '',
+            agentStatus(agent.id).vote ? 'fst-ac--voted' : '',
+            agentStatus(agent.id).done && !agentStatus(agent.id).vote ? 'fst-ac--done' : '',
+          ]"
+          :style="{ '--ac': agent.color }">
+          <span class="fst-ac-dot"></span>
+          <span class="fst-ac-name">{{ agent.shortName }}</span>
+          <span v-if="agentStatus(agent.id).thinking" class="fst-ac-status">
+            <i class="pi pi-spin pi-spinner" style="font-size:9px;color:var(--ac)"></i>
+            <span v-if="agentActivity[agent.id]?.tool" class="fst-ac-tool">
+              {{ agentActivity[agent.id].tool }}
+            </span>
+          </span>
+          <span v-else-if="agentStatus(agent.id).vote" class="fst-ac-vote"
+            :style="{ background: VERDICTS[agentStatus(agent.id).vote]?.color }">
+            <i :class="VERDICTS[agentStatus(agent.id).vote]?.icon" style="font-size:8px"></i>
+            {{ agentStatus(agent.id).voteScore }}
+          </span>
+          <!-- Дельта позиции (OPENING → SUMMARY) -->
+          <span v-if="session?.positionDeltas?.[agent.id]?.changed"
+            class="fst-ac-delta"
+            :title="`Позиция изменилась: ${session.positionDeltas[agent.id].from} → ${session.positionDeltas[agent.id].to}`">
+            {{ stanceEmoji(session.positionDeltas[agent.id].from) }}→{{ stanceEmoji(session.positionDeltas[agent.id].to) }}
+          </span>
+          <span v-else-if="agentStatus(agent.id).done" class="fst-ac-status">
+            <i class="pi pi-check" style="font-size:9px;color:#4caf50"></i>
+          </span>
+          <div class="fst-ac-pipe">
+            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.integram, '#42a5f5')" title="Данные"></span>
+            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.calc, '#ff9800')" title="Расчёт"></span>
+            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.llm, '#ab47bc')" title="LLM"></span>
+            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.save, '#66bb6a')" title="Сохр."></span>
+          </div>
         </div>
       </div>
-    </div>
+
+    </div><!-- /fst-dashboard -->
 
     <!-- ═══ Setup Screen ═══ -->
     <div v-else class="fst-setup">
@@ -591,6 +561,42 @@
             </div>
           </div>
 
+          <!-- ═══ Multi-Agent Orchestrator toggle ═══ -->
+          <div v-if="useAI" class="fst-ai-mode-row" style="margin-top:14px">
+            <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useAgentLoop }]"
+              @click="useAgentLoop = !useAgentLoop">
+              <div class="fst-ai-toggle-knob"></div>
+            </div>
+            <div class="fst-ai-mode-label">
+              <span v-if="useAgentLoop">
+                <i class="pi pi-sitemap" style="color:#ffa726"></i>
+                <strong>Multi-Agent Loop</strong> — агенты вызывают инструменты, работают параллельно, видят зал
+              </span>
+              <span v-else>
+                <i class="pi pi-comments" style="color:#64748b"></i>
+                <strong>Single-call</strong> — один LLM-вызов на аргумент (быстро)
+              </span>
+            </div>
+          </div>
+
+
+          <div v-if="useAI && useAgentLoop" class="fst-ai-mode-row" style="margin-top:10px">
+            <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useOrchestrator }]"
+              @click="useOrchestrator = !useOrchestrator">
+              <div class="fst-ai-toggle-knob"></div>
+            </div>
+            <div class="fst-ai-mode-label">
+              <span v-if="useOrchestrator">
+                <i class="pi pi-server" style="color:#66bb6a"></i>
+                <strong>Server Orchestration</strong> — агенты работают на сервере, UI получает события в реальном времени
+              </span>
+              <span v-else>
+                <i class="pi pi-desktop" style="color:#64748b"></i>
+                <strong>Client-side</strong> — агенты работают в браузере (по умолчанию)
+              </span>
+            </div>
+          </div>
+
           <!-- ═══ Настройки моделей оркестратора ═══ -->
           <div v-if="useAI" class="fst-setup-section-title" style="margin-top:20px">
             <div class="fst-policy-toggle" @click="modelPanelExpanded = !modelPanelExpanded">
@@ -725,7 +731,9 @@ const projectModalVisible = ref(false)
 const previewProject = ref(null)
 const selectedProjectId = ref(null)
 const selectedSpeed = ref('normal')
-const useAI = ref(true)
+const useAI        = ref(true)
+const useAgentLoop = ref(true)    // Multi-agent orchestrator: tool_use + parallel
+const useOrchestrator = ref(false) // Серверная оркестрация (Phase 3)
 const policyExpanded = ref(false)
 
 // ── Оркестратор моделей ────────────────────────────────────────
@@ -757,6 +765,9 @@ function resetModelOverrides() {
 const humanComment = ref('')
 const session = ref(null)
 const running = ref(false)
+
+// Живая активность агентов: { [agentId]: { tool, iter, type, ts } }
+const agentActivity = ref({})
 const timelineEl = ref(null)
 
 const fstPolicy = ref({ ...FST_POLICY_DEFAULTS })
@@ -875,20 +886,62 @@ function agentById(id) {
   return AGENTS.find(a => a.id === id)
 }
 
+function describeToolCall(tool, args, reasoning) {
+  if (reasoning && reasoning.length > 4) return reasoning
+  // Детерминированное описание из аргументов
+  switch (tool) {
+    case 'calc_irr':         return `IRR по CF: [${(args?.cashflows||[]).slice(0,3).join(', ')}...] IC=${args?.initial_investment||'?'} млн`
+    case 'calc_npv':         return `NPV: WACC=${((args?.wacc||0.18)*100).toFixed(0)}%, IC=${args?.initial_investment||'?'} млн`
+    case 'calc_monte_carlo': return `Монте-Карло: IRR_base=${((args?.base_irr||0)*100).toFixed(0)}%, vol=${((args?.volatility||0.35)*100).toFixed(0)}%`
+    case 'calc_bayesian':    return `Байес: prior=${((args?.prior||0.08)*100).toFixed(0)}%, сигналы +${(args?.evidence_up||[]).length} −${(args?.evidence_down||[]).length}`
+    case 'calc_power_score': return `7 Powers: scale=${args?.scale_economies||0} network=${args?.network_economies||0} brand=${args?.branding||0}...`
+    case 'query_data':       return `данные: ${(args?.fields||[]).join(', ')}`
+    case 'read_room':        return `читает зал (последние ${args?.n||8} реплик)`
+    case 'web_search':       return `поиск: «${(args?.query||'').slice(0,60)}»`
+    case 'memory_search':    return `память KAG: «${(args?.query||'').slice(0,60)}»`
+    case 'search_precedents':return `прецеденты: «${(args?.query||'').slice(0,60)}»`
+    case 'exec_code':        return `код: ${args?.description || (args?.code||'').slice(0,60)}`
+    default:                 return tool
+  }
+}
+
+function formatToolResult(result) {
+  if (!result || typeof result !== 'object') return String(result || '').slice(0, 80)
+  if (result.error) return `⚠ ${result.error}`.slice(0, 80)
+  // Числовые результаты — самые важные
+  const parts = []
+  if (result.irr_pct !== undefined)        parts.push(`IRR ${result.irr_pct}%`)
+  if (result.npv !== undefined)            parts.push(`NPV ${result.npv} млн`)
+  if (result.p_positive_pct !== undefined) parts.push(`P(успех) ${result.p_positive_pct}%`)
+  if (result.posterior_pct !== undefined)  parts.push(`P = ${result.posterior_pct}%`)
+  if (result.total !== undefined && result.assessment) parts.push(`Power ${result.total}/70 — ${result.assessment}`)
+  if (result.count !== undefined)          parts.push(`найдено ${result.count}`)
+  if (result.results && typeof result.results === 'string') parts.push(result.results.slice(0, 80))
+  if (result.result !== undefined)         parts.push(JSON.stringify(result.result).slice(0, 60))
+  // Поля проекта
+  const projFields = Object.entries(result).filter(([k,v]) => typeof v === 'number' || typeof v === 'string').slice(0, 3)
+  if (!parts.length) projFields.forEach(([k,v]) => parts.push(`${k}: ${v}`))
+  return parts.join(' · ').slice(0, 120) || JSON.stringify(result).slice(0, 80)
+}
+
 function agentStatus(agentId) {
   return session.value?.agentStatus?.[agentId] || {}
 }
 
 function fstPipeNodeStyle(state, color) {
-  if (state === 'done')   return { borderColor: color, background: color + '22', opacity: 1 }
-  if (state === 'active') return { borderColor: color, background: color + '11', opacity: 1, animation: 'fst-pulse 1s infinite' }
-  if (state === 'error')  return { borderColor: '#ef5350', background: '#ef535011', opacity: 1 }
+  if (state === 'done')   return { background: color, borderColor: color }
+  if (state === 'active') return { background: color + '88', borderColor: color, animation: 'fst-dot-blink 1s infinite' }
+  if (state === 'error')  return { background: '#ef5350', borderColor: '#ef5350' }
   return {}
 }
 
 function argTypeLabel(type) {
   const labels = { OPENING: 'Позиция', CHALLENGE: 'Вызов', COUNTER: 'Контр', SUMMARY: 'Итог' }
   return labels[type] || type
+}
+
+function stanceEmoji(stance) {
+  return stance === 'APPROVE' ? '✅' : stance === 'REJECT' ? '❌' : stance === 'DEFER' ? '⏳' : '?'
 }
 
 function voteCount(verdictId) {
@@ -970,10 +1023,13 @@ function startSession() {
     speed:          selectedSpeed.value,
     policy:         { ...fstPolicy.value },
     useAI:          useAI.value,
+    useAgentLoop:   useAgentLoop.value,
+    useOrchestrator: useOrchestrator.value,
     speedProfile:   selectedSpeedProfile.value,
     modelOverrides: { ...agentModelOverrides.value },
   })
   session.value = sess
+  agentActivity.value = {}
 
   engine = new FstCommitteeEngine(sess, handleEvent)
   running.value = true
@@ -1026,12 +1082,29 @@ function handleEvent(event) {
     session.value.nodeProposals = s.nodeProposals
     session.value.contractNodes = s.contractNodes
     session.value.nodeVotes = s.nodeVotes
-    // Явно синхронизируем массивы + tick для гарантированной реактивности графа
-    session.value.events    = s.events
-    session.value.arguments = s.arguments
-    session.value.votes     = s.votes
-    session.value.dimScores = s.dimScores
-    session.value._tick     = (session.value._tick || 0) + 1
+    // Новые ссылки на массивы → Vue гарантированно видит изменение
+    session.value.events         = [...s.events]
+    session.value.arguments      = [...s.arguments]
+    session.value.votes          = [...s.votes]
+    session.value.dimScores      = { ...s.dimScores }
+    session.value.positionDeltas = s.positionDeltas ? { ...s.positionDeltas } : null
+    session.value._tick          = (session.value._tick || 0) + 1
+  }
+
+  if (event.type === 'AgentLoopProgress') {
+    const { agentId, type, tool, reasoning, iter } = event
+    if (type === 'tool_start') {
+      const desc = describeToolCall(tool, event.args, reasoning)
+      agentActivity.value = { ...agentActivity.value, [agentId]: { tool, reasoning: desc, iter, ts: Date.now() } }
+    } else if (type === 'tool_done') {
+      const resultSnippet = formatToolResult(event.result)
+      agentActivity.value = { ...agentActivity.value, [agentId]: { tool, reasoning: resultSnippet, result: true, iter, ts: Date.now() } }
+    } else if (type === 'publish') {
+      const copy = { ...agentActivity.value }
+      delete copy[agentId]
+      agentActivity.value = copy
+    }
+    return
   }
 
   if (event.type === 'PortfolioOverlapDetected') {
@@ -1050,7 +1123,12 @@ function handleEvent(event) {
     })
   }
 
+  if (event.type === 'PositionDeltaReady') {
+    // positionDeltas уже синкнуты выше через engine.session
+  }
+
   if (event.type === 'SessionConcluded') {
+    agentActivity.value = {}
     setTimeout(() => {
       conclusionVisible.value = true
     }, 1500)
@@ -1173,7 +1251,12 @@ watch(() => session.value?.arguments?.length, () => {
   })
 })
 
+onMounted(() => {
+  document.documentElement.classList.add('committee-page')
+})
+
 onUnmounted(() => {
+  document.documentElement.classList.remove('committee-page')
   if (engine) engine.stop()
 })
 </script>
@@ -1181,17 +1264,527 @@ onUnmounted(() => {
 <style scoped>
 /* ── Root ─────────────────────────────────────────────────── */
 .fst-committee {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
   background: var(--p-surface-ground);
   color: var(--p-text-color);
   font-family: 'Inter', sans-serif;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DASHBOARD — новый layout
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.fst-dashboard {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Header ──────────────────────────────── */
+.fst-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px;
+  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
+  flex-shrink: 0;
+  min-height: 50px;
+}
+.fst-header-project {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.fst-header-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--p-text-color);
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fst-header-subfund {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+/* Phase stepper */
+.fst-stepper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  overflow: hidden;
+  gap: 0;
+}
+.fst-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.fst-step-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+.fst-step--active .fst-step-dot {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
+}
+.fst-step-label {
+  font-size: 8px;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+  max-width: 58px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+.fst-step--active .fst-step-label,
+.fst-step--done .fst-step-label { color: var(--p-text-color); }
+.fst-step-line {
+  width: 20px;
+  height: 2px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+/* Header right */
+.fst-header-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.fst-score-badge {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.fst-score-denom {
+  font-size: 11px;
+  opacity: 0.55;
+  font-weight: 400;
+}
+.fst-running-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #42a5f5;
+  padding: 3px 10px;
+  background: rgba(66,165,245,0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(66,165,245,0.25);
+}
+
+/* ── Body ────────────────────────────────── */
+.fst-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Center */
+.fst-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--p-surface-border);
+  overflow: hidden;
+}
+.fst-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
+  flex-shrink: 0;
+}
+.fst-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 13px;
+  border: none;
+  background: none;
+  color: var(--p-text-muted-color);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.fst-tab:hover { background: var(--p-surface-hover); color: var(--p-text-color); }
+.fst-tab--on { background: var(--p-primary-color, #42a5f5); color: #fff; }
+.fst-tab-count {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.25);
+}
+.fst-tab-count--red { background: #ef4444; color: #fff; }
+.fst-panel-fill {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Right panel */
+.fst-right {
+  width: 300px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--p-surface-ground);
+}
+.fst-rs {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--p-surface-border);
+}
+.fst-rs-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--p-text-muted-color);
+  margin-bottom: 10px;
+}
+
+/* KPIs */
+.fst-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.fst-kpi {
+  text-align: center;
+  padding: 8px 3px;
+  background: var(--p-surface-card);
+  border-radius: 8px;
+  border: 1px solid var(--p-surface-border);
+}
+.fst-kpi-v {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--p-text-color);
+}
+.fst-kpi-u {
+  font-size: 9px;
+  color: var(--p-text-muted-color);
+  line-height: 1;
+}
+.fst-kpi-l {
+  font-size: 8.5px;
+  color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+/* Radar */
+.fst-radar {
+  width: 100%;
+  max-width: 190px;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+/* Dimensions */
+.fst-dims { display: flex; flex-direction: column; gap: 5px; }
+.fst-dim-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fst-dim-lbl {
+  font-size: 10px;
+  color: var(--p-text-muted-color);
+  width: 48px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fst-dim-track {
+  flex: 1;
+  height: 4px;
+  background: var(--p-surface-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.fst-dim-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+.fst-dim-num {
+  font-size: 10px;
+  font-weight: 700;
+  width: 22px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Votes */
+.fst-vote-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.fst-vc {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 10px;
+}
+.fst-vc-n { color: var(--p-text-muted-color); }
+.fst-vc-s { font-weight: 700; }
+
+/* Decision */
+.fst-rs--decision { background: var(--p-surface-card); }
+.fst-decision-score {
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.fst-decision-denom {
+  font-size: 16px;
+  opacity: 0.45;
+  font-weight: 400;
+}
+.fst-decision-rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.fst-decision-conds {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.fst-decision-conds li {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  line-height: 1.4;
+}
+.fst-human-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-top: 6px;
+  color: var(--p-text-color);
+}
+
+/* Approval */
+.fst-rs--approval {
+  background: color-mix(in srgb, #ffa726 6%, transparent);
+  border-color: color-mix(in srgb, #ffa726 25%, transparent);
+}
+.fst-approval-hint {
+  font-size: 12px;
+  color: var(--p-text-muted-color);
+  line-height: 1.5;
+  margin: 0 0 10px;
+}
+.fst-approval-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Agents Bar ───────────────────────────── */
+.fst-agents-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-top: 1px solid var(--p-surface-border);
+  background: var(--p-surface-card);
+  overflow-x: auto;
+  flex-shrink: 0;
+  min-height: 52px;
+}
+.fst-ac {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--p-surface-border);
+  background: var(--p-surface-ground);
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s;
+}
+.fst-ac--thinking {
+  border-color: var(--ac);
+  background: color-mix(in srgb, var(--ac) 8%, transparent);
+  animation: fst-chip-pulse 2s ease-in-out infinite;
+}
+.fst-ac--voted { border-color: var(--ac); }
+.fst-ac--done { opacity: 0.65; }
+.fst-ac-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ac);
+  flex-shrink: 0;
+}
+.fst-ac--thinking .fst-ac-dot { animation: fst-dot-blink 1s ease-in-out infinite; }
+.fst-ac-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--p-text-color);
+  white-space: nowrap;
+}
+.fst-ac-status { display: flex; align-items: center; gap: 4px; }
+.fst-ac-tool {
+  font-size: 8px;
+  color: var(--ac);
+  background: color-mix(in srgb, var(--ac) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ac) 40%, transparent);
+  border-radius: 3px;
+  padding: 0 4px;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Живая лента активности агентов */
+.fst-activity-feed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--p-surface-ground) 80%, transparent);
+  border-bottom: 1px solid var(--p-surface-border);
+  border-radius: 6px 6px 0 0;
+  animation: fadeIn .2s ease;
+}
+.fst-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--p-text-muted-color);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+.fst-activity-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.fst-activity-agent { font-weight: 600; color: var(--p-text-color); }
+.fst-activity-arrow { opacity: .5; }
+.fst-activity-tool { color: #ff9800; font-family: monospace; flex-shrink: 0; }
+.fst-activity-reason {
+  color: var(--p-text-color);
+  opacity: .8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+.fst-activity-item--result { background: color-mix(in srgb, #4caf50 8%, var(--p-surface-card)); }
+.fst-activity-item--result .fst-activity-tool { color: #4caf50; }
+.fst-activity-result-arrow { color: #4caf50; font-weight: bold; flex-shrink: 0; }
+.fst-ac-delta {
+  font-size: 9px;
+  opacity: 0.85;
+  margin-left: 4px;
+  cursor: help;
+  white-space: nowrap;
+}
+.fst-ac-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+.fst-ac-pipe {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+.fst-pd {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--p-surface-border);
+  background: var(--p-surface-border);
+  transition: all 0.3s;
+}
+
+@keyframes fst-chip-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ac) 30%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ac) 8%, transparent); }
+}
+@keyframes fst-dot-blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
 }
 
 /* ── Setup Screen ─────────────────────────────────────────── */
 .fst-setup {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
 }
 .fst-setup-header {
   padding: 24px 28px 18px;

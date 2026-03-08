@@ -285,6 +285,20 @@ export class FstCommitteeEngine {
           this.session.decision = data.decision || null
           this.session.concludedAt = Date.now()
           this.session.phase = 'CONCLUDED'
+
+          // ConditionalDecision: обогащаем вердикт противоречиями из дебатов
+          const contradictions = detectContradictions(this.session.arguments)
+          if (contradictions.length) {
+            const derivedConditions = deriveConditionsFromContradictions(contradictions, this.session.project)
+            this.session.conditionalDecision = assembleConditionalDecision({
+              decision: this.session.decision,
+              contradictions,
+              conditions: derivedConditions,
+              project: this.session.project,
+            })
+            this.emit('ConditionalDecisionReady', this.session.conditionalDecision)
+          }
+
           this.emit('SessionConcluded', {
             decision: data.decision,
             beliefDrift: data.beliefDrift,
