@@ -13,7 +13,9 @@ import {
   RECOMMENDATION_TEMPLATES, REVISION_SIMULATION_STEPS, METRIC_FIELD_MAP, METRIC_CLAMP,
 } from './FstCommitteeConfig.js'
 import { generateArgumentAI, fetchKagContext, clearKagCache, generateNodeProposalAI, generateNodeVoteAI } from './fstCommitteeAI.js'
-import { annotateArg } from './fstCommitteeOntology.js'
+import { runAgentLoop, resetLoopTokenCache } from './AgentLoop.js'
+import { DebateRoom } from './DebateRoom.js'
+import { annotateArg, detectContradictions, assembleConditionalDecision, deriveConditionsFromContradictions } from './fstCommitteeOntology.js'
 import {
   detectPortfolioOverlap,
   tagSessionWithConcepts,
@@ -156,7 +158,8 @@ export function createSession(project, options = {}) {
     phase: 'IDLE',
     phaseIndex: 0,
     speed,
-    useAI: options.useAI !== false,   // по умолчанию включён
+    useAI:        options.useAI        !== false,  // по умолчанию включён
+    useAgentLoop: options.useAgentLoop === true,   // agentic loop (opt-in)
     // Настройки оркестратора моделей
     speedProfile:   options.speedProfile   || 'fast',
     modelOverrides: options.modelOverrides || {},  // { [agentId]: modelId }
@@ -185,10 +188,22 @@ export function createSession(project, options = {}) {
 
 export class FstCommitteeEngine {
   constructor(session, onEvent) {
-    this.session = session
-    this.onEvent = onEvent || (() => {})
-    this._timers = []
+    this.session  = session
+    this.onEvent  = onEvent || (() => {})
+    this._timers  = []
     this._running = false
+
+    // ── Debate Room — shared message bus для multi-agent loop ──────────────
+    this.room = new DebateRoom((roomMsg) => {
+      // Пробрасываем события зала в граф как AgentLoopPublished
+      this.emit('AgentLoopPublished', {
+        agentId:    roomMsg.agentId,
+        text:       roomMsg.text,
+        toolsUsed:  roomMsg.toolsUsed || [],
+        dimension:  roomMsg.dimension,
+        phase:      roomMsg.phase,
+      })
+    })
   }
 
   emit(type, data = {}) {
@@ -218,6 +233,7 @@ export class FstCommitteeEngine {
 
     // Загружаем KAG-контекст прошлых решений (не блокирует старт)
     clearKagCache()
+    if (this.session.useAgentLoop) resetLoopTokenCache()
     if (this.session.useAI) {
       fetchKagContext(this.session.project).then(ctx => {
         this.session._kagContext = ctx || ''
@@ -290,11 +306,21 @@ export class FstCommitteeEngine {
 
   async _phasePrimaryPositions() {
     this._transitionPhase('PRIMARY_POSITIONS')
+    this.room.setPhase('PRIMARY_POSITIONS')
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
 
-    for (const agent of AGENTS) {
-      if (!this._running) return
-      await this._agentSpeak(agent, 'OPENING')
+    if (this.session.useAgentLoop) {
+      // ── BATCHED PARALLEL: агенты по 4 одновременно — не flood ──────────
+      const BATCH = 4
+      for (let i = 0; i < AGENTS.length; i += BATCH) {
+        if (!this._running) break
+        await Promise.all(AGENTS.slice(i, i + BATCH).map(agent => this._agentSpeak(agent, 'OPENING')))
+      }
+    } else {
+      for (const agent of AGENTS) {
+        if (!this._running) return
+        await this._agentSpeak(agent, 'OPENING')
+      }
     }
 
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
@@ -304,27 +330,32 @@ export class FstCommitteeEngine {
 
   async _phaseCrossDebate() {
     this._transitionPhase('CROSS_DEBATE')
+    this.room.setPhase('CROSS_DEBATE')
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
 
-    // 3 rounds of cross-challenges
     for (let round = 0; round < 3; round++) {
       if (!this._running) return
-      // Pick 2-3 agents to challenge each round
       const challengers = [...AGENTS].sort(() => Math.random() - 0.5).slice(0, 3)
+
+      // ── Sequential challengers: каждый видит свежие сообщения предыдущих ──
       for (const agent of challengers) {
         if (!this._running) return
-        // Challenge — target a random OPENING from a different agent
-        const openings = this.session.arguments.filter(a => a.type === 'OPENING' && a.agentId !== agent.id)
-        const targetOpening = openings.length ? openings[Math.floor(Math.random() * openings.length)] : null
-        const arg = await this._agentSpeak(agent, 'CHALLENGE', targetOpening?.id || null)
-        if (!arg) continue
-        await this.delay(TIMING.ARGUMENT_DELAY)
 
-        // One random other agent counters
-        const counterAgent = AGENTS.find(a => a.id !== agent.id && Math.random() > 0.4)
-        if (counterAgent && this._running) {
-          await this._agentSpeak(counterAgent, 'COUNTER', arg.id)
-        }
+        // Smart targeting: атакуем слабейший неоспоренный аргумент
+        const unchallenged = this.room.getUnchallengedArgs(agent.id).filter(a => a.type === 'OPENING')
+        const weakest = unchallenged
+          .sort((a, b) => (a.toulminStrength ?? a.confidence ?? 0.5) - (b.toulminStrength ?? b.confidence ?? 0.5))[0]
+        const openings = this.session.arguments.filter(a => a.type === 'OPENING' && a.agentId !== agent.id)
+        const target = weakest ?? (openings.length ? openings[Math.floor(Math.random() * openings.length)] : null)
+
+        const arg = await this._agentSpeak(agent, 'CHALLENGE', target?.id ?? null)
+        if (!arg || !this._running) continue
+        if (!this.session.useAgentLoop) await this.delay(TIMING.ARGUMENT_DELAY)
+
+        // Counter: владелец атакуемого аргумента отвечает
+        const targetOwner = target ? AGENTS.find(a => a.id === target.agentId) : null
+        const counterAgent = targetOwner ?? AGENTS.find(a => a.id !== agent.id)
+        if (counterAgent && this._running) await this._agentSpeak(counterAgent, 'COUNTER', arg.id)
       }
     }
 
@@ -335,11 +366,21 @@ export class FstCommitteeEngine {
 
   async _phaseFinalPositions() {
     this._transitionPhase('FINAL_POSITIONS')
+    this.room.setPhase('FINAL_POSITIONS')
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
 
-    for (const agent of AGENTS) {
-      if (!this._running) return
-      await this._agentSpeak(agent, 'SUMMARY')
+    if (this.session.useAgentLoop) {
+      // ── BATCHED PARALLEL: по 4 агента, не flood ─────────────────────────
+      const BATCH = 4
+      for (let i = 0; i < AGENTS.length; i += BATCH) {
+        if (!this._running) break
+        await Promise.all(AGENTS.slice(i, i + BATCH).map(agent => this._agentSpeak(agent, 'SUMMARY')))
+      }
+    } else {
+      for (const agent of AGENTS) {
+        if (!this._running) return
+        await this._agentSpeak(agent, 'SUMMARY')
+      }
     }
 
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
@@ -355,13 +396,46 @@ export class FstCommitteeEngine {
     const dimScores = this.session.dimScores
     const agentVotes = []
 
+    // ── Извлекаем позиции из SUMMARY аргументов (если agentLoop работал) ──
+    // Если агент выразил stance в SUMMARY — голосует по своей позиции из дебатов
+    const summaryStances = {}
+    for (const arg of this.session.arguments) {
+      if (arg.type === 'SUMMARY' && arg.stance) {
+        summaryStances[arg.agentId] = arg.stance
+      }
+    }
+    // Проверяем консенсус из SUMMARY: если >60% агентов согласны — склоняем всех
+    const stanceCounts = { APPROVE: 0, DEFER: 0, REJECT: 0 }
+    for (const st of Object.values(summaryStances)) stanceCounts[st] = (stanceCounts[st] || 0) + 1
+    const dominantStance = Object.entries(stanceCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null
+    const dominantShare = dominantStance ? stanceCounts[dominantStance] / AGENTS.length : 0
+
     for (const agent of AGENTS) {
       if (!this._running) return
       await this.delay(TIMING.VOTE_DELAY)
 
-      const score = agentScore(agent, dimScores)
-      const verdict = scoreToVerdict(score)
-      const confidence = clamp(Math.abs(score - 0.6) * 2 + 0.4, 0.4, 1.0)
+      // Используем stance из SUMMARY если есть, иначе — формула
+      let verdict, score, confidence
+      const agentSummaryStance = summaryStances[agent.id]
+
+      if (agentSummaryStance) {
+        // Позиция агента из дебатов — она важнее формулы
+        verdict = agentSummaryStance
+        // Если доминантный консенсус сильный (>70%) — слабые несогласные меняют позицию
+        if (dominantShare >= 0.7 && verdict !== dominantStance) {
+          // Агент под давлением консенсуса
+          const agentArg = this.session.arguments.filter(a => a.agentId === agent.id && a.type === 'SUMMARY')[0]
+          if (!agentArg || agentArg.confidence < 0.6) verdict = dominantStance
+        }
+        // Добавляем естественный разброс внутри каждого вердикта
+        const baseScore = verdict === 'APPROVE' ? 0.74 : verdict === 'DEFER' ? 0.55 : 0.28
+        score = clamp(baseScore + (Math.random() - 0.5) * 0.12, 0, 1)
+        confidence = clamp(0.6 + Math.random() * 0.3, 0.6, 0.95)
+      } else {
+        score = agentScore(agent, dimScores)
+        verdict = scoreToVerdict(score)
+        confidence = clamp(Math.abs(score - 0.6) * 2 + 0.4, 0.4, 1.0)
+      }
 
       const vote = {
         id: `vote_${agent.id}_${Date.now()}`,
@@ -370,6 +444,7 @@ export class FstCommitteeEngine {
         score: Math.round(score * 100),
         confidence,
         rationale: this._buildVoteRationale(agent, score, verdict),
+        fromDebate: !!agentSummaryStance,
       }
 
       this.session.votes.push(vote)
@@ -382,9 +457,33 @@ export class FstCommitteeEngine {
       })
     }
 
+    // Сохраняем дельту позиций (OPENING → SUMMARY)
+    this._buildPositionDeltas()
+
     this.session.agentScores = agentVotes
     this.emit('AllVotesCast', { votes: this.session.votes })
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+  }
+
+  // Вычисляем как изменилась позиция каждого агента за дебаты
+  _buildPositionDeltas() {
+    const openingStances = {}
+    const summaryStances = {}
+    for (const arg of this.session.arguments) {
+      if (!arg.stance) continue
+      if (arg.type === 'OPENING' && !openingStances[arg.agentId]) openingStances[arg.agentId] = arg.stance
+      if (arg.type === 'SUMMARY') summaryStances[arg.agentId] = arg.stance
+    }
+    const deltas = {}
+    for (const agent of AGENTS) {
+      const from = openingStances[agent.id] || null
+      const to   = summaryStances[agent.id]  || null
+      deltas[agent.id] = { from, to, changed: from && to && from !== to }
+    }
+    this.session.positionDeltas = deltas
+    if (Object.values(deltas).some(d => d.changed)) {
+      this.emit('PositionDeltaReady', { deltas })
+    }
   }
 
   // ── Phase: SYNTHESIS ──────────────────────────────────────
@@ -418,6 +517,20 @@ export class FstCommitteeEngine {
     }
 
     this.session.decision = decision
+
+    // ── ConditionalDecision: обогащаем вердикт противоречиями из дебатов ──
+    const contradictions = detectContradictions(this.session.arguments)
+    if (contradictions.length) {
+      const derivedConditions = deriveConditionsFromContradictions(contradictions, this.session.project)
+      this.session.conditionalDecision = assembleConditionalDecision({
+        decision,
+        contradictions,
+        conditions: derivedConditions,
+        project: this.session.project,
+      })
+      this.emit('ConditionalDecisionReady', this.session.conditionalDecision)
+    }
+
     this.emit('DecisionFormed', { decision })
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
     this.emit('DecisionPublished', { decision })
@@ -542,16 +655,20 @@ export class FstCommitteeEngine {
     const project = this.session.project
     this.session.nodeProposals = []
 
-    // Раунд 1: каждый агент предлагает параметры нод
+    // ── Извлекаем числовые параметры из дебатов ───────────────────────────
+    // Ищем IRR%, NPV, инвестиции (млн), TRL, MRL в текстах аргументов
+    const debateNumbers = this._extractDebateNumbers()
+
+    // Раунд 1: каждый агент предлагает параметры нод (с контекстом из дебатов)
     for (const agent of AGENTS) {
       if (!this._running) return
       this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Формирую ноды контракта...' })
       let proposal = null
       try {
-        proposal = await generateNodeProposalAI(agent, project, this.session.nodeProposals, 1)
+        proposal = await generateNodeProposalAI(agent, project, this.session.nodeProposals, 1, debateNumbers)
       } catch { /* fallback ниже */ }
 
-      if (!proposal) proposal = this._fallbackNodeProposal(agent, project, 1)
+      if (!proposal) proposal = this._fallbackNodeProposal(agent, project, 1, debateNumbers)
       this.session.nodeProposals.push(proposal)
       this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
       this.emit('NodeProposed', { agentId: agent.id, proposal, round: 1 })
@@ -565,21 +682,60 @@ export class FstCommitteeEngine {
       this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Уточняю параметры...' })
       let proposal = null
       try {
-        proposal = await generateNodeProposalAI(agent, project, this.session.nodeProposals, 2)
+        proposal = await generateNodeProposalAI(agent, project, this.session.nodeProposals, 2, debateNumbers)
       } catch { /* fallback */ }
 
-      if (!proposal) proposal = this._fallbackNodeProposal(agent, project, 2)
+      if (!proposal) proposal = this._fallbackNodeProposal(agent, project, 2, debateNumbers)
       this.session.nodeProposals.push(proposal)
       this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
       this.emit('NodeProposed', { agentId: agent.id, proposal, round: 2, type: 'CHALLENGE' })
       await this.delay(400)
     }
 
-    // Синтез: взвешенное среднее предложений → 3 финальных ноды
-    const finalNodes = this._synthesizeNodes(this.session.nodeProposals, project)
+    // Синтез: взвешенное среднее предложений → 3 финальных ноды (с поправкой из дебатов)
+    const finalNodes = this._synthesizeNodes(this.session.nodeProposals, project, debateNumbers)
     this.session.contractNodes = finalNodes
     this.emit('NodesSynthesized', { nodes: finalNodes })
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+  }
+
+  // Извлекает числовые параметры (IRR, NPV, инвестиции) из текстов аргументов
+  _extractDebateNumbers() {
+    const args = this.session.arguments || []
+    const nums = { irr: [], npv: [], ic: [], wacc: [], trl: [], mrl: [] }
+    for (const arg of args) {
+      const text = arg.text || ''
+      // IRR: ищем "IRR 35%" или "35% IRR" или "доходность 35%"
+      for (const m of text.matchAll(/(?:IRR|доходность|IRR-проект)[^\d]*(\d+(?:[.,]\d+)?)\s*%/gi))
+        nums.irr.push(parseFloat(m[1].replace(',', '.')))
+      // NPV: ищем "NPV 150 млн" или "NPV: 200"
+      for (const m of text.matchAll(/NPV[^\d]*(\d+(?:[.,]\d+)?)\s*(?:млн|M|million)?/gi))
+        nums.npv.push(parseFloat(m[1].replace(',', '.')))
+      // Инвестиции: "инвестиции 200 млн" или "IC 150"
+      for (const m of text.matchAll(/(?:инвестиции|IC|сумма)[^\d]*(\d+(?:[.,]\d+)?)\s*(?:млн|M)?/gi))
+        nums.ic.push(parseFloat(m[1].replace(',', '.')))
+      // WACC
+      for (const m of text.matchAll(/(?:WACC|ставка)[^\d]*(\d+(?:[.,]\d+)?)\s*%/gi))
+        nums.wacc.push(parseFloat(m[1].replace(',', '.')))
+      // TRL/MRL
+      for (const m of text.matchAll(/TRL[^\d]*(\d+)/gi)) nums.trl.push(parseInt(m[1]))
+      for (const m of text.matchAll(/MRL[^\d]*(\d+)/gi)) nums.mrl.push(parseInt(m[1]))
+    }
+    const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null
+    const med = arr => {
+      if (!arr.length) return null
+      const s = [...arr].sort((a, b) => a - b)
+      return s[Math.floor(s.length / 2)]
+    }
+    return {
+      irr: med(nums.irr),    // медиана IRR из дебатов, %
+      npv: avg(nums.npv),    // среднее NPV млн
+      ic:  avg(nums.ic),     // среднее вложений млн
+      wacc: avg(nums.wacc),  // среднее WACC %
+      trl: med(nums.trl),
+      mrl: med(nums.mrl),
+      raw: nums,             // все найденные значения
+    }
   }
 
   // ── Phase: NODE_VOTING ────────────────────────────────────
@@ -642,26 +798,29 @@ export class FstCommitteeEngine {
 
   // ── Node helpers ──────────────────────────────────────────
 
-  _fallbackNodeProposal(agent, project, round) {
-    const ic  = Math.round((project.askRub || 100_000_000) / 1_000_000)
-    const irr = project.projectedIRR || 0.30
+  _fallbackNodeProposal(agent, project, round, debateNums = {}) {
+    // Используем числа из дебатов если есть, иначе — из проекта
+    const icBase = debateNums.ic || Math.round((project.askRub || 100_000_000) / 1_000_000)
+    const irrBase = debateNums.irr ? debateNums.irr / 100 : (project.projectedIRR || 0.30)
+    const waccBase = debateNums.wacc || 18
     const mult = agent.bias === 'optimist' ? 1.15 : agent.bias === 'pessimist' ? 0.85 : 1.0
-    const makeCf = (baseMult) => {
-      const base = ic * irr * baseMult
+    const makeCf = (icMult, irrMult) => {
+      const base = icBase * icMult * irrBase * irrMult
       return [1, 2, 3, 4, 5].map(t => +(base * t / 5 * mult).toFixed(1))
     }
+    const sourceNote = debateNums.irr ? ` (из дебатов: IRR ${debateNums.irr}%)` : ''
     return {
       agentId: agent.id,
       round,
       nodes: {
-        pessimistic: { ic: Math.round(ic * 1.2), wacc: 22, cf: makeCf(0.55), expectedIrr: 12, rationale: 'Консервативная оценка' },
-        base:        { ic,                        wacc: 18, cf: makeCf(1.0),  expectedIrr: Math.round(irr * 100), rationale: 'Базовый сценарий' },
-        optimistic:  { ic: Math.round(ic * 0.85), wacc: 14, cf: makeCf(1.45), expectedIrr: Math.round(irr * 100 * 1.4), rationale: 'Оптимистичный' },
+        pessimistic: { ic: Math.round(icBase * 1.2), wacc: waccBase + 4, cf: makeCf(1.2, 0.55), expectedIrr: Math.round(irrBase * 100 * 0.5), rationale: `Консервативная оценка${sourceNote}` },
+        base:        { ic: icBase,                   wacc: waccBase,     cf: makeCf(1.0, 1.0),  expectedIrr: Math.round(irrBase * 100),         rationale: `Базовый сценарий${sourceNote}` },
+        optimistic:  { ic: Math.round(icBase * 0.85), wacc: waccBase - 4, cf: makeCf(0.85, 1.45), expectedIrr: Math.round(irrBase * 100 * 1.4),  rationale: `Оптимистичный${sourceNote}` },
       }
     }
   }
 
-  _synthesizeNodes(proposals, project) {
+  _synthesizeNodes(proposals, project, debateNums = {}) {
     const scenarios = ['pessimistic', 'base', 'optimistic']
     const labels    = { pessimistic: 'Консервативный', base: 'Базовый', optimistic: 'Оптимистичный' }
     const probs     = { pessimistic: 25, base: 50, optimistic: 25 }
@@ -670,8 +829,13 @@ export class FstCommitteeEngine {
       // Средние по всем предложениям
       const scProposals = proposals.map(p => p.nodes?.[sc]).filter(Boolean)
       const n = scProposals.length || 1
-      const ic   = Math.round(scProposals.reduce((s, p) => s + (p.ic || 100), 0) / n)
-      const wacc = +(scProposals.reduce((s, p) => s + (p.wacc || 18), 0) / n).toFixed(1)
+      // Если в дебатах назывались конкретные цифры — смешиваем с предложениями агентов
+      const proposalIc   = scProposals.reduce((s, p) => s + (p.ic || 100), 0) / n
+      const proposalWacc = scProposals.reduce((s, p) => s + (p.wacc || 18), 0) / n
+      const debateIcWeight = debateNums.ic ? 0.4 : 0   // дебаты дают 40% веса
+      const debateWaccWeight = debateNums.wacc ? 0.3 : 0
+      const ic   = Math.round(proposalIc * (1 - debateIcWeight) + (debateNums.ic || proposalIc) * debateIcWeight)
+      const wacc = +((proposalWacc * (1 - debateWaccWeight) + (debateNums.wacc || proposalWacc) * debateWaccWeight)).toFixed(1)
       const cfLen = Math.max(...scProposals.map(p => p.cf?.length || 5))
       const cf = Array.from({ length: cfLen }, (_, i) => {
         const vals = scProposals.map(p => p.cf?.[i] ?? 0)
@@ -698,6 +862,9 @@ export class FstCommitteeEngine {
         dpp,
         probability: probs[sc],
         status:      'draft',
+        debateSource: debateNums.irr || debateNums.ic ? {
+          irr: debateNums.irr, ic: debateNums.ic, wacc: debateNums.wacc
+        } : null,
       }
     })
   }
@@ -747,36 +914,56 @@ export class FstCommitteeEngine {
 
   async _agentSpeak(agent, type, targetArgId = null) {
     if (!this._running) return null
-    const project  = this.session.project
-    const useAI    = this.session.useAI !== false  // default: true
+    const project        = this.session.project
+    const useAI          = this.session.useAI        !== false
+    const useAgentLoop   = this.session.useAgentLoop === true
 
-    // ── Pipeline Step 1: Integram — читаем данные проекта ──────────────────────
+    // ── UI: начало думает ─────────────────────────────────────────────────────
+    this._setAgentStatus(agent.id, { thinking: true, thinkText: pick(agent.thinkingPhrases) })
     this._setPipeline(agent.id, { integram: 'done', calc: 'active' })
 
-    // ── Thinking: показываем анимацию пока идёт LLM-вызов ──
-    this._setAgentStatus(agent.id, { thinking: true, thinkText: pick(agent.thinkingPhrases) })
-
-    // Меняем фразу в процессе долгого AI-вызова
+    // Ротация thinking phrases
     let thinkInterval = null
     if (useAI) {
       let phraseIdx = 1
       thinkInterval = setInterval(() => {
         if (!this._running) { clearInterval(thinkInterval); return }
-        const phrase = agent.thinkingPhrases[phraseIdx % agent.thinkingPhrases.length]
-        this._setAgentStatus(agent.id, { thinkText: phrase })
-        phraseIdx++
+        this._setAgentStatus(agent.id, { thinkText: agent.thinkingPhrases[phraseIdx++ % agent.thinkingPhrases.length] })
       }, 2500)
     } else {
       await this.delay(TIMING.THINKING_DURATION)
     }
 
     let arg = null
-
-    // ── Pipeline Step 2: LLM ─────────────────────────────────────────────────
     this._setPipeline(agent.id, { calc: 'done', llm: 'active' })
 
-    // ── AI-first: реальный LLM-вызов ──
-    if (useAI) {
+    // ── ВЕТКА 1: Agentic Loop (инструменты + параллельный room) ──────────────
+    if (useAI && useAgentLoop) {
+      try {
+        const targetArg = targetArgId ? this.session.arguments.find(a => a.id === targetArgId) : null
+        // AgentLoopProgress — не пишем в session.events, только в onEvent
+        const onProgress = (evt) => this.onEvent({ type: 'AgentLoopProgress', ...evt, ts: Date.now() })
+        arg = await runAgentLoop(
+          agent, type, this.room, project,
+          targetArg, this.session,
+          { speedProfile: this.session.speedProfile, modelOverrides: this.session.modelOverrides },
+          onProgress
+        )
+        // Публикуем в DebateRoom чтобы другие агенты видели (если ещё не опубликован изнутри loop)
+        if (arg) {
+          this.room.publish(agent.id, arg)
+          // Событие: агент вызывал инструменты
+          if (arg.toolsUsed?.length) {
+            this.emit('AgentToolsUsed', { agentId: agent.id, tools: arg.toolsUsed, iterations: arg.iterCount })
+          }
+        }
+      } catch (e) {
+        console.warn('[FstCommitteeEngine] AgentLoop failed, fallback:', e.message)
+      }
+    }
+
+    // ── ВЕТКА 2: Классический одиночный LLM-вызов (существующее поведение) ──
+    if (useAI && !arg) {
       try {
         const kagCtx = type === 'OPENING' ? (this.session._kagContext || '') : ''
         arg = await generateArgumentAI(agent, type, project, this.session.arguments, targetArgId, kagCtx, {
@@ -784,24 +971,26 @@ export class FstCommitteeEngine {
           modelOverrides: this.session.modelOverrides,
         })
       } catch (e) {
-        console.warn('[FstCommitteeEngine] AI call failed, falling back to template:', e.message)
+        console.warn('[FstCommitteeEngine] generateArgumentAI failed, fallback:', e.message)
       }
     }
 
-    // ── Fallback: шаблонный аргумент ──
+    // ── ВЕТКА 3: Шаблонный fallback ──────────────────────────────────────────
     if (!arg) {
+      console.warn(`[Engine] ${agent.id} type=${type}: ALL LLM branches failed → template fallback`)
       await this.delay(TIMING.THINKING_DURATION)
       arg = generateArgument(agent, type, project, targetArgId)
+    } else {
+      console.info(`[Engine] ${agent.id} type=${type}: arg generated agentLoop=${arg.agentLoop||false} tools=${arg.toolsUsed?.join(',')||'none'}`)
     }
 
     if (thinkInterval) clearInterval(thinkInterval)
-    // ── Pipeline Step 3: Сохраняем аргумент ──────────────────────────────────
     this._setPipeline(agent.id, { llm: 'done', save: 'active' })
     this._setAgentStatus(agent.id, { thinking: false, thinkText: '' })
 
     if (!arg) { this._setPipeline(agent.id, { save: 'error' }); return null }
 
-    // ── Аннотируем онтологическими метаданными ──
+    // ── Аннотируем онтологическими метаданными ───────────────────────────────
     const annotated = annotateArg(arg, this.session.arguments)
 
     this.session.arguments.push(annotated)
@@ -811,6 +1000,7 @@ export class FstCommitteeEngine {
       agentId:     agent.id,
       argType:     type,
       aiGenerated: annotated.aiGenerated || false,
+      agentLoop:   annotated.agentLoop   || false,
     })
 
     await this.delay(TIMING.ARGUMENT_DELAY)
@@ -838,21 +1028,40 @@ export class FstCommitteeEngine {
   }
 
   _buildVoteRationale(agent, score, verdict) {
-    const project = this.session.project
     const pct = Math.round(score * 100)
     const prefix = verdict === 'APPROVE' ? 'Поддерживаю' : verdict === 'REJECT' ? 'Отклоняю' : 'Рекомендую отложить'
+    // Если у агента есть SUMMARY аргумент — цитируем его
+    const summaryArg = this.session.arguments.filter(a => a.agentId === agent.id && a.type === 'SUMMARY').slice(-1)[0]
+    if (summaryArg?.text) {
+      return `${prefix}: "${summaryArg.text.slice(0, 120)}${summaryArg.text.length > 120 ? '...' : ''}" — итог дебатов, балл ${pct}/100.`
+    }
     return `${prefix}: итоговый балл ${pct}/100 с позиции ${agent.name.toLowerCase()}.`
   }
 
   _buildConditions(project, score) {
     const conditions = []
-    if (project.mrl < 5) conditions.push('Предоставить роуд-мэп по MRL до уровня 5+ в течение 6 месяцев')
-    if (project.localizationRatio < 0.6) conditions.push('Разработать план импортозамещения критических компонентов')
-    if (project.trl < 6) conditions.push('Провести независимую экспертизу TRL перед траншем A')
-    if (project.employees < 15) conditions.push('Усилить команду профильными специалистами')
-    if (score >= 0.5 && score < 0.72) conditions.push('Подтвердить финансовую модель у 2 независимых аналитиков')
+    // Базовые условия из проекта
+    if (project.mrl < 5) conditions.push(`Предоставить роуд-мэп по MRL до уровня 5+ в течение 6 месяцев (текущий MRL: ${project.mrl})`)
+    if (project.localizationRatio < 0.6) conditions.push(`Разработать план импортозамещения критических компонентов (текущая локализация: ${Math.round((project.localizationRatio||0)*100)}%)`)
+    if (project.trl < 6) conditions.push(`Провести независимую экспертизу TRL перед траншем A (текущий TRL: ${project.trl})`)
+    if (project.employees < 15) conditions.push(`Усилить команду профильными специалистами (текущая: ${project.employees} чел.)`)
+    if (score >= 0.5 && score < 0.72) conditions.push(`Подтвердить финансовую модель у 2 независимых аналитиков (текущий скоринг: ${Math.round(score*100)}/100)`)
+
+    // Условия из CHALLENGE/COUNTER аргументов — реальные риски, поднятые в дебатах
+    const challengeTexts = this.session.arguments
+      .filter(a => a.type === 'CHALLENGE' || a.type === 'COUNTER')
+      .map(a => a.text || '')
+    for (const text of challengeTexts) {
+      if (/патент|IP|интеллектуальн/i.test(text) && !conditions.some(c => /патент/i.test(c)))
+        conditions.push('Подтвердить патентную чистоту технологии до закрытия сделки')
+      if (/партнёр|производств|контракт/i.test(text) && !conditions.some(c => /производств/i.test(c)))
+        conditions.push('Предоставить LOI от производственного партнёра')
+      if (/cash.?flow|денежн.*поток|кассов/i.test(text) && !conditions.some(c => /cash/i.test(c)))
+        conditions.push('Предоставить детальную помесячную cash-flow модель на 18 месяцев')
+    }
+
     if (conditions.length === 0) conditions.push('Стандартная отчётность по KPI ежеквартально')
-    return conditions
+    return conditions.slice(0, 5)
   }
 
   _buildKeyRisks(project) {
