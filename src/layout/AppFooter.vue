@@ -1,10 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import packageJson from '../../package.json'
 import { getDeploymentInfo } from '@/services/deploymentInfoService'
 
-const version = ref(packageJson.version)
-const showVersionTooltip = ref(false)
 const deploymentInfo = ref(null)
 const loading = ref(true)
 let updateInterval = null
@@ -103,17 +100,7 @@ const getStatusText = (status) => {
     <div class="layout-footer">
         <div class="flex flex-col gap-3">
             <div class="flex items-center justify-center flex-wrap gap-2">
-                <p class="text-sm">© 2025 DronDoc            <a
-                    href="https://github.com/unidel2035/dronedoc2025/blob/master/CHANGELOG.md"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-sm text-muted-color hover:text-primary transition-colors"
-                    @mouseenter="showVersionTooltip = true"
-                    @mouseleave="showVersionTooltip = false"
-                    :title="`View changelog for version ${version}`"
-                >
-                    v{{ version }}
-                </a></p>
+                <span class="text-sm text-muted-color">© 2026 ФСТ НТИ · DronDoc Platform</span>
             </div>
 
             <!-- Deployment Info (Issue #5069) -->
