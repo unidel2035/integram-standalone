@@ -553,7 +553,7 @@ onBeforeUnmount(() => {
             <i v-if="item.items && item.items.length > 0" class="pi pi-fw layout-group-toggler" :class="isActiveMenu ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
         </div>
         <!-- Root section as clickable icon (visible when collapsed) -->
-        <a v-if="root && item.visible !== false && collapsed && item.icon"
+        <a v-if="root && item.visible !== false && collapsed && (item.icon || item.svgIcon)"
            :href="item.url"
            @click="itemClick($event, item, index)"
            @keydown="onKeyDown"

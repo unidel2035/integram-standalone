@@ -7,6 +7,7 @@ const svgLeaf = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
 export const fstMenuConfig = [
   {
     label: 'Обзор',
+    icon: 'pi pi-eye',
     items: [
       { label: 'Главная', icon: 'pi pi-home', to: '/fst-hub' },
       { label: 'Портфель', icon: 'pi pi-briefcase', to: '/fst-portfolio' },
@@ -15,6 +16,7 @@ export const fstMenuConfig = [
   },
   {
     label: 'Сделки',
+    icon: 'pi pi-filter',
     items: [
       { label: 'Дилфлоу', icon: 'pi pi-filter', to: '/fst-dealflow' },
       { label: 'Меморандум', icon: 'pi pi-file-word', to: '/fst-memo' },
@@ -25,6 +27,7 @@ export const fstMenuConfig = [
   },
   {
     label: 'Финансы',
+    icon: 'pi pi-wallet',
     items: [
       { label: 'LP Кабинет', icon: 'pi pi-wallet', to: '/fst-lp' },
       { label: 'Cap Table', icon: 'pi pi-table', to: '/fst-captable' },
@@ -36,6 +39,7 @@ export const fstMenuConfig = [
   },
   {
     label: 'Аналитика',
+    icon: 'pi pi-chart-scatter',
     items: [
       { label: 'ESG', svgIcon: svgLeaf, to: '/fst-esg' },
       { label: 'Суверенитет', icon: 'pi pi-shield', to: '/fst-sovereignty' },
@@ -45,6 +49,7 @@ export const fstMenuConfig = [
   },
   {
     label: 'Инфраструктура',
+    icon: 'pi pi-cog',
     items: [
       { label: 'ILPA-отчёты', icon: 'pi pi-file-pdf', to: '/fst-ilpa' },
       { label: 'AML/KYC', icon: 'pi pi-verified', to: '/fst-compliance' },
@@ -57,12 +62,14 @@ export const fstMenuConfig = [
   },
   {
     label: 'Подача заявок',
+    icon: 'pi pi-send',
     items: [
       { label: 'Форма заявки', icon: 'pi pi-send', to: '/fst-apply' },
     ]
   },
   {
     label: 'Обучение',
+    icon: 'pi pi-graduation-cap',
     items: [
       { label: 'Путь обучения', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide' },
       { label: 'Туры по модулям', icon: 'pi pi-map', action: 'show-tours-menu', special: true },

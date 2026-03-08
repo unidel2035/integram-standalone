@@ -9,7 +9,7 @@
     <!-- Category (if any) -->
     <template v-if="crumb.category">
       <i class="pi pi-chevron-right fst-bc-sep"></i>
-      <span class="fst-bc-cat">{{ crumb.category }}</span>
+      <router-link :to="crumb.categoryLink" class="fst-bc-cat">{{ crumb.category }}</router-link>
     </template>
 
     <!-- Current page -->
@@ -29,39 +29,65 @@ const isFstPage = computed(() =>
   route.path.startsWith('/fst-') && route.path !== '/fst-hub'
 )
 
-// Категории страниц
+// Категории — синхронизированы с fstMenuConfig.js
 const CATEGORIES = {
-  // Воронка сделок
-  'fst-sourcing':     'Сорсинг',
-  'fst-apply':        'Заявки',
-  'fst-dealflow':     'Воронка',
-  'fst-duediligence': 'Оценка',
-  'fst-committee':    'Оценка',
-  'fst-protocol':     'Оценка',
-  'fst-memo':         'Оценка',
-  'fst-sovereignty':  'Оценка',
-  // Структурирование сделки
-  'fst-deal':         'Сделка',
-  'fst-captable':     'Сделка',
-  'fst-waterfall':    'Сделка',
-  'fst-legal':        'Сделка',
-  'fst-syndication':  'Сделка',
-  // Портфель
-  'fst-execution':    'Портфель',
-  'fst-portfolio':    'Портфель',
-  'fst-twin':         'Портфель',
-  'fst-exit':         'Портфель',
-  // Фонд
-  'fst-fund':         'Фонд',
-  'fst-lp':           'Фонд',
-  'fst-ilpa':         'Фонд',
-  'fst-gov':          'Фонд',
-  'fst-benchmark':    'Аналитика',
-  'fst-esg':          'Аналитика',
-  'fst-compliance':   'Аналитика',
-  'fst-grants':       'Господдержка',
-  'fst-natproject':   'Господдержка',
-  'fst-registry':     'Господдержка',
+  // Обзор
+  'fst-portfolio':      'Обзор',
+  'fst-twin':           'Обзор',
+  'fst-fund':           'Обзор',
+  'fst-transparency':   'Обзор',
+  // Сделки
+  'fst-dealflow':       'Сделки',
+  'fst-memo':           'Сделки',
+  'fst-committee':      'Сделки',
+  'fst-protocol':       'Сделки',
+  'fst-deal':           'Сделки',
+  'fst-board':          'Сделки',
+  'fst-sourcing':       'Сделки',
+  'fst-execution':      'Сделки',
+  'fst-founders':       'Сделки',
+  // Финансы
+  'fst-lp':             'Финансы',
+  'fst-captable':       'Финансы',
+  'fst-secondary':      'Финансы',
+  'fst-waterfall':      'Финансы',
+  'fst-exit':           'Финансы',
+  'fst-benchmark':      'Финансы',
+  'fst-allocation':     'Финансы',
+  // Аналитика
+  'fst-esg':            'Аналитика',
+  'fst-sovereignty':    'Аналитика',
+  'fst-natproject':     'Аналитика',
+  'fst-gov':            'Аналитика',
+  'fst-intelligence':   'Аналитика',
+  // Инфраструктура
+  'fst-ilpa':           'Инфраструктура',
+  'fst-compliance':     'Инфраструктура',
+  'fst-grants':         'Инфраструктура',
+  'fst-syndication':    'Инфраструктура',
+  'fst-duediligence':   'Инфраструктура',
+  'fst-legal':          'Инфраструктура',
+  'fst-registry':       'Инфраструктура',
+  'fst-administration': 'Инфраструктура',
+  // Подача заявок
+  'fst-apply':          'Подача заявок',
+  // Обучение
+  'fst-dev-guide':      'Обучение',
+  'fst-glossary':       'Обучение',
+  'fst-quiz':           'Обучение',
+  'fst-school':         'Обучение',
+  'fst-learning':       'Обучение',
+}
+
+// Первый маршрут каждой категории (для клика по хлебной крошке)
+const CATEGORY_LINKS = {
+  'Обзор':          '/fst-portfolio',
+  'Сделки':         '/fst-dealflow',
+  'Финансы':        '/fst-lp',
+  'Аналитика':      '/fst-esg',
+  'Инфраструктура': '/fst-ilpa',
+  'Подача заявок':  '/fst-apply',
+  'Обучение':       '/fst-dev-guide',
 }
 
 // Линейный пайплайн для prev/next навигации
@@ -83,9 +109,12 @@ const PIPELINE = [
 
 const slug = computed(() => route.path.replace('/', ''))
 
+const category = computed(() => CATEGORIES[slug.value] || null)
+
 const crumb = computed(() => ({
-  title:    route.meta?.title || slug.value,
-  category: CATEGORIES[slug.value] || null,
+  title:        route.meta?.title || slug.value,
+  category:     category.value,
+  categoryLink: CATEGORY_LINKS[category.value] || '/fst-hub',
 }))
 
 const pipelineIdx = computed(() =>
@@ -135,8 +164,11 @@ const nextStep = computed(() =>
 
 .fst-bc-cat {
   color: var(--p-text-muted-color);
+  text-decoration: none;
   white-space: nowrap;
+  transition: color 0.15s;
 }
+.fst-bc-cat:hover { color: #ffa726; }
 
 .fst-bc-current {
   color: var(--p-text-color);

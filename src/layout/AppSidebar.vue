@@ -12,10 +12,6 @@ import LogoDisplay from '@/components/LogoDisplay.vue'
 const route = useRoute()
 const { layoutState, toggleSidebarCollapse } = useLayout()
 
-const isBlockEditorRoute = computed(() => false)
-const isIntegramRoute = computed(() => false)
-const isOntologyRoute = computed(() => false)
-const isDronomicsRoute = computed(() => false)
 const searchQuery = ref('')
 const searchInputRef = ref(null)
 const searchResults = ref(null)
@@ -165,61 +161,6 @@ const showToursMenu = () => {
 
         <!-- Scrollable content area -->
         <div class="sidebar-scrollable-content">
-            <!-- Quick-access icons (collapsed only) -->
-            <div v-if="layoutState.sidebarCollapsed" class="collapsed-quick-links">
-                <router-link
-                    to="/block-editor"
-                    class="collapsed-quick-link"
-                    :class="{ 'active': isBlockEditorRoute }"
-                    v-tooltip.right="'Редактор документов'"
-                >
-                    <i class="pi pi-fw pi-file-edit"></i>
-                </router-link>
-                <router-link
-                    to="/integram"
-                    class="collapsed-quick-link"
-                    :class="{ 'active': isIntegramRoute }"
-                    v-tooltip.right="'Integram'"
-                >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M 2,5 L 16,12 L 2,19 Z"/>
-                        <path d="M 22,5 L 8,12 L 22,19 Z"/>
-                    </svg>
-                </router-link>
-                <router-link
-                    to="/onto"
-                    class="collapsed-quick-link"
-                    :class="{ 'active': isOntologyRoute }"
-                    v-tooltip.right="'Онтологии'"
-                >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="4" r="2"/>
-                        <circle cx="6" cy="12" r="2"/>
-                        <circle cx="18" cy="12" r="2"/>
-                        <circle cx="4" cy="20" r="2"/>
-                        <circle cx="12" cy="20" r="2"/>
-                        <line x1="12" y1="6" x2="6" y2="10"/>
-                        <line x1="12" y1="6" x2="18" y2="10"/>
-                        <line x1="6" y1="14" x2="4" y2="18"/>
-                        <line x1="6" y1="14" x2="12" y2="18"/>
-                    </svg>
-                </router-link>
-                <router-link
-                    to="/drononomics"
-                    class="collapsed-quick-link"
-                    :class="{ 'active': isDronomicsRoute }"
-                    v-tooltip.right="'Дронономика'"
-                >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="6" r="2"/>
-                        <path d="M6 4l4 2m4 0l4-2"/>
-                        <path d="M6 8l4-2m4 0l4 2"/>
-                        <polyline points="4 20 8 16 12 18 16 14 20 17"/>
-                    </svg>
-                </router-link>
-                <div class="collapsed-quick-divider"></div>
-            </div>
-
             <!-- Menu (ALWAYS visible, filtered by search query) -->
             <div>
                 <app-menu
@@ -369,54 +310,6 @@ const showToursMenu = () => {
         opacity: 0;
         pointer-events: none;
     }
-}
-
-/* Collapsed quick-access links (Documents + Integram) */
-.collapsed-quick-links {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0.25rem 0.5rem 0;
-    gap: 0.1rem;
-}
-
-.collapsed-quick-link {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    padding: 0.75rem 0.5rem;
-    border-radius: var(--content-border-radius);
-    color: var(--text-color);
-    text-decoration: none;
-    transition: background-color var(--element-transition-duration);
-    cursor: pointer;
-
-    i {
-        font-size: 1.5rem;
-    }
-
-    svg {
-        width: 1.5rem;
-        height: 1.5rem;
-    }
-
-    &:hover {
-        background-color: var(--surface-hover);
-    }
-
-    &.active,
-    &.router-link-active {
-        background-color: var(--p-highlight-background);
-        color: var(--p-highlight-color);
-    }
-}
-
-.collapsed-quick-divider {
-    width: 60%;
-    height: 1px;
-    background: var(--surface-border);
-    margin: 0.25rem 0;
 }
 
 /* Smart search extras - shown BELOW menu */

@@ -657,18 +657,20 @@
           </div>
 
           <!-- ═══ Режим голосования ═══ -->
-          <div v-if="useAI && useAgentLoop" class="fst-ai-mode-row" style="margin-top:10px">
-            <div class="fst-voting-mode-select">
-              <i class="pi pi-chart-bar" style="color:#ab47bc; margin-right:6px"></i>
-              <strong style="margin-right:10px">Голосование:</strong>
-              <SelectButton v-model="votingMode" :options="[
-                { label: 'Формула', value: 'formula' },
-                { label: 'Гибрид', value: 'hybrid' },
-                { label: 'LLM', value: 'llm' }
-              ]" optionLabel="label" optionValue="value" :allowEmpty="false"
-                style="font-size:0.8rem" />
+          <div v-if="useAI && useAgentLoop" style="margin-top:10px">
+            <div class="fst-ai-mode-row">
+              <div class="fst-voting-mode-select">
+                <i class="pi pi-chart-bar" style="color:#ab47bc; margin-right:6px"></i>
+                <strong style="margin-right:10px">Голосование:</strong>
+                <SelectButton v-model="votingMode" :options="[
+                  { label: 'Формула', value: 'formula' },
+                  { label: 'Гибрид', value: 'hybrid' },
+                  { label: 'LLM', value: 'llm' }
+                ]" optionLabel="label" optionValue="value" :allowEmpty="false"
+                  style="font-size:0.8rem" />
+              </div>
             </div>
-            <div class="fst-ai-mode-label" style="margin-top:4px; font-size:0.78rem; color:var(--p-text-color-secondary)">
+            <div style="margin-top:4px; padding-left:50px; font-size:0.78rem; color:var(--p-text-color-secondary)">
               <span v-if="votingMode === 'formula'">Алгоритмические веса + bias + шум — быстро, предсказуемо</span>
               <span v-else-if="votingMode === 'hybrid'">LLM stance из дебатов + формульный score — баланс</span>
               <span v-else>Чисто LLM — stance и confidence из ответа агента, без формул</span>
@@ -3308,6 +3310,7 @@ onUnmounted(() => {
 .fst-ai-toggle--on .fst-ai-toggle-knob { transform: translateX(18px); }
 .fst-ai-mode-label { font-size: 0.8125rem; color: var(--p-text-color); }
 .fst-ai-mode-label strong { font-weight: 600; }
+.fst-ai-mode-label i.pi { margin-right: 5px; }
 
 /* ── Debate Tabs ───────────────────────────────────────────── */
 .fst-debate-tabs {
