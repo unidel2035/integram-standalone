@@ -350,7 +350,7 @@ onBeforeUnmount(() => {
             class="layout-topbar-action"
             :title="profileTooltip"
           >
-            <div class="topbar-avatar topbar-avatar-initials">{{ userInitial }}</div>
+            <i class="pi pi-user"/>
             <span>{{ $t('nav.profile', 'Профиль') }}</span>
           </button>
         </div>
@@ -420,20 +420,7 @@ onBeforeUnmount(() => {
   }
 }*/
 
-.topbar-avatar-initials {
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  color: inherit;
-  font-size: 0.5rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  user-select: none;
-}
+
 
 .config-panel-dropdown {
   position: absolute;
