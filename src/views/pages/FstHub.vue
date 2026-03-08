@@ -106,7 +106,6 @@
       </div>
     </div>
 
-    <div class="hub-footer">ФСТ НТИ · DronDoc Platform · v2026.03</div>
 
   </div>
 
@@ -487,14 +486,6 @@ const tools = [
   margin-bottom: 4px;
 }
 .hub-tool-desc {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-}
-
-/* ═══════════════════════════════════════════════ FOOTER */
-.hub-footer {
-  text-align: center;
-  padding: 20px;
   font-size: 11px;
   color: var(--p-text-muted-color);
 }
