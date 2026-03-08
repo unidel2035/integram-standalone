@@ -1,15 +1,16 @@
 <template>
   <FstLanding v-if="!isAuth" />
-  <AppLayout v-else>
-    <FstHub />
-  </AppLayout>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import FstLanding from './FstLanding.vue'
-import FstHub from './FstHub.vue'
-import AppLayout from '@/layout/AppLayout.vue'
 
+const router = useRouter()
 const isAuth = computed(() => !!localStorage.getItem('token'))
+
+onMounted(() => {
+  if (isAuth.value) router.replace('/fst-hub')
+})
 </script>
