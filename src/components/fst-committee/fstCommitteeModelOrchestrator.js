@@ -74,18 +74,27 @@ export const SPEED_PROFILES = {
     description: 'Qwen Turbo для всех агентов (~1.5с/аргумент)',
     default: 'polza/qwen/qwen-turbo',
     synthesis: 'polza/google/gemini-2.5-flash-lite',
+    maxIter: 2,
+    debateRounds: 2,
+    challengersPerRound: 2,
   },
   balanced: {
     label: '⚖️ Баланс',
     description: 'Gemini Flash Lite для анализа, Qwen для реплик',
     default: 'polza/google/gemini-2.5-flash-lite',
     synthesis: 'polza/google/gemini-2.5-flash-lite',
+    maxIter: 3,
+    debateRounds: 3,
+    challengersPerRound: 2,
   },
   quality: {
     label: '🎯 Качество',
     description: 'DeepSeek для анализа, Claude для синтеза',
     default: 'deepseek-chat',
     synthesis: 'polza/anthropic/claude-sonnet-4.6',
+    maxIter: 5,
+    debateRounds: 3,
+    challengersPerRound: 3,
   },
 }
 

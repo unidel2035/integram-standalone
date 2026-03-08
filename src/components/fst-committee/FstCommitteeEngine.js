@@ -15,6 +15,7 @@ import {
 import { getAgents } from './agentProvider.js'
 import { generateArgumentAI, fetchKagContext, clearKagCache, fetchOntologyContext, clearOntologyCache, generateNodeProposalAI, generateNodeVoteAI } from './fstCommitteeAI.js'
 import { runAgentLoop, resetLoopTokenCache } from './AgentLoop.js'
+import { SPEED_PROFILES } from './fstCommitteeModelOrchestrator.js'
 import { DebateRoom } from './DebateRoom.js'
 import { annotateArg, detectContradictions, assembleConditionalDecision, deriveConditionsFromContradictions } from './fstCommitteeOntology.js'
 import {
@@ -506,29 +507,63 @@ export class FstCommitteeEngine {
     this.room.setPhase('CROSS_DEBATE')
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
 
-    for (let round = 0; round < 3; round++) {
+    // Issue #165: debate params from speed profile (fast=2x2, quality=3x3)
+    const profile = SPEED_PROFILES[this.session.speedProfile] || SPEED_PROFILES.fast
+    const rounds       = profile.debateRounds       ?? 3
+    const challPerRound = profile.challengersPerRound ?? 3
+    const BATCH = 4  // same as PRIMARY/FINAL batching
+
+    for (let round = 0; round < rounds; round++) {
       if (!this._running) return
-      const challengers = [...getAgents()].sort(() => Math.random() - 0.5).slice(0, 3)
+      const challengers = [...getAgents()].sort(() => Math.random() - 0.5).slice(0, challPerRound)
 
-      // ── Sequential challengers: каждый видит свежие сообщения предыдущих ──
-      for (const agent of challengers) {
-        if (!this._running) return
+      if (this.session.useAgentLoop) {
+        // ── BATCHED: challenges in parallel, then counters in parallel ──
+        const challengeResults = []
+        for (let i = 0; i < challengers.length; i += BATCH) {
+          if (!this._running) break
+          const batch = challengers.slice(i, i + BATCH)
+          const results = await Promise.all(batch.map(agent => {
+            const unchallenged = this.room.getUnchallengedArgs(agent.id).filter(a => a.type === 'OPENING')
+            const weakest = unchallenged
+              .sort((a, b) => (a.toulminStrength ?? a.confidence ?? 0.5) - (b.toulminStrength ?? b.confidence ?? 0.5))[0]
+            const openings = this.session.arguments.filter(a => a.type === 'OPENING' && a.agentId !== agent.id)
+            const target = weakest ?? (openings.length ? openings[Math.floor(Math.random() * openings.length)] : null)
+            return this._agentSpeak(agent, 'CHALLENGE', target?.id ?? null).then(arg => ({ agent, arg, target }))
+          }))
+          challengeResults.push(...results.filter(r => r.arg))
+        }
 
-        // Smart targeting: атакуем слабейший неоспоренный аргумент
-        const unchallenged = this.room.getUnchallengedArgs(agent.id).filter(a => a.type === 'OPENING')
-        const weakest = unchallenged
-          .sort((a, b) => (a.toulminStrength ?? a.confidence ?? 0.5) - (b.toulminStrength ?? b.confidence ?? 0.5))[0]
-        const openings = this.session.arguments.filter(a => a.type === 'OPENING' && a.agentId !== agent.id)
-        const target = weakest ?? (openings.length ? openings[Math.floor(Math.random() * openings.length)] : null)
+        // Counters: batch all counter-responses
+        if (this._running && challengeResults.length) {
+          for (let i = 0; i < challengeResults.length; i += BATCH) {
+            if (!this._running) break
+            const batch = challengeResults.slice(i, i + BATCH)
+            await Promise.all(batch.map(({ arg, target }) => {
+              const targetOwner = target ? getAgents().find(a => a.id === target.agentId) : null
+              const counterAgent = targetOwner ?? getAgents().find(a => a.id !== arg.agentId)
+              return counterAgent ? this._agentSpeak(counterAgent, 'COUNTER', arg.id) : Promise.resolve()
+            }))
+          }
+        }
+      } else {
+        // ── Sequential fallback (non-agentLoop mode) ──
+        for (const agent of challengers) {
+          if (!this._running) return
+          const unchallenged = this.room.getUnchallengedArgs(agent.id).filter(a => a.type === 'OPENING')
+          const weakest = unchallenged
+            .sort((a, b) => (a.toulminStrength ?? a.confidence ?? 0.5) - (b.toulminStrength ?? b.confidence ?? 0.5))[0]
+          const openings = this.session.arguments.filter(a => a.type === 'OPENING' && a.agentId !== agent.id)
+          const target = weakest ?? (openings.length ? openings[Math.floor(Math.random() * openings.length)] : null)
 
-        const arg = await this._agentSpeak(agent, 'CHALLENGE', target?.id ?? null)
-        if (!arg || !this._running) continue
-        if (!this.session.useAgentLoop) await this.delay(TIMING.ARGUMENT_DELAY)
+          const arg = await this._agentSpeak(agent, 'CHALLENGE', target?.id ?? null)
+          if (!arg || !this._running) continue
+          await this.delay(TIMING.ARGUMENT_DELAY)
 
-        // Counter: владелец атакуемого аргумента отвечает
-        const targetOwner = target ? getAgents().find(a => a.id === target.agentId) : null
-        const counterAgent = targetOwner ?? getAgents().find(a => a.id !== agent.id)
-        if (counterAgent && this._running) await this._agentSpeak(counterAgent, 'COUNTER', arg.id)
+          const targetOwner = target ? getAgents().find(a => a.id === target.agentId) : null
+          const counterAgent = targetOwner ?? getAgents().find(a => a.id !== agent.id)
+          if (counterAgent && this._running) await this._agentSpeak(counterAgent, 'COUNTER', arg.id)
+        }
       }
     }
 
