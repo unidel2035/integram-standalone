@@ -109,6 +109,29 @@
           </div>
         </div>
 
+        <!-- Рекомендации комитета (#158) -->
+        <div v-if="session.recommendations?.length" class="fst-conclusion-section fst-recommendations">
+          <div class="fst-conclusion-label">Рекомендации комитета ({{ session.recommendations.length }}):</div>
+          <div class="fst-rec-list">
+            <div v-for="rec in session.recommendations" :key="rec.id || rec.text"
+                 class="fst-rec-item" :class="'priority-' + (rec.priority || 'MEDIUM').toLowerCase()">
+              <span class="fst-rec-avatar">{{ rec.agentAvatar || '📋' }}</span>
+              <div class="fst-rec-body">
+                <div class="fst-rec-header">
+                  <span class="fst-rec-agent">{{ rec.agent || rec.agentId }}</span>
+                  <Tag :value="rec.priority" :severity="rec.priority === 'CRITICAL' || rec.priority === 'HIGH' ? 'danger' : rec.priority === 'LOW' ? 'success' : 'warn'" size="small" />
+                  <span v-if="rec.owner" class="fst-rec-owner">→ {{ rec.owner }}</span>
+                </div>
+                <div class="fst-rec-text">{{ rec.text }}</div>
+                <div v-if="rec.weeks || rec.effort" class="fst-rec-meta">
+                  <span v-if="rec.weeks"><i class="pi pi-clock"></i> {{ rec.weeks }} нед.</span>
+                  <span v-if="rec.effort"><i class="pi pi-bolt"></i> {{ rec.effort }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div v-if="session.decision.humanApproval" class="fst-human-result">
           <i class="pi pi-check-circle" style="color:#4caf50"></i>
           Решение комитета утверждено:
@@ -396,6 +419,34 @@
         </div><!-- /fst-right -->
       </div><!-- /fst-body -->
 
+      <!-- ── Issue #160: Debug Panel (dev mode) ────────────────── -->
+      <div v-if="devMode && Object.keys(agentStats).length" class="fst-debug-panel">
+        <div class="fst-debug-title">
+          <i class="pi pi-bug"></i> Agent Diagnostics
+          <span class="fst-debug-summary">
+            LLM: {{ Object.values(agentStats).filter(s => s.agentLoop).length }}/{{ Object.keys(agentStats).length }}
+            | Avg iter: {{ (Object.values(agentStats).reduce((s, a) => s + (a.iterCount || 0), 0) / Math.max(Object.keys(agentStats).length, 1)).toFixed(1) }}
+            | Forced: {{ Object.values(agentStats).filter(s => s.forcedPublish).length }}
+            | Tools: {{ [...new Set(Object.values(agentStats).flatMap(s => s.toolsUsed || []))].length }} unique
+          </span>
+        </div>
+        <div class="fst-debug-grid">
+          <div v-for="agent in AGENTS" :key="'dbg-'+agent.id" class="fst-debug-agent">
+            <span class="fst-debug-name" :style="{ color: agent.color }">{{ agent.shortName }}</span>
+            <span :class="['fst-debug-mode', agentStats[agent.id]?.agentLoop ? 'ok' : 'warn']">
+              {{ agentStats[agent.id]?.agentLoop ? '🤖 LLM' : '📐 Formula' }}
+            </span>
+            <span class="fst-debug-val">iter={{ agentStats[agent.id]?.iterCount || 0 }}</span>
+            <span class="fst-debug-val">args={{ agentStats[agent.id]?.argCount || 0 }}</span>
+            <span class="fst-debug-val" :title="(agentStats[agent.id]?.toolsUsed || []).join(', ')">
+              tools={{ (agentStats[agent.id]?.toolsUsed || []).length }}
+            </span>
+            <span v-if="agentStats[agent.id]?.model" class="fst-debug-model">{{ agentStats[agent.id].model?.split('/').pop() }}</span>
+            <span v-if="agentStats[agent.id]?.forcedPublish" class="fst-debug-forced">⚡forced</span>
+          </div>
+        </div>
+      </div>
+
       <!-- ── Agents Bar (bottom strip) ────────────────────────── -->
       <div class="fst-agents-bar">
         <div v-for="agent in AGENTS" :key="agent.id"
@@ -406,6 +457,10 @@
           ]"
           :style="{ '--ac': agent.color }">
           <span class="fst-ac-dot"></span>
+          <span class="fst-ac-mode"
+            :title="agentStats[agent.id]?.agentLoop ? `LLM: ${agentStats[agent.id].model || '?'} | iter=${agentStats[agent.id].iterCount}` : 'Формула'">
+            {{ agentStats[agent.id]?.agentLoop ? '🤖' : '📐' }}
+          </span>
           <span class="fst-ac-name">{{ agent.shortName }}</span>
           <span v-if="agentStatus(agent.id).thinking" class="fst-ac-status">
             <i class="pi pi-spin pi-spinner" style="font-size:9px;color:var(--ac)"></i>
@@ -720,9 +775,22 @@
                 </select>
               </div>
             </div>
-            <button class="fst-model-reset-btn" @click="resetModelOverrides">
-              <i class="pi pi-refresh"></i> Сбросить к профилю
-            </button>
+            <div class="fst-preset-row">
+              <button class="fst-model-reset-btn" @click="resetModelOverrides">
+                <i class="pi pi-refresh"></i> Сбросить к профилю
+              </button>
+              <button class="fst-model-reset-btn" @click="savePreset" :disabled="presetSaving">
+                <i class="pi pi-save"></i> Сохранить пресет
+              </button>
+            </div>
+            <div v-if="configPresets.length" class="fst-presets-list">
+              <span style="font-size:0.75rem;color:var(--p-text-muted-color);margin-right:6px">Пресеты:</span>
+              <span v-for="p in configPresets" :key="p.id"
+                :class="['fst-preset-chip', { active: selectedPresetId === p.id }]"
+                @click="applyPreset(p)">
+                {{ p.name }}
+              </span>
+            </div>
           </div>
 
           <div class="fst-setup-section-title" style="margin-top:20px">
@@ -773,6 +841,7 @@
 
 <script setup>
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Slider from 'primevue/slider'
 import { useToast } from 'primevue/usetoast'
 import { FstCommitteeEngine, createSession } from '@/components/fst-committee/FstCommitteeEngine.js'
@@ -785,7 +854,7 @@ import { agents as AGENTS, loadAgents } from '@/components/fst-committee/agentPr
 import {
   COMMITTEE_MODELS, SPEED_PROFILES, buildModelMap, getModelSummary, resolveModel
 } from '@/components/fst-committee/fstCommitteeModelOrchestrator.js'
-import { saveDecision, createProject, saveCommitteeSession, authenticate, STATUSES } from '@/services/fstApi'
+import { saveDecision, createProject, saveCommitteeSession, authenticate, STATUSES, loadCommitteeConfigs, saveCommitteeConfig } from '@/services/fstApi'
 import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-committee/fstCommitteeAI.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
@@ -801,6 +870,7 @@ import { usePageHelp } from '@/composables/usePageHelp'
 
 const { projects: PROJECTS_POOL, subfunds: SUBFUNDS, loadProjects, loadSubfunds } = useFstData()
 const toast = useToast()
+const router = useRouter()
 
 // Load data on component mount
 onMounted(async () => {
@@ -824,13 +894,23 @@ const selectedSpeed = ref('normal')
 const useAI        = ref(true)
 const useAgentLoop = ref(true)    // Multi-agent orchestrator: tool_use + parallel
 const useOrchestrator = ref(false) // Серверная оркестрация (Phase 3)
-const votingMode = ref('hybrid')   // 'formula' | 'hybrid' | 'llm'
+
+// Issue #159: restore saved settings from localStorage (must be before refs that use them)
+const _savedModelCfg = JSON.parse(localStorage.getItem('fst_agent_models') || '{}')
+const _savedProfile  = localStorage.getItem('fst_speed_profile') || 'fast'
+const _savedVoting   = localStorage.getItem('fst_voting_mode') || ''
+
+const votingMode = ref(_savedVoting || 'hybrid')   // 'formula' | 'hybrid' | 'llm'
 const policyExpanded = ref(false)
+
+// Issue #160: agent diagnostics
+const devMode = ref(new URLSearchParams(window.location.search).has('debug'))
+const agentStats = ref({})  // { [agentId]: { agentLoop, iterCount, toolsUsed, model, forcedPublish } }
 
 // ── Оркестратор моделей ────────────────────────────────────────
 const modelPanelExpanded = ref(false)
-const selectedSpeedProfile = ref('fast')
-const agentModelOverrides = ref({})  // { [agentId]: modelId } — переопределения пользователя
+const selectedSpeedProfile = ref(_savedProfile)
+const agentModelOverrides = ref(_savedModelCfg)  // { [agentId]: modelId } — переопределения пользователя
 
 const resolvedModels = computed(() =>
   buildModelMap(AGENTS.value.map(a => a.id), selectedSpeedProfile.value, agentModelOverrides.value)
@@ -843,16 +923,60 @@ const activeProfileLabel = computed(() => {
 
 function applySpeedProfile(profileKey) {
   selectedSpeedProfile.value = profileKey
-  agentModelOverrides.value = {}  // сбрасываем ручные override при смене профиля
+  agentModelOverrides.value = {}
+  localStorage.setItem('fst_speed_profile', profileKey)
+  localStorage.setItem('fst_agent_models', '{}')
 }
 
 function setAgentModel(agentId, modelId) {
   agentModelOverrides.value = { ...agentModelOverrides.value, [agentId]: modelId }
+  localStorage.setItem('fst_agent_models', JSON.stringify(agentModelOverrides.value))
 }
 
 function resetModelOverrides() {
   agentModelOverrides.value = {}
+  localStorage.setItem('fst_agent_models', '{}')
 }
+// Issue #159: persist voting mode
+watch(votingMode, v => localStorage.setItem('fst_voting_mode', v))
+
+// Issue #159: config presets from DB
+const configPresets = ref([])
+const selectedPresetId = ref(null)
+const presetSaving = ref(false)
+
+async function loadPresets() {
+  try { configPresets.value = await loadCommitteeConfigs() } catch {}
+}
+
+function applyPreset(preset) {
+  if (!preset) return
+  selectedPresetId.value = preset.id
+  selectedSpeedProfile.value = preset.speedProfile || 'fast'
+  votingMode.value = preset.votingMode || 'hybrid'
+  agentModelOverrides.value = preset.modelMap || {}
+  localStorage.setItem('fst_speed_profile', selectedSpeedProfile.value)
+  localStorage.setItem('fst_voting_mode', votingMode.value)
+  localStorage.setItem('fst_agent_models', JSON.stringify(agentModelOverrides.value))
+}
+
+async function savePreset() {
+  const name = prompt('Название пресета:')
+  if (!name) return
+  presetSaving.value = true
+  try {
+    await saveCommitteeConfig({
+      name,
+      modelMap: agentModelOverrides.value,
+      speedProfile: selectedSpeedProfile.value,
+      votingMode: votingMode.value,
+    })
+    await loadPresets()
+  } finally { presetSaving.value = false }
+}
+
+onMounted(() => { loadPresets() })
+
 const humanComment = ref('')
 const session = ref(null)
 const running = ref(false)
@@ -1174,6 +1298,7 @@ function handleEvent(event) {
     session.value.nodeProposals = s.nodeProposals
     session.value.contractNodes = s.contractNodes
     session.value.nodeVotes = s.nodeVotes
+    session.value.recommendations = s.recommendations || []
     // Новые ссылки на массивы → Vue гарантированно видит изменение
     session.value.events         = [...s.events]
     session.value.arguments      = [...s.arguments]
@@ -1208,6 +1333,23 @@ function handleEvent(event) {
   }
 
   if (event.type === 'ArgumentRaised') {
+    // Issue #160: collect agent diagnostics
+    const arg = event.argument || event.arg || {}
+    const aid = event.agentId || arg.agentId
+    if (aid) {
+      const prev = agentStats.value[aid] || { toolsUsed: [], iterCount: 0, argCount: 0 }
+      agentStats.value = {
+        ...agentStats.value,
+        [aid]: {
+          agentLoop:     arg.agentLoop || event.agentLoop || false,
+          iterCount:     arg.iterCount || prev.iterCount,
+          toolsUsed:     [...new Set([...(prev.toolsUsed || []), ...(arg.toolsUsed || [])])],
+          model:         arg.model || prev.model || null,
+          forcedPublish: arg.iterCount >= 5 || prev.forcedPublish || false,
+          argCount:      (prev.argCount || 0) + 1,
+        }
+      }
+    }
     nextTick(() => {
       if (timelineEl.value) {
         timelineEl.value.scrollTop = timelineEl.value.scrollHeight
@@ -1225,6 +1367,8 @@ function handleEvent(event) {
 
   if (event.type === 'SessionConcluded') {
     if (event.beliefDrift) session.value.beliefDrift = event.beliefDrift
+    // Issue #160: persist agentStats in session for protocol
+    session.value.agentStats = { ...agentStats.value }
     agentActivity.value = {}
     setTimeout(() => {
       conclusionVisible.value = true
@@ -1360,6 +1504,17 @@ async function saveContractNodes(sess) {
       }
     }
 
+    // Issue #158: save recommendations to Integram
+    const recs = sess.recommendations || []
+    for (const rec of recs) {
+      await post("_m_new/3999", {
+        t3999: rec.text || "",
+        t4044: rec.priority || "MEDIUM",
+        t4046: "RECOMMENDED",
+        t4048: rec.agentId || rec.agent || "",
+        up: contractId,
+      })
+    }
     console.log('✅ Ноды контракта сохранены в БД. Contract ID:', contractId)
     // Issue #152: save contractId + show toast
     sess.savedContractId = contractId
@@ -1370,6 +1525,8 @@ async function saveContractNodes(sess) {
       detail: 'Contract ID: ' + contractId,
       life: 8000
     })
+    // Issue #156: redirect to contract viewer
+    router.push("/fst-contract/" + contractId)
   } catch (err) {
     console.error('❌ saveContractNodes failed:', err)
     toast.add({
@@ -3407,6 +3564,69 @@ onUnmounted(() => {
   color: var(--p-green-400, #66bb6a);
 }
 
+
+/* Issue #158 — Recommendations panel */
+.fst-rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.fst-rec-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--p-surface-border);
+  background: var(--p-surface-ground);
+}
+.fst-rec-item.priority-critical,
+.fst-rec-item.priority-high {
+  border-left-color: var(--p-red-500);
+  background: rgba(244, 67, 54, 0.05);
+}
+.fst-rec-item.priority-medium {
+  border-left-color: var(--p-orange-500);
+}
+.fst-rec-item.priority-low {
+  border-left-color: var(--p-green-500);
+}
+.fst-rec-avatar {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.fst-rec-body {
+  flex: 1;
+  min-width: 0;
+}
+.fst-rec-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.fst-rec-agent {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.fst-rec-owner {
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+}
+.fst-rec-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.fst-rec-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+}
+.fst-rec-meta i {
+  margin-right: 0.25rem;
+}
 .fst-kag-saved {
   display: flex;
   align-items: center;
@@ -3495,4 +3715,90 @@ onUnmounted(() => {
   gap: 4px;
 }
 .fst-model-reset-btn:hover { background: var(--p-surface-hover); }
+.fst-preset-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.fst-presets-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.fst-preset-chip {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--p-surface-border);
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.fst-preset-chip:hover {
+  background: var(--p-surface-hover);
+}
+.fst-preset-chip.active {
+  background: var(--p-primary-color);
+  color: var(--p-primary-contrast-color);
+  border-color: var(--p-primary-color);
+}
+/* Issue #160: agent mode icon */
+.fst-ac-mode {
+  font-size: 10px;
+  line-height: 1;
+  margin-right: 1px;
+  opacity: 0.85;
+}
+/* Issue #160: debug panel */
+.fst-debug-panel {
+  background: var(--p-surface-ground);
+  border: 1px solid var(--p-surface-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 4px 8px;
+  font-size: 11px;
+}
+.fst-debug-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--p-text-color);
+  margin-bottom: 6px;
+}
+.fst-debug-title i { color: #ef5350; font-size: 12px; }
+.fst-debug-summary {
+  font-weight: 400;
+  color: var(--p-text-muted-color);
+  font-size: 10px;
+  margin-left: auto;
+}
+.fst-debug-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.fst-debug-agent {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-surface-border);
+}
+.fst-debug-name { font-weight: 600; font-size: 10px; }
+.fst-debug-mode {
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.fst-debug-mode.ok { background: #1b5e2040; color: #66bb6a; }
+.fst-debug-mode.warn { background: #e6511040; color: #ff7043; }
+.fst-debug-val { color: var(--p-text-muted-color); font-size: 10px; }
+.fst-debug-model { color: #ab47bc; font-size: 9px; }
+.fst-debug-forced { color: #ff9800; font-size: 9px; font-weight: 600; }
 </style>

@@ -25,6 +25,7 @@ import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
 import DialogService from 'primevue/dialogservice'
 import 'primeicons/primeicons.css'
+import 'primeflex/primeflex.css'
 import '@/assets/styles.scss'
 
 import { setupIconify } from '@/plugins/iconify'

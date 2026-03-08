@@ -1301,6 +1301,11 @@ export const routeDescriptions = {
     category: 'ai',
     tags: ['ФСТ', 'НТИ', 'Протокол', 'Инвесткомитет', 'История', 'AI Агенты', 'Прозрачность', 'Венчур', 'БПЛА', 'Фонд', 'found']
   },
+  '/fst-contract/:id': {
+    description: 'ФСТ НТИ — Смарт контракт: визуализация сценариев инвестирования с cashflow-графиками, NPV, IRR, ROI, DPP, PI. Сравнение Base/Optimistic/Pessimistic сценариев, условия одобрения. Создаётся по итогам AI-инвесткомитета.',
+    category: 'ai',
+    tags: ['ФСТ', 'НТИ', 'Смарт контракт', 'NPV', 'IRR', 'Cashflow', 'Сценарии', 'Инвесткомитет', 'Венчур', 'found']
+  },
   '/fst-twin': {
     description: 'ФСТ НТИ — Цифровой двойник портфельной компании: живая симуляция компании «АвиаЛогик» с tick-engine. Жизненные показатели (выручка, burn rate, headcount, TRL/MRL/суверенность), датчики рисков, смарт-контракт с траншами и KPI-триггерами. Канонический код: github.com/unidel2035/found',
     category: 'ai',
@@ -2463,6 +2468,30 @@ export const routeDescriptions = {
     description: 'Интерактивная карта объектов онтологии БАС: 26 центров НПЦ БАС по всей России и дроны из базы данных Integram. Leaflet + OSM тайлы, геокодирование через Nominatim, боковая панель со списком объектов и попап с деталями.',
     category: 'maps',
     tags: ['Карта', 'НПЦ БАС', 'Дроны', 'Геолокация', 'Leaflet', 'OSM', 'Nominatim', 'Онтология', 'Issue #7195']
+  },
+
+  '/fst-miniapp': {
+    description: 'ФСТ НТИ — Telegram Mini App: мобильный дашборд фонда для Telegram WebApp. Портфель (NAV, IRR, компании со светофором), алерты, AI-чат. Компактный интерфейс с табами, адаптирован под тёмную тему Telegram.',
+    category: 'ai',
+    tags: ['ФСТ', 'НТИ', 'Telegram', 'Mini App', 'Мобильный', 'Портфель', 'NAV', 'IRR', 'Дашборд', 'Венчур', 'found']
+  },
+
+  '/fst-network': {
+    description: 'ФСТ НТИ — Сеть контактов: управление сетью соинвесторов, менторов, экспертов и партнёров фонда.',
+    category: 'finance',
+    tags: ['ФСТ', 'НТИ', 'Сеть', 'Контакты', 'Соинвесторы', 'Менторы', 'Партнёры', 'CRM', 'Венчур', 'found']
+  },
+
+  '/fst-workspace': {
+    description: 'ФСТ НТИ — Рабочие пространства: Claude CLI, терминал, обучение и инструменты разработки. Хаб для работы с AI-ассистентами и управления проектами.',
+    category: 'ai',
+    tags: ['ФСТ', 'НТИ', 'Workspace', 'Claude', 'CLI', 'Терминал', 'Обучение', 'AI', 'found']
+  },
+
+  '/fst-terminal': {
+    description: 'ФСТ НТИ — Claude Code CLI: интерактивный терминал с AI-ассистентом Claude. WebSocket TTY через xterm.js, полноценная работа с кодом, git и файловой системой.',
+    category: 'ai',
+    tags: ['ФСТ', 'НТИ', 'Claude', 'CLI', 'Terminal', 'xterm', 'WebSocket', 'TTY', 'AI', 'found']
   }
 }
 

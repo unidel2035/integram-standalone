@@ -19,6 +19,7 @@ import {
   authenticate,
   getProjects as getBasicProjects,
   createProject,
+  getCommitteeSessions,
   TYPE_PROJECTS
 } from './fstApi.js'
 
@@ -165,6 +166,18 @@ export async function getEnrichedProjects() {
   return basicProjects.map(proj => {
     const { description, extended } = parseExtendedData(proj.description)
 
+    // Issue #157: prefer DB numeric fields (proj.*) over HTML-parsed (extended.*)
+    const trl = proj.trl || extended.trl || 5
+    const mrl = proj.mrl || extended.mrl || 3
+    const sovereigntyScore = proj.sovereigntyScore || extended.sovereigntyScore || 6
+    const marketSizeMln = proj.marketSizeMln || Math.round((extended.marketSize || 10_000_000_000) / 1_000_000)
+    const projectedIRR = proj.projectedIRR
+      ? proj.projectedIRR / 100     // DB stores as % -> convert to 0-1
+      : (extended.projectedIRR || estimateIRRFromExtended(extended, proj))
+    const teamStrength = proj.teamStrength
+      ? proj.teamStrength / 10      // DB stores as 0-10 -> convert to 0-1
+      : (extended.teamStrength || 0.7)
+
     return {
       id: proj.id,
       title: extended.title || proj.name,
@@ -178,17 +191,17 @@ export async function getEnrichedProjects() {
       statusId: proj.statusId,
       description,
 
-      // Extended fields
-      trl: extended.trl || 5,
-      mrl: extended.mrl || 3,
-      sovereigntyScore: extended.sovereigntyScore || 6,
+      // Numeric fields: DB first, fallback to HTML-parsed
+      trl,
+      mrl,
+      sovereigntyScore,
       localizationRatio: extended.localizationRatio || 0.5,
-      marketSize: extended.marketSize || 10_000_000_000,
-      projectedIRR: extended.projectedIRR || estimateIRRFromExtended(extended, proj),
-      teamStrength: extended.teamStrength || 0.7,
-      employees: extended.employees || 15,
-      founded: extended.founded || 2020,
-      patents: extended.patents || 1,
+      marketSize: marketSizeMln * 1_000_000,
+      projectedIRR,
+      teamStrength,
+      employees: proj.employees || extended.employees || 15,
+      founded: proj.foundedYear || extended.founded || 2020,
+      patents: proj.patents || extended.patents || 1,
       strengths: extended.strengths || [],
       risks: extended.risks || [],
       documents: extended.documents || []
@@ -222,7 +235,10 @@ export function getSubfundsObject() {
  */
 export async function getStats() {
   const subfunds = getSubfunds()
-  const projects = await getEnrichedProjects()
+  const [projects, sessions] = await Promise.all([
+    getEnrichedProjects(),
+    getCommitteeSessions().catch(() => [])
+  ])
 
   // Calculate AUM (Assets Under Management)
   const aum = subfunds.reduce((sum, sf) => sum + (sf.budget * sf.deployedRatio), 0)
@@ -232,6 +248,9 @@ export async function getStats() {
 
   // Subfund count
   const subfundCount = subfunds.length
+
+  // Committee sessions count
+  const committeeCount = sessions.length
 
   // Average projected IRR
   const validProjects = projects.filter(p => p.projectedIRR > 0)
@@ -243,6 +262,7 @@ export async function getStats() {
     aum,
     portfolioCount,
     subfundCount,
+    committeeCount,
     avgIRR,
     projects,
     subfunds
@@ -287,7 +307,17 @@ export async function createEnrichedProject(data) {
     submittedAt,
     subfundId,
     stageId,
-    statusId
+    statusId,
+    // Issue #157: write to dedicated DB fields
+    trl: extended.trl || null,
+    mrl: extended.mrl || null,
+    sovereigntyScore: extended.sovereigntyScore || null,
+    projectedIRR: extended.projectedIRR ? Math.round(extended.projectedIRR * 100) : null,
+    marketSizeMln: extended.marketSize ? Math.round(extended.marketSize / 1_000_000) : null,
+    teamStrength: extended.teamStrength ? Math.round(extended.teamStrength * 10) : null,
+    employees: extended.employees || null,
+    patents: extended.patents || null,
+    foundedYear: extended.founded || null,
   })
 }
 

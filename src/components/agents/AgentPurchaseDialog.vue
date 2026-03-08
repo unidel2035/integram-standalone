@@ -463,7 +463,7 @@ const handleOpenAgent = () => {
 }
 
 const handleGoToMyAgents = () => {
-  router.push('/my-agents')
+  router.push('/fst-hub')
   handleClose()
 }
 

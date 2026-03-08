@@ -18,7 +18,7 @@
       </div>
       <div v-else class="profile-content">
         <!-- Шапка профиля -->
-        <div class="profile-header p-4 flex align-items-center gap-3">
+        <div class="profile-header">
           <Avatar
             icon="pi pi-user"
             size="xlarge"
@@ -26,42 +26,34 @@
             class="avatar-large"
           />
           <div>
-            <h3 class="m-0">{{ user.name }}</h3>
-            <span class="text-color-secondary">{{ user.role }}</span>
+            <h3 class="profile-user-name">{{ user.name }}</h3>
+            <span class="profile-user-role">{{ user.role }}</span>
           </div>
         </div>
 
-        <div class="profile-details p-4">
+        <div class="profile-details">
           <!-- Данные пользователя из userInfo -->
           <div
             v-for="(value, name) in userInfo"
             :key="name"
-            class="mb-3 flex align-items-center"
+            class="profile-field"
           >
-            <span class="field-name">
-              <i :class="getIconForField(name)" class="field-key mr-3"></i>
-              <span class="field-key">{{ name }}:</span>
-              <span class="field-value">{{
-                formatFieldValue(name, value)
-              }}</span>
-            </span>
+            <i :class="getIconForField(name)" class="field-key"></i>
+            <span class="field-key">{{ name }}:</span>
+            <span class="field-value">{{ formatFieldValue(name, value) }}</span>
           </div>
           <Divider />
 
           <!-- Отдельный блок для apiBase -->
-          <div class="mb-3 flex align-items-center api-base-field">
-            <span class="field-name">
-              <i class="pi pi-server field-key mr-3"></i>
-              <span class="field-key">API:</span>
-              <span class="field-value">{{ apiBase }}</span>
-            </span>
+          <div class="profile-field">
+            <i class="pi pi-server field-key"></i>
+            <span class="field-key">API:</span>
+            <span class="field-value">{{ apiBase }}</span>
           </div>
-          <div class="mb-3 flex align-items-center api-base-field">
-            <span class="field-name">
-              <i class="pi pi-database field-key mr-3"></i>
-              <span class="field-key">База данных:</span>
-              <span class="field-value">{{ dataBase }}</span>
-            </span>
+          <div class="profile-field">
+            <i class="pi pi-database field-key"></i>
+            <span class="field-key">База данных:</span>
+            <span class="field-value">{{ dataBase }}</span>
           </div>
         </div>
 
@@ -82,19 +74,10 @@
         </div>
 
         <!-- Действия -->
-        <div class="profile-actions p-4 flex flex-column gap-3">
-          <Button
-            label="Редактировать профиль"
-            icon="pi pi-pencil"
-            class="w-full"
-            severity="secondary"
-            outlined
-            @click="editProfile"
-          />
+        <div class="profile-actions">
           <Button
             label="Выход"
             icon="pi pi-sign-out"
-            class="w-full"
             severity="danger"
             outlined
             @click="logout"
@@ -275,11 +258,6 @@ const onMenuHide = () => {
   isMenuOpen.value = false
 }
 
-const editProfile = () => {
-  op.value.hide()
-  router.push('/profile/edit')
-}
-
 const goToAgents = () => {
   op.value.hide()
   router.push('/spaces')
@@ -287,7 +265,7 @@ const goToAgents = () => {
 
 const goToTraining = () => {
   op.value.hide()
-  router.push('/training')
+  router.push('/fst-learning')
 }
 
 const openThemeSettings = () => {
@@ -347,13 +325,23 @@ defineExpose({
 }
 
 .profile-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
   background: var(--p-primary-color);
   color: var(--p-primary-contrast-color);
 }
 
-.profile-header .text-color-secondary {
+.profile-user-name {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.profile-user-role {
   color: var(--p-primary-contrast-color);
   opacity: 0.8;
+  font-size: 0.875rem;
 }
 
 .avatar-large {
@@ -361,19 +349,32 @@ defineExpose({
   color: var(--p-primary-color) !important;
 }
 
-.detail-item i {
-  color: var(--p-primary-color);
-  font-size: 1.2rem;
+.profile-details {
+  padding: 1rem;
+}
+
+.profile-field {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
 }
 
 .profile-actions button {
+  width: 100%;
   justify-content: flex-start;
   padding-left: 1rem;
 }
 
 .profile-nav {
-  border-top: 1px solid var(--surface-border);
-  border-bottom: 1px solid var(--surface-border);
+  border-top: 1px solid var(--p-content-border-color);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
 .profile-nav-item {
@@ -382,38 +383,29 @@ defineExpose({
   gap: 0.75rem;
   padding: 0.65rem 1.25rem;
   cursor: pointer;
-  color: var(--text-color);
+  color: var(--p-text-color);
   font-size: 0.875rem;
   transition: background 0.15s;
 }
 
 .profile-nav-item:hover {
-  background: var(--surface-hover);
+  background: var(--p-content-hover-background);
 }
 
 .profile-nav-item i {
   font-size: 0.875rem;
-  color: var(--text-color-secondary);
+  color: var(--p-text-muted-color);
   width: 1rem;
 }
 
-.field-name {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-/* Стили для разделения цвета ключа и значения */
 .field-key {
-  color: var(--text-color-secondary); /* Цвет для ключа (названия поля) */
+  color: var(--p-text-muted-color);
   margin-right: 0.5rem;
   font-weight: 500;
 }
 
 .field-value {
-  color: var(--text-color); /* Основной цвет текста для значения */
-  word-break: break-all; /* Перенос длинных значений (как apiBase) */
+  color: var(--p-text-color);
+  word-break: break-all;
 }
-
-/* Можно добавить отдельный стиль для apiBase, если нужно */
 </style>

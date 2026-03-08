@@ -162,14 +162,6 @@ const getIconColorClass = (color) => {
           },
           {
             separator: true
-          },
-          {
-            label: 'Настройки уведомлений',
-            icon: 'pi pi-cog',
-            command: () => {
-              router.push('/settings/notifications')
-              handleClose()
-            }
           }
         ]" popup />
       </div>

@@ -613,157 +613,6 @@
             </div>
           </div>
         </TabPanel>
-
-        <TabPanel title="Общий чат">
-          <template #header>
-            <span title="Общий чат">
-              <Icon icon="mdi:chat-outline" width="18" height="18" />
-            </span>
-          </template>
-          <div class="chat-container">
-            <div class="messages" ref="messagesContainer">
-              <!-- Loading Spinner -->
-              <div v-if="generalChat.loadingMessages" class="flex justify-content-center align-items-center" style="height: 300px;">
-                <ProgressSpinner />
-              </div>
-
-              <!-- Messages -->
-              <div v-else v-for="(msg, index) in generalChat.activeChat.messages" :key="index" class="message"
-                :class="{ 'user-message': msg.isUser }">
-                <Avatar v-if="!msg.isUser && (index === 0 || generalChat.activeChat.messages[index - 1].authorId !== msg.authorId)"
-                  :image="msg.authorAvatar"
-                  :label="!msg.authorAvatar ? getAvatarLabel(msg) : undefined"
-                  :style="!msg.authorAvatar ? { backgroundColor: getAvatarColor(msg.authorId), color: 'white' } : {}"
-                  shape="circle"
-                  size="large"
-                  class="message-avatar clickable-avatar"
-                  @click="openUserProfile(msg.authorId)" />
-                <div v-else-if="!msg.isUser" class="message-avatar-spacer"></div>
-
-                <div class="message-content">
-                  <div v-if="!msg.isUser && (index === 0 || generalChat.activeChat.messages[index - 1].authorId !== msg.authorId)"
-                    class="message-author"
-                    @click="openUserProfile(msg.authorId)"
-                    :title="`Открыть профиль: ${msg.authorName}`">
-                    {{ msg.authorName }}
-                  </div>
-                  <div class="message-text">{{ msg.text }}</div>
-                  <div class="message-footer">
-                    <div class="message-time">{{ msg.time }}</div>
-                    <Button
-                      v-if="msg.isUser"
-                      icon="pi pi-trash"
-                      class="p-button-text p-button-sm p-button-danger delete-btn"
-                      @click="generalChat.deleteMessage(msg.id)"
-                      v-tooltip.top="'Удалить'"
-                    />
-                  </div>
-                </div>
-
-                <Avatar v-if="msg.isUser"
-                  :image="msg.authorAvatar"
-                  :label="!msg.authorAvatar ? getAvatarLabel(msg) : undefined"
-                  :style="!msg.authorAvatar ? { backgroundColor: getAvatarColor(msg.authorId), color: 'white' } : {}"
-                  shape="circle"
-                  size="large"
-                  class="message-avatar clickable-avatar"
-                  @click="openUserProfile(msg.authorId)" />
-              </div>
-
-              <!-- Typing indicator -->
-              <div v-if="typingIndicator" class="typing-indicator">
-                <small class="text-muted">{{ typingIndicator }}</small>
-              </div>
-            </div>
-            <div class="input-container">
-              <InputText ref="generalMessageInputRef" v-model="generalChat.newMessage" placeholder="Напишите ваше сообщение..."
-                @keyup.enter="generalChat.sendMessage"
-                class="input-field" />
-              <Button icon="pi pi-send" @click="generalChat.sendMessage" severity="info" class="send-btn" title="Отправить сообщение"/>
-            </div>
-          </div>
-        </TabPanel>
-
-        <!-- Dynamic Room Tabs -->
-        <TabPanel v-for="room in openRooms" :key="room.id">
-          <template #header>
-            <span class="tab-header-content">
-              <Icon icon="lucide:hash" width="16" height="16" />
-              <span>{{ room.name }}</span>
-              <Button
-                icon="pi pi-times"
-                class="p-button-text p-button-sm tab-close-btn"
-                @click.stop="closeRoomTab(room.id)"
-                v-tooltip.top="'Закрыть вкладку'"
-              />
-            </span>
-          </template>
-          <div class="chat-container">
-            <div class="room-header">
-              <div class="room-info">
-                <h3 class="room-name">{{ room.name }}</h3>
-                <small class="room-description">{{ room.description || 'Комната' }}</small>
-              </div>
-              <div class="room-actions">
-                <Button
-                  icon="pi pi-users"
-                  label="Участники"
-                  @click="openRoomMembers(room.id, room.creatorId)"
-                  outlined
-                  size="small"
-                />
-              </div>
-            </div>
-            <div class="messages">
-              <div v-for="(msg, index) in generalChat.activeChat.messages" :key="index" class="message"
-                :class="{ 'user-message': msg.isUser }">
-                <Avatar v-if="!msg.isUser && (index === 0 || generalChat.activeChat.messages[index - 1].authorId !== msg.authorId)"
-                  :image="msg.authorAvatar"
-                  :label="!msg.authorAvatar ? getAvatarLabel(msg) : undefined"
-                  :style="!msg.authorAvatar ? { backgroundColor: getAvatarColor(msg.authorId), color: 'white' } : {}"
-                  shape="circle"
-                  size="large"
-                  class="message-avatar clickable-avatar"
-                  @click="openUserProfile(msg.authorId)" />
-                <div v-else-if="!msg.isUser" class="message-avatar-spacer"></div>
-
-                <div class="message-content">
-                  <div v-if="!msg.isUser && (index === 0 || generalChat.activeChat.messages[index - 1].authorId !== msg.authorId)"
-                    class="message-author"
-                    @click="openUserProfile(msg.authorId)"
-                    :title="`Открыть профиль: ${msg.authorName}`">
-                    {{ msg.authorName }}
-                  </div>
-                  <div class="message-text">{{ msg.text }}</div>
-                  <div class="message-footer">
-                    <div class="message-time">{{ msg.time }}</div>
-                    <Button
-                      v-if="msg.isUser"
-                      icon="pi pi-trash"
-                      class="p-button-text p-button-sm p-button-danger delete-btn"
-                      @click="generalChat.deleteMessage(msg.id)"
-                      v-tooltip.top="'Удалить'"
-                    />
-                  </div>
-                </div>
-
-                <Avatar v-if="msg.isUser"
-                  :image="msg.authorAvatar"
-                  :label="!msg.authorAvatar ? getAvatarLabel(msg) : undefined"
-                  :style="!msg.authorAvatar ? { backgroundColor: getAvatarColor(msg.authorId), color: 'white' } : {}"
-                  shape="circle"
-                  size="large"
-                  class="message-avatar clickable-avatar"
-                  @click="openUserProfile(msg.authorId)" />
-              </div>
-            </div>
-            <div class="input-container">
-              <InputText v-model="generalChat.newMessage" placeholder="Напишите ваше сообщение..." @keyup.enter="generalChat.sendMessage"
-                class="input-field" />
-              <Button icon="pi pi-send" @click="generalChat.sendMessage" severity="info" class="send-btn" title="Отправить сообщение"/>
-            </div>
-          </div>
-        </TabPanel>
       </TabView>
 
     </div>
@@ -778,7 +627,7 @@
       <template #header>
         <div class="flex align-items-center justify-between w-full">
           <span class="font-bold flex align-items-center gap-1">
-            <Icon :icon="activeTabIndex === 0 ? 'mdi:robot-outline' : 'mdi:chat-outline'" width="18" height="18" />{{ activeTabIndex === 0 ? 'ИИ-ассистент' : 'Общий чат' }}
+            <Icon icon="mdi:robot-outline" width="18" height="18" />ИИ-ассистент
           </span>
           <div class="flex align-items-center gap-1">
             <Button icon="pi pi-plus" @click="startNewChat" class="p-button-text"
@@ -791,10 +640,8 @@
 
       <div class="modal-chat-container">
         <div class="modal-messages" ref="modalMessagesContainer">
-          <div v-for="(msg, index) in activeTabIndex === 0
-            ? aiChat.messages
-            : activeChat.messages" :key="index" class="modal-message" :class="{ 'modal-user-message': msg.isUser }">
-            <Avatar v-if="!msg.isUser" :icon="activeTabIndex === 0 ? 'pi pi-sparkles' : 'pi pi-user'" shape="circle"
+          <div v-for="(msg, index) in aiChat.messages" :key="index" class="modal-message" :class="{ 'modal-user-message': msg.isUser }">
+            <Avatar v-if="!msg.isUser" icon="pi pi-sparkles" shape="circle"
               size="normal" class="mr-2" />
             <div class="modal-message-content" v-if="!isSystemMessage(msg)">
               <div v-if="msg.attachment || (msg.attachments && msg.attachments.length > 0)" class="modal-attachment-info">
@@ -827,7 +674,7 @@
               </div>
 
               <!-- Thinking block modal view (modern-cli style) -->
-              <div v-if="!msg.isUser && msg.thinkingContent && activeTabIndex === 0 && !msg.navigatedTo"
+              <div v-if="!msg.isUser && msg.thinkingContent && !msg.navigatedTo"
                 class="thinking-block"
                 :class="{ 'thinking-block--streaming': aiLoading && msg === assistantMessage }">
                 <div class="thinking-block-header" @click="msg._thinkingExpanded = !msg._thinkingExpanded">
@@ -842,34 +689,29 @@
                 </div>
               </div>
               <!-- Waiting for first thinking token (modal, hide once navigation happened) -->
-              <div v-else-if="!msg.isUser && aiLoading && msg === assistantMessage && !msg.text && !msg.thinkingContent && !msg.navigatedTo && activeTabIndex === 0" class="thinking-waiting">
+              <div v-else-if="!msg.isUser && aiLoading && msg === assistantMessage && !msg.text && !msg.thinkingContent && !msg.navigatedTo" class="thinking-waiting">
                 <span class="thinking-emoji">💭</span>
                 <span>Думает<span class="tw-dot tw-dot-1">.</span><span class="tw-dot tw-dot-2">.</span><span class="tw-dot tw-dot-3">.</span></span>
               </div>
 
               <div class="modal-message-text">
                 <span v-if="msg.isUser && msg.displayText" class="quick-prompt-badge"><i class="pi pi-bolt"></i> Быстрое действие</span>
-                <MarkdownRender v-if="activeTabIndex === 0" :content="msg.isUser && msg.displayText ? msg.displayText : msg.text" />
-                <template v-else>{{ msg.isUser && msg.displayText ? msg.displayText : msg.text }}</template>
-                <span v-if="
-                  aiLoading &&
-                  msg === assistantMessage &&
-                  activeTabIndex === 0
-                " class="streaming-cursor"></span>
+                <MarkdownRender :content="msg.isUser && msg.displayText ? msg.displayText : msg.text" />
+                <span v-if="aiLoading && msg === assistantMessage" class="streaming-cursor"></span>
               </div>
               <div class="modal-message-actions">
                 <div class="modal-message-time">{{ msg.time }}</div>
                 <div class="modal-action-buttons">
-                  <Button v-if="activeTabIndex === 0 && !msg.isUser" icon="pi pi-copy" title="Скопировать"
+                  <Button v-if="!msg.isUser" icon="pi pi-copy" title="Скопировать"
                     class="copy-button p-button-text p-button-sm" @click="copyToClipboard(msg.text)"
                     aria-label="Скопировать сообщение" />
-                  <Button v-if="activeTabIndex === 0" icon="pi pi-refresh" title="Отправить снова"
+                  <Button icon="pi pi-refresh" title="Отправить снова"
                     class="resend-button p-button-text p-button-sm" @click="resendMessage(index)"
                     data-testid="resend-message-button-modal" aria-label="Отправить сообщение снова" />
-                  <Button v-if="activeTabIndex === 0 && msg.isUser" icon="pi pi-pencil" title="Редактировать"
+                  <Button v-if="msg.isUser" icon="pi pi-pencil" title="Редактировать"
                     class="edit-button p-button-text p-button-sm" @click="editMessage(index)"
                     data-testid="edit-message-button-modal" aria-label="Редактировать сообщение" />
-                  <Button v-if="activeTabIndex === 0 && msg.isUser" icon="pi pi-trash" title="Удалить"
+                  <Button v-if="msg.isUser" icon="pi pi-trash" title="Удалить"
                     class="delete-button p-button-text p-button-sm p-button-danger" @click="deleteMessage(index)"
                     data-testid="delete-message-button-modal" aria-label="Удалить сообщение" />
                 </div>
@@ -878,21 +720,17 @@
             <Avatar v-if="msg.isUser && !isSystemMessage(msg)" icon="pi pi-user" shape="circle" size="normal" class="ml-2" />
           </div>
 
-          <div v-if="aiLoading && !assistantMessage && activeTabIndex === 0" class="modal-loading-indicator">
+          <div v-if="aiLoading && !assistantMessage" class="modal-loading-indicator">
             <ProgressSpinner style="width: 30px; height: 30px" />
           </div>
 
-          <div v-if="aiError && activeTabIndex === 0" class="modal-error-message">
+          <div v-if="aiError" class="modal-error-message">
             {{ aiError }}
           </div>
 
-          <!-- Typing indicator for general chat -->
-          <div v-if="typingIndicator && activeTabIndex === 1" class="modal-typing-indicator">
-            <small class="text-muted">{{ typingIndicator }}</small>
-          </div>
         </div>
         <div class="modal-controls">
-          <div class="workspace-selector-row" v-if="activeTabIndex === 0 && agentMode">
+          <div class="workspace-selector-row" v-if="agentMode">
             <label>Workspace:</label>
             <Dropdown v-model="selectedWorkspace" :options="workspaces" optionLabel="name" optionValue="id"
               placeholder="Выберите workspace" class="workspace-dropdown" :filter="true" :loading="loadingWorkspaces">
@@ -917,7 +755,7 @@
           </div>
 
           <!-- Issue #7104: Quick prompts, tools, and finmodel in fullsize modal chat -->
-          <div class="modal-quick-actions" v-if="activeTabIndex === 0">
+          <div class="modal-quick-actions">
             <button
               class="modal-action-toggle"
               :class="{ active: toolsConfig.webSearch }"
@@ -1097,14 +935,11 @@
             <Button icon="pi pi-microphone" @click="toggleVoiceInput"
                     :class="['p-button-text', 'voice-btn', { 'recording': isRecording }]"
                     title="Голосовой ввод" />
-            <Button v-if="activeTabIndex === 0 && isAdmin" icon="pi pi-sliders-h" @click.stop.prevent="toggleChatOptions"
+            <Button v-if="isAdmin" icon="pi pi-sliders-h" @click.stop.prevent="toggleChatOptions"
                     class="p-button-text chat-options-btn"
                     title="Агент и настройки" aria-label="Агент и настройки" />
-            <InputText ref="modalAiInputRef" v-if="activeTabIndex === 0" v-model="aiMessage" placeholder="Задайте вопрос ИИ..."
+            <InputText ref="modalAiInputRef" v-model="aiMessage" placeholder="Задайте вопрос ИИ..."
               @keyup.enter="handleSendAiMessage" class="modal-input-field" :disabled="aiLoading" />
-            <InputText ref="modalGeneralInputRef" v-else v-model="newMessage" placeholder="Напишите ваше сообщение..."
-              @keyup.enter="handleSendMessage" @input="handleTyping"
-              class="modal-input-field" />
             <input type="file" ref="modalFileInput" style="display: none" @change="handleModalFileUpload"
                    accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.json,.csv,image/*" multiple />
             <Button icon="pi pi-paperclip" @click="modalAttachmentMenu.toggle($event)" class="p-button-text attachment-btn" title="Прикрепить файл" />
@@ -1114,12 +949,12 @@
                 <Button label="Таблицы/отчёты" icon="pi pi-database" @click="showDataSelector = true; modalAttachmentMenu.hide()" class="p-button-text w-full justify-start" />
               </div>
             </Popover>
-            <Button icon="pi pi-send" @click="activeTabIndex === 0 ? handleSendAiMessage() : handleSendMessage()"
-              :severity="activeTabIndex === 0 ? 'help' : 'info'" :disabled="aiLoading && activeTabIndex === 0" class="send-btn" />
+            <Button icon="pi pi-send" @click="handleSendAiMessage()"
+              severity="help" :disabled="aiLoading" class="send-btn" />
           </div>
         </div>
         
-        <div v-if="currentAttachments.length > 0 && activeTabIndex === 0" class="current-attachments">
+        <div v-if="currentAttachments.length > 0" class="current-attachments">
           <div v-for="(attachment, index) in currentAttachments" :key="index" class="current-attachment">
             <div class="modal-attachment-info current">
               <img v-if="isImage(attachment)" :src="attachment.url" class="image-preview-small" />
@@ -1535,22 +1370,7 @@
       @execution-error="onExecutionError"
     />
 
-    <!-- Toast для уведомлений General Chat -->
     <Toast />
-
-    <!-- Room Management Dialogs -->
-    <RoomCreationDialog
-      v-model:visible="showRoomCreationDialog"
-      @created="handleRoomCreated"
-    />
-
-    <RoomMembersDialog
-      v-model:visible="showRoomMembersDialog"
-      :roomId="currentRoomId"
-      :roomCreatorId="currentRoomCreatorId"
-      :currentUserId="currentUserId"
-      @member-removed="handleMemberRemoved"
-    />
 
     <!-- Chat Help Dialog -->
     <ChatHelpDialog
@@ -1579,8 +1399,6 @@ import ContextBar from '@/components/chat/ContextBar.vue'
 import AgentStatusBar from '@/components/chat/AgentStatusBar.vue'
 import AvailableAgentsList from '@/components/chat/AvailableAgentsList.vue'
 import ChatHistoryDialog from '@/components/chat/ChatHistoryDialog.vue'
-import RoomCreationDialog from '@/components/chat/RoomCreationDialog.vue'
-import RoomMembersDialog from '@/components/chat/RoomMembersDialog.vue'
 import ChatHelpDialog from '@/components/chat/ChatHelpDialog.vue'
 import SGRStatusBadge from '@/components/chat/SGRStatusBadge.vue'
 import AgentSelector from '@/components/chat/AgentSelector.vue'
@@ -1597,13 +1415,10 @@ import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 const {
   // State
   activeTabIndex,
-  activeChat,
   aiChat,
-  generalChat,
   deepAgentEnabled,
   aiMessage,
   aiDisplayText,
-  newMessage,
   aiLoading,
   aiError,
   assistantMessage,
@@ -1656,23 +1471,12 @@ const {
   contextUsage,
   compactMessages,
 
-  // General Chat state
-  availableRooms,
-  loadingRooms,
-  loadingMessages,
-  typingUsers,
-  isConnected,
-  typingIndicator,
-
   // Refs for template binding
   fileInput,
-  fileInputGeneral,
   modalFileInput,
   attachmentMenu,
-  attachmentMenuGeneral,
   modalAttachmentMenu,
   aiMessagesContainer,
-  messagesContainer,
   modalMessagesContainer,
 
   // Computed
@@ -1680,7 +1484,6 @@ const {
   isBlockEditorPage,
   isOntologyPage,
   ontologyContextualActions,
-  currentUserId,
   editorDocumentContext,
   integramTableContext,
   setIntegramTableContext,
@@ -1695,7 +1498,6 @@ const {
   // Methods - Message handling
   isSystemMessage,
   scrollToBottom,
-  sendMessage,
   sendAiMessage,
   cancelAiRequest,
   sendEditorAction,
@@ -1715,8 +1517,6 @@ const {
   formatFileSize,
   triggerFileUpload,
   handleFileUpload,
-  triggerFileUploadGeneral,
-  handleFileUploadGeneral,
   triggerModalFileUpload,
   handleModalFileUpload,
   removeCurrentAttachment,
@@ -1758,12 +1558,6 @@ const {
   handleIntegraMCPAuth,
   handleIntegraMCPLogout,
   testIntegraMCP,
-
-  // Methods - General Chat
-  loadRooms,
-  createDefaultRoom,
-  joinRoom,
-  handleTyping,
 
   handleSuggestedAction,
   handleRetry,
@@ -1893,18 +1687,11 @@ function saveCurrentChatWithName(name) {
   saveCurrentChat()
 }
 
-// Room Management
 const router = useRouter()
 const route = useRoute()
 
 // Issue #6914: Detect preview mode from URL query parameter
 const isPreviewMode = computed(() => route.query?.preview === '1')
-
-const showRoomCreationDialog = ref(false)
-const showRoomMembersDialog = ref(false)
-const currentRoomId = ref(null) // Current room ID
-const currentRoomCreatorId = ref(null)
-const openRooms = ref([]) // List of open room tabs (excluding general chat)
 
 // Agents Help Dialog
 const showAgentsHelp = ref(false)
@@ -2001,100 +1788,11 @@ function handleFeedback(msg, feedback, index) {
   }
 }
 
-// Avatar helper functions
-function openUserProfile(authorId) {
-  if (!authorId) return
-  router.push(`/integram/my/user/${authorId}`)
-}
-
-function getAvatarColor(userId) {
-  if (!userId) return 'var(--surface-300)'
-
-  const hash = userId.toString().split('').reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc)
-  }, 0)
-
-  const colors = [
-    '#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B',
-    '#EF4444', '#06B6D4', '#6366F1', '#14B8A6', '#F97316'
-  ]
-
-  return colors[Math.abs(hash) % colors.length]
-}
-
-function getAvatarLabel(msg) {
-  if (!msg.authorName || msg.authorName === 'Unknown') {
-    return msg.authorId ? msg.authorId.toString().substring(0, 2) : '??'
-  }
-  return msg.authorName.substring(0, 2).toUpperCase()
-}
-
-// Room management functions
-function closeRoomTab(roomId) {
-  const index = openRooms.value.findIndex(r => r.id === roomId)
-  if (index !== -1) {
-    openRooms.value.splice(index, 1)
-
-    if (currentRoomId.value === roomId) {
-      activeTabIndex.value = 1 // General Chat tab (watcher will handle room switch)
-    }
-  }
-}
-
-function openRoomMembers(roomId, creatorId) {
-  currentRoomId.value = typeof roomId === 'string' ? parseInt(roomId, 10) : roomId
-  currentRoomCreatorId.value = creatorId
-  showRoomMembersDialog.value = true
-}
-
-async function handleRoomCreated(room) {
-  console.log('Room created:', room)
-
-  if (!openRooms.value.find(r => r.id === room.id)) {
-    openRooms.value.push({
-      id: room.id,
-      name: room.name,
-      description: room.description,
-      creatorId: room.creatorId,
-      typeId: room.typeId
-    })
-  }
-
-  const roomTabIndex = openRooms.value.findIndex(r => r.id === room.id) + 2
-  activeTabIndex.value = roomTabIndex
-
-  await generalChat.refreshRooms(room.id)
-
-  const roomId = room.id
-  currentRoomId.value = typeof roomId === 'string' ? parseInt(roomId, 10) : roomId
-  currentRoomCreatorId.value = room.creatorId || null
-}
-
-async function handleMemberRemoved(data) {
-  console.log('Member removed:', data)
-
-  if (data.self) {
-    const roomIndex = openRooms.value.findIndex(r => r.id === currentRoomId.value)
-    if (roomIndex !== -1) {
-      openRooms.value.splice(roomIndex, 1)
-    }
-
-    activeTabIndex.value = 1 // General Chat tab (watcher will handle room switch)
-  }
-
-  await generalChat.loadRooms()
-}
-
 /**
  * Handle agent command sent from AgentsHelpDialog
  * Populates the chat input with the selected command
  */
 function handleAgentCommand(command) {
-  // Switch to AI Assistant tab if not already there
-  if (activeTabIndex.value !== 0) {
-    activeTabIndex.value = 0
-  }
-
   // Populate the chat input with the command
   aiMessage.value = command
 
@@ -2109,42 +1807,9 @@ function handleAgentCommand(command) {
   })
 }
 
-// Watch for tab changes to switch rooms
-watch(activeTabIndex, async (newIndex) => {
-  if (newIndex === 1) {
-    // General Chat - use already active chat from generalChat
-    // No need to switch, already initialized in useGeneralChat.init()
-    if (generalChat.activeChat.id) {
-      const roomId = generalChat.activeChat.id
-      currentRoomId.value = typeof roomId === 'string' ? parseInt(roomId, 10) : roomId
-      currentRoomCreatorId.value = generalChat.activeChat.creatorId || null
-    }
-  } else if (newIndex >= 2) {
-    const roomIndex = newIndex - 2
-    const room = openRooms.value[roomIndex]
-    if (room) {
-      await generalChat.switchRoom(room.id)
-      const roomId = room.id
-      currentRoomId.value = typeof roomId === 'string' ? parseInt(roomId, 10) : roomId
-      currentRoomCreatorId.value = room.creatorId
-    }
-  }
-})
-
-// Watch for room changes in generalChat.activeChat
-watch(() => generalChat.activeChat.id, (newRoomId) => {
-  if (newRoomId) {
-    currentRoomId.value = typeof newRoomId === 'string' ? parseInt(newRoomId, 10) : newRoomId
-    currentRoomCreatorId.value = generalChat.activeChat.creatorId || null
-    console.log('[Chat] Room switched:', newRoomId, 'creatorId:', currentRoomCreatorId.value)
-  }
-})
-
 // Input refs for focus management
 const aiMessageInputRef = ref(null)
-const generalMessageInputRef = ref(null)
 const modalAiInputRef = ref(null)
-const modalGeneralInputRef = ref(null)
 
 // Helper function to focus input
 const focusInput = (inputRef) => {
@@ -2177,16 +1842,6 @@ const handleSendAiMessage = () => {
   }
 }
 
-const handleSendMessage = () => {
-  sendMessage()
-  // Focus returns to input after message is sent
-  if (isModalVisible.value) {
-    focusInput(modalGeneralInputRef)
-  } else {
-    focusInput(generalMessageInputRef)
-  }
-}
-
 // Modal visibility (specific to Chat.vue sidebar)
 const isModalVisible = ref(false)
 
@@ -2201,15 +1856,9 @@ const hideModal = () => {
   isModalVisible.value = false
 }
 
-// Handle "New Chat" button click based on active tab
+// Handle "New Chat" button click — create new AI session
 const handleNewChatClick = () => {
-  if (activeTabIndex.value === 0) {
-    // ИИ-ассистент: создать новую ИИ сессию
-    createNewChatSession()
-  } else {
-    // Общий чат или комнаты: показать диалог создания комнаты
-    showRoomCreationDialog.value = true
-  }
+  createNewChatSession()
 }
 
 // Close sidebar chat (specific to Chat.vue)

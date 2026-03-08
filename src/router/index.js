@@ -10,6 +10,7 @@ const routes = [
       { path: 'fst-hub', component: () => import('@/views/pages/FstHub.vue'), meta: { title: 'ФСТ НТИ — Главная' } },
       { path: 'fst-committee', component: () => import('@/views/pages/FstCommittee.vue'), meta: { title: 'AI-инвесткомитет' } },
       { path: 'fst-protocol', component: () => import('@/views/pages/FstProtocol.vue'), meta: { title: 'Протоколы инвесткомитета' } },
+      { path: 'fst-contract/:id', component: () => import('@/views/pages/FstSmartContract.vue'), meta: { title: 'Смарт контракт' } },
       { path: 'fst-deal', component: () => import('@/views/pages/FstDeal.vue'), meta: { title: 'Доведение сделки' } },
       { path: 'fst-portfolio', component: () => import('@/views/pages/FstPortfolio.vue'), meta: { title: 'Портфельный монитор' } },
       { path: 'fst-twin', component: () => import('@/views/pages/FstDigitalTwin.vue'), meta: { title: 'Цифровой двойник компании' } },
@@ -47,6 +48,10 @@ const routes = [
       { path: 'fst-quiz', component: () => import('@/views/pages/FstQuizDemo.vue'), meta: { title: 'Мини-квизы — закрепление знаний' } },
       { path: 'fst-dev-guide', component: () => import('@/views/pages/FstDevGuide.vue'), meta: { title: 'Путь обучения VentureOS' } },
       { path: 'fst-school', component: () => import('@/views/pages/FstAgentSchool.vue'), meta: { title: 'Школа агентов ИК' } },
+      { path: 'fst-miniapp', component: () => import('@/views/pages/FstMiniApp.vue'), meta: { title: 'Telegram Mini App' } },
+      { path: 'fst-network', component: () => import('@/views/pages/FstNetwork.vue'), meta: { title: 'Сеть контактов' } },
+      { path: 'fst-workspace', component: () => import('@/views/pages/FstWorkspace.vue'), meta: { title: 'Рабочие пространства' } },
+      { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ — Платформа' } },

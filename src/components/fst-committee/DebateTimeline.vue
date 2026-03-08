@@ -430,11 +430,28 @@ const allItems = computed(() => {
           subtext: `раунд ${ev.round}` })
         break
 
-      case 'SessionConcluded':
+      case 'SessionConcluded': {
+        const stats = props.session?.agentStats || {}
+        const statsVals = Object.values(stats)
+        const llmCount = statsVals.filter(s => s.agentLoop).length
+        const totalAgents = statsVals.length
+        const avgIter = totalAgents > 0 ? (statsVals.reduce((s, a) => s + (a.iterCount || 0), 0) / totalAgents).toFixed(1) : '0'
+        const forcedCount = statsVals.filter(s => s.forcedPublish).length
+        const allTools = statsVals.flatMap(s => s.toolsUsed || [])
+        const toolCounts = {}
+        allTools.forEach(t => { toolCounts[t] = (toolCounts[t] || 0) + 1 })
+        const topTools = Object.entries(toolCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([t, c]) => `${t}×${c}`).join(', ')
+
         items.push({ ...base, kind: 'session', icon: 'pi pi-flag-fill', color: '#4caf50',
           text: `✅ Сессия завершена — ${VERDICTS[ev.finalVerdict]?.label || ev.finalVerdict}`,
           subtext: `Итоговый балл: ${ev.score}/100` })
+        if (totalAgents > 0) {
+          items.push({ ...base, _key: base._key + '_stats', kind: 'system', icon: 'pi pi-chart-bar', color: '#78909c',
+            text: `Агенты с LLM: ${llmCount}/${totalAgents} | Средние итерации: ${avgIter} | Forced publish: ${forcedCount}`,
+            subtext: topTools ? `Инструменты: ${topTools}` : '' })
+        }
         break
+      }
 
       case 'DecisionLinked':
         items.push({ ...base, kind: 'system', icon: 'pi pi-link', color: '#6b7280',

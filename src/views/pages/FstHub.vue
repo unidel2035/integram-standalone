@@ -92,19 +92,6 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════ TOOLS -->
-    <div class="hub-section">
-      <div class="hub-section-label">Инструменты</div>
-      <div class="hub-tools">
-        <div v-for="tool in tools" :key="tool.id" class="hub-tool" @click="go(tool.path)">
-          <div class="hub-tool-icon" :style="{ color: tool.color }"><i :class="tool.icon"></i></div>
-          <div class="hub-tool-name">{{ tool.name }}</div>
-          <div class="hub-tool-desc">{{ tool.desc }}</div>
-        </div>
-      </div>
-    </div>
-
-
   </div>
 
   <!-- Page Help Drawer -->
@@ -140,11 +127,11 @@ onMounted(() => { loadStats() })
 const metrics = computed(() => {
   const s = stats.value
   return [
-    { icon: 'pi pi-clock',       color: '#38bdf8', val: '48 ч',                             label: 'Среднее время решения' },
-    { icon: 'pi pi-sitemap',     color: '#a78bfa', val: statsLoading.value ? '...' : `${s?.subfundCount ?? 3}`,    label: 'Субфонда' },
-    { icon: 'pi pi-briefcase',   color: '#34d399', val: statsLoading.value ? '...' : `${s?.portfolioCount ?? 0}`, label: 'Компаний в портфеле' },
+    { icon: 'pi pi-users',        color: '#a78bfa', val: statsLoading.value ? '...' : `${s?.committeeCount ?? 0}`,  label: 'Заседаний ИК' },
+    { icon: 'pi pi-sitemap',      color: '#38bdf8', val: statsLoading.value ? '...' : `${s?.subfundCount ?? 3}`,    label: 'Субфонда' },
+    { icon: 'pi pi-briefcase',    color: '#34d399', val: statsLoading.value ? '...' : `${s?.portfolioCount ?? 0}`, label: 'Компаний в портфеле' },
     { icon: 'pi pi-check-circle', color: '#fb923c', val: statsLoading.value ? '...' : `${s?.dealsCount ?? 9}`,     label: 'Закрытых сделок' },
-    { icon: 'pi pi-chart-line',  color: '#f87171', val: statsLoading.value ? '...' : `${s?.avgIRR ? (s.avgIRR * 100).toFixed(0) + '%' : '—'}`, label: 'Средний IRR' },
+    { icon: 'pi pi-chart-line',   color: '#f87171', val: statsLoading.value ? '...' : `${s?.avgIRR ? (s.avgIRR * 100).toFixed(0) + '%' : '—'}`, label: 'Средний IRR' },
   ]
 })
 
@@ -175,12 +162,6 @@ const modules = [
   { id: 'fund',           name: 'Цифровой двойник фонда', phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-building',      color: '#38bdf8', path: '/fst-fund',           status: 'live' },
 ]
 
-const tools = [
-  { id: 'simulator',    name: 'НТИ Симулятор',     desc: '9 рынков · Wright\'s Law · Леонтьев',  icon: 'pi pi-server',   color: '#a78bfa', path: '/nti-simulator' },
-  { id: 'presentation', name: 'НТИ Презентация',   desc: 'Для Малкова и Пескова',                icon: 'pi pi-bookmark', color: '#38bdf8', path: '/nti-presentation' },
-  { id: 'finmodel',     name: 'Редактор финмоделей',desc: 'HyperFormula · 389 функций',           icon: 'pi pi-table',    color: '#34d399', path: '/finmodel' },
-  { id: 'onto',         name: 'Онтология БПЛА',    desc: '~1140 концептов · SKOS · OWL',         icon: 'pi pi-sitemap',  color: '#fb923c', path: '/onto' },
-]
 </script>
 
 <style scoped>
@@ -216,8 +197,8 @@ const tools = [
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #22d3ee;
-  box-shadow: 0 0 6px #22d3ee;
+  background: var(--p-primary-color);
+  box-shadow: 0 0 6px var(--p-primary-color);
   animation: pulse 2s infinite;
 }
 @keyframes pulse {
@@ -463,39 +444,6 @@ const tools = [
 .hub-mod-arrow {
   color: var(--p-text-muted-color);
   font-size: 12px;
-}
-
-/* ═══════════════════════════════════════════════ TOOLS */
-.hub-tools {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-}
-.hub-tool {
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid var(--p-content-border-color);
-  background: var(--p-surface-card);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.hub-tool:hover {
-  background: var(--p-surface-hover);
-  border-color: var(--p-primary-color);
-}
-.hub-tool-icon {
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-.hub-tool-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--p-text-color);
-  margin-bottom: 4px;
-}
-.hub-tool-desc {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
 }
 
 

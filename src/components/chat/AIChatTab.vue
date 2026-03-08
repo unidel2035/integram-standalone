@@ -82,8 +82,6 @@
                 </template>
               </Dropdown>
               <div class="workspace-action-buttons">
-                <Button icon="pi pi-robot" @click="$router.push('/agents/workspace-ai')"
-                        severity="info" outlined size="small" title="Открыть Workspace AI Agent" rounded />
                 <Button icon="pi pi-plus" @click="$emit('create-workspace')"
                         severity="success" outlined size="small" title="Создать workspace" rounded />
                 <Button icon="pi pi-refresh" @click="$emit('refresh-workspaces')" :loading="loadingWorkspaces"

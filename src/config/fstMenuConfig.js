@@ -76,6 +76,8 @@ export const fstMenuConfig = [
       { label: 'Глоссарий', icon: 'pi pi-book', to: '/fst-glossary' },
       { label: 'Мини-квизы', icon: 'pi pi-check-circle', to: '/fst-quiz' },
       { label: 'Школа агентов', icon: 'pi pi-star', to: '/fst-school' },
+      { label: 'Workspace', icon: 'pi pi-desktop', to: '/fst-workspace' },
+      { label: 'Claude CLI', icon: 'pi pi-code', to: '/fst-terminal' },
     ]
   }
 ]

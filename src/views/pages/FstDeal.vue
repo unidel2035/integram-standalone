@@ -377,8 +377,6 @@
         <div class="fst-fm-actions">
           <Button label="Применить к AI-оценке" icon="pi pi-refresh" size="small" severity="success"
             @click="applyFinmodelToAI" />
-          <Button label="Открыть полный редактор" icon="pi pi-external-link" size="small" severity="secondary" text
-            @click="$router.push('/finmodel')" />
         </div>
       </div>
     </div>

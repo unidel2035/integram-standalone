@@ -160,17 +160,30 @@ export async function getProjects() {
     return parts.length === 2 ? parts[1] : raw
   }
 
-  return objects.map(obj => ({
-    id:          obj.id,
-    name:        obj.val,
-    ogrn:        reqs[obj.id]?.['2237'] || '',  // SHORT (was 1156)
-    amount:      Number(reqs[obj.id]?.['2238'] || 0),  // NUMBER (was 1157)
-    description: reqs[obj.id]?.['1158'] || '',
-    submittedAt: reqs[obj.id]?.['1159'] || null,
-    subfundId:   refId(reqs[obj.id], '1178'),  // ref→1082 (was 1177)
-    stageId:     refId(reqs[obj.id], '1180'),  // ref→1084 (was 1179)
-    statusId:    refId(reqs[obj.id], '1184'),  // ref→1088 (was 1183)
-  }))
+  return objects.map(obj => {
+    const r = reqs[obj.id] || {}
+    return {
+      id:          obj.id,
+      name:        obj.val,
+      ogrn:        r['2237'] || '',              // SHORT
+      amount:      Number(r['2238'] || 0),       // NUMBER
+      description: r['1158'] || '',
+      submittedAt: r['1159'] || null,
+      subfundId:   refId(r, '1178'),             // ref→1082
+      stageId:     refId(r, '1180'),             // ref→1084
+      statusId:    refId(r, '1184'),             // ref→1088
+      // Issue #157: dedicated numeric fields
+      trl:              Number(r['6155'] || 0),   // 1-9
+      mrl:              Number(r['6157'] || 0),   // 1-10
+      sovereigntyScore: Number(r['6159'] || 0),   // 0-9
+      projectedIRR:     Number(r['6161'] || 0),   // % (e.g. 45)
+      marketSizeMln:    Number(r['6163'] || 0),   // млн руб
+      teamStrength:     Number(r['6165'] || 0),   // 0-10
+      employees:        Number(r['6167'] || 0),
+      patents:          Number(r['6169'] || 0),
+      foundedYear:      Number(r['6171'] || 0),
+    }
+  })
 }
 
 export async function getProject(id) {
@@ -180,13 +193,23 @@ export async function getProject(id) {
 export async function createProject(data) {
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: data.name,
-    t2237: data.ogrn || '',       // SHORT (was t1156)
-    t2238: data.amount || 0,      // NUMBER (was t1157)
+    t2237: data.ogrn || '',
+    t2238: data.amount || 0,
     t1158: data.description || '',
     t1159: data.submittedAt || new Date().toISOString(),
-    ...(data.subfundId ? { t1178: data.subfundId } : {}),  // was t1177
-    ...(data.stageId   ? { t1180: data.stageId   } : {}),  // was t1179
-    ...(data.statusId  ? { t1184: data.statusId  } : {})   // was t1183
+    ...(data.subfundId ? { t1178: data.subfundId } : {}),
+    ...(data.stageId   ? { t1180: data.stageId   } : {}),
+    ...(data.statusId  ? { t1184: data.statusId  } : {}),
+    // Issue #157: dedicated numeric fields
+    ...(data.trl              != null ? { t6155: data.trl }              : {}),
+    ...(data.mrl              != null ? { t6157: data.mrl }              : {}),
+    ...(data.sovereigntyScore != null ? { t6159: data.sovereigntyScore } : {}),
+    ...(data.projectedIRR     != null ? { t6161: data.projectedIRR }     : {}),
+    ...(data.marketSizeMln    != null ? { t6163: data.marketSizeMln }    : {}),
+    ...(data.teamStrength     != null ? { t6165: data.teamStrength }     : {}),
+    ...(data.employees        != null ? { t6167: data.employees }        : {}),
+    ...(data.patents          != null ? { t6169: data.patents }          : {}),
+    ...(data.foundedYear      != null ? { t6171: data.foundedYear }      : {}),
   })
   return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
 }
@@ -278,13 +301,23 @@ export async function createProjectFromApplication(application) {
 
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: application.companyName,
-    t2237: application.inn || '',              // ОГРН/ИНН (was t1156)
-    t2238: (application.amount || 0) * 1_000_000, // Сумма млн→руб (was t1157)
+    t2237: application.inn || '',
+    t2238: (application.amount || 0) * 1_000_000,
     t1158: descriptionWithExtended,
     t1159: new Date().toISOString(),
-    ...(subfundId ? { t1178: subfundId } : {}),  // was t1177
-    ...(stageId   ? { t1180: stageId   } : {}),  // was t1179
-    t1184: STATUSES['Новый'] // was t1183
+    ...(subfundId ? { t1178: subfundId } : {}),
+    ...(stageId   ? { t1180: stageId   } : {}),
+    t1184: STATUSES['Новый'],
+    // Issue #157: write to dedicated numeric fields
+    t6155: extended.trl || 0,
+    t6157: extended.mrl || 0,
+    t6159: extended.sovereigntyScore || 0,
+    t6161: Math.round((extended.projectedIRR || 0) * 100),  // 0-1 → %
+    t6163: Math.round((extended.marketSize || 0) / 1_000_000),  // руб → млн
+    t6165: Math.round((extended.teamStrength || 0) * 10),  // 0-1 → 0-10
+    t6167: extended.employees || 0,
+    t6169: extended.patents || 0,
+    t6171: extended.founded || 0,
   })
   return api(`_m_new/${TYPE_PROJECTS}?JSON_KV`, { method: 'POST', body })
 }
@@ -365,7 +398,17 @@ export async function saveCommitteeSession(session, projectId) {
     humanApproval: session.decision?.humanApproval || null,
 
     // Скоры по измерениям
-    dimScores: session.dimScores || {}
+    dimScores: session.dimScores || {},
+
+    // Issue #159: LLM model configuration used in this session
+    modelConfig: {
+      speedProfile: session.speedProfile || 'fast',
+      votingMode: session.votingMode || 'hybrid',
+      modelOverrides: session.modelOverrides || {}
+    },
+
+    // Issue #160: agent diagnostics for quality analysis
+    agentStats: session.agentStats || {}
   }
 
   // Определяем итоговое решение ИК
@@ -621,4 +664,135 @@ export async function saveWeeklyReport(report) {
   })
 
   return api(`_m_new/${TYPE_WEEKLY_REPORTS}?JSON_KV`, { method: 'POST', body })
+}
+
+// ── Smart Contracts (types 3995, 3996, 3999) ─────────────────────────────
+
+const TYPE_CONTRACTS = 3995
+const TYPE_CONTRACT_NODES = 3996
+const TYPE_CONDITIONS = 3999
+
+/**
+ * Загрузить смарт контракт по ID
+ */
+export async function loadContract(contractId) {
+  const data = await api(`object/${TYPE_CONTRACTS}?JSON_KV&l=50`)
+  const obj = (data?.object || []).find(o => String(o.id) === String(contractId))
+  if (!obj) return null
+  return {
+    id: obj.id,
+    name: obj.val,
+    createdAt: obj.created,
+  }
+}
+
+/**
+ * Загрузить ноды (сценарии) контракта
+ */
+export async function loadContractNodes(contractId) {
+  const data = await api(`object/${TYPE_CONTRACT_NODES}?JSON_KV&l=50`)
+  const objects = data?.object || []
+  const reqs = data?.reqs || {}
+
+  return objects
+    .filter(obj => String(obj.up) === String(contractId))
+    .map(obj => {
+      const r = reqs[obj.id] || {}
+      return {
+        id: obj.id,
+        name: obj.val,
+        scenario: r['4008'] || obj.val,
+        ic: parseFloat(r['4010']) || 0,
+        wacc: parseFloat(r['4012']) || 0,
+        horizon: parseInt(r['4014']) || 5,
+        cashflows: [
+          parseFloat(r['4016']) || 0,
+          parseFloat(r['4018']) || 0,
+          parseFloat(r['4020']) || 0,
+          parseFloat(r['4022']) || 0,
+          parseFloat(r['4024']) || 0,
+        ],
+        npv: parseFloat(r['4026']) || 0,
+        irr: parseFloat(r['4028']) || 0,
+        roi: parseFloat(r['4030']) || 0,
+        dpp: parseFloat(r['4032']) || 0,
+        pi: parseFloat(r['4034']) || 0,
+        probability: parseFloat(r['4036']) || 0,
+        status: r['4038'] || 'unknown',
+      }
+    })
+}
+
+/**
+ * Загрузить условия (conditions) для ноды контракта
+ */
+export async function loadConditions(nodeId) {
+  const data = await api(`object/${TYPE_CONDITIONS}?JSON_KV&l=100`)
+  const objects = data?.object || []
+  const reqs = data?.reqs || {}
+
+  return objects
+    .filter(obj => String(obj.up) === String(nodeId))
+    .map(obj => {
+      const r = reqs[obj.id] || {}
+      return {
+        id: obj.id,
+        text: obj.val || r['3999'] || '',
+        value: r['4002'] || '',
+        threshold: r['4040'] || '',
+        deadline: r['4042'] || '',
+        priority: r['4044'] || 'MEDIUM',
+        status: r['4046'] || 'PROPOSED',
+        agent: r['4048'] || '',
+      }
+    })
+}
+
+// ── Committee Config Presets (type 6298) ──────────────────────────────────
+// Issue #159: save/load LLM model config presets
+
+const TYPE_IC_CONFIG = 6298
+
+/**
+ * Load all committee config presets
+ */
+export async function loadCommitteeConfigs() {
+  const data = await api(`object/${TYPE_IC_CONFIG}?JSON_KV&l=50`)
+  const objects = data?.object || []
+  const reqs = data?.reqs || {}
+
+  return objects.map(obj => {
+    const r = reqs[obj.id] || {}
+    let modelMap = {}
+    try { modelMap = JSON.parse(r['6300'] || '{}') } catch {}
+    return {
+      id: obj.id,
+      name: obj.val,
+      modelMap,
+      speedProfile: r['6302'] || 'fast',
+      votingMode: r['6304'] || 'hybrid',
+      active: r['6306'] === '1' || r['6306'] === 'true',
+    }
+  })
+}
+
+/**
+ * Save a committee config preset
+ */
+export async function saveCommitteeConfig(config) {
+  const body = new URLSearchParams({
+    [`t${TYPE_IC_CONFIG}`]: config.name,
+    t6300: JSON.stringify(config.modelMap || {}),
+    t6302: config.speedProfile || 'fast',
+    t6304: config.votingMode || 'hybrid',
+    t6306: '1',
+  })
+  return api(`_m_new/${TYPE_IC_CONFIG}?JSON_KV`, { method: 'POST', body })
+}
+
+/**
+ * Delete a committee config preset
+ */
+export async function deleteCommitteeConfig(configId) {
+  return api(`_m_del/${configId}?JSON_KV`, { method: 'POST' })
 }
