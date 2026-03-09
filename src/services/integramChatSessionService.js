@@ -7,17 +7,17 @@
  * Структура данных в Integram:
  * - ai_token (198016) - Токены
  *   └── Токен (например 206099)
- *       └── Сессия (205909) - сессии чата
- *           ├── session_id (205921)
- *           ├── Последняя активность (205928)
- *           └── Транзакции (198038) - каждое сообщение
- *               ├── Модель (198040) - ссылка на модель
- *               ├── Входящих токенов (198041)
- *               ├── Исходящих токенов (198042)
- *               ├── Сумма (198043) - стоимость в копейках
- *               ├── Контент (205916) - текст сообщения
- *               ├── Сообщения JSON (205931)
- *               └── Системный промпт (205933)
+ *       └── Сессия (6880 в fst) - сессии чата
+ *           ├── session_id (6881)
+ *           ├── Последняя активность (6886)
+ *           └── Транзакции (6890 в fst) - каждое сообщение
+ *               ├── Модель (6891) - ссылка на модель
+ *               ├── Входящих токенов (6897)
+ *               ├── Исходящих токенов (6899)
+ *               ├── Сумма (6901) - стоимость в копейках
+ *               ├── Контент (6893) - текст сообщения
+ *               ├── Сообщения JSON (6895)
+ *               └── Системный промпт (6904)
  *
  * Цены моделей (за 1M токенов, в рублях):
  * - deepseek-chat: input=1.4₽, output=5.5₽
@@ -26,12 +26,12 @@
 
 import integramApiClient from './integramApiClient.js'
 
-// Type IDs для таблиц в Integram (база 'my')
+// Type IDs для таблиц в Integram (база 'fst')
 const TYPE_IDS = {
-  SESSION: 205909,      // Таблица сессий чата
-  TRANSACTION: 198038,  // Таблица транзакций
-  AI_TOKEN: 198016,     // Таблица токенов
-  MODEL: 195686         // Таблица моделей
+  SESSION: 6880,        // AI Сессия чата
+  TRANSACTION: 6890,    // AI Транзакция (subordinate к SESSION)
+  AI_TOKEN: 198016,     // Таблица токенов (остаётся в my — только для чтения)
+  MODEL: 195686         // Таблица моделей (остаётся в my — только для чтения)
 }
 
 // Цены моделей за 1M токенов (в копейках для точности)
@@ -94,26 +94,27 @@ function calculateCost(model, inputTokens, outputTokens) {
   return Number((inputCostRubles + outputCostRubles).toFixed(4))
 }
 
-// Requisite IDs для таблицы Сессия (205909)
+// Requisite IDs для таблицы AI Сессия чата (6880) в fst
 const SESSION_REQUISITES = {
-  DATE: 205911,              // Дата создания
-  TRANSACTION: 205913,       // Ссылка на транзакцию (устаревшее)
-  SESSION_ID: 205921,        // Уникальный ID сессии
-  SYSTEM_PROMPT: 205924,     // Системный промпт
-  MESSAGES_JSON: 205926,     // Сообщения в JSON формате (backup)
-  LAST_ACTIVITY: 205928      // Последняя активность
+  SESSION_ID: 6881,          // session_id
+  DATE: 6883,                // Дата
+  SYSTEM_PROMPT: 6885,       // system_prompt
+  LAST_ACTIVITY: 6886,       // Последняя активность
+  USER: 6887,                // Пользователь
+  MODEL: 6888,               // Модель
+  MESSAGE_COUNT: 6889        // Кол-во сообщений
 }
 
-// Requisite IDs для таблицы Транзакция (198038) - ОБНОВЛЕННЫЕ
+// Requisite IDs для таблицы AI Транзакция (6890) в fst
 const TRANSACTION_REQUISITES = {
-  MODEL: 198040,             // Модель (ссылка на 195686)
-  INPUT_TOKENS: 198041,      // Токенов вопроса
-  OUTPUT_TOKENS: 198042,     // Токенов ответа
-  COST: 198043,              // Цена (локальный расчёт)
-  POLZA_COST: 206459,        // Цена Polza (из ответа API)
-  QUESTION: 205916,          // Вопрос LMM
-  ANSWER: 205931,            // Ответ LMM
-  SYSTEM_PROMPT: 205933      // Системный промпт
+  MODEL: 6891,               // Модель
+  QUESTION: 6893,            // Вопрос
+  ANSWER: 6895,              // Ответ
+  INPUT_TOKENS: 6897,        // Входящих токенов
+  OUTPUT_TOKENS: 6899,       // Исходящих токенов
+  COST: 6901,                // Стоимость
+  POLZA_COST: 6903,          // Стоимость Polza
+  SYSTEM_PROMPT: 6904        // system_prompt
 }
 
 // ID дефолтной модели (deepseek-chat)
@@ -178,8 +179,8 @@ class IntegramChatSessionService {
       // Use getBaseApiUrl() for consistent URL resolution (handles auto, localhost, remote)
       const { getBaseApiUrl } = await import('../utils/apiConfig.js')
       const apiBase = getBaseApiUrl()
-      // Добавляем timestamp для обхода кэша браузера (Issue #5112)
-      const response = await fetch(`${apiBase}/ai-tokens/external-models?_t=${Date.now()}`)
+      // Используем HTTP-кэш браузера (модели меняются редко)
+      const response = await fetch(`${apiBase}/ai-tokens/external-models`)
 
       if (!response.ok) {
         console.warn('[IntegramChatSession] Failed to fetch models from API:', response.status)
@@ -290,7 +291,7 @@ class IntegramChatSessionService {
    */
   async initialize(tokenId = null) {
     try {
-      // Убедимся что integramApiClient настроен на 'my' базу
+      // Убедимся что integramApiClient настроен на 'fst' базу
       if (!integramApiClient.isAuthenticated()) {
         // Попробуем загрузить сессию из localStorage
         integramApiClient.loadSession()
@@ -301,8 +302,8 @@ class IntegramChatSessionService {
         }
       }
 
-      // Устанавливаем базу 'my' для сессий
-      integramApiClient.setDatabase('my')
+      // Устанавливаем базу 'fst' для сессий
+      integramApiClient.setDatabase('fst')
 
       // Получаем ID токена из localStorage или параметра
       // Default token 206099 = Polza AI Token для пользователя d
@@ -460,18 +461,11 @@ class IntegramChatSessionService {
       const totalCost = calculateCost(data.model, inputTokens, outputTokens)
       const polzaCost = data.polzaCost || data.cost || 0  // Цена из ответа Polza API (usage.cost)
 
-      // ВАЖНО: Убедимся, что модели загружены перед получением ID
-      if (!this.modelsLoaded) {
-        console.log('[IntegramChatSession] Models not loaded yet, loading now...')
-        await this.loadModelsMap()
-      }
-
-      // Получаем ID модели в Integram (из динамического маппинга)
-      const modelId = this.getModelId(data.model)
+      // В fst поле Модель — текстовое (SHORT), передаём название напрямую
 
       // Формируем реквизиты транзакции
       const requisites = {
-        [TRANSACTION_REQUISITES.MODEL]: modelId,
+        [TRANSACTION_REQUISITES.MODEL]: data.model || "unknown",
         [TRANSACTION_REQUISITES.QUESTION]: data.userMessage || '',
         [TRANSACTION_REQUISITES.ANSWER]: data.assistantMessage || '',
         [TRANSACTION_REQUISITES.INPUT_TOKENS]: String(inputTokens),

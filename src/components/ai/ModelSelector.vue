@@ -377,12 +377,29 @@ const currentModelMaxTokens = computed(() => {
 async function loadModels() {
   loading.value = true
   try {
-    // Fetch models from external-models endpoint which provides multiple AI providers
-    const response = await axios.get('/api/ai-tokens/external-models')
+    // Check localStorage cache first (1h TTL) to avoid 5s+ API call on every mount
+    const CACHE_KEY = 'external_models_cache'
+    const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+    let data = null
+    try {
+      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null')
+      if (cached && Date.now() - cached.ts < CACHE_TTL) {
+        data = cached.data
+        console.log('[ModelSelector] Using cached models:', data.length)
+      }
+    } catch(e) {}
 
-    if (response.data.success) {
+    if (!data) {
+      const response = await axios.get('/api/ai-tokens/external-models')
+      if (response.data.success) {
+        data = response.data.data
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })) } catch(e) {}
+      }
+    }
+
+    if (data) {
       // Transform external models to match internal model structure
-      allModels.value = response.data.data.map(model => ({
+      allModels.value = data.map(model => ({
         id: model.value, // Use original model value (e.g., "anthropic/claude-sonnet-4.5")
         model_id: model.value,
         display_name: model.name,
