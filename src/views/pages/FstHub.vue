@@ -172,6 +172,7 @@ const modules = [
   { id: 'gov',            name: 'GR · Меры поддержки',   phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-building-columns', color: '#26c6da', path: '/fst-gov',            status: 'live' },
   { id: 'secondary',      name: 'Secondary Market',       phase: 'Фаза 6 — Ликвидность',    icon: 'pi pi-refresh',       color: '#26c6da', path: '/fst-secondary',      status: 'live' },
   { id: 'fund',           name: 'Цифровой двойник фонда', phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-building',      color: '#38bdf8', path: '/fst-fund',           status: 'live' },
+  { id: 'pitch',          name: 'Инвестиционный питч',    phase: 'Фаза 0 — Поиск',           icon: 'pi pi-star',          color: '#f59e0b', path: '/fst-pitch',          status: 'live' },
 ]
 
 const phaseNames = {

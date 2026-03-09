@@ -21,6 +21,12 @@
         </label>
       </div>
       <p class="stp-formats">PDF · DOCX · XLSX · TXT · MD · JSON</p>
+      <div class="stp-demo-row">
+        <span class="stp-demo-label">Попробовать на примере:</span>
+        <Button label="АэроБот (seed, TRL 6)" icon="pi pi-bolt" severity="secondary" size="small" @click="loadDemo('aerobot')" />
+        <Button label="КвантумВижн (pre-seed)" icon="pi pi-bolt" severity="secondary" size="small" @click="loadDemo('quantum')" />
+        <Button label="АгроДрон (JSON)" icon="pi pi-bolt" severity="secondary" size="small" @click="loadDemo('agro')" />
+      </div>
     </div>
 
     <!-- Main 3-panel layout -->
@@ -235,6 +241,32 @@ function renderMarkdown(text) {
     .replace(/\n/g, '<br>')
 }
 
+async function loadDemo(name) {
+  await startSession()
+  thinking.value = true
+  const files = {
+    aerobot: { url: '/demo/startup-aerobot.txt', mime: 'text/plain', filename: 'startup-aerobot.txt' },
+    quantum: { url: '/demo/startup-quantum.md',  mime: 'text/markdown', filename: 'startup-quantum.md' },
+    agro:    { url: '/demo/startup-agro.json',   mime: 'application/json', filename: 'startup-agro.json' },
+  }
+  const f = files[name]
+  if (!f) { thinking.value = false; return }
+  const text = await fetch(f.url).then(r => r.text())
+  const base64Data = btoa(unescape(encodeURIComponent(text)))
+  messages.value.push({ role: 'user', content: `📎 Загружаю демо-файл: ${f.filename}`, timestamp: Date.now() })
+  const r = await fetch(`${API}/parse`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: sessionId.value, base64Data, mimeType: f.mime, filename: f.filename })
+  })
+  const d = await r.json()
+  if (d.twin)      Object.assign(twin.value, d.twin)
+  if (d.anomalies) beacons.value = d.anomalies
+  if (d.messages)  messages.value = d.messages
+  thinking.value = false
+  scrollToBottom()
+}
+
 function scrollToBottom() {
   nextTick(() => {
     if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
@@ -380,6 +412,8 @@ async function openFinModel() {
 .stp-upload-btn:hover { background: color-mix(in srgb, var(--p-primary-color) 8%, transparent); }
 .stp-upload-btn input { display: none; }
 .stp-formats { font-size: 0.75rem; color: var(--p-text-muted-color); }
+.stp-demo-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.stp-demo-label { font-size: 0.75rem; color: var(--p-text-muted-color); }
 
 .stp-layout {
   display: grid;

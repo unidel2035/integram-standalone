@@ -25,6 +25,7 @@ import webhooksRoutes from './api/routes/webhooks.js'
 import glossaryRoutes from './api/routes/glossary.js'
 import platformRoutes from './api/routes/platform.js'
 import startuperRouter from './api/routes/startuper.js'
+import grMeasuresRouter from './api/routes/grMeasures.js'
 import { authenticateApiToken, validateWebhookSecret } from './api/middleware/auth.js'
 import { startAgentSchoolTrainer } from './schedulers/agentSchoolTrainer.js'
 
@@ -102,6 +103,9 @@ app.use('/api/platform', platformRoutes)
 
 // Startuper agent — intake form assistant, doc parsing, psycho profiling
 app.use('/api/startuper', startuperRouter)
+
+// GR — government support measures parser + matcher
+app.use('/api/fst', grMeasuresRouter)
 
 // 404 handler
 app.use((req, res) => {

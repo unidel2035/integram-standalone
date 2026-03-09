@@ -71,7 +71,7 @@
         <div class="gr-section-title">
           <i class="pi pi-wallet" style="color:#42a5f5"></i>
           Банк мер государственной поддержки
-          <span class="gr-count">{{ filteredMeasures.length }} мер</span>
+          <span class="gr-count">{{ filteredMeasures.length }} из {{ allMeasures.length }}</span>
         </div>
 
         <!-- Фильтры -->
@@ -322,6 +322,8 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { getProjects } from '@/services/fstApi.js'
+import { getMeasures, matchMeasures as matchMeasuresFromService } from '@/services/grMeasuresService.js'
+import { ONTOLOGY_TAGS as GR_ONTO_TAGS } from '@/config/grOntology.js'
 
 const toast = useToast()
 const activeTab = ref('measures')
@@ -343,14 +345,11 @@ const MEASURE_TYPES = [
 
 const SECTORS = ['БПЛА / БАС', 'Робототехника', 'Промышленность', 'ИТ / ПО', 'Аэрокосмос', 'Все секторы']
 
-const ONTO_TAGS = [
-  'Технологический суверенитет', 'Импортозамещение', 'Нацпроект БАС', 'R&D финансирование',
-  'Масштабирование', 'Экспорт', 'Критическая инфраструктура', 'Кооперация', 'Стандартизация',
-  'Кадры', 'Испытательная база', 'Цифровизация производства', 'ГЧП', 'Венчурное плечо',
-]
+const ONTO_TAGS = GR_ONTO_TAGS.map(t => t.label)
 
-// ─── Банк мер поддержки ───────────────────────────────────────────────────────
-const MEASURES_DB = [
+// ─── Банк мер поддержки (удалён, данные в grMeasuresData.js) ─────────────────
+// eslint-disable-next-line no-unused-vars
+const _REMOVED = [
   {
     id: 'fond-umnik', name: 'УМНИК — молодёжный научно-инновационный конкурс',
     operator: 'Фонд содействия инновациям', type: 'grant', type_label: 'Грант',
@@ -445,6 +444,9 @@ const MEASURES_DB = [
 ]
 
 // ─── Таб 1: Данные ─────────────────────────────────────────────────────────────
+const allMeasures = ref(getMeasures())  // сразу заполнено из grMeasuresData
+const measuresLoading = ref(false)
+
 const projects = ref([])
 const projectsLoading = ref(false)
 const selectedProject = ref(null)
@@ -474,6 +476,10 @@ async function loadProjects() {
   }
 }
 
+function getMeasuresSource() {
+  return allMeasures.value
+}
+
 function matchMeasures() {
   if (!selectedProject.value) { matchedMeasures.value = []; return }
   const p = selectedProject.value
@@ -481,19 +487,15 @@ function matchMeasures() {
   const sector = p.subFundName === 'БАС' ? 'БПЛА / БАС'
     : p.subFundName === 'РОБО' ? 'Робототехника' : 'Промышленность'
 
-  matchedMeasures.value = MEASURES_DB
-    .filter(m => m.status !== 'closed')
-    .filter(m => trl >= m.trl_min)
-    .filter(m => m.sector.includes(sector) || m.sector.includes('Все секторы'))
-    .map(m => m.id)
+  matchedMeasures.value = matchMeasuresFromService(selectedProject.value).map(m => m.id)
 }
 
 function isMeasureMatched(id) { return matchedMeasures.value.includes(id) }
 
 const totalPotential = computed(() => {
-  const amounts = MEASURES_DB
+  const amounts = getMeasuresSource()
     .filter(m => matchedMeasures.value.includes(m.id))
-    .map(m => parseInt(m.amount.replace(/[^\d]/g, '')) || 0)
+    .map(m => parseInt((m.amount || '').replace(/[^\d]/g, '')) || 0)
     .filter(n => n > 0)
   const total = amounts.reduce((s, n) => s + n, 0)
   if (total >= 1000) return `~${Math.round(total/1000)} млрд ₽`
@@ -501,14 +503,14 @@ const totalPotential = computed(() => {
 })
 
 const filteredMeasures = computed(() => {
-  let list = MEASURES_DB
+  let list = getMeasuresSource()
   if (searchMeasures.value) {
     const q = searchMeasures.value.toLowerCase()
-    list = list.filter(m => m.name.toLowerCase().includes(q) || m.operator.toLowerCase().includes(q))
+    list = list.filter(m => (m.name || '').toLowerCase().includes(q) || (m.operator || '').toLowerCase().includes(q))
   }
   if (filterType.value) list = list.filter(m => m.type === filterType.value)
   if (filterSector.value && filterSector.value !== 'Все секторы') {
-    list = list.filter(m => m.sector.includes(filterSector.value) || m.sector.includes('Все секторы'))
+    list = list.filter(m => m.sector?.includes(filterSector.value) || m.sector?.includes('Все секторы'))
   }
   return list
 })
@@ -521,7 +523,7 @@ async function generatePlan() {
   planText.value = ''
   matchMeasures()
   const p = selectedProject.value
-  const matched = MEASURES_DB.filter(m => matchedMeasures.value.includes(m.id))
+  const matched = getMeasuresSource().filter(m => matchedMeasures.value.includes(m.id))
   const measuresStr = matched.map((m, i) =>
     `${i+1}. ${m.name} (${m.operator}) — ${m.amount}, TRL≥${m.trl_min}`
   ).join('\n')
@@ -771,7 +773,9 @@ const regulations = [
 
 function statusIcon(s) { return s === 'active' ? '✅' : s === 'risk' ? '🔴' : '🟡' }
 
-onMounted(loadProjects)
+onMounted(() => {
+  loadProjects()
+})
 </script>
 
 <style scoped>

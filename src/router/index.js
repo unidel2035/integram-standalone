@@ -53,6 +53,7 @@ const routes = [
       { path: 'fst-network', component: () => import('@/views/pages/FstNetwork.vue'), meta: { title: 'Сеть контактов' } },
       { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
       { path: 'fst-startuper', component: () => import('@/views/pages/FstStartuper.vue'), meta: { title: 'Стартапер' } },
+      { path: 'fst-pitch', component: () => import('@/views/pages/FstPitch.vue'), meta: { title: 'ai2fund — Инвестиционный питч' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },

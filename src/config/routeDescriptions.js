@@ -2492,6 +2492,12 @@ export const routeDescriptions = {
     description: 'ФСТ НТИ — Claude Code CLI: интерактивный терминал с AI-ассистентом Claude. WebSocket TTY через xterm.js, полноценная работа с кодом, git и файловой системой.',
     category: 'ai',
     tags: ['ФСТ', 'НТИ', 'Claude', 'CLI', 'Terminal', 'xterm', 'WebSocket', 'TTY', 'AI', 'found']
+  },
+
+  '/fst-pitch': {
+    description: 'ai2fund — инвестиционный питч: публичный лендинг платформы как объекта инвестирования. Финансовая модель, решение AI-инвесткомитета (6 агентов), Term Sheet, оценка 200M₽, запрос 30M₽ за 15% equity, IRR 85%, MOIC 8x, TRL 7.',
+    category: 'investment',
+    tags: ['ФСТ', 'НТИ', 'питч', 'инвестиции', 'Term Sheet', 'ai2fund', 'VentureOS', 'финмодель', 'ИК', 'лендинг']
   }
 }
 
