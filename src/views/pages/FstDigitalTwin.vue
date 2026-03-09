@@ -747,5 +747,6 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   .fdt-kpi-list { flex-wrap: wrap; gap: 8px; }
   .fdt-main { grid-template-columns: 1fr !important; }
   .fdt-vitals-grid { grid-template-columns: 1fr !important; }
+  .fdt-sidebar, .fdt-detail { max-height: 40vh; overflow-y: auto; border: none; border-bottom: 1px solid var(--surface-border); }
 }
 </style>

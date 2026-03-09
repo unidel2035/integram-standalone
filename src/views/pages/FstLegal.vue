@@ -220,8 +220,9 @@ function generateDoc() {
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {
-  .legal-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .legal-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; min-width: unset !important; }
   .doc-grid { grid-template-columns: 1fr !important; }
   .ts-cond { grid-template-columns: 1fr !important; }
+  .legal-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 </style>

@@ -372,6 +372,8 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
   .wf-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .wf-table result-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .wf-inputs-grid { grid-template-columns: 1fr !important; }
-  .wf-step { grid-template-columns: 1fr !important; }
+  .wf-step { grid-template-columns: 1fr !important; gap: 4px; }
+  .wf-step-dot { display: none; }
+  .modal-box { width: calc(100vw - 20px) !important; max-width: 400px; }
 }
 </style>

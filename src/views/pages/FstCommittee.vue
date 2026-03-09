@@ -4070,12 +4070,81 @@ onUnmounted(() => {
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {
-  .fst-committee { padding: 12px; }
+  .fst-committee { padding: 0; }
+
+  /* Setup: stack project list + settings vertically */
+  .fst-setup-body {
+    grid-template-columns: 1fr !important;
+  }
+  .fst-setup-col {
+    padding: 12px;
+  }
+  .fst-setup-col--projects {
+    border-right: none;
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  /* Header: wrap on mobile */
+  .fst-header {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .fst-header-title {
+    max-width: 180px;
+    font-size: 12px;
+  }
+  .fst-stepper {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .fst-header-right {
+    margin-left: auto;
+  }
+
+  /* Body: stack center + right vertically */
+  .fst-body {
+    flex-direction: column;
+  }
+  .fst-center {
+    border-right: none;
+    border-bottom: 1px solid var(--surface-border);
+    min-height: 50vh;
+  }
+  .fst-right {
+    width: 100% !important;
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  /* Tabs scroll */
+  .fst-tabs-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+  .fst-tabs-bar > * { flex-shrink: 0; font-size: 0.8rem; }
+
+  /* Score/votes */
   .fst-conclusion-score { flex-wrap: wrap; gap: 8px; }
   .fst-votes-summary { flex-wrap: wrap; gap: 8px; }
-  .fst-tabs-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
-  .fst-tabs-bar > * { flex-shrink: 0; font-size: 0.8rem; }
   .fst-kpis { grid-template-columns: 1fr !important; }
   .fst-belief-drift-grid { grid-template-columns: 1fr !important; }
+
+  /* Project cards in setup */
+  .fst-project-card {
+    padding: 10px;
+  }
+  .fst-project-metrics {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* Subfund chips wrap */
+  .fst-setup-subfunds {
+    flex-wrap: wrap;
+  }
 }
 </style>

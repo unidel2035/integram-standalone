@@ -533,5 +533,6 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   .fft-top-kpi { flex-wrap: wrap; gap: 8px; }
   .fft-main { grid-template-columns: 1fr !important; }
   .fft-subfunds { grid-template-columns: 1fr !important; }
+  .fft-sidebar, .fft-detail { max-height: 40vh; overflow-y: auto; border: none; border-bottom: 1px solid var(--surface-border); }
 }
 </style>

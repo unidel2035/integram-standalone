@@ -986,7 +986,10 @@ async function generateAiReport() {
 }
 
 @media (max-width: 900px) {
-  .fsp-body { grid-template-columns: 1fr; }
+  .fsp-body { grid-template-columns: 1fr !important; }
   .fsp-detail { border-left: none; border-top: 1px solid var(--surface-border); }
+  .fsp-right { max-height: 50vh; overflow-y: auto; border-left: none; border-top: 1px solid var(--surface-border); }
+  .fsp-filter-bar { flex-wrap: wrap; gap: 6px; }
+  .fsp-filter-sel, .fsp-search { width: 100% !important; }
 }
 </style>

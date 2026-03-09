@@ -1225,5 +1225,7 @@ function unlockTranche() {
   .fex-kpi-bar { flex-wrap: wrap; gap: 8px; }
   .fex-fund-body { grid-template-columns: 1fr !important; }
   .fex-actions-grid { grid-template-columns: 1fr !important; }
+  .fex-fab { width: calc(100vw - 20px) !important; max-width: 480px; left: 10px !important; right: 10px !important; }
+  .fex-sidebar, .fex-detail { max-height: 40vh; overflow-y: auto; }
 }
 </style>

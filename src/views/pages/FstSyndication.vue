@@ -1010,7 +1010,7 @@ function initNetworkGraph() {
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {
-  .syn-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .syn-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; min-width: unset !important; }
   .heatmap-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .syn-summary { flex-wrap: wrap; gap: 8px; }
   .inv-stats { flex-wrap: wrap; gap: 8px; }
@@ -1018,5 +1018,6 @@ function initNetworkGraph() {
   .syn-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
   .syn-summary { grid-template-columns: 1fr !important; }
   .investor-grid { grid-template-columns: 1fr !important; }
+  .syn-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 </style>
