@@ -92,22 +92,27 @@
         <h2>Как добавить квиз на страницу модуля</h2>
       </template>
       <template #content>
-        <TabView>
-          <TabPanel header="Простой способ">
-            <p>Используйте компонент <code>QuizButton</code>:</p>
-            <pre class="code-block"><code v-html="highlightedCode.simple"></code></pre>
-          </TabPanel>
-
-          <TabPanel header="С композицией">
-            <p>Используйте composable <code>useModuleQuiz</code> для больше контроля:</p>
-            <pre class="code-block"><code v-html="highlightedCode.composable"></code></pre>
-          </TabPanel>
-
-          <TabPanel header="Создание вопросов">
-            <p>Добавьте вопросы в <code>src/config/quizData.js</code>:</p>
-            <pre class="code-block"><code v-html="highlightedCode.quizData"></code></pre>
-          </TabPanel>
-        </TabView>
+        <Tabs value="0">
+          <TabList>
+            <Tab value="0">Простой способ</Tab>
+            <Tab value="1">С композицией</Tab>
+            <Tab value="2">Создание вопросов</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel value="0">
+              <p>Используйте компонент <code>QuizButton</code>:</p>
+              <pre class="code-block"><code v-html="highlightedCode.simple"></code></pre>
+            </TabPanel>
+            <TabPanel value="1">
+              <p>Используйте composable <code>useModuleQuiz</code> для больше контроля:</p>
+              <pre class="code-block"><code v-html="highlightedCode.composable"></code></pre>
+            </TabPanel>
+            <TabPanel value="2">
+              <p>Добавьте вопросы в <code>src/config/quizData.js</code>:</p>
+              <pre class="code-block"><code v-html="highlightedCode.quizData"></code></pre>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </template>
     </Card>
 
@@ -153,7 +158,10 @@ import { useRouter } from 'vue-router'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
-import TabView from 'primevue/tabview'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import Tag from 'primevue/tag'
 import GamificationPanel from '@/components/GamificationPanel.vue'

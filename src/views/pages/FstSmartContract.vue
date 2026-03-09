@@ -21,8 +21,13 @@
       </div>
 
       <!-- Scenario Tabs -->
-      <TabView v-if="nodes.length" v-model:activeIndex="activeTab">
-        <TabPanel v-for="node in nodes" :key="node.id" :header="node.scenario">
+      <Tabs v-if="nodes.length" :value="String(activeTab)" @update:value="v => activeTab = Number(v)">
+        <!-- Tab headers -->
+        <TabList>
+          <Tab v-for="(node, idx) in nodes" :key="node.id" :value="String(idx)">{{ node.scenario }}</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel v-for="(node, idx) in nodes" :key="node.id" :value="String(idx)">
           <div class="fst-scenario-grid">
             <!-- Key Metrics -->
             <div class="fst-metrics-row">
@@ -88,7 +93,8 @@
             </div>
           </div>
         </TabPanel>
-      </TabView>
+        </TabPanels>
+      </Tabs>
 
       <Message v-else severity="warn">Нет сценариев в контракте</Message>
 
@@ -130,7 +136,10 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Message from 'primevue/message'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import TabView from 'primevue/tabview'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'

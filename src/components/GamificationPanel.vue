@@ -112,8 +112,15 @@
     :modal="true"
     :style="{ width: '800px', maxWidth: '95vw' }"
   >
-    <TabView>
-      <TabPanel header="Все">
+    <Tabs value="0">
+      <TabList>
+        <Tab value="0">Все</Tab>
+        <Tab value="1">Квизы</Tab>
+        <Tab value="2">Модули</Tab>
+        <Tab value="3">Серии</Tab>
+      </TabList>
+      <TabPanels>
+      <TabPanel value="0">
         <div class="badges-collection">
           <div
             v-for="badge in allBadges"
@@ -143,7 +150,7 @@
         </div>
       </TabPanel>
 
-      <TabPanel header="Квизы">
+      <TabPanel value="1">
         <div class="badges-collection">
           <div
             v-for="badge in badgesByCategory('quiz')"
@@ -170,7 +177,7 @@
         </div>
       </TabPanel>
 
-      <TabPanel header="Модули">
+      <TabPanel value="2">
         <div class="badges-collection">
           <div
             v-for="badge in badgesByCategory('module')"
@@ -197,7 +204,7 @@
         </div>
       </TabPanel>
 
-      <TabPanel header="Серии">
+      <TabPanel value="3">
         <div class="badges-collection">
           <div
             v-for="badge in badgesByCategory('streak')"
@@ -223,7 +230,8 @@
           </div>
         </div>
       </TabPanel>
-    </TabView>
+      </TabPanels>
+    </Tabs>
   </Dialog>
 
   <!-- Info Dialog -->
@@ -268,7 +276,10 @@ import Button from 'primevue/button'
 import ProgressBar from 'primevue/progressbar'
 import Divider from 'primevue/divider'
 import Dialog from 'primevue/dialog'
-import TabView from 'primevue/tabview'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import Tag from 'primevue/tag'
 import { useGamificationStore } from '@/stores/gamificationStore'
