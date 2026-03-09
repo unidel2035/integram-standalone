@@ -41,7 +41,6 @@ import agentTriggerService, { AGENT_TYPES } from '@/services/agentTriggerService
 import { useAuthStore } from '@/stores/authStore'
 import { useGeneralChat } from '@/composables/useGeneralChat'
 import { executeQuery } from '@/services/orchestratorService'
-import { syncHtmlToBlocks } from '@/services/docBlocksApiService'
 
 /**
  * Convert Quill HTML to Markdown for AI context.
@@ -495,10 +494,8 @@ export function useChatLogic() {
 
   // Refs for file inputs and menus
   const fileInput = ref(null)
-  const fileInputGeneral = ref(null)
   const modalFileInput = ref(null)
   const attachmentMenu = ref(null)
-  const attachmentMenuGeneral = ref(null)
   const modalAttachmentMenu = ref(null)
 
   // Container refs (to be bound in components)
@@ -776,7 +773,7 @@ export function useChatLogic() {
   })
 
   const integramAuthForm = reactive({
-    serverURL: 'https://ai2o.ru',
+    serverURL: 'https://api.ai2o.ru',
     database: 'my',
     login: '',
     password: ''
@@ -870,7 +867,7 @@ export function useChatLogic() {
 О ПЛАТФОРМЕ ФСТ НТИ:
 ФСТ НТИ — венчурный фонд, финансирующий технологические проекты в сфере БПЛА (БАС), робототехники и малой энергетики. Платформа управляет инвестиционным процессом: от воронки сделок до портфельного мониторинга.
 
-ДАННЫЕ ФОНДА В БАЗЕ (ai2o.ru/fst, РЕАЛЬНЫЕ):
+ДАННЫЕ ФОНДА В БАЗЕ (api.ai2o.ru/fst, РЕАЛЬНЫЕ):
 - Таблица 1155 «Проекты ФСТ v2»: 6 проектов
   1. АО «МикроСхема» — БПЛА-комплектующие, БАС, статус: В процессе DD
   2. ООО «РоботАгро» — агро-дроны, БАС, статус: Одобрен ИК
@@ -897,7 +894,7 @@ DronDoc — платформа-конструктор приложений с И
 
 РЕАЛЬНО РАБОТАЮЩИЕ ВОЗМОЖНОСТИ:
 - Мультимодельный ИИ-чат: 8 провайдеров (DeepSeek, Claude, GPT-4o, YandexGPT, Kodacode и др.) с автоматическим переключением
-- Integram — low-code СУБД: таблицы, отчёты, формы, AI-кнопки в ячейках. Production-система на ai2o.ru
+- Integram — low-code СУБД: таблицы, отчёты, формы, AI-кнопки в ячейках. Production-система на api.ai2o.ru
 - 60+ MCP-инструментов для AI-доступа к базам данных через стандартный протокол Model Context Protocol
 - Блочный редактор документов (по типу Notion) с AI-вставками: финмодели, экосистемы, таблицы, импорт DOCX/PDF/XLSX
 - Парсеры государственных данных РФ: ЕГРЮЛ, ФССП, ИНН, Торги (torgi.gov.ru) — РЕАЛЬНЫЕ данные в реальном времени
@@ -1363,7 +1360,7 @@ DronDoc — платформа-конструктор приложений с И
         combined += '\n<div class="fin-model-blot" contenteditable="false"'
         combined += '\n  data-model-id="17446"         ← ID финмодели'
         combined += '\n  data-database="fm"             ← база данных'
-        combined += '\n  data-server="ai2o.ru">'
+        combined += '\n  data-server="api.ai2o.ru">'
         combined += '\n```'
         combined += '\n→ Вставить: editor_insert_finmodel({ modelId, database, server })'
         combined += '\n→ Удалить: editor_delete_block({ blockType: "finmodel", occurrence: 1 })'
@@ -1416,7 +1413,7 @@ DronDoc — платформа-конструктор приложений с И
         combined += '\nДля чтения строк: integram_get_object_list(typeId, { limit: 10 })'
         combined += '\nДля поиска: integram_search_objects(typeId, query)'
         combined += '\nДля запросов: integram_smart_query("найди все таблицы с полем Дата")'
-        combined += '\nАутентификация: integram_authenticate({ serverURL: "ai2o.ru", database: "kval", login: "...", password: "..." })'
+        combined += '\nАутентификация: integram_authenticate({ serverURL: "api.ai2o.ru", database: "kval", login: "...", password: "..." })'
         combined += '\nПосле аутентификации все integram_* операции доступны.'
 
         combined += '\n\n## WORKFLOW: "загугли и вставь в документ"'
@@ -1442,8 +1439,8 @@ DronDoc — платформа-конструктор приложений с И
 
         // Integram DB context for MCP tools
         combined += `\n\n## INTEGRAM`
-        combined += `\nБД по умолчанию: "${_db}" на ai2o.ru`
-        combined += `\nДля поиска/вставки таблиц: integram_authenticate({ serverURL: "ai2o.ru", database: "${_db}", login: "...", password: "..." }) → integram_get_dictionary() → editor_insert_integram_table(...)`
+        combined += `\nБД по умолчанию: "${_db}" на api.ai2o.ru`
+        combined += `\nДля поиска/вставки таблиц: integram_authenticate({ serverURL: "api.ai2o.ru", database: "${_db}", login: "...", password: "..." }) → integram_get_dictionary() → editor_insert_integram_table(...)`
 
         // Issue #7057: FinModel context — include when a FinModel block is active
         const _fmCtx = finmodelContext.value || window.__finmodelContext
@@ -1706,7 +1703,7 @@ DronDoc — платформа-конструктор приложений с И
 **Реальные данные:**
 - ЕГРЮЛ / ИНН / ФССП — парсинг с гос.сайтов в реальном времени
 - Торги (torgi.gov.ru) — реальные торги и аукционы
-- Integram таблицы — production-данные на ai2o.ru
+- Integram таблицы — production-данные на api.ai2o.ru
 - Документы и финмодели — реальные
 - Telegram — реальные группы и каналы
 - Онтология БПЛА — 902 концепта из открытых источников
@@ -4430,260 +4427,12 @@ AI-помощник по продажам активирован! Полный �
     sendAiMessage()
   }
 
-  // ==================== ТЗ Quick Action ====================
-  // Fetches Integram report 1079731 from kval + current document context,
-  // asks AI to generate a full Техническое Задание, then offers "Создать документ".
-
-  const _TZ_REPORT_URL = 'https://ai2o.ru/kval/report/1079731?JSON_KV='
-
-  const sendTzAction = async () => {
-    if (aiLoading.value) return
-
-    const docCtx = editorDocumentContext.value || window.__editorDocumentContext
-
-    // Show compact user bubble
-    aiChat.messages.push({
-      text: '📋 Создать ТЗ',
-      displayText: '📋 Создать ТЗ',
-      isEditorAction: true,
-      isTzRequest: true,
-      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      isUser: true
-    })
-
-    aiLoading.value = true
-    aiError.value = null
-    assistantMessage.value = null
-
-    // Create AI message with all 5 steps
-    const tzMsg = reactive({
-      text: '',
-      isUser: false,
-      isTzGenerated: false,
-      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      tzSteps: [
-        { label: 'Смотрю документ', status: 'pending' },
-        { label: 'Получаю отчёт', status: 'pending' },
-        { label: 'Создаю ТЗ', status: 'pending' },
-        { label: 'Проверка ТЗ', status: 'pending' },
-        { label: 'Сохранение ТЗ', status: 'pending' },
-      ],
-      suggestedActions: null
-    })
-    aiChat.messages.push(tzMsg)
-    // Set assistantMessage so the global loading spinner is suppressed
-    assistantMessage.value = tzMsg
-    await nextTick()
-    scrollToBottom(aiMessagesContainer)
-    tzMsg.tzSteps[0].status = 'done'
-    tzMsg.tzSteps[1].status = 'active'
-
-    try {
-      // 1. Fetch report + enforce min 5s spinner for "Получаю отчёт"
-      let reportText = ''
-      try {
-        await integramApiClient.switchDatabase('kval')
-        const kvalToken = integramApiClient.databases?.['kval']?.token
-          || integramApiClient.getAuthHeaders('kval')['X-Authorization']
-          || localStorage.getItem('my_token')
-          || ''
-        const [resp] = await Promise.all([
-          fetch(_TZ_REPORT_URL, { headers: kvalToken ? { 'X-Authorization': kvalToken } : {} }),
-          new Promise(r => setTimeout(r, 5000))
-        ])
-        if (resp.ok) {
-          reportText = await resp.text()
-          if (reportText.length > 40000) reportText = reportText.slice(0, 40000) + '\n...[обрезано]'
-        } else {
-          reportText = `[Ошибка загрузки отчёта: HTTP ${resp.status}]`
-        }
-      } catch (e) {
-        logger.warn('[sendTzAction] Report fetch error:', e.message)
-        reportText = '[Не удалось загрузить данные отчёта]'
-      }
-      // Report received — mark done, start AI step
-      tzMsg.tzSteps[1].status = 'done'
-      tzMsg.tzSteps[2].status = 'active'
-
-      // 2. Build prompt
-      const docTitle = docCtx?.title || 'текущий документ'
-      const prompt = `Ты — помощник по составлению технических заданий. На основе текущего документа и данных из отчёта Integram (report/1079731) напиши полное структурированное Техническое Задание (ТЗ).
-
-## Данные из отчёта Integram (база kval, report 1079731):
-
-${reportText || '[данные отчёта не получены]'}
-
-## Требования к ТЗ:
-Создай полное ТЗ на основе документа "${docTitle}" и данных отчёта. Структура:
-1. **Введение** — описание проекта, контекст
-2. **Цели и задачи** — что требуется достичь
-3. **Функциональные требования** — конкретные функции и возможности
-4. **Нефункциональные требования** — производительность, надёжность, безопасность
-5. **Технические требования** — технологический стек, интеграции, инфраструктура
-6. **Этапы реализации** — план работ с разбивкой по этапам
-7. **Критерии приёмки** — как верифицировать выполнение
-
-Ответ должен быть ТОЛЬКО в формате HTML (используй h2, h3, p, ul, ol, strong, em). Не используй Markdown. Используй данные из отчёта для конкретики — цифры, сроки, ответственные.`
-
-      // 3. Call AI (non-streaming, full response)
-      const tzSystemPrompt = `Ты — помощник по составлению технических заданий.
-
-СТРОГО ЗАПРЕЩЕНО: использовать editor_str_replace, editor_clear_and_write, editor_append_section, editor_insert_text, editor_insert_heading или ЛЮБЫЕ другие editor_* инструменты.
-НЕ модифицируй текущий документ ни в каком виде.
-
-Разрешено:
-- integram_authenticate, integram_execute_report, integram_get_object_list и другие integram_* инструменты для получения данных из отчёта.
-- web_search и web_fetch — для поиска best practices, ГОСТов, шаблонов и примеров ТЗ в интернете. Используй их чтобы обогатить ТЗ актуальными стандартами и лучшими практиками.
-
-Твоя задача: получить данные из Integram (если нужно), при необходимости найти в интернете лучшие практики и стандарты оформления ТЗ, проанализировать документ из контекста, и вернуть ТОЛЬКО HTML текст готового ТЗ в своём ответе — без вызова редакторных инструментов.`
-
-      const resp = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: prompt,
-          model: selectedModel.value,
-          provider: selectedProvider.value,
-          conversationHistory: [],
-          systemPrompt: tzSystemPrompt,
-          enableEditorTools: false,
-          enableAgentChain: true,
-          stream: false,
-          documentContext: docCtx ? { title: docCtx.title, content: docCtx.content } : null,
-          temperature: 0.3,
-          maxTokens: 8192
-        })
-      })
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-      const data = await resp.json()
-      let tzHtml = data.response || data.result || data.text || data.finalResponse || ''
-
-      // 4. Проверка ТЗ — agent validates HTML, formatting, completeness
-      tzMsg.tzSteps[2].status = 'done'
-      tzMsg.tzSteps[3].status = 'active'
-      await nextTick()
-      scrollToBottom(aiMessagesContainer)
-
-      const validatePrompt = `Проверь следующий HTML-документ Технического Задания на качество. Исправь ВСЕ найденные проблемы и верни ИСПРАВЛЕННЫЙ полный HTML.
-
-## Что проверить:
-1. **Обрезанный текст** — есть ли предложения или разделы, которые обрываются на полуслове? Если да — допиши их логично.
-2. **HTML-теги** — все ли теги правильно открыты и закрыты? Нет ли сломанных тегов (незакрытых <ul>, <ol>, <li>, <p>, <strong>, <em> и т.д.)?
-3. **Форматирование** — используются ли правильные теги (h2 для разделов, h3 для подразделов, p для текста, ul/ol для списков)? Нет ли голого текста без обёртки в теги?
-4. **Полнота** — присутствуют ли ВСЕ 7 обязательных разделов: Введение, Цели и задачи, Функциональные требования, Нефункциональные требования, Технические требования, Этапы реализации, Критерии приёмки?
-5. **Markdown-артефакты** — нет ли остатков Markdown (**, ##, - списки)? Замени на HTML-эквиваленты.
-
-## HTML документа:
-
-${tzHtml}
-
-ВАЖНО: Верни ТОЛЬКО исправленный HTML целиком. Без комментариев, без пояснений, без markdown — только чистый HTML.`
-
-      const validateResp = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: validatePrompt,
-          model: selectedModel.value,
-          provider: selectedProvider.value,
-          conversationHistory: [],
-          systemPrompt: 'Ты — валидатор HTML-документов. Проверяй и исправляй HTML. Возвращай ТОЛЬКО исправленный HTML без комментариев.',
-          enableEditorTools: false,
-          enableAgentChain: false,
-          stream: false,
-          temperature: 0.1,
-          maxTokens: 5000
-        })
-      })
-
-      if (validateResp.ok) {
-        const validateData = await validateResp.json()
-        const validatedHtml = validateData.response || validateData.result || validateData.text || validateData.finalResponse || ''
-        if (validatedHtml.length > 100) {
-          tzHtml = validatedHtml
-        }
-      } else {
-        logger.warn('[sendTzAction] Validation agent failed, using original HTML')
-      }
-
-      // 5. Сохранение ТЗ — auto-create document
-      tzMsg.tzSteps[3].status = 'done'
-      tzMsg.tzSteps[4].status = 'active'
-      await nextTick()
-      scrollToBottom(aiMessagesContainer)
-
-      const tzDocUrl = await createTzDocument(tzHtml, docTitle)
-
-      // All done
-      tzMsg.tzSteps[4].status = 'done'
-      tzMsg.text = '✅ ТЗ готово'
-      tzMsg.isTzGenerated = true
-      tzMsg.suggestedActions = tzDocUrl
-        ? [{ label: '🔗 Перейти в ТЗ', action: 'url', value: tzDocUrl }]
-        : null
-    } catch (error) {
-      logger.error('[sendTzAction] Error:', error)
-      // Update existing tzMsg with error state
-      if (tzMsg) {
-        tzMsg.tzSteps = null
-        tzMsg.text = `⚠️ Ошибка при генерации ТЗ: ${error.message}`
-        tzMsg.isError = true
-      }
-    } finally {
-      aiLoading.value = false
-      assistantMessage.value = null
-      nextTick(() => scrollToBottom(aiMessagesContainer))
-    }
-  }
-
-  // Create TZ document in kval and open in new tab
-  const createTzDocument = async (tzContent, docTitle = '') => {
-    try {
-      const rawUser = localStorage.getItem('my_user') || localStorage.getItem('user') || 'user'
-      const cleanUser = rawUser.replace(/[^\w\u0400-\u04FF]/g, '_').slice(0, 20)
-
-      // Auto-increment index per user
-      const counterKey = `tz_doc_counter_${cleanUser}`
-      const idx = parseInt(localStorage.getItem(counterKey) || '0') + 1
-      localStorage.setItem(counterKey, String(idx))
-      const docName = `ТЗ_${cleanUser}_${idx}`
-
-      const userId = integramApiClient.userId
-        || localStorage.getItem('my_id')
-        || localStorage.getItem('id')
-        || null
-
-      const result = await syncHtmlToBlocks('new', tzContent, docName, cleanUser, null, 'kval', userId)
-
-      if (result && result.documentId) {
-        return `/block-editor?docId=${result.documentId}&database=kval`
-      } else {
-        throw new Error('Не получен ID документа от сервера')
-      }
-    } catch (err) {
-      logger.error('[createTzDocument] Error:', err)
-      throw err
-    }
-  }
 
   /**
    * Handle a click on a suggested action button inside a chat message.
    * Clears buttons from that message and performs the action.
    */
   const handleSuggestedAction = async (msg, btn) => {
-    if (btn.action === 'create_tz_doc') {
-      btn.loading = true
-      try {
-        const url = await createTzDocument(btn.tzContent || '', btn.docTitle || '')
-        // Replace spinner button with a link button
-        msg.suggestedActions = url
-          ? [{ label: '🔗 Перейти в ТЗ', action: 'url', value: url }]
-          : null
-      } catch (err) {
-        msg.suggestedActions = [{ label: `⚠️ ${err.message}`, action: 'url', value: '' }]
-      }
-      return
-    }
     // For all other actions — clear buttons immediately
     msg.suggestedActions = null
     if (btn.action === 'message') {
@@ -4813,7 +4562,6 @@ ${tzHtml}
     sendAiMessage,
     cancelAiRequest,
     sendEditorAction,
-    sendTzAction,
     copyToClipboard,
     editMessage,
     deleteMessage,

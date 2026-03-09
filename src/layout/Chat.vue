@@ -132,20 +132,6 @@
                     <i class="pi pi-check-circle"></i>
                     <span>{{ msg.text }}</span>
                   </div>
-                  <!-- ТЗ generation steps -->
-                  <div v-if="!msg.isUser && msg.tzSteps" class="tz-steps">
-                    <div
-                      v-for="(step, i) in msg.tzSteps"
-                      :key="i"
-                      class="tz-step"
-                      :class="step.status"
-                    >
-                      <i v-if="step.status === 'done'" class="pi pi-check tz-step-icon"></i>
-                      <i v-else-if="step.status === 'active'" class="pi pi-spin pi-spinner tz-step-icon"></i>
-                      <span v-else class="tz-step-dot">○</span>
-                      <span class="tz-step-label">{{ step.label }}</span>
-                    </div>
-                  </div>
 
                   <div v-else class="message-text">
                     <span v-if="msg.isUser && msg.displayText" class="quick-prompt-badge"><i class="pi pi-bolt"></i> Быстрое действие</span>
@@ -345,19 +331,7 @@
                 <span>{{ finmodelContext?.activeModelId ? 'Финмодель ✓' : 'Финмодель' }}</span>
               </button>
 
-              <!-- ТЗ quick button — green, only on /block-editor -->
-              <button
-                v-if="isBlockEditorPage"
-                class="tz-quick-btn"
-                :disabled="aiLoading"
-                @click="sendTzAction()"
-                title="Создать ТЗ на основе документа и данных отчёта Integram"
-              >
-                <i class="pi pi-file-edit"></i>
-                <span>ТЗ</span>
-              </button>
-
-              <!-- Issue #7211: Ontology quick prompts dropdown — shown on ontology pages -->
+<!-- Issue #7211: Ontology quick prompts dropdown — shown on ontology pages -->
               <button
                 v-if="isOntologyPage"
                 class="web-search-toggle ontology-toggle"
@@ -791,18 +765,7 @@
               <span>{{ finmodelContext?.activeModelId ? 'Финмодель ✓' : 'Финмодель' }}</span>
             </button>
 
-            <button
-              v-if="isBlockEditorPage"
-              class="modal-action-toggle tz-toggle"
-              :disabled="aiLoading"
-              @click="sendTzAction()"
-              title="Создать ТЗ"
-            >
-              <i class="pi pi-file-edit"></i>
-              <span>ТЗ</span>
-            </button>
-
-            <!-- Issue #7211: Ontology quick prompts — shown on ontology pages -->
+<!-- Issue #7211: Ontology quick prompts — shown on ontology pages -->
             <button
               v-if="isOntologyPage"
               class="modal-action-toggle ontology-toggle"
@@ -1313,7 +1276,7 @@
         <div class="field">
           <label for="integram-server">Сервер</label>
           <InputText id="integram-server" v-model="integramAuthForm.serverURL"
-                     placeholder="https://ai2o.ru" class="w-full" />
+                     placeholder="https://api.ai2o.ru" class="w-full" />
           <small>URL сервера Integram</small>
         </div>
 
@@ -1505,8 +1468,7 @@ const {
   sendAiMessage,
   cancelAiRequest,
   sendEditorAction,
-  sendTzAction,
-  copyToClipboard,
+copyToClipboard,
   editMessage,
   deleteMessage,
   resendMessage,
@@ -2024,7 +1986,7 @@ function sendFinmodelQuickPrompt(qp) {
  */
 function dispatchFinmodelInsert() {
   window.dispatchEvent(new CustomEvent('finmodel-insert-model', {
-    detail: { modelId: '', database: 'fm', server: 'ai2o.ru' }
+    detail: { modelId: '', database: 'fm', server: 'api.ai2o.ru' }
   }))
 }
 
@@ -2115,7 +2077,7 @@ onMounted(() => {
   // Check admin role — Options button shown only to admins
   const _token = localStorage.getItem('token')
   const _db = localStorage.getItem('db') || 'my'
-  const _apiBase = localStorage.getItem('apiBase') || 'ai2o.ru'
+  const _apiBase = localStorage.getItem('apiBase') || 'api.ai2o.ru'
   if (_token) {
     const _protocol = _apiBase === 'localhost' ? 'http' : 'https'
     fetch(`${_protocol}://${_apiBase}/${_db}/xsrf?JSON_KV=true`, {
