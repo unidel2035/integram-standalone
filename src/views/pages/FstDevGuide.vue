@@ -167,27 +167,56 @@
         </div>
 
         <!-- Videos tab -->
-        <div v-if="activeTab === 'videos'" class="dg-catalog-grid">
-          <div
-            v-for="video in learningStore.videos"
-            :key="video.id"
-            class="dg-catalog-card"
-            :class="{ done: learningStore.completedVideos.includes(video.id) }"
-          >
-            <div class="dg-cc-header">
-              <div class="dg-cc-icon" style="background: color-mix(in srgb, #d97706 15%, transparent)">
-                <i class="pi pi-video" style="color: #d97706"></i>
-              </div>
-              <span v-if="learningStore.completedVideos.includes(video.id)" class="dg-cc-done-badge">
-                <i class="pi pi-check"></i> Просмотрено
-              </span>
-              <span class="dg-cc-tag">{{ video.tag }}</span>
+        <div v-if="activeTab === 'videos'" class="dg-videos-section">
+          <!-- Overall video progress -->
+          <div class="dg-video-summary">
+            <span class="dg-video-summary-stat">
+              <i class="pi pi-check-circle" style="color: #16a34a"></i>
+              Просмотрено <strong>{{ learningStore.completedVideos.length }}</strong> из
+              <strong>{{ learningStore.videos.length }}</strong> уроков
+            </span>
+            <div class="dg-video-summary-bar">
+              <div
+                class="dg-video-summary-fill"
+                :style="{ width: videoCompletionPct + '%' }"
+              ></div>
             </div>
-            <div class="dg-cc-title">{{ video.title }}</div>
-            <div class="dg-cc-meta"><i class="pi pi-clock"></i> {{ video.duration }}</div>
-            <button class="dg-cc-btn" @click="learningStore.completeVideo(video.id)">
-              {{ learningStore.completedVideos.includes(video.id) ? 'Смотреть снова' : 'Смотреть' }}
-            </button>
+          </div>
+
+          <!-- Playlists -->
+          <div
+            v-for="playlist in learningStore.videoPlaylists"
+            :key="playlist.id"
+            class="dg-playlist"
+          >
+            <div class="dg-playlist-header" @click="togglePlaylist(playlist.id)">
+              <div class="dg-playlist-title-row">
+                <div class="dg-playlist-icon">
+                  <i :class="playlist.icon"></i>
+                </div>
+                <div>
+                  <div class="dg-playlist-label">{{ playlist.label }}</div>
+                  <div class="dg-playlist-meta">{{ playlist.description }}</div>
+                </div>
+              </div>
+              <div class="dg-playlist-right">
+                <span class="dg-playlist-progress">
+                  {{ playlistProgress(playlist.id) }}
+                </span>
+                <i :class="expandedPlaylists.includes(playlist.id) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="dg-playlist-chevron"></i>
+              </div>
+            </div>
+
+            <Transition name="dg-fade">
+              <div v-if="expandedPlaylists.includes(playlist.id)" class="dg-playlist-grid">
+                <VideoLesson
+                  v-for="video in videosInPlaylist(playlist.id)"
+                  :key="video.id"
+                  :video="video"
+                  @watched="onVideoWatched"
+                />
+              </div>
+            </Transition>
           </div>
         </div>
 
@@ -393,6 +422,7 @@ import Dialog from 'primevue/dialog'
 import { useLearningStore } from '@/stores/learningStore'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useFeatureHints } from '@/composables/useFeatureHints.js'
+import VideoLesson from '@/components/VideoLesson.vue'
 
 const router = useRouter()
 const learningStore = useLearningStore()
@@ -407,6 +437,39 @@ function resetFeatureHints() {
 
 const showRoleDialog = ref(false)
 const activeTab = ref('tours')
+
+// ── Video playlists ──
+// Start with first playlist open by default
+const expandedPlaylists = ref(['onboarding'])
+
+function togglePlaylist(playlistId) {
+  const idx = expandedPlaylists.value.indexOf(playlistId)
+  if (idx >= 0) {
+    expandedPlaylists.value.splice(idx, 1)
+  } else {
+    expandedPlaylists.value.push(playlistId)
+  }
+}
+
+function videosInPlaylist(playlistId) {
+  return learningStore.videos.filter(v => v.playlist === playlistId)
+}
+
+function playlistProgress(playlistId) {
+  const all = videosInPlaylist(playlistId)
+  const done = all.filter(v => learningStore.completedVideos.includes(v.id)).length
+  return `${done} / ${all.length}`
+}
+
+const videoCompletionPct = computed(() => {
+  const total = learningStore.videos.length
+  if (!total) return 0
+  return Math.round((learningStore.completedVideos.length / total) * 100)
+})
+
+function onVideoWatched(videoId) {
+  learningStore.completeVideo(videoId)
+}
 
 const tabs = computed(() => [
   { id: 'tours',     label: 'Туры',     icon: 'pi pi-map',             count: learningStore.tours.length },
@@ -897,6 +960,131 @@ function formatTime(iso) {
   color: var(--p-text-muted-color);
   line-height: 1.6;
   margin: 0 0 0.875rem;
+}
+
+/* ── Videos section ── */
+.dg-videos-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.dg-video-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.dg-video-summary-stat {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--p-text-muted-color);
+}
+
+.dg-video-summary-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--p-content-border-color);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.dg-video-summary-fill {
+  height: 100%;
+  background: #16a34a;
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+/* ── Playlist ── */
+.dg-playlist {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.875rem;
+  overflow: hidden;
+}
+
+.dg-playlist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  gap: 1rem;
+  user-select: none;
+}
+
+.dg-playlist-header:hover {
+  background: color-mix(in srgb, var(--p-primary-color) 5%, transparent);
+}
+
+.dg-playlist-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dg-playlist-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--p-primary-color);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.dg-playlist-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+}
+
+.dg-playlist-meta {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  margin-top: 0.1rem;
+}
+
+.dg-playlist-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dg-playlist-progress {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  padding: 0.1rem 0.5rem;
+  border-radius: 2rem;
+}
+
+.dg-playlist-chevron {
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+  transition: transform 0.2s;
+}
+
+.dg-playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--p-content-border-color);
+  padding-top: 1rem;
 }
 
 /* ── Activity ── */
