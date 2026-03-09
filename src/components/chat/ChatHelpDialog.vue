@@ -13,9 +13,16 @@
     </template>
 
     <div class="help-content">
-      <TabView>
+      <Tabs value="0">
+        <TabList>
+          <Tab value="0">Чат ИИ</Tab>
+          <Tab value="1">Онтологии (ИИ)</Tab>
+          <Tab value="2">Общий чат</Tab>
+          <Tab value="3">Комнаты</Tab>
+        </TabList>
+        <TabPanels>
         <!-- ЧАТ ИИ -->
-        <TabPanel header="Чат ИИ">
+        <TabPanel value="0">
           <div class="tab-content">
             <!-- Основы -->
             <div class="help-section">
@@ -260,7 +267,7 @@
         </TabPanel>
 
         <!-- ОНТОЛОГИИ -->
-        <TabPanel header="Онтологии (ИИ)">
+        <TabPanel value="1">
           <div class="tab-content">
             <div class="help-section">
               <h3><i class="pi pi-sitemap"></i> Работа с событийной онтологией БАС</h3>
@@ -382,7 +389,7 @@
         </TabPanel>
 
         <!-- ОБЩИЙ ЧАТ -->
-        <TabPanel header="Общий чат">
+        <TabPanel value="2">
           <div class="tab-content">
             <div class="help-section">
               <h3><i class="pi pi-users"></i> О общем чате</h3>
@@ -427,7 +434,7 @@
         </TabPanel>
 
         <!-- КОМНАТЫ -->
-        <TabPanel header="Комнаты">
+        <TabPanel value="3">
           <div class="tab-content">
             <div class="help-section">
               <h3><i class="pi pi-comments"></i> О комнатах</h3>
@@ -503,7 +510,8 @@
             </div>
           </div>
         </TabPanel>
-      </TabView>
+        </TabPanels>
+      </Tabs>
     </div>
 
     <template #footer>
@@ -722,21 +730,21 @@ watch(visible, (newVal) => {
   width: 100%;
 }
 
-:deep(.p-tabview-nav) {
+:deep(.p-tablist) {
   background: var(--surface-card);
   border-bottom: 2px solid var(--surface-border);
 }
 
-:deep(.p-tabview-nav-link) {
+:deep(.p-tab) {
   font-weight: 500;
   color: var(--text-color-secondary);
 }
 
-:deep(.p-tabview-nav-link:hover) {
+:deep(.p-tab:hover) {
   color: var(--text-color);
 }
 
-:deep(.p-highlight .p-tabview-nav-link) {
+:deep(.p-tab-active) {
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
 }

@@ -90,9 +90,15 @@
     </div>
 
     <!-- Main Content Tabs -->
-    <TabView class="mt-4">
+    <Tabs value="0" class="mt-4">
+      <TabList>
+        <Tab value="0">Анализ точности</Tab>
+        <Tab value="1">Обучающий датасет</Tab>
+        <Tab value="2">Калибровка весов</Tab>
+      </TabList>
+      <TabPanels>
       <!-- Tab 1: Accuracy Analysis -->
-      <TabPanel header="Анализ точности">
+      <TabPanel value="0">
         <div class="analysis-grid">
           <!-- Predicted vs Actual Chart -->
           <Card>
@@ -166,7 +172,7 @@
       </TabPanel>
 
       <!-- Tab 2: Training Dataset -->
-      <TabPanel header="Обучающий датасет">
+      <TabPanel value="1">
         <Card>
           <template #content>
             <DataTable
@@ -212,7 +218,7 @@
       </TabPanel>
 
       <!-- Tab 3: Weight Calibration -->
-      <TabPanel header="Калибровка весов">
+      <TabPanel value="2">
         <div class="calibration-grid">
           <Card>
             <template #title>Параметры обучения</template>
@@ -324,7 +330,8 @@
           </Card>
         </div>
       </TabPanel>
-    </TabView>
+      </TabPanels>
+    </Tabs>
 
     <!-- Add Training Example Dialog -->
     <Dialog

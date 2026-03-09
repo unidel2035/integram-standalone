@@ -746,7 +746,12 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   .fdt-health-score { flex-wrap: wrap; gap: 8px; }
   .fdt-kpi-list { flex-wrap: wrap; gap: 8px; }
   .fdt-main { grid-template-columns: 1fr !important; }
-  .fdt-vitals-grid { grid-template-columns: 1fr !important; }
+  .fdt-vitals-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .fdt-sidebar, .fdt-detail { max-height: 40vh; overflow-y: auto; border: none; border-bottom: 1px solid var(--surface-border); }
+  .fdt-col { border-right: none; border-bottom: 1px solid var(--surface-border); padding: 12px; }
+  .fdt-col:last-child { border-bottom: none; }
+  .fdt-header-right .p-button .p-button-label { display: none; }
+  .fdt-header-right .p-button .p-button-icon { margin-right: 0; }
+  .fdt-header-right { gap: 6px; flex-wrap: wrap; }
 }
 </style>

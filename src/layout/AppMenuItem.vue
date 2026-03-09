@@ -128,13 +128,15 @@ function itemClick(event, item) {
         return;
     }
 
-    // For router-link items, prevent default and navigate
+    // For router-link items — let <router-link> handle navigation natively.
+    // Only close sidebar overlay and update active state.
     if (item.to && !item.items) {
-        event.preventDefault();
-        router.push(item.to);
-
-        if (layoutState.staticMenuMobileActive || layoutState.overlayMenuActive) {
-            toggleMenu();
+        // Close mobile sidebar overlay (direct assignment, not toggle, to avoid race with outsideClickListener)
+        if (layoutState.staticMenuMobileActive) {
+            layoutState.staticMenuMobileActive = false;
+        }
+        if (layoutState.overlayMenuActive) {
+            layoutState.overlayMenuActive = false;
         }
 
         const foundItemKey = itemKey.value;

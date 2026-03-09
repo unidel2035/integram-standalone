@@ -179,7 +179,7 @@ const chatMargin = computed(() => {
       </div>
       <app-footer />
     </div>
-    <div class="layout-mask animate-fadein"></div>
+    <div class="layout-mask animate-fadein" @click="layoutState.staticMenuMobileActive = false; layoutState.overlayMenuActive = false"></div>
   </div>
 
   <Toast />

@@ -21,13 +21,16 @@
         </Button>
       </div>
 
-      <TabView v-model:activeIndex="activeTabIndex" lazy>
-        <TabPanel>
-          <template #header>
+      <Tabs :value="String(activeTabIndex)" lazy @update:value="v => activeTabIndex = Number(v)">
+        <TabList>
+          <Tab value="0">
             <span title="ИИ-ассистент">
               <Icon icon="mdi:robot-outline" width="18" height="18" />
             </span>
-          </template>
+          </Tab>
+        </TabList>
+        <TabPanels>
+        <TabPanel value="0">
 
           <div class="chat-container" data-testid="ai-chat-container">
             <!-- Context usage progress bar -->
@@ -613,7 +616,8 @@
             </div>
           </div>
         </TabPanel>
-      </TabView>
+        </TabPanels>
+      </Tabs>
 
     </div>
 
@@ -3725,51 +3729,51 @@ onUnmounted(() => {
   }
 }
 
-:deep(.p-tabview) {
+:deep(.p-tabs) {
   height: 100%;
   display: flex;
   flex-direction: column;
-  
-  .p-tabview-panels {
+
+  .p-tabpanels {
     flex: 1;
     min-height: 0;
     position: relative;
     padding: 0 0 0;
-    
-    .p-tabview-panel {
+
+    .p-tabpanel {
       height: 100%;
       display: flex;
       flex-direction: column;
     }
   }
-  
+
   .p-button {
     width: 2rem;
     height: 2rem;
     padding: 0;
-    
+
     .pi { font-size: 1rem; }
   }
-  
+
   .p-inputtext {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
   }
-  
+
   .p-avatar { aspect-ratio: 1/1; flex-shrink: 0; }
-  
-  .p-tabview-nav, .p-tablist {
+
+  .p-tablist {
     position: relative;
     display: flex;
     align-items: center;
   }
-  .p-tabview-nav-link, .p-tab {
+  .p-tab {
     padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .p-tabview-ink-bar {
+  .p-tabs-ink-bar {
     background-color: var(--primary-color);
     height: 2px;
     display: block !important;

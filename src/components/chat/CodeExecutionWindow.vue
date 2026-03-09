@@ -8,8 +8,12 @@
   >
     <div class="execution-window">
       <!-- Code tabs -->
-      <TabView v-model:activeIndex="activeTabIndex" class="execution-tabs">
-        <TabPanel v-for="(exec, index) in executions" :key="exec.id" :header="exec.title">
+      <Tabs v-model:value="activeTab" class="execution-tabs">
+        <TabList>
+          <Tab v-for="(exec, index) in executions" :key="exec.id" :value="String(index)">{{ exec.title }}</Tab>
+        </TabList>
+        <TabPanels>
+        <TabPanel v-for="(exec, index) in executions" :key="exec.id" :value="String(index)">
           <div class="execution-panel">
             <!-- Code display -->
             <div class="code-section">
@@ -127,7 +131,8 @@
             </div>
           </div>
         </TabPanel>
-      </TabView>
+        </TabPanels>
+      </Tabs>
     </div>
   </Dialog>
 </template>
@@ -158,7 +163,7 @@ const visible = computed({
   set: (value) => emit('update:modelValue', value),
 });
 
-const activeTabIndex = ref(0);
+const activeTab = ref('0');
 
 const dialogTitle = computed(() => {
   const count = props.executions.length;
@@ -347,7 +352,7 @@ function formatDate(date) {
   display: flex;
   flex-direction: column;
 
-  :deep(.p-tabview-panels) {
+  :deep(.p-tabpanels) {
     flex: 1;
     overflow-y: auto;
   }
