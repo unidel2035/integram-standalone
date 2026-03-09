@@ -39,27 +39,27 @@ const isDark = ref(document.documentElement.classList.contains('app-dark'))
 let themeObserver = null
 
 const DARK_THEME = {
-  background: '#1e1e2e',
-  foreground: '#cdd6f4',
-  cursor: '#f5e0dc',
-  cursorAccent: '#1e1e2e',
-  selectionBackground: '#585b70',
-  black: '#45475a', red: '#f38ba8', green: '#a6e3a1', yellow: '#f9e2af',
-  blue: '#89b4fa', magenta: '#cba6f7', cyan: '#94e2d5', white: '#bac2de',
-  brightBlack: '#585b70', brightRed: '#f38ba8', brightGreen: '#a6e3a1',
-  brightYellow: '#f9e2af', brightBlue: '#89b4fa', brightMagenta: '#cba6f7',
-  brightCyan: '#94e2d5', brightWhite: '#a6adc8'
+  background: '#09090b',
+  foreground: '#ffffff',
+  cursor: '#818cf8',
+  cursorAccent: '#09090b',
+  selectionBackground: '#3f3f46',
+  black: '#27272a', red: '#f38ba8', green: '#a6e3a1', yellow: '#f9e2af',
+  blue: '#818cf8', magenta: '#cba6f7', cyan: '#94e2d5', white: '#a1a1aa',
+  brightBlack: '#3f3f46', brightRed: '#f38ba8', brightGreen: '#a6e3a1',
+  brightYellow: '#f9e2af', brightBlue: '#818cf8', brightMagenta: '#cba6f7',
+  brightCyan: '#94e2d5', brightWhite: '#ffffff'
 }
 
 const LIGHT_THEME = {
-  background: '#fafafa',
-  foreground: '#383a42',
-  cursor: '#526eff',
-  cursorAccent: '#fafafa',
-  selectionBackground: '#bfceff',
-  black: '#383a42', red: '#e45649', green: '#50a14f', yellow: '#c18401',
-  blue: '#4078f2', magenta: '#a626a4', cyan: '#0184bc', white: '#a0a1a7',
-  brightBlack: '#4f525e', brightRed: '#e06c75', brightGreen: '#98c379',
+  background: '#ffffff',
+  foreground: '#334155',
+  cursor: '#10b981',
+  cursorAccent: '#ffffff',
+  selectionBackground: '#d0d5dd',
+  black: '#334155', red: '#e45649', green: '#10b981', yellow: '#c18401',
+  blue: '#4078f2', magenta: '#a626a4', cyan: '#0184bc', white: '#64748b',
+  brightBlack: '#64748b', brightRed: '#e06c75', brightGreen: '#10b981',
   brightYellow: '#e5c07b', brightBlue: '#61afef', brightMagenta: '#c678dd',
   brightCyan: '#56b6c2', brightWhite: '#ffffff'
 }
