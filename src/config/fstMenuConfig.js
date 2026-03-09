@@ -56,6 +56,7 @@ export const fstMenuConfig = [
     label: 'Сделки',
     svgIcon: svgHandshake,
     items: [
+      { label: 'Стартапер', icon: 'pi pi-rocket', to: '/fst-startuper' },
       { label: 'Дилфлоу', icon: 'pi pi-filter', to: '/fst-dealflow' },
       { label: 'Меморандум', icon: 'pi pi-file', to: '/fst-memo' },
       { label: 'Инвесткомитет', icon: 'pi pi-users', to: '/fst-committee' },

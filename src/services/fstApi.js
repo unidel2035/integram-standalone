@@ -683,6 +683,48 @@ export async function saveWeeklyReport(report) {
   return api(`_m_new/${TYPE_WEEKLY_REPORTS}?JSON_KV`, { method: 'POST', body })
 }
 
+// ── Applications / Заявки (type 1956) ────────────────────────────────────
+
+export const TYPE_APPLICATIONS = 1956
+
+/**
+ * Создать заявку в таблице Заявки (1956) с полями НТИ-анкеты
+ */
+export async function createApplication(application) {
+  const body = new URLSearchParams({
+    [`t${TYPE_APPLICATIONS}`]: application.companyName || 'Новая заявка',
+    up: 1,
+    // --- Базовые поля ---
+    ...(application.description  ? { t1158: application.description }         : {}),
+    ...(application.inn          ? { t2237: application.inn }                 : {}),
+    ...(application.email        ? { t2240: application.email }               : {}),
+    // --- Новые поля НТИ ---
+    ...(application.projectGoals     ? { t7698: application.projectGoals }     : {}),
+    ...(application.techResult       ? { t7700: application.techResult }       : {}),
+    ...(application.commercialResult ? { t7702: application.commercialResult } : {}),
+    ...(application.dualUse          ? { t7704: application.dualUse }          : {}),
+    ...(application.rdBacklog        ? { t7706: application.rdBacklog }        : {}),
+    ...(application.trl != null      ? { t7708: application.trl }              : {}),
+    ...(application.timeline         ? { t7710: application.timeline }         : {}),
+    ...(application.projectCost != null ? { t7712: application.projectCost }   : {}),
+    ...(application.potentialCustomers ? { t7714: application.potentialCustomers } : {}),
+    ...(application.monetizationModel  ? { t7716: application.monetizationModel }  : {}),
+    ...(application.rid              ? { t7718: application.rid }              : {}),
+    ...(application.teamDesc         ? { t7720: application.teamDesc }         : {}),
+    ...(application.revenue3y        ? { t7722: application.revenue3y }        : {}),
+    ...(application.devInstitutions  ? { t7724: application.devInstitutions }  : {}),
+    ...(application.govFunding       ? { t7726: application.govFunding }       : {}),
+    ...(application.exportMarkets    ? { t7728: application.exportMarkets }    : {}),
+    ...(application.tamSamSomRf      ? { t7730: application.tamSamSomRf }      : {}),
+    ...(application.tamSamSomAbroad  ? { t7732: application.tamSamSomAbroad }  : {}),
+    ...(application.competitiveAnalysis ? { t7734: application.competitiveAnalysis } : {}),
+    ...(application.irrForecast != null ? { t7736: application.irrForecast }   : {}),
+    ...(application.exitStrategy     ? { t7738: application.exitStrategy }     : {}),
+    ...(application.contacts         ? { t7740: application.contacts }         : {}),
+  })
+  return api(`_m_new/${TYPE_APPLICATIONS}?JSON_KV`, { method: 'POST', body })
+}
+
 // ── Smart Contracts (types 3995, 3996, 3999) ─────────────────────────────
 
 const TYPE_CONTRACTS = 3995

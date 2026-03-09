@@ -150,7 +150,8 @@
       <div class="gr-ontology-panel">
         <div class="gr-section-title">
           <i class="pi pi-sitemap" style="color:#ab47bc"></i>
-          Событийная онтология создания новых мер
+          Событийная онтология — меры как узлы цепочки
+          <span class="gr-count" style="margin-left:6px">нажмите на шаг чтобы увидеть меры</span>
         </div>
         <div class="gr-onto-grid">
           <div v-for="chain in eventOntology" :key="chain.id" class="gr-onto-chain">
@@ -159,10 +160,36 @@
               {{ chain.trigger }}
             </div>
             <div class="gr-onto-events">
-              <div v-for="(ev, ei) in chain.events" :key="ei" :class="['gr-onto-event', `gr-onto-event--${ev.type}`]">
-                <span class="gr-onto-arrow">→</span>
-                <span class="gr-onto-ev-name">{{ ev.name }}</span>
-                <span v-if="ev.actor" class="gr-onto-actor">{{ ev.actor }}</span>
+              <div v-for="(ev, ei) in chain.events" :key="ei" class="gr-onto-step-wrap">
+                <!-- Кликабельный узел -->
+                <div :class="['gr-onto-event', `gr-onto-event--${ev.type}`,
+                              getStepMeasures(chain.id, ev.type).length ? 'has-measures' : 'is-gap',
+                              { 'is-active': activeOntoStep === `${chain.id}:${ev.type}` }]"
+                     @click="toggleStep(chain.id, ev.type)">
+                  <span class="gr-onto-arrow">→</span>
+                  <span class="gr-onto-ev-name">{{ ev.name }}</span>
+                  <span v-if="ev.actor" class="gr-onto-actor">{{ ev.actor }}</span>
+                  <span v-if="getStepMeasures(chain.id, ev.type).length" class="gr-onto-mbadge">
+                    {{ getStepMeasures(chain.id, ev.type).length }}
+                  </span>
+                  <span v-else class="gr-onto-gbadge">пробел</span>
+                </div>
+                <!-- Развёрнутые меры или пробел -->
+                <div v-if="activeOntoStep === `${chain.id}:${ev.type}`" class="gr-onto-expanded">
+                  <template v-if="getStepMeasures(chain.id, ev.type).length">
+                    <div v-for="m in getStepMeasures(chain.id, ev.type)" :key="m.id"
+                         class="gr-onto-mnode" @click.stop="fillFromMeasure(m)">
+                      <span class="gr-om-type">{{ m.type_label }}</span>
+                      <span class="gr-om-name">{{ m.name }}</span>
+                      <span class="gr-om-amt">{{ m.amount }}</span>
+                    </div>
+                  </template>
+                  <div v-else class="gr-onto-gap-row">
+                    <span>⚠️ Нет мер для этого этапа — пробел в поддержке</span>
+                    <Button label="+ Создать" icon="pi pi-plus" size="small" severity="warning"
+                            @click.stop="createMeasureForGap(chain.id, ev)" />
+                  </div>
+                </div>
               </div>
             </div>
             <div class="gr-onto-result">
@@ -171,6 +198,7 @@
           </div>
         </div>
       </div>
+
 
       <!-- Конструктор новой меры -->
       <div class="gr-constructor-panel">
@@ -232,7 +260,9 @@
 
           <div class="gr-cf-actions">
             <Button label="Сгенерировать концепцию (AI)" icon="pi pi-sparkles" severity="warning"
-              :loading="constructorLoading" @click="generateMeasureProposal" />
+              :loading="constructorLoading" :disabled="!newMeasure.name"
+              v-tooltip.top="!newMeasure.name ? 'Введите название меры' : ''"
+              @click="generateMeasureProposal" />
             <Button label="Сохранить в библиотеку" icon="pi pi-save" severity="success"
               :disabled="!newMeasure.name" @click="saveMeasureToLib" />
             <Button label="Сформировать служебную записку" icon="pi pi-file-edit" severity="info"
@@ -283,31 +313,228 @@
          ТАБ 3: Регуляторный радар
     ════════════════════════════════════════════════════════════════════════ -->
     <div v-if="activeTab === 'radar'" class="gr-content">
+
+      <!-- KPI -->
       <div class="gov-kpi-row">
-        <div class="gov-kpi" v-for="k in kpis" :key="k.label">
-          <div class="gov-kpi-icon">{{ k.icon }}</div>
-          <div class="gov-kpi-val">{{ k.value }}</div>
-          <div class="gov-kpi-lbl">{{ k.label }}</div>
+        <div class="gov-kpi">
+          <div class="gov-kpi-icon">🔴</div>
+          <div class="gov-kpi-val">{{ regulations.filter(r=>r.risk==='high').length }}</div>
+          <div class="gov-kpi-lbl">Высокий риск</div>
+        </div>
+        <div class="gov-kpi">
+          <div class="gov-kpi-icon">🟡</div>
+          <div class="gov-kpi-val">{{ regulations.filter(r=>r.risk==='medium').length }}</div>
+          <div class="gov-kpi-lbl">Средний риск</div>
+        </div>
+        <div class="gov-kpi">
+          <div class="gov-kpi-icon">✅</div>
+          <div class="gov-kpi-val">{{ regulations.filter(r=>r.risk==='low').length }}</div>
+          <div class="gov-kpi-lbl">Низкий риск</div>
+        </div>
+        <div class="gov-kpi">
+          <div class="gov-kpi-icon">📋</div>
+          <div class="gov-kpi-val">{{ regulations.length }}</div>
+          <div class="gov-kpi-lbl">НПА на мониторинге</div>
         </div>
       </div>
+
+      <!-- Радар + список -->
       <div class="gov-card">
-        <h3>Регуляторный радар БАС-отрасли</h3>
-        <div class="radar-list">
-          <div v-for="reg in regulations" :key="reg.code" class="radar-item">
-            <div class="radar-status">{{ statusIcon(reg.status) }}</div>
-            <div class="radar-info">
-              <div class="radar-code">{{ reg.code }}</div>
-              <div class="radar-name">{{ reg.name }}</div>
-              <div class="radar-desc">{{ reg.desc }}</div>
+        <div class="gr-section-title">
+          <i class="pi pi-crosshairs" style="color:#42a5f5"></i>
+          Радар регуляторных рисков
+          <Button label="AI-анализ рисков" icon="pi pi-sparkles" size="small" severity="warning"
+            :loading="radarLoading" @click="runRadarAnalysis" style="margin-left:auto" />
+        </div>
+
+        <div class="radar-layout">
+
+          <!-- SVG Радар -->
+          <div class="radar-chart-wrap">
+            <div class="radar-svg-container" @mouseleave="radarTip.visible = false">
+              <svg viewBox="0 0 400 400" class="radar-svg">
+                <!-- Кольца риска -->
+                <circle cx="200" cy="200" r="145" fill="rgba(239,83,80,0.05)" stroke="#ef5350" stroke-width="1" stroke-dasharray="5,3"/>
+                <circle cx="200" cy="200" r="95"  fill="rgba(255,167,38,0.05)" stroke="#ffa726" stroke-width="1" stroke-dasharray="5,3"/>
+                <circle cx="200" cy="200" r="45"  fill="rgba(102,187,106,0.08)" stroke="#66bb6a" stroke-width="1" stroke-dasharray="5,3"/>
+                <!-- Подписи колец -->
+                <text x="204" y="58"  font-size="9" fill="#ef5350" opacity="0.8">Высокий</text>
+                <text x="204" y="108" font-size="9" fill="#ffa726" opacity="0.8">Средний</text>
+                <text x="204" y="158" font-size="9" fill="#66bb6a" opacity="0.8">Низкий</text>
+                <!-- Линии секторов -->
+                <line v-for="(l, i) in radarSectorLines" :key="i"
+                      x1="200" y1="200" :x2="l.x2" :y2="l.y2"
+                      stroke="var(--p-content-border-color)" stroke-width="1"/>
+                <!-- Подписи секторов -->
+                <text v-for="lb in radarSectorLabels" :key="lb.label"
+                      :x="lb.x" :y="lb.y"
+                      text-anchor="middle" dominant-baseline="middle"
+                      font-size="10" fill="var(--p-text-muted-color)">{{ lb.label }}</text>
+                <!-- Центр -->
+                <circle cx="200" cy="200" r="3" fill="var(--p-text-muted-color)" opacity="0.3"/>
+                <!-- НПА точки -->
+                <g v-for="reg in regulations" :key="reg.code"
+                   @mouseenter="showRadarTip(reg, $event)"
+                   @mouseleave="radarTip.visible = false"
+                   @click="openRegModal(reg)"
+                   style="cursor:pointer">
+                  <circle :cx="getRegPos(reg).x" :cy="getRegPos(reg).y" r="18"
+                          :fill="getRegColor(reg)" :opacity="radarTip.reg?.code === reg.code ? 0.3 : 0.12"/>
+                  <circle :cx="getRegPos(reg).x" :cy="getRegPos(reg).y"
+                          :r="radarTip.reg?.code === reg.code ? 12 : 9"
+                          :fill="getRegColor(reg)" opacity="0.9"
+                          :stroke="radarTip.reg?.code === reg.code ? '#fff' : 'none'" stroke-width="2"/>
+                  <text :x="getRegPos(reg).x" :y="getRegPos(reg).y + 1"
+                        text-anchor="middle" dominant-baseline="middle"
+                        font-size="6.5" fill="white" font-weight="bold" pointer-events="none">
+                    {{ reg.code.replace(/[^А-ЯA-Z0-9-]/gi,'').substring(0,6) }}
+                  </text>
+                </g>
+              </svg>
             </div>
-            <div class="radar-meta">
-              <span class="radar-date">{{ reg.date }}</span>
-              <span class="radar-risk" :class="`risk-${reg.risk}`">Риск: {{ reg.risk }}</span>
+            <!-- Тултип через Teleport — поверх всего -->
+            <Teleport to="body">
+              <div v-if="radarTip.visible && radarTip.reg"
+                   class="radar-tip-global"
+                   :style="{ left: radarTip.x + 'px', top: radarTip.y + 'px' }">
+                <div class="radar-tip-code" :style="{ color: getRegColor(radarTip.reg) }">{{ radarTip.reg.code }}</div>
+                <div class="radar-tip-name">{{ radarTip.reg.name }}</div>
+                <div v-if="radarTip.reg.desc" class="radar-tip-desc">{{ radarTip.reg.desc }}</div>
+                <div class="radar-tip-meta">
+                  <span :class="`risk-${radarTip.reg.risk}`">
+                    {{ radarTip.reg.risk === 'high' ? '🔴 Высокий' : radarTip.reg.risk === 'medium' ? '🟡 Средний' : '✅ Низкий' }} риск
+                  </span>
+                  <span v-if="radarTip.reg.date" class="radar-tip-date">{{ radarTip.reg.date }}</span>
+                </div>
+                <div class="radar-tip-hint">Нажмите для создания меры →</div>
+              </div>
+            </Teleport>
+            <div class="radar-chart-legend">
+              <span class="rcl-item"><span class="rcl-dot" style="background:#ef5350"></span>Высокий (внешнее)</span>
+              <span class="rcl-item"><span class="rcl-dot" style="background:#ffa726"></span>Средний</span>
+              <span class="rcl-item"><span class="rcl-dot" style="background:#66bb6a"></span>Низкий (центр)</span>
+            </div>
+          </div>
+
+          <!-- Правая панель: форма + список -->
+          <div class="radar-right-panel">
+            <div class="radar-add-row">
+              <InputText v-model="newReg.code" placeholder="Код НПА (ФЗ-370...)" class="radar-add-input" />
+              <InputText v-model="newReg.name" placeholder="Название НПА" class="radar-add-input radar-add-name" />
+              <Select v-model="newReg.risk" :options="['high','medium','low']" placeholder="Риск" class="radar-add-sel" />
+              <Button icon="pi pi-plus" size="small" @click="addRegulation" :disabled="!newReg.code || !newReg.name" />
+            </div>
+
+            <div class="radar-list">
+              <div v-for="reg in regulations" :key="reg.code"
+                :class="['radar-item', `radar-item--${reg.risk}`]">
+                <div class="radar-status">{{ statusIcon(reg.risk) }}</div>
+                <div class="radar-info">
+                  <div class="radar-code">{{ reg.code }}</div>
+                  <div class="radar-name">{{ reg.name }}</div>
+                  <div class="radar-desc">{{ reg.desc }}</div>
+                </div>
+                <div class="radar-meta">
+                  <span class="radar-date">{{ reg.date }}</span>
+                  <span :class="`risk-${reg.risk}`">{{ reg.risk === 'high' ? 'Высокий' : reg.risk === 'medium' ? 'Средний' : 'Низкий' }}</span>
+                  <Button icon="pi pi-times" text size="small" severity="secondary" @click="removeRegulation(reg.code)" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- AI-вывод -->
+        <div v-if="radarAnalysis" class="gr-agent-output" style="margin-top:16px">
+          <div class="gr-agent-output-header"><i class="pi pi-bolt" /> AI-анализ регуляторных рисков</div>
+          <div v-html="radarAnalysis" style="padding:14px;font-size:13px;line-height:1.7"></div>
+        </div>
       </div>
     </div>
+
+  <!-- ═══ Модальное окно: Конструктор из НПА ═══ -->
+  <Dialog v-model:visible="regModal.visible" modal
+          :header="regModal.reg ? `Создать меру по НПА: ${regModal.reg.code}` : 'Конструктор меры'"
+          style="width:min(720px,95vw)" :draggable="false">
+    <div v-if="regModal.reg" class="regmodal-context">
+      <div class="regmodal-npa">
+        <span :style="{ color: getRegColor(regModal.reg), fontWeight:700 }">{{ regModal.reg.code }}</span>
+        <span>{{ regModal.reg.name }}</span>
+        <span class="regmodal-risk" :class="`risk-${regModal.reg.risk}`">
+          {{ regModal.reg.risk === 'high' ? '🔴 Высокий риск' : regModal.reg.risk === 'medium' ? '🟡 Средний риск' : '✅ Низкий риск' }}
+        </span>
+      </div>
+      <div v-if="regModal.reg.desc" class="regmodal-desc">{{ regModal.reg.desc }}</div>
+    </div>
+
+    <div class="gr-constructor-form" style="margin-top:16px">
+      <div class="gr-cf-row">
+        <div class="gr-cf-group">
+          <label>Название меры</label>
+          <InputText v-model="newMeasure.name" placeholder="Грант / субсидия / статус..." class="gr-cf-input" />
+        </div>
+        <div class="gr-cf-group">
+          <label>Тип инструмента</label>
+          <Select v-model="newMeasure.type" :options="MEASURE_TYPES" optionLabel="label" optionValue="value" class="gr-cf-input" />
+        </div>
+      </div>
+      <div class="gr-cf-row">
+        <div class="gr-cf-group">
+          <label>Оператор (кто выдаёт)</label>
+          <InputText v-model="newMeasure.operator" placeholder="Минпромторг / НТИ / Сколково..." class="gr-cf-input" />
+        </div>
+        <div class="gr-cf-group">
+          <label>Объём финансирования</label>
+          <InputText v-model="newMeasure.amount" placeholder="до 50 млн ₽" class="gr-cf-input" />
+        </div>
+      </div>
+      <div class="gr-cf-row">
+        <div class="gr-cf-group">
+          <label>Проблема / регуляторный контекст</label>
+          <Textarea v-model="newMeasure.problem" rows="2" class="gr-cf-input" />
+        </div>
+        <div class="gr-cf-group">
+          <label>Целевая аудитория</label>
+          <InputText v-model="newMeasure.target" placeholder="Стартапы БАС с TRL 5–8..." class="gr-cf-input" />
+        </div>
+      </div>
+      <div class="gr-cf-row">
+        <div class="gr-cf-group">
+          <label>Триггер (почему сейчас)</label>
+          <InputText v-model="newMeasure.trigger" class="gr-cf-input" />
+        </div>
+        <div class="gr-cf-group">
+          <label>Ожидаемый результат</label>
+          <InputText v-model="newMeasure.expected" placeholder="50 компаний, 10 млрд ₽ выручки" class="gr-cf-input" />
+        </div>
+      </div>
+      <div class="gr-cf-group">
+        <label>Онтологические теги</label>
+        <div class="gr-onto-tags">
+          <span v-for="tag in ONTO_TAGS" :key="tag"
+            :class="['gr-onto-tag', { 'gr-onto-tag--sel': newMeasure.ontoTags.includes(tag) }]"
+            @click="toggleOntoTag(tag)">{{ tag }}</span>
+        </div>
+      </div>
+
+      <div v-if="regModal.proposalText" class="gr-proposal-block" style="margin-top:14px">
+        <div class="gr-proposal-header"><i class="pi pi-file-edit" style="color:#42a5f5"></i> Проектное предложение</div>
+        <div v-html="regModal.proposalText" class="gr-proposal-text"></div>
+      </div>
+    </div>
+
+    <template #footer>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <Button label="Сгенерировать концепцию (AI)" icon="pi pi-sparkles" severity="warning"
+                :loading="regModal.loading" :disabled="!newMeasure.name"
+                @click="generateModalProposal" />
+        <Button label="Сохранить и закрыть" icon="pi pi-save" severity="success"
+                :disabled="!newMeasure.name" @click="saveAndCloseModal" />
+        <Button label="Закрыть" icon="pi pi-times" text severity="secondary"
+                @click="regModal.visible = false" />
+      </div>
+    </template>
+  </Dialog>
 
   </FstPageLayout>
 </template>
@@ -320,6 +547,7 @@ import Tag from 'primevue/tag'
 import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import { getProjects } from '@/services/fstApi.js'
 import { getMeasures, matchMeasures as matchMeasuresFromService } from '@/services/grMeasuresService.js'
@@ -605,8 +833,187 @@ const eventOntology = [
   },
 ]
 
+// ─── Онтология: привязка мер к узлам цепочек ─────────────────────────────────
+const CHAIN_STEP_MEASURES = {
+  // Рыночный провал
+  'market-fail:detect': [],
+  'market-fail:analyze': [],
+  'market-fail:org': [],
+  'market-fail:design': ['fasie-umnik', 'fasie-start1'],
+  'market-fail:pilot': ['fasie-start2', 'skolkovo-grant', 'skolkovo-accel'],
+  'market-fail:legal': ['skolkovo-status', 'minprom-719', 'spik-20'],
+  // Технологический разрыв
+  'tech-gap:detect': [],
+  'tech-gap:org': ['nti-aeronet', 'nti-technet'],
+  'tech-gap:design': ['fasie-umnik', 'fasie-start1', 'frp-niokr'],
+  'tech-gap:pilot': ['rfriti-sppo', 'rfriti-ai', 'minprom-niokr'],
+  'tech-gap:scale': ['fpi-program', 'veb-project'],
+  // Регуляторный барьер
+  'reg-barrier:detect': [],
+  'reg-barrier:org': [],
+  'reg-barrier:design': [],  // <— пробел!
+  'reg-barrier:analyze': [], // <— пробел!
+  'reg-barrier:pilot': ['skolkovo-status'],
+  // Инфраструктурный пробел
+  'infra-gap:detect': [],
+  'infra-gap:analyze': ['msp-loan', 'msp-guarantee'],
+  'infra-gap:design': ['veb-project'],
+  'infra-gap:pilot': ['minprom-bas', 'frp-projects'],
+}
+
+const activeOntoStep = ref(null)
+
+function toggleStep(chainId, stepType) {
+  const key = `${chainId}:${stepType}`
+  activeOntoStep.value = activeOntoStep.value === key ? null : key
+}
+
+function getStepMeasures(chainId, stepType) {
+  const ids = CHAIN_STEP_MEASURES[`${chainId}:${stepType}`] || []
+  return allMeasures.value.filter(m => ids.includes(m.id))
+}
+
+function createMeasureForGap(chainId, ev) {
+  const chain = eventOntology.find(c => c.id === chainId)
+  newMeasure.value.name = `Новая мера: ${ev.name} (${chain?.trigger})`
+  newMeasure.value.problem = `Пробел в поддержке на этапе "${ev.name}" цепочки "${chain?.trigger}"`
+  newMeasure.value.trigger = chain?.trigger || ''
+  activeOntoStep.value = null
+  document.querySelector('.gr-constructor-panel')?.scrollIntoView({ behavior: 'smooth' })
+}
+
+// ─── Радар: SVG-вспомогательные ───────────────────────────────────────────────
+const RADAR_SECTORS = ['Сертификация', 'Финансирование', 'Экспорт', 'Эксплуатация', 'Правовые']
+
+const radarSectorLines = computed(() => [0,1,2,3,4].map(i => {
+  const angle = (i * 72 - 90) * Math.PI / 180
+  return { x2: +(200 + 165 * Math.cos(angle)).toFixed(1), y2: +(200 + 165 * Math.sin(angle)).toFixed(1) }
+}))
+
+const radarSectorLabels = computed(() => RADAR_SECTORS.map((label, i) => {
+  const angle = (i * 72 - 90 + 36) * Math.PI / 180
+  return { label, x: +(200 + 188 * Math.cos(angle)).toFixed(1), y: +(200 + 188 * Math.sin(angle)).toFixed(1) }
+}))
+
+function getRegSector(reg) {
+  const text = (reg.code + ' ' + reg.name + ' ' + (reg.desc || '')).toLowerCase()
+  if (/сертифик|ап-21|ап-22|719|лицензи/.test(text)) return 0
+  if (/субсиди|финансир|нацпроект|кредит|грант/.test(text)) return 1
+  if (/экспорт|зарубеж/.test(text)) return 2
+  if (/полёт|эксплуатац|операт|зон/.test(text)) return 3
+  return 4
+}
+
+function getRegPos(reg) {
+  const sector = getRegSector(reg)
+  const radius = reg.risk === 'high' ? 145 : reg.risk === 'medium' ? 95 : 45
+  const hash = reg.code.split('').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0)
+  const jitter = ((Math.abs(hash) % 28) - 14) * Math.PI / 180
+  const angle = (sector * 72 - 90 + 36) * Math.PI / 180 + jitter
+  return { x: +(200 + radius * Math.cos(angle)).toFixed(1), y: +(200 + radius * Math.sin(angle)).toFixed(1) }
+}
+
+function getRegColor(reg) {
+  return reg.risk === 'high' ? '#ef5350' : reg.risk === 'medium' ? '#ffa726' : '#66bb6a'
+}
+
+const radarTip = ref({ visible: false, reg: null, x: 0, y: 0 })
+
+function showRadarTip(reg, event) {
+  let x = event.pageX + 16
+  let y = event.pageY - 10
+  if (x + 240 > window.innerWidth) x = event.pageX - 250
+  if (y + 130 > window.innerHeight + window.scrollY) y = event.pageY - 130
+  radarTip.value = { visible: true, reg, x, y }
+}
+
+// ─── Модалка конструктора из НПА ──────────────────────────────────────────────
+const regModal = ref({ visible: false, reg: null, loading: false, proposalText: '' })
+
+function openRegModal(reg) {
+  radarTip.value.visible = false
+  newMeasure.value = {
+    name: `Мера в ответ на ${reg.code}: ${reg.name.substring(0, 50)}`,
+    type: reg.risk === 'low' ? 'subsidy' : 'grant',
+    operator: '',
+    amount: '',
+    problem: reg.desc || reg.name,
+    target: 'Стартапы и производители БАС / робототехника',
+    trigger: `${reg.code} — ${reg.name} (${reg.date || ''})`,
+    expected: '',
+    ontoTags: reg.risk === 'high' ? ['Регуляторный барьер'] : reg.risk === 'low' ? ['Безвозвратный грант'] : ['Рыночный провал'],
+  }
+  regModal.value = { visible: true, reg, loading: false, proposalText: '' }
+}
+
+async function generateModalProposal() {
+  if (!newMeasure.value.name) return
+  regModal.value.loading = true
+  regModal.value.proposalText = ''
+  const m = newMeasure.value
+  const typeLabel = MEASURE_TYPES.find(t => t.value === m.type)?.label || m.type
+  try {
+    const res = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'anthropic/claude-sonnet-4-20250514',
+        application: 'FstGov-RadarModal',
+        systemPrompt: `Ты — эксперт GR-политики ФСТ НТИ. Разрабатываешь меры поддержки в ответ на регуляторные изменения. Пиши кратко, структурированно, как правительственный документ. HTML.`,
+        prompt: `Разработай меру поддержки в ответ на регуляторное изменение:
+НПА: ${regModal.value.reg?.code} — ${regModal.value.reg?.name}
+Описание НПА: ${regModal.value.reg?.desc || '—'}
+Уровень риска: ${regModal.value.reg?.risk === 'high' ? 'высокий' : regModal.value.reg?.risk === 'medium' ? 'средний' : 'низкий'}
+
+Предлагаемая мера: ${m.name} (${typeLabel})
+Проблема: ${m.problem}
+Аудитория: ${m.target}
+
+1. <b>Суть меры</b> (2-3 предложения)
+2. <b>Механизм</b> (кто оператор, процесс, критерии)
+3. <b>Объём и источник</b>
+4. <b>КПЭ</b> (3-5 показателей)
+5. <b>Следующий шаг</b> (что нужно сделать ФСТ НТИ)`
+      })
+    })
+    const data = await res.json()
+    regModal.value.proposalText = (data.response || '').replace(/\n/g, '<br>')
+  } catch {
+    regModal.value.proposalText = '<p style="color:red">Ошибка генерации</p>'
+  } finally {
+    regModal.value.loading = false
+  }
+}
+
+function saveAndCloseModal() {
+  if (!newMeasure.value.name) return
+  const typeLabel = MEASURE_TYPES.find(t => t.value === newMeasure.value.type)?.label || newMeasure.value.type
+  proposalLibrary.value.push({
+    id: Date.now(), name: newMeasure.value.name,
+    type: newMeasure.value.type, type_label: typeLabel,
+    operator: newMeasure.value.operator
+  })
+  if (regModal.value.proposalText) proposalText.value = regModal.value.proposalText
+  regModal.value.visible = false
+  toast.add({ severity: 'success', summary: 'Сохранено в библиотеку', life: 2000 })
+}
+
 const newMeasure = ref({ name: '', type: 'grant', operator: '', amount: '', problem: '', target: '', trigger: '', expected: '', ontoTags: [] })
+const selectedRefMeasure = ref(null)
 const constructorLoading = ref(false)
+
+function fillFromMeasure(m) {
+  newMeasure.value.name = `Новая мера по образцу: ${m.name}`
+  newMeasure.value.type = m.type || 'grant'
+  newMeasure.value.operator = m.operator || ''
+  newMeasure.value.amount = m.amount || ''
+  newMeasure.value.target = m.sector?.join(', ') || ''
+  newMeasure.value.problem = m.criteria?.join('. ') || ''
+  newMeasure.value.ontoTags = []
+  selectedRefMeasure.value = null
+  // Скроллим к форме
+  document.querySelector('.gr-constructor-panel')?.scrollIntoView({ behavior: 'smooth' })
+}
 const proposalText = ref('')
 const memoText = ref('')
 const proposalLibrary = ref([])
@@ -757,21 +1164,74 @@ ${portfolioSummary}
 }
 
 // ─── Регуляторный радар ────────────────────────────────────────────────────────
-const kpis = [
-  { icon: '🏛️', value: '4', label: 'Активных GR-треков' },
-  { icon: '📋', value: '12', label: 'Мониторинг НПА' },
-  { icon: '✅', value: '3', label: 'Меры в работе' },
-  { icon: '⚠️', value: '2', label: 'Риска: высокий' },
-]
+const regulations = ref([
+  { code: 'ФЗ-370 БПЛА', name: 'Регулирование эксплуатации дронов', desc: 'Сертификация, операторы, зоны полётов', date: 'янв 2026', risk: 'medium' },
+  { code: 'ПП-1421 Нацпроект', name: 'Субсидии по Нацпроекту БАС', desc: 'Критерии отбора, объём субсидий 2025-2030', date: 'март 2026', risk: 'low' },
+  { code: 'Приказ Минпромторг-719', name: 'Обновление условий подтверждения БПЛА', desc: 'Повышение требований к локализации до 80%', date: 'фев 2026', risk: 'high' },
+  { code: 'ФЗ-ЭПТ Экспорт', name: 'Ограничения экспорта двойного назначения', desc: 'Новые согласования для зарубежных партнёрств', date: 'апр 2026', risk: 'medium' },
+  { code: 'ПП РФ №1460 ЭПР БАС', name: 'Экспериментальный правовой режим БПЛА', desc: 'Разрешение полётов БПЛА в экспериментальных зонах без сертификации', date: 'июн 2026', risk: 'low' },
+  { code: 'Приказ Росавиация 2025-67', name: 'Требования к сертификации операторов БАС', desc: 'Новые правила выдачи свидетельств операторов БПЛА', date: 'май 2026', risk: 'medium' },
+])
 
-const regulations = [
-  { code: 'ФЗ-370 БПЛА', name: 'Регулирование эксплуатации дронов', desc: 'Сертификация, операторы, зоны полётов', date: 'янв 2026', status: 'active', risk: 'medium' },
-  { code: 'ПП-1421 Нацпроект', name: 'Субсидии по Нацпроекту БАС', desc: 'Критерии отбора, объём субсидий 2025-2030', date: 'март 2026', status: 'pending', risk: 'low' },
-  { code: 'Приказ Минпромторг-719', name: 'Обновление условий подтверждения БПЛА', desc: 'Повышение требований к локализации до 80%', date: 'фев 2026', status: 'risk', risk: 'high' },
-  { code: 'ФЗ-ЭПТ Экспорт', name: 'Ограничения экспорта двойного назначения', desc: 'Новые согласования для зарубежных партнёрств', date: 'апр 2026', status: 'pending', risk: 'medium' },
-]
+const newReg = ref({ code: '', name: '', desc: '', date: '', risk: 'medium' })
+const radarLoading = ref(false)
+const radarAnalysis = ref('')
 
-function statusIcon(s) { return s === 'active' ? '✅' : s === 'risk' ? '🔴' : '🟡' }
+function statusIcon(s) { return s === 'high' ? '🔴' : s === 'low' ? '✅' : '🟡' }
+
+function addRegulation() {
+  if (!newReg.value.code || !newReg.value.name) return
+  const now = new Date()
+  const months = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек']
+  regulations.value.push({
+    code: newReg.value.code,
+    name: newReg.value.name,
+    desc: newReg.value.desc || '—',
+    date: `${months[now.getMonth()]} ${now.getFullYear()}`,
+    risk: newReg.value.risk || 'medium'
+  })
+  newReg.value = { code: '', name: '', desc: '', date: '', risk: 'medium' }
+}
+
+function removeRegulation(code) {
+  regulations.value = regulations.value.filter(r => r.code !== code)
+}
+
+async function runRadarAnalysis() {
+  radarLoading.value = true
+  radarAnalysis.value = ''
+  const regStr = regulations.value.map(r =>
+    `- ${r.code}: ${r.name} (риск: ${r.risk === 'high' ? 'высокий' : r.risk === 'medium' ? 'средний' : 'низкий'}) — ${r.desc}`
+  ).join('\n')
+
+  try {
+    const res = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'deepseek/deepseek-chat',
+        application: 'FstGov-RadarAnalysis',
+        systemPrompt: `Ты — GR-аналитик ФСТ НТИ. Специализируешься на регуляторных рисках для технологических стартапов БАС/дроны/робототехника. Давай конкретные, практические рекомендации. HTML: <b>, <ul><li>.`,
+        prompt: `Проанализируй регуляторные изменения и риски для портфельных компаний ФСТ НТИ:
+
+${regStr}
+
+Портфель: БПЛА/БАС, Робототехника, промышленные инновации.
+
+1. <b>Топ-3 критических риска</b> — что угрожает портфелю прямо сейчас
+2. <b>Возможности</b> — какие изменения создают шансы
+3. <b>Рекомендуемые действия</b> — что конкретно делать ФСТ НТИ (5-7 пунктов)
+4. <b>Мониторинг</b> — за чем следить в ближайшие 3 месяца`
+      })
+    })
+    const data = await res.json()
+    radarAnalysis.value = (data.response || '').replace(/\n/g, '<br>')
+  } catch {
+    radarAnalysis.value = '<p style="color:red">Ошибка анализа</p>'
+  } finally {
+    radarLoading.value = false
+  }
+}
 
 onMounted(() => {
   loadProjects()
@@ -896,8 +1356,7 @@ onMounted(() => {
   border-bottom: 1px solid var(--p-content-border-color);
 }
 
-/* Ontology */
-.gr-onto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+/* Ontology - grid overridden by new flex rule above */
 .gr-onto-chain {
   border: 1px solid var(--p-content-border-color); border-radius: 8px;
   padding: 14px; background: var(--p-surface-card);
@@ -959,6 +1418,50 @@ onMounted(() => {
 .gr-lib-meta { display: flex; align-items: center; gap: 8px; }
 .gr-lib-status--draft { font-size: 11px; color: var(--p-text-muted-color); }
 
+/* ─── Radar visual ─────────────────────────────────────────────────────────── */
+.radar-layout { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 900px) { .radar-layout { grid-template-columns: 1fr; } }
+.radar-chart-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.radar-svg-container { position: relative; width: 100%; max-width: 340px; }
+.radar-svg { width: 100%; display: block; }
+.radar-svg-container { position: relative; width: 100%; max-width: 340px; }
+.radar-chart-legend { display: flex; gap: 12px; font-size: 11px; flex-wrap: wrap; color: var(--p-text-muted-color); }
+.rcl-item { display: flex; align-items: center; gap: 4px; }
+.rcl-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.radar-right-panel { display: flex; flex-direction: column; gap: 12px; }
+
+/* ─── Ontology step interactivity ──────────────────────────────────────────── */
+.gr-onto-grid { display: flex; flex-direction: column; gap: 14px; }
+.gr-onto-step-wrap { margin-bottom: 2px; }
+.gr-onto-event { cursor: pointer; border-radius: 6px; padding: 4px 8px; transition: background 0.15s; }
+.gr-onto-event:hover { background: rgba(99,102,241,0.06); }
+.gr-onto-event.is-active { background: rgba(99,102,241,0.1); outline: 1px solid var(--p-primary-color); }
+.gr-onto-event.has-measures::before { content: '●'; color: var(--p-primary-color); font-size: 8px; margin-right: 4px; }
+.gr-onto-event.is-gap::before { content: '○'; color: #ef5350; font-size: 8px; margin-right: 4px; }
+.gr-onto-mbadge {
+  font-size: 9px; background: var(--p-primary-color); color: #fff;
+  border-radius: 8px; padding: 1px 6px; margin-left: 6px; font-weight: 700;
+}
+.gr-onto-gbadge {
+  font-size: 9px; background: rgba(239,83,80,0.15); color: #ef5350;
+  border-radius: 8px; padding: 1px 6px; margin-left: 6px;
+}
+.gr-onto-expanded { margin: 4px 0 10px 24px; display: flex; flex-direction: column; gap: 4px; }
+.gr-onto-mnode {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+  border: 1px solid var(--p-primary-color); border-radius: 6px;
+  background: rgba(99,102,241,0.04); cursor: pointer; transition: background 0.15s;
+}
+.gr-onto-mnode:hover { background: rgba(99,102,241,0.12); }
+.gr-om-type { font-size: 10px; color: var(--p-primary-color); font-weight: 600; flex-shrink: 0; min-width: 70px; }
+.gr-om-name { flex: 1; font-size: 12px; font-weight: 500; }
+.gr-om-amt { font-size: 11px; color: var(--p-text-muted-color); flex-shrink: 0; }
+.gr-onto-gap-row {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  background: rgba(239,83,80,0.05); border: 1px dashed #ef5350;
+  border-radius: 6px; font-size: 12px; color: #ef5350; flex-wrap: wrap;
+}
+
 /* Radar */
 .gov-kpi-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .gov-kpi {
@@ -989,4 +1492,55 @@ onMounted(() => {
 .risk-high { color: #ef5350; font-weight: 600; }
 .risk-medium { color: #ffa726; font-weight: 600; }
 .risk-low { color: #66bb6a; font-weight: 600; }
+
+/* ─── Справочник мер в конструкторе ──────────────────────────────────────── */
+.gr-ref-panel {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 18px;
+}
+.gr-ref-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;
+  max-height: 320px; overflow-y: auto;
+}
+.gr-ref-card {
+  border: 1px solid var(--p-content-border-color); border-radius: 6px;
+  padding: 10px; cursor: pointer; transition: all 0.15s; background: var(--p-surface-card);
+}
+.gr-ref-card:hover { border-color: var(--p-primary-color); background: rgba(99,102,241,0.04); }
+.gr-ref-card--sel { border-color: var(--p-primary-color); background: rgba(99,102,241,0.08); }
+.gr-ref-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.gr-ref-type { font-size: 10px; color: var(--p-primary-color); font-weight: 600; }
+.gr-ref-trl { font-size: 10px; color: var(--p-text-muted-color); }
+.gr-ref-name { font-size: 12px; font-weight: 600; line-height: 1.3; margin-bottom: 3px; }
+.gr-ref-op { font-size: 10px; color: var(--p-text-muted-color); margin-bottom: 3px; }
+.gr-ref-amount { font-size: 11px; color: var(--p-text-color); }
+/* Modal */
+.regmodal-context {
+  background: var(--p-surface-hover, rgba(0,0,0,0.03));
+  border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px 14px;
+}
+.regmodal-npa { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; margin-bottom: 5px; }
+.regmodal-risk { font-size: 11px; font-weight: 600; }
+.regmodal-desc { font-size: 12px; color: var(--p-text-muted-color); line-height: 1.5; }
+</style>
+
+<style>
+/* Radar tooltip — глобально поверх всего */
+.radar-tip-global {
+  position: fixed; z-index: 9999; pointer-events: none;
+  background: #1e1e2e; color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 11px 14px;
+  min-width: 210px; max-width: 260px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+}
+.radar-tip-global .radar-tip-code { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+.radar-tip-global .radar-tip-name { font-size: 13px; font-weight: 600; line-height: 1.35; margin-bottom: 5px; color: #f1f5f9; }
+.radar-tip-global .radar-tip-desc { font-size: 11px; color: #94a3b8; line-height: 1.45; margin-bottom: 7px; }
+.radar-tip-global .radar-tip-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+.radar-tip-global .radar-tip-date { color: #64748b; font-weight: 400; }
+.radar-tip-global .radar-tip-hint { font-size: 10px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; margin-top: 2px; }
+.radar-tip-global .risk-high  { color: #f87171; }
+.radar-tip-global .risk-medium { color: #fb923c; }
+.radar-tip-global .risk-low   { color: #4ade80; }
 </style>
