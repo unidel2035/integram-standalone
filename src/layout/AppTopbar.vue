@@ -19,6 +19,7 @@ import { useWorkspaceAgentStore } from '@/stores/workspaceAgentStore'
 import { useLearnModeStore } from '@/stores/learnModeStore'
 import { useI18n } from 'vue-i18n'
 import { onMounted, onBeforeUnmount, ref, watch, computed, nextTick } from 'vue'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 // Issue #6934: Route detection for block-editor
 const route = useRoute()
@@ -217,6 +218,9 @@ watch(isDarkTheme, updateFavicon)
 
 
 
+const { isShortcutsModalOpen } = useKeyboardShortcuts()
+const toggleShortcuts = () => { isShortcutsModalOpen.value = !isShortcutsModalOpen.value }
+
 const paletteBtn = ref(null)
 
 onMounted(() => {
@@ -295,6 +299,16 @@ onBeforeUnmount(() => {
     <FstBreadcrumb />
 
     <div class="layout-topbar-actions">
+      <button
+        @click="toggleShortcuts"
+        type="button"
+        class="layout-topbar-action"
+        :class="{ 'active': isShortcutsModalOpen }"
+        title="Горячие клавиши (?)"
+      >
+        <i class="pi pi-desktop"/>
+      </button>
+
       <button
         @click="handleChat()"
         type="button"

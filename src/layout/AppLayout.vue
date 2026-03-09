@@ -15,9 +15,14 @@ import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import Toast from 'primevue/toast'
 import RoleSelectionModal from '@/components/RoleSelectionModal.vue'
 import { isRoleSelected } from '@/config/learningPaths'
+import ShortcutsModal from '@/components/fst-shared/ShortcutsModal.vue'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 const route = useRoute()
 const { layoutConfig, layoutState, isSidebarActive } = useLayout()
+
+// Global keyboard shortcuts — registers listeners for the whole app
+useKeyboardShortcuts()
 
 const outsideClickListener = ref(null)
 const isChatActive = ref(false)
@@ -184,6 +189,7 @@ const chatMargin = computed(() => {
 
   <Toast />
   <RoleSelectionModal v-if="showRoleModal" @role-selected="showRoleModal = false" @skipped="showRoleModal = false" />
+  <ShortcutsModal />
 </template>
 
 <style>
