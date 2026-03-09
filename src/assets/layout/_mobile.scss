@@ -45,7 +45,7 @@
   }
 
   /* Tabs → scroll horizontally */
-  [class*='-tabs']:not(.p-tabview) {
+  [class*='-tabs']:not(.p-tabs) {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap !important;
