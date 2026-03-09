@@ -194,6 +194,7 @@ import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 const CODE_COMPOSABLE = `<script setup>
 import { useModuleQuiz } from '@/composables/useModuleQuiz'
 import QuizModal from '@/components/QuizModal.vue'
+import { logger } from '@/utils/logger'
 
 const {
   quizVisible,
@@ -204,7 +205,7 @@ const {
 } = useModuleQuiz('fst-committee', 'AI-инвесткомитет')
 
 function onQuizComplete(result) {
-  console.log('Quiz result:', result)
+  logger.debug('Quiz result:', result)
   // Custom handling
 }
 <\/script>

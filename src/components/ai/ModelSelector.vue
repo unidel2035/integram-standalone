@@ -230,6 +230,7 @@ import { useToast } from 'primevue/usetoast'
 
 import axios from '@/orchestratorAxios'
 import { DEFAULT_AI_MODEL, DEFAULT_AI_PROVIDER, MODEL_FALLBACK_CHAIN } from '@/config/aiDefaults.js'
+import { logger } from '@/utils/logger'
 
 const props = defineProps({
   modelValue: {
@@ -385,7 +386,7 @@ async function loadModels() {
       const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null')
       if (cached && Date.now() - cached.ts < CACHE_TTL) {
         data = cached.data
-        console.log('[ModelSelector] Using cached models:', data.length)
+        logger.debug('[ModelSelector] Using cached models:', data.length)
       }
     } catch(e) {}
 
@@ -414,7 +415,7 @@ async function loadModels() {
         is_active: true
       }))
 
-      console.log('[ModelSelector] Models loaded:', allModels.value.length)
+      logger.debug('[ModelSelector] Models loaded:', allModels.value.length)
 
       // FIRST: Check localStorage for saved preference (includes provider)
       const storageKey = `modelPreference_${props.application}`
@@ -431,7 +432,7 @@ async function loadModels() {
               selectedProvider.value = pref.preferredProvider
               selectedModel.value = pref.preferredModelId
               prefLoaded = true
-              console.log('[ModelSelector] Restored from localStorage:', {
+              logger.debug('[ModelSelector] Restored from localStorage:', {
                 provider: pref.preferredProvider,
                 model: pref.preferredModelId
               })
@@ -450,7 +451,7 @@ async function loadModels() {
         if (model) {
           selectedProvider.value = model.provider_name
           selectedModel.value = model.id
-          console.log('[ModelSelector] Provider set from parent modelValue:', {
+          logger.debug('[ModelSelector] Provider set from parent modelValue:', {
             provider: model.provider_name,
             model: model.id
           })
@@ -509,7 +510,7 @@ async function loadUserPreference() {
     const storageKey = `modelPreference_${props.application}`
     const saved = localStorage.getItem(storageKey)
 
-    console.log('[ModelSelector] Loading preference from localStorage:', {
+    logger.debug('[ModelSelector] Loading preference from localStorage:', {
       application: props.application,
       storageKey,
       saved
@@ -518,7 +519,7 @@ async function loadUserPreference() {
     if (saved) {
       try {
         const preference = JSON.parse(saved)
-        console.log('[ModelSelector] Found preference:', preference)
+        logger.debug('[ModelSelector] Found preference:', preference)
 
         // Only use saved preference if we have both provider and model, and model exists
         if (preference.preferredModelId && preference.preferredProvider && !props.modelValue) {
@@ -529,7 +530,7 @@ async function loadUserPreference() {
             selectedProvider.value = preference.preferredProvider
             emit('update:modelValue', selectedModel.value)
 
-            console.log('[ModelSelector] Restored preference:', {
+            logger.debug('[ModelSelector] Restored preference:', {
               modelId: selectedModel.value,
               provider: selectedProvider.value
             })
@@ -555,7 +556,7 @@ async function loadUserPreference() {
         }
 
         // If we got here, preference was incomplete or invalid
-        console.log('[ModelSelector] Preference incomplete or invalid, selecting default')
+        logger.debug('[ModelSelector] Preference incomplete or invalid, selecting default')
         selectDefaultModel()
       } catch (e) {
         console.error('[ModelSelector] Error parsing saved preference:', e)
@@ -563,7 +564,7 @@ async function loadUserPreference() {
         selectDefaultModel()
       }
     } else {
-      console.log('[ModelSelector] No preference found, selecting default')
+      logger.debug('[ModelSelector] No preference found, selecting default')
       selectDefaultModel()
     }
   } catch (error) {
@@ -577,7 +578,7 @@ function selectDefaultModel() {
   if ((!selectedModel.value && !props.modelValue && allModels.value.length > 0) ||
       (selectedProvider.value && !selectedModel.value && allModels.value.length > 0)) {
 
-    console.log('[ModelSelector] Selecting default model from aiDefaults.js. Models available:', allModels.value.length)
+    logger.debug('[ModelSelector] Selecting default model from aiDefaults.js. Models available:', allModels.value.length)
 
     // Walk the fallback chain from config/aiDefaults.js
     let found = null
@@ -586,7 +587,7 @@ function selectDefaultModel() {
         (!rule.provider || m.provider_name === rule.provider) && rule.match(m.id)
       )
       if (found) {
-        console.log('[ModelSelector] Matched fallback rule:', found.id, found.provider_name)
+        logger.debug('[ModelSelector] Matched fallback rule:', found.id, found.provider_name)
         break
       }
     }
@@ -596,7 +597,7 @@ function selectDefaultModel() {
       selectedProvider.value = found.provider_name
       emit('update:modelValue', selectedModel.value)
 
-      console.log('[ModelSelector] Default selected:', {
+      logger.debug('[ModelSelector] Default selected:', {
         modelId: selectedModel.value,
         provider: selectedProvider.value
       })
@@ -623,14 +624,14 @@ async function saveUserPreference() {
       settings: modelSettings.value
     }
 
-    console.log('[ModelSelector] Saving preference to localStorage:', {
+    logger.debug('[ModelSelector] Saving preference to localStorage:', {
       application: props.application,
       storageKey,
       preference
     })
 
     localStorage.setItem(storageKey, JSON.stringify(preference))
-    console.log('[ModelSelector] Preference saved successfully')
+    logger.debug('[ModelSelector] Preference saved successfully')
   } catch (error) {
     console.error('[ModelSelector] Error saving preference:', error)
   }
@@ -783,7 +784,7 @@ watch(() => props.modelValue, (newValue) => {
       const model = allModels.value.find(m => m.id === newValue)
       if (model && model.provider_name !== selectedProvider.value) {
         selectedProvider.value = model.provider_name
-        console.log('[ModelSelector] Provider auto-set from modelValue:', model.provider_name)
+        logger.debug('[ModelSelector] Provider auto-set from modelValue:', model.provider_name)
       }
     }
   }

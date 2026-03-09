@@ -1004,6 +1004,7 @@ import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
+import { logger } from '@/utils/logger'
 
 // ── Load FST Data ─────────────────────────────────────────────────
 
@@ -1619,7 +1620,7 @@ async function saveDecisionToFst(sess) {
     // Сохранить ПОЛНЫЙ протокол заседания инвесткомитета
     await saveCommitteeSession(sess, fstProjectId)
 
-    console.log('✅ Протокол ИК сохранён в fst:', {
+    logger.debug('✅ Протокол ИК сохранён в fst:', {
       project: project.name || sess.projectId,
       decision: sess.decision?.recommendation,
       score: sess.decision?.aggregatedScore,
@@ -1654,12 +1655,12 @@ async function saveContractNodes(sess) {
 
     // Создаём Смарт контракт (3995)
     const contractName = `Смарт контракт — ${project.title || project.company || sess.projectId || 'Проект'}`
-    console.log('[saveContractNodes] creating contract:', contractName, 'nodes:', sess.contractNodes?.length)
+    logger.debug('[saveContractNodes] creating contract:', contractName, 'nodes:', sess.contractNodes?.length)
     const cData = await post('_m_new/3995', {
       t3995: contractName,
       up: 1,
     })
-    console.log('[saveContractNodes] cData:', JSON.stringify(cData))
+    logger.debug('[saveContractNodes] cData:', JSON.stringify(cData))
     const contractId = cData.id || cData.newId || cData.obj
     if (!contractId) { console.warn('[saveContractNodes] no contractId, response:', JSON.stringify(cData)); return }
 
@@ -1716,7 +1717,7 @@ async function saveContractNodes(sess) {
         up: contractId,
       })
     }
-    console.log('✅ Ноды контракта сохранены в БД. Contract ID:', contractId)
+    logger.debug('✅ Ноды контракта сохранены в БД. Contract ID:', contractId)
     // Issue #152: save contractId + show toast
     sess.savedContractId = contractId
     session.value = { ...sess }

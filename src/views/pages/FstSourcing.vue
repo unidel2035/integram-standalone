@@ -318,6 +318,7 @@
 import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useRouter } from 'vue-router'
+import { logger } from '@/utils/logger'
 
 const router = useRouter()
 
@@ -615,7 +616,7 @@ function addToDealflow(lead) {
   // For now, just show confirmation
   setTimeout(() => {
     if (confirm(`Добавить "${lead.company}" в воронку dealflow?`)) {
-      console.log('Adding to dealflow:', lead)
+      logger.debug('Adding to dealflow:', lead)
       // router.push('/fst-dealflow')
     } else {
       lead.addedToDealflow = false
@@ -629,13 +630,13 @@ function runScan() {
   setTimeout(() => {
     loading.value = false
     // In production, this would trigger the backend sourcing pipeline
-    console.log('Running sourcing scan...')
+    logger.debug('Running sourcing scan...')
   }, 1500)
 }
 
 function saveSettings() {
   // In production, save settings to backend
-  console.log('Saving settings:', {
+  logger.debug('Saving settings:', {
     sources: availableSources.value.filter(s => s.enabled).map(s => s.id),
     keywords: keywords.value,
     updateFrequency: updateFrequency.value

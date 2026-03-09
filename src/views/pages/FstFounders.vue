@@ -412,6 +412,7 @@ import MultiSelect from 'primevue/multiselect'
 import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
 import Dialog from 'primevue/dialog'
+import { logger } from '@/utils/logger'
 
 const router = useRouter()
 
@@ -709,7 +710,7 @@ function selectMentor(mentor) {
 }
 
 function showMatchDialog(mentor) {
-  console.log('Show match dialog for mentor:', mentor.name)
+  logger.debug('Show match dialog for mentor:', mentor.name)
   // TODO: Open matching dialog
 }
 
@@ -741,28 +742,28 @@ async function runAIMatching() {
 }
 
 function selectAIMentor(result) {
-  console.log('Selected AI mentor:', result.mentorName)
+  logger.debug('Selected AI mentor:', result.mentorName)
   // TODO: Assign mentor to request
 }
 
 function viewRequest(req) {
-  console.log('View request:', req)
+  logger.debug('View request:', req)
 }
 
 function viewEvent(event) {
-  console.log('View event:', event)
+  logger.debug('View event:', event)
 }
 
 function viewEventParticipants(event) {
-  console.log('View participants for event:', event.name)
+  logger.debug('View participants for event:', event.name)
 }
 
 function createEntity() {
   if (addType.value === 'Founder') {
-    console.log('Create founder:', newFounder.value)
+    logger.debug('Create founder:', newFounder.value)
     // TODO: API call to create founder
   } else {
-    console.log('Create mentor:', newMentor.value)
+    logger.debug('Create mentor:', newMentor.value)
     // TODO: API call to create mentor
   }
   showAddDialog.value = false

@@ -1413,6 +1413,7 @@ import { getContextualActions } from '@/composables/useBlockEditorTools'
 import { Icon } from '@iconify/vue'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+import { logger } from '@/utils/logger'
 
 // ========== Import ALL shared logic from composable ==========
 const {
@@ -1679,7 +1680,7 @@ function handleSettingsChange(settings) {
   if (settings.topP !== undefined) {
     llmSettings.topP = settings.topP
   }
-  console.log('[Chat.vue] Settings synced from ModelSelector:', settings)
+  logger.debug('[Chat.vue] Settings synced from ModelSelector:', settings)
 }
 
 // Save current chat with custom name (wrapper for ChatHistoryDialog)
@@ -1719,7 +1720,7 @@ const agentExecution = ref({
 
 // Agent handlers
 function handleAgentChange(agent) {
-  console.log('[Chat] Agent selected:', agent?.name)
+  logger.debug('[Chat] Agent selected:', agent?.name)
   if (agent) {
     localStorage.setItem('customAgentSystemPrompt', agent.systemPrompt || '')
     localStorage.setItem('customAgentName', agent.name || '')
@@ -2091,7 +2092,7 @@ function sendKagQuickPrompt(qp) {
 // ========== Code Execution Window Event Handlers ==========
 // Issue #7113: Add handlers for CodeExecutionWindow events
 const onExecutionComplete = (exec) => {
-  console.log('[Chat.vue] Code execution completed:', exec)
+  logger.debug('[Chat.vue] Code execution completed:', exec)
 }
 
 const onExecutionError = (exec) => {

@@ -786,6 +786,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import { logger } from '@/utils/logger'
 
 const activeTab = ref('mgmt-fee')
 const selectedPeriod = ref('2025')
@@ -914,7 +915,7 @@ function addExpense() {
 }
 
 function editExpense(id) {
-  console.log('Edit expense', id)
+  logger.debug('Edit expense', id)
 }
 
 function deleteExpense(id) {
@@ -922,7 +923,7 @@ function deleteExpense(id) {
 }
 
 function viewDocs(id) {
-  console.log('View docs', id)
+  logger.debug('View docs', id)
 }
 
 // Carried Interest
@@ -999,11 +1000,11 @@ const distributions = ref([
 ])
 
 function viewCapitalCallDetails(id) {
-  console.log('Capital call details', id)
+  logger.debug('Capital call details', id)
 }
 
 function viewDistributionDetails(id) {
-  console.log('Distribution details', id)
+  logger.debug('Distribution details', id)
 }
 
 // Audit
@@ -1065,7 +1066,7 @@ const filteredAuditTrail = computed(() => {
 })
 
 function viewDoc(docId) {
-  console.log('View document', docId)
+  logger.debug('View document', docId)
 }
 
 // FSBU 4/2023
@@ -1157,15 +1158,15 @@ function distributionTypeLabel(t) {
 }
 
 function loadData() {
-  console.log('Load data for', selectedPeriod.value)
+  logger.debug('Load data for', selectedPeriod.value)
 }
 
 function exportToExcel() {
-  console.log('Export to Excel')
+  logger.debug('Export to Excel')
 }
 
 function generateAuditPackage() {
-  console.log('Generate audit package')
+  logger.debug('Generate audit package')
 }
 </script>
 
