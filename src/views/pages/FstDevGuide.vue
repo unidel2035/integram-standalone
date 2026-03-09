@@ -124,7 +124,7 @@
                 <div class="gif-input">На странице /fst-committee не показываются проекты из базы</div>
                 <div class="gif-label" style="margin-top:0.75rem">Description</div>
                 <div class="gif-textarea">
-                  При открытии страницы http://173.249.2.184:5174/fst-committee<br>
+                  При открытии страницы https://ai2fund.ru/fst-committee<br>
                   список проектов пустой. Ожидаемо должны загрузиться 6 проектов<br>
                   из базы ai2o.ru/fst/1155.<br><br>
                   Консоль браузера показывает 401 Unauthorized.
@@ -530,7 +530,7 @@ const cheatsheet = [
       'ssh new@173.249.2.184',
       'Пароль: new123',
       'cd /home/hive/fund',
-      'Сайт: http://173.249.2.184:5174',
+      'Сайт: https://ai2fund.ru',
     ]
   },
   {
