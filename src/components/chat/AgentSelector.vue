@@ -330,7 +330,7 @@ function manageAgents() {
   max-width: 90vw;
 }
 
-:deep(.agent-selector-panel .p-overlaypanel-content) {
+:deep(.agent-selector-panel .p-popover-content) {
   padding: 0;
 }
 

@@ -3090,7 +3090,7 @@ onUnmounted(() => {
 }
 
 /* Ensure OverlayPanel doesn't close on internal interactions */
-:deep(.p-overlaypanel) {
+:deep(.p-popover) {
   z-index: 1100 !important;
 }
 

@@ -626,7 +626,7 @@ onBeforeUnmount(() => {
         <ContextMenu v-if="!root" ref="menuRef" :model="contextMenuItems" />
 
         <!-- Submenu overlay for collapsed sidebar -->
-        <OverlayPanel v-if="item.items && item.items.length > 0 && collapsed" ref="submenuOverlay" :dismissable="true" :showCloseIcon="false">
+        <Popover v-if="item.items && item.items.length > 0 && collapsed" ref="submenuOverlay" :dismissable="true" :showCloseIcon="false">
             <div class="submenu-overlay-content">
                 <div class="submenu-overlay-header">
                     <span v-if="item.svgIcon" class="mr-2" v-html="item.svgIcon"></span>
@@ -676,7 +676,7 @@ onBeforeUnmount(() => {
                     </template>
                 </div>
             </div>
-        </OverlayPanel>
+        </Popover>
     </li>
 </template>
 

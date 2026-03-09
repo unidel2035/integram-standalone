@@ -194,7 +194,7 @@ const refreshStatus = () => {
 </script>
 
 <template>
-  <Sidebar
+  <Drawer
     :visible="visible"
     @update:visible="$emit('update:visible', $event)"
     position="right"
@@ -393,7 +393,7 @@ const refreshStatus = () => {
         </div>
       </div>
     </div>
-  </Sidebar>
+  </Drawer>
 </template>
 
 <style scoped>
@@ -423,25 +423,25 @@ const refreshStatus = () => {
   display: block;
 }
 
-:deep(.p-sidebar-header) {
+:deep(.p-drawer-header) {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--surface-border);
 }
 
-:deep(.p-sidebar-content) {
+:deep(.p-drawer-content) {
   padding: 1rem;
 }
 
 /* Dark mode adjustments */
-:deep(.p-sidebar) {
+:deep(.p-drawer) {
   background: var(--p-surface-0);
 }
 
-.dark :deep(.p-sidebar) {
+.dark :deep(.p-drawer) {
   background: var(--p-surface-900);
 }
 
-.dark :deep(.p-sidebar-header) {
+.dark :deep(.p-drawer-header) {
   border-bottom-color: var(--p-surface-700);
 }
 </style>

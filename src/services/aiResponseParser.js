@@ -311,7 +311,7 @@ function parseVueComponentBlocks(content) {
       'Card', 'Panel', 'Fieldset', 'Accordion', 'AccordionTab', 'TabView', 'TabPanel',
       'DataTable', 'Column', 'Tag', 'Badge', 'Chip', 'Avatar', 'Message',
       'ProgressBar', 'ProgressSpinner', 'Divider', 'Skeleton',
-      'Dialog', 'OverlayPanel', 'Tooltip',
+      'Dialog', 'Popover', 'Tooltip',
       'SelectButton', 'ToggleButton', 'Listbox', 'Password',
     ]
     const imports = knownComponents.filter(comp => code.includes(comp))

@@ -1,5 +1,5 @@
 <template>
-  <OverlayPanel
+  <Popover
     ref="panelRef"
     :dismissable="false"
     :auto-z-index="true"
@@ -45,7 +45,7 @@
         @settings-change="handleSettingsChange"
       />
     </div>
-  </OverlayPanel>
+  </Popover>
 </template>
 
 <script setup>
