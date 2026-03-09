@@ -559,7 +559,7 @@ const cheatsheet = [
 .guide-hero {
   text-align: center;
   padding: 3rem 2rem;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--p-primary-color) 12%, var(--surface-card)) 0%, var(--p-surface-100, var(--surface-card)) 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--p-primary-color) 15%, var(--surface-card)) 0%, var(--surface-card) 100%);
   border-radius: 1.25rem;
   margin-bottom: 3rem;
   border: 1px solid var(--p-content-border-color);
