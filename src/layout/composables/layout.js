@@ -40,7 +40,7 @@ const updateFavicon = (isDark) => {
     if (typeof document === 'undefined') return;
     const svgLink = document.querySelector('link[rel="icon"][type="image/svg+xml"]:not([media])');
     if (svgLink) {
-        svgLink.href = isDark ? '/meta/icon.svg' : '/meta/icon1.svg';
+        svgLink.href = isDark ? '/meta/icon2.svg' : '/meta/icon1.svg';
     }
 };
 
