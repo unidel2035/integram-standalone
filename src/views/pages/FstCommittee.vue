@@ -172,7 +172,10 @@
             :terms="['Сессия комитета', 'Инвесткомитет']"
           >
             <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession"
-              style="margin-left:auto" />
+              style="margin-left:auto"
+              data-action="reset-session"
+              data-description="Сбрасывает текущую сессию и возвращает к выбору проекта"
+            />
           </LearnTooltip>
         </div>
       </template>
@@ -379,7 +382,10 @@
             <Button label="Полный отчёт" icon="pi pi-arrow-right" icon-pos="right"
               size="small" outlined severity="secondary"
               style="width:100%;margin-top:10px;justify-content:center"
-              @click="conclusionVisible = true" />
+              @click="conclusionVisible = true"
+              data-action="view-protocol"
+              data-description="Открывает полный протокол заседания с голосами агентов и условиями"
+            />
           </div>
 
           <!-- Human Approval -->
@@ -502,7 +508,10 @@
         <p class="fst-setup-desc">6 AI-агентов анализируют проект, дебатируют и выносят решение с обоснованием</p>
         <div class="fst-setup-actions">
           <Button icon="pi pi-file-check" label="История заседаний" size="small" severity="secondary"
-            @click="$router.push('/fst-protocol')" />
+            @click="$router.push('/fst-protocol')"
+            data-action="view-protocol"
+            data-description="Открывает историю заседаний инвестиционного комитета"
+          />
         </div>
         <div class="fst-setup-subfunds" v-if="Object.keys(SUBFUNDS).length">
           <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
@@ -869,6 +878,9 @@
               :disabled="!selectedProjectId"
               @click="startSession"
               class="fst-launch-btn"
+              data-action="run-investment-committee"
+              data-description="Запускает голосование 6 AI-агентов по инвестиционной заявке"
+              data-agent-hint="Требует выбранную компанию. После нажатия ждать 30–60 сек до получения результата."
             />
             <div v-if="!selectedProjectId" class="fst-launch-hint">Выберите проект слева</div>
           </div>
@@ -976,6 +988,29 @@
     </template>
   </Dialog>
 </template>
+
+<!-- Page manifest — machine-readable metadata for AI agents -->
+<script>
+export const pageManifest = {
+  id: 'fst-committee',
+  title: 'AI-инвесткомитет',
+  description: 'Запуск голосования 6 AI-агентов по инвестиционной заявке. Агенты анализируют заявку с разных ролей (Аналитик, Юрист, Технолог, ESG, Рынок, Председатель) и выносят решение.',
+  capabilities: [
+    { id: 'run-committee', label: 'Запустить ИК', trigger: 'button[data-action="run-investment-committee"]', params: ['companyId'], agentHint: 'Требует выбранную компанию. После нажатия ждать 30–60 сек.' },
+    { id: 'view-protocol', label: 'Просмотр протокола', trigger: 'button[data-action="view-protocol"]' },
+    { id: 'export-pdf', label: 'Экспорт в PDF', trigger: 'button[data-action="export-pdf"]' },
+    { id: 'select-company', label: 'Выбор компании', trigger: '.fst-pcard[data-action="select-company"]', params: ['companyId'] }
+  ],
+  dataFields: [
+    { id: 'company-name', label: 'Название компании', type: 'string' },
+    { id: 'vote-result', label: 'Результат голосования', type: 'enum', values: ['approved', 'rejected', 'conditional', 'pending'] },
+    { id: 'aggregated-score', label: 'Итоговый балл', type: 'number', range: [0, 100] },
+    { id: 'agent-votes', label: 'Голоса агентов', type: 'array' },
+    { id: 'conditions', label: 'Условия одобрения', type: 'array' }
+  ],
+  relatedPages: ['fst-dealflow', 'fst-deal', 'fst-protocol']
+}
+</script>
 
 <script setup>
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'

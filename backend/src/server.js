@@ -23,6 +23,7 @@ import portfolioRoutes from './api/routes/portfolio.js'
 import applicationsRoutes from './api/routes/applications.js'
 import webhooksRoutes from './api/routes/webhooks.js'
 import glossaryRoutes from './api/routes/glossary.js'
+import platformRoutes from './api/routes/platform.js'
 import { authenticateApiToken, validateWebhookSecret } from './api/middleware/auth.js'
 import { startAgentSchoolTrainer } from './schedulers/agentSchoolTrainer.js'
 
@@ -93,6 +94,10 @@ app.use('/api/fst/webhook', validateWebhookSecret, webhooksRoutes)
 
 // Glossary endpoints (public - no auth required for MCP tools)
 app.use('/api/glossary', glossaryRoutes)
+
+// Platform manifest endpoints (public - no auth required for AI agents / MCP)
+// MCP tools: get_platform_manifest, get_page_manifest, get_available_actions
+app.use('/api/platform', platformRoutes)
 
 // 404 handler
 app.use((req, res) => {
