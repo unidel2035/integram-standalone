@@ -111,7 +111,7 @@ function parseExtendedData(descriptionHtml) {
       const match = descriptionHtml.match(/<!--FST_EXTENDED_DATA:(.*?)-->/)
       if (match) {
         const extended = JSON.parse(match[1])
-        const description = descriptionHtml.replace(/<!--FST_EXTENDED_DATA:.*?-->/, '').trim()
+        const description = descriptionHtml.replace(/<!--FST_EXTENDED_DATA:.*?-->/, '').replace(/<!--FST_FULL_APPLICATION:.*?-->/, '').trim()
         return { description, extended }
       }
     }
@@ -119,7 +119,7 @@ function parseExtendedData(descriptionHtml) {
     console.warn('[fstExtendedApi] Failed to parse extended data:', e)
   }
 
-  return { description: descriptionHtml, extended: {} }
+  return { description: descriptionHtml.replace(/<!--FST_FULL_APPLICATION:.*?-->/, '').trim(), extended: {} }
 }
 
 /**

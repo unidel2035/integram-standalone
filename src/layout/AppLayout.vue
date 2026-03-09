@@ -79,7 +79,7 @@ onMounted(() => {
 
   // Show role selection modal if user hasn't selected a role yet
   setTimeout(() => {
-    if (!isRoleSelected()) {
+    if (!isRoleSelected() && localStorage.getItem('ventureOS_roleSkipped') !== 'true') {
       showRoleModal.value = true
     }
   }, 2000)

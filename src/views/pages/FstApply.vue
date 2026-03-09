@@ -310,7 +310,7 @@ function handleDrop(e, type) {
 }
 
 async function submitApplication() {
-  if (!canSubmit.value) return
+  if (!canSubmit.value || submitting.value) return
 
   submitting.value = true
   try {
