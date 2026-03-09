@@ -389,7 +389,7 @@
               <div class="cmd-out gray"># Вводим пароль: new123</div>
               <div class="cmd-out gray"># (пароль не отображается при вводе — это нормально)</div>
               <div class="cmd-out green">Welcome to Ubuntu 22.04.3 LTS</div>
-              <div class="cmd-line"><span class="prompt">new@vps#</span> cd /home/hive/fund</div>
+              <div class="cmd-line"><span class="prompt">new@vps#</span> cd fund</div>
               <div class="cmd-line"><span class="prompt">new@vps:~/fund#</span> <span class="cmd-cursor">_</span></div>
             </div>
           </div>
@@ -529,7 +529,7 @@ const cheatsheet = [
     lines: [
       'ssh new@173.249.2.184',
       'Пароль: new123',
-      'cd /home/hive/fund',
+      'cd fund',
       'Сайт: https://ai2fund.ru',
     ]
   },
