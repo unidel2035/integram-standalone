@@ -1887,11 +1887,11 @@ onUnmounted(() => {
   align-items: center;
   gap: 5px;
   font-size: 11px;
-  color: #42a5f5;
+  color: var(--p-primary-color);
   padding: 3px 10px;
-  background: rgba(66,165,245,0.1);
+  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
   border-radius: 20px;
-  border: 1px solid rgba(66,165,245,0.25);
+  border: 1px solid color-mix(in srgb, var(--p-primary-color) 25%, transparent);
 }
 
 /* ── Body ────────────────────────────────── */
@@ -1942,7 +1942,7 @@ onUnmounted(() => {
   border-radius: 8px;
   background: rgba(255,255,255,0.25);
 }
-.fst-tab-count--red { background: #ef4444; color: #fff; }
+.fst-tab-count--red { background: var(--p-red-500); color: #fff; }
 .fst-panel-fill {
   flex: 1;
   min-height: 0;
@@ -2792,7 +2792,7 @@ onUnmounted(() => {
 .fst-overlap-link {
   background: none;
   border: none;
-  color: #42a5f5;
+  color: var(--p-primary-color);
   cursor: pointer;
   font-size: 0.78rem;
   padding: 0 4px;
@@ -2811,9 +2811,9 @@ onUnmounted(() => {
   transition: all 0.15s;
 }
 .fst-speed-btn.active {
-  border-color: #42a5f5;
-  background: rgba(66,165,245,0.12);
-  color: #42a5f5;
+  border-color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
+  color: var(--p-primary-color);
 }
 
 /* ── Dashboard Layout ─────────────────────────────────────── */
@@ -2888,10 +2888,10 @@ onUnmounted(() => {
   left: calc(50% + 7px);
   right: calc(-50% + 7px);
   height: 1px;
-  background: #2a2a2a;
+  background: var(--p-content-border-color);
 }
 .fst-phase-step--done::after {
-  background: #42a5f5;
+  background: var(--p-primary-color);
 }
 .fst-phase-dot {
   width: 14px;
@@ -2960,7 +2960,7 @@ onUnmounted(() => {
 
 /* ── Agents Panel ─────────────────────────────────────────── */
 .fst-agents-panel {
-  border-right: 1px solid #1e2230;
+  border-right: 1px solid var(--p-content-border-color);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -3027,7 +3027,7 @@ onUnmounted(() => {
 }
 .fst-agent-think-text {
   font-size: 10px;
-  color: #42a5f5;
+  color: var(--p-primary-color);
   font-style: italic;
   margin-top: 3px;
   display: flex;
@@ -3096,14 +3096,14 @@ onUnmounted(() => {
   color: var(--p-text-muted-color);
   padding: 2px 0;
 }
-.fst-project-mini-row strong { color: #ffd54f; }
+.fst-project-mini-row strong { color: var(--p-primary-color); }
 
 /* ── Debate Panel ─────────────────────────────────────────── */
 .fst-debate-panel {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #1e2230;
+  border-right: 1px solid var(--p-content-border-color);
 }
 .fst-timeline {
   flex: 1;
@@ -3124,7 +3124,7 @@ onUnmounted(() => {
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 12px;
-  color: #42a5f5;
+  color: var(--p-primary-color);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -3262,7 +3262,7 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 10px;
-  color: #26c6da;
+  color: var(--p-primary-color);
   display: flex;
   align-items: center;
   gap: 6px;
