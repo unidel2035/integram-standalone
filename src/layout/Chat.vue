@@ -1382,7 +1382,7 @@
 
 
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, computed, watch, defineAsyncComponent } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useChatLogic } from '@/composables/useChatLogic'
 import InputSwitch from 'primevue/inputswitch'
@@ -1390,20 +1390,20 @@ import ProgressSpinner from 'primevue/progressspinner'
 
 // Import components
 import MarkdownRender from '@/components/MarkdownRender.vue'
-import CodeExecutionWindow from '@/components/chat/CodeExecutionWindow.vue'
-import ModelSelectorPopover from '@/components/ai/ModelSelectorPopover.vue'
-import ModelSelector from '@/components/ai/ModelSelector.vue'
+const CodeExecutionWindow = defineAsyncComponent(() => import('@/components/chat/CodeExecutionWindow.vue'))
+const ModelSelectorPopover = defineAsyncComponent(() => import('@/components/ai/ModelSelectorPopover.vue'))
+const ModelSelector = defineAsyncComponent(() => import('@/components/ai/ModelSelector.vue'))
 import AgentStatusIndicator from '@/components/chat/AgentStatusIndicator.vue'
 import ContextBar from '@/components/chat/ContextBar.vue'
 import AgentStatusBar from '@/components/chat/AgentStatusBar.vue'
-import AvailableAgentsList from '@/components/chat/AvailableAgentsList.vue'
-import ChatHistoryDialog from '@/components/chat/ChatHistoryDialog.vue'
-import ChatHelpDialog from '@/components/chat/ChatHelpDialog.vue'
+const AvailableAgentsList = defineAsyncComponent(() => import('@/components/chat/AvailableAgentsList.vue'))
+const ChatHistoryDialog = defineAsyncComponent(() => import('@/components/chat/ChatHistoryDialog.vue'))
+const ChatHelpDialog = defineAsyncComponent(() => import('@/components/chat/ChatHelpDialog.vue'))
 import SGRStatusBadge from '@/components/chat/SGRStatusBadge.vue'
 import AgentSelector from '@/components/chat/AgentSelector.vue'
-import AgentExecutionMonitor from '@/components/agents/AgentExecutionMonitor.vue'
+const AgentExecutionMonitor = defineAsyncComponent(() => import('@/components/agents/AgentExecutionMonitor.vue'))
 // Issue #6731: Import components for showing tool calls and thinking
-import AgentExecutionSteps from '@/components/chat/AgentExecutionSteps.vue'
+const AgentExecutionSteps = defineAsyncComponent(() => import('@/components/chat/AgentExecutionSteps.vue'))
 import { useAgentFeedback } from '@/composables/useAgentFeedback'
 import { getContextualActions } from '@/composables/useBlockEditorTools'
 import { Icon } from '@iconify/vue'
@@ -1516,8 +1516,6 @@ const {
   formatFileSize,
   triggerFileUpload,
   handleFileUpload,
-  triggerModalFileUpload,
-  handleModalFileUpload,
   removeCurrentAttachment,
   downloadAttachment,
   showImagePreview,
@@ -1684,6 +1682,14 @@ function handleSettingsChange(settings) {
 function saveCurrentChatWithName(name) {
   newChatName.value = name
   saveCurrentChat()
+}
+
+// Modal file upload handlers (sidebar-specific, not in composable)
+function triggerModalFileUpload() {
+  modalFileInput.value?.click()
+}
+function handleModalFileUpload(event) {
+  handleFileUpload(event)
 }
 
 const router = useRouter()

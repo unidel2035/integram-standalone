@@ -37,7 +37,7 @@ import { egrulService } from '@/services/egrulService'
 import { vatCalculatorService } from '@/services/vatCalculatorService'
 import { fsspService } from '@/services/fsspService'
 import { parseHHRequest, processHHRequest as processHHRequestService } from '@/services/hhAgentService'
-import agentTriggerService, { AGENT_TYPES, AGENT_METADATA } from '@/services/agentTriggerService'
+import agentTriggerService, { AGENT_TYPES } from '@/services/agentTriggerService'
 import { useAuthStore } from '@/stores/authStore'
 import { useGeneralChat } from '@/composables/useGeneralChat'
 import { executeQuery } from '@/services/orchestratorService'
@@ -4777,22 +4777,17 @@ ${tzHtml}
 
     // Refs (for binding in components)
     fileInput,
-    fileInputGeneral,
     modalFileInput,
     attachmentMenu,
-    attachmentMenuGeneral,
     modalAttachmentMenu,
     aiMessagesContainer,
-    messagesContainer,
     modalMessagesContainer,
 
     // Computed
     isEditorPage,
     isBlockEditorPage,
-    isIntegramTablePage,
     isOntologyPage,
     ontologyContextualActions,
-    currentUserId,
     editorDocumentContext,
     integramTableContext,
     setIntegramTableContext,
@@ -4803,22 +4798,17 @@ ${tzHtml}
     removeAdditionalDocument,
     agentStatusBar,
     finmodelContext,
-    ecosystemContext,
 
     // Methods
     isSystemMessage,
-    getCombinedSystemPrompt,
     scrollToBottom,
     isImage,
     getAttachmentIcon,
     getAttachmentDisplayName,
     formatFileSize,
     getWorkspaceName,
-    getWorkspaceRepo,
     handleModelChange,
     handleDeepAgentToggle,
-    checkPolzaHealth,
-    generateDemoResponse,
     sendMessage,
     sendAiMessage,
     cancelAiRequest,
@@ -4836,7 +4826,6 @@ ${tzHtml}
     quickSaveChat,
     startNewChat,
     clearAllChats,
-    saveSessionToHistory,
     showImagePreview,
     toggleVoiceInput,
     triggerFileUpload,
@@ -4852,12 +4841,6 @@ ${tzHtml}
     clearCurrentChat,
     init,
 
-    // Issue #6832: Slash command handlers
-    detectSlashCommand,
-    processTableFillCommand,
-    processResearchCommand,
-    // Issue #7078: Import dialog trigger
-    processImportCommand,
 
     // General Chat methods (from useGeneralChat)
     loadRooms: generalChat.loadRooms,
