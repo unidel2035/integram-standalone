@@ -353,5 +353,8 @@ function generateReport() { window.print() }
   .sv-summary-bar { flex-wrap: wrap; gap: 8px; }
   .sv-total-score { flex-wrap: wrap; gap: 8px; }
   .sv-dims-grid { grid-template-columns: 1fr !important; }
+
+  .sov-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 </style>

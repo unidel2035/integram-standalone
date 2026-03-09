@@ -263,5 +263,7 @@ function exportGrants() {
   .gr-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .gr-summary { flex-wrap: wrap; gap: 8px; }
   .gr-summary { grid-template-columns: 1fr !important; }
+
+  .gr-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 </style>

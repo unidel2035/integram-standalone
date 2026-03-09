@@ -398,5 +398,7 @@ function sendCapCall() {
   .lp-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
   .lp-summary-grid { grid-template-columns: 1fr !important; }
   .cf-grid { grid-template-columns: 1fr !important; }
+
+  .lp-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 </style>

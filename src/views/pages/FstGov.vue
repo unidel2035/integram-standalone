@@ -220,7 +220,10 @@ function exportGr() {
 .gov-kpi-lbl  { font-size: 0.72rem; color: var(--p-text-muted-color); margin-top: 2px; }
 
 .gov-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-@media (max-width: 768px) { .gov-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .gov-grid { grid-template-columns: 1fr; } 
+  .gov-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
 
 .gov-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px; }
 .gov-card h3 { margin: 0 0 14px; font-size: 1rem; color: var(--p-text-color); }

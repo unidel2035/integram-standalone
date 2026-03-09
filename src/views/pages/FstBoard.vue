@@ -1299,4 +1299,9 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  .p-toolbar-start { flex-wrap: wrap; gap: 6px; max-width: 100%; }
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
 </style>

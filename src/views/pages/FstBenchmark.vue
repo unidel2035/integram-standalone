@@ -576,7 +576,10 @@ function initTrendChart() {
 .green { color: #66bb6a; } .red { color: #ef5350; } .orange { color: #ff9800; } .gray { color: var(--p-text-muted-color); }
 
 .fund-bench-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 700px) { .fund-bench-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .fund-bench-grid { grid-template-columns: 1fr; }
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
 .fund-bench-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; }
 .fb-name { font-weight: 700; font-size: 0.85rem; color: var(--p-text-color); margin-bottom: 12px; }
 .fb-metrics { display: flex; flex-direction: column; gap: 10px; }

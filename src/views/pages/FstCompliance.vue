@@ -268,7 +268,10 @@ function exportReport() { alert('Экспорт AML-отчёта') }
 .action-btn { padding: 3px 10px; border-radius: 5px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); cursor: pointer; font-size: 0.75rem; }
 
 .cpl-checklists { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 768px) { .cpl-checklists { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .cpl-checklists { grid-template-columns: 1fr; } 
+  .comp-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
 
 .checklist { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .check-item { display: flex; align-items: flex-start; gap: 8px; }

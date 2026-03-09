@@ -204,5 +204,7 @@ function exportReport() { alert('Экспорт отчёта соответст�
   .np-kpi-card { flex-wrap: wrap; gap: 8px; }
   .np-kpis { grid-template-columns: 1fr !important; }
   .fp-grid { grid-template-columns: 1fr !important; }
+
+  .np-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 </style>

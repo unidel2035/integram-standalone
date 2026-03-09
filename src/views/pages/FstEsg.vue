@@ -268,5 +268,8 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
   .esg-cat-score { flex-wrap: wrap; gap: 8px; }
   .esg-metrics-grid { grid-template-columns: 1fr !important; }
   .tcfd-grid { grid-template-columns: 1fr !important; }
+
+  .esg-matrix table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .esg-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 </style>

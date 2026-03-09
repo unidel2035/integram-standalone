@@ -764,4 +764,8 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  .p-card { max-width: 100% !important; overflow: hidden; }
+}
 </style>
