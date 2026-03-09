@@ -52,6 +52,7 @@ const routes = [
       { path: 'fst-miniapp', component: () => import('@/views/pages/FstMiniApp.vue'), meta: { title: 'Telegram Mini App' } },
       { path: 'fst-network', component: () => import('@/views/pages/FstNetwork.vue'), meta: { title: 'Сеть контактов' } },
       { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
+      { path: 'fst-startuper', component: () => import('@/views/pages/FstStartuper.vue'), meta: { title: 'Стартапер' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },

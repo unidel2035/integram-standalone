@@ -15,6 +15,7 @@
  */
 
 import { resolveModel, SPEED_PROFILES, resolveThinkingMode, THINKING_MODES } from './fstCommitteeModelOrchestrator.js'
+import { withResilience, resolveAvailableModel, recordSuccess, recordFailure } from './llmResilience.js'
 import { getCurrentUserId } from '@/services/aiTokenService.js'
 import {
   getToolsForAgent, formatToolsForPrompt,

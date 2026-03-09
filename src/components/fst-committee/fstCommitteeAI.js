@@ -12,6 +12,7 @@
 
 import { getCurrentUserId } from '@/services/aiTokenService.js'
 import { resolveModel } from './fstCommitteeModelOrchestrator.js'
+import { withResilience } from './llmResilience.js'
 
 const API_BASE = ''  // всегда относительный URL → Vite proxy → порт 8082
 const COMMITTEE_MODEL = 'polza/qwen/qwen-turbo' // дефолт: самый быстрый (~1.5с)
@@ -639,58 +640,66 @@ export async function generateArgumentAI(agent, type, project, prevArgs = [], ta
     opts.modelOverrides || {}
   )
 
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
-
   // Получаем токен авторизации
   const ddToken   = await getToken()
   const authToken = ddToken || getLocalAuthToken()
 
-  try {
-    const response = await fetch(`${API_BASE}/api/ai-tokens/chat`, {
-      method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-      },
-      signal:  controller.signal,
-      body: JSON.stringify({
-        modelId,
-        prompt:       userPrompt,
-        systemPrompt: systemPrompt,
-        application:  'FstCommittee',
-        maxTokens:    300,
-      }),
-    })
+  // Resilience: circuit breaker + retry + model failover
+  const { result: rawText, modelUsed } = await withResilience(modelId, async (actualModelId) => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
-    clearTimeout(timeoutId)
+    try {
+      const response = await fetch(`${API_BASE}/api/ai-tokens/chat`, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+        },
+        signal:  controller.signal,
+        body: JSON.stringify({
+          modelId: actualModelId,
+          prompt:       userPrompt,
+          systemPrompt: systemPrompt,
+          application:  'FstCommittee',
+          maxTokens:    300,
+        }),
+      })
 
-    if (!response.ok) return null
+      clearTimeout(timeoutId)
+      if (!response.ok) return null
 
-    const data = await response.json()
-    const rawText = data.response || data.text || data.content || data.message || ''
-    const parsed = parseAgentResponse(rawText)
-
-    if (!parsed) return null
-
-    return {
-      id:          `arg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-      agentId:     agent.id,
-      type,
-      text:        parsed.text,
-      targetArgId: targetArgId || null,
-      dimension:   parsed.dimension || agent.focus?.[0] || 'general',
-      timestamp:   Date.now(),
-      strength:    parsed.confidence,
-      confidence:  parsed.confidence,
-      stance:      parsed.stance,
-      aiGenerated: true,
-      model:       modelId,  // какая модель сгенерировала аргумент
+      const data = await response.json()
+      return data.response || data.text || data.content || data.message || ''
+    } catch (err) {
+      clearTimeout(timeoutId)
+      if (err.name !== 'AbortError') console.warn('[FstCommitteeAI] error:', err.message)
+      return null
     }
-  } catch (err) {
-    clearTimeout(timeoutId)
-    if (err.name !== 'AbortError') console.warn('[FstCommitteeAI] error:', err.message)
-    return null
+  }, { maxRetries: 1 })
+
+  if (!rawText) return null
+
+  if (modelUsed !== modelId) {
+    console.info(`[FstCommitteeAI] ${agent.id}: failover ${modelId} → ${modelUsed}`)
+  }
+
+  const parsed = parseAgentResponse(rawText)
+  if (!parsed) return null
+
+  return {
+    id:          `arg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    agentId:     agent.id,
+    type,
+    text:        parsed.text,
+    targetArgId: targetArgId || null,
+    dimension:   parsed.dimension || agent.focus?.[0] || 'general',
+    timestamp:   Date.now(),
+    strength:    parsed.confidence,
+    confidence:  parsed.confidence,
+    stance:      parsed.stance,
+    aiGenerated: true,
+    model:       modelUsed,  // фактическая модель (может быть fallback)
   }
 }
 

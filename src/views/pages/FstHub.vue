@@ -155,6 +155,7 @@ const pipeline = [
 ]
 
 const modules = [
+  { id: 'startuper',      name: 'Стартапер',              phase: 'Фаза 0 — Поиск',           icon: 'pi pi-rocket',        color: '#f59e0b', path: '/fst-startuper',      status: 'live' },
   { id: 'sourcing',       name: 'AI Deal Sourcing',       phase: 'Фаза 0 — Поиск',           icon: 'pi pi-search',        color: '#667eea', path: '/fst-sourcing',       status: 'live' },
   { id: 'committee',      name: 'AI Инвесткомитет',       phase: 'Фаза 1 — Оценка',          icon: 'pi pi-users',         color: '#a78bfa', path: '/fst-committee',      status: 'live' },
   { id: 'protocol',       name: 'Протоколы ИК',           phase: 'Фаза 1 — Оценка',          icon: 'pi pi-file-check',    color: '#ffa726', path: '/fst-protocol',       status: 'live' },
@@ -168,6 +169,7 @@ const modules = [
   { id: 'allocation',     name: 'Оптимизация аллокации',  phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-chart-pie',     color: '#ab47bc', path: '/fst-allocation',     status: 'live' },
   { id: 'transparency',   name: 'Публичная витрина',      phase: 'Фаза 5 — LP Relations',    icon: 'pi pi-shield',        color: '#42a5f5', path: '/fst-transparency',   status: 'live' },
   { id: 'administration', name: 'Бэк-офис фонда',         phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-building',      color: '#7c3aed', path: '/fst-administration', status: 'live' },
+  { id: 'gov',            name: 'GR · Меры поддержки',   phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-building-columns', color: '#26c6da', path: '/fst-gov',            status: 'live' },
   { id: 'secondary',      name: 'Secondary Market',       phase: 'Фаза 6 — Ликвидность',    icon: 'pi pi-refresh',       color: '#26c6da', path: '/fst-secondary',      status: 'live' },
   { id: 'fund',           name: 'Цифровой двойник фонда', phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-building',      color: '#38bdf8', path: '/fst-fund',           status: 'live' },
 ]
