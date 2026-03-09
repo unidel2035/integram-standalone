@@ -58,9 +58,10 @@ const ORPHAN_MAP = {
   'fst-administration': { category: 'Инфраструктура', categoryRoute: '/fst-ilpa' },
   'fst-intelligence':   { category: 'Аналитика',      categoryRoute: '/fst-esg' },
   'fst-allocation':     { category: 'Финансы',        categoryRoute: '/fst-lp' },
-  'fst-learning':       { category: 'Обучение',       categoryRoute: '/fst-dev-guide' },
-  'fst-miniapp':        { category: 'Обучение',       categoryRoute: '/fst-dev-guide' },
-  'fst-network':        { category: 'Сделки',         categoryRoute: '/fst-dealflow' },
+  'fst-learning':          { category: 'Обучение', categoryRoute: '/fst-dev-guide' },
+  'fst-learning-progress': { category: 'Обучение', categoryRoute: '/fst-dev-guide' },
+  'fst-miniapp':           { category: 'Обучение', categoryRoute: '/fst-dev-guide' },
+  'fst-network':           { category: 'Сделки',   categoryRoute: '/fst-dealflow' },
 }
 
 // slug: берём первый сегмент пути (для /fst-contract/:id → fst-contract)

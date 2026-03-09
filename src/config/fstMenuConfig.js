@@ -109,9 +109,10 @@ export const fstMenuConfig = [
     label: 'Обучение',
     icon: 'pi pi-graduation-cap',
     items: [
-      { label: 'Путь обучения', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide' },
-      { label: 'Туры по модулям', icon: 'pi pi-map', action: 'show-tours-menu', special: true },
+      { label: 'Центр обучения', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide' },
       { label: 'Глоссарий', icon: 'pi pi-book', to: '/fst-glossary' },
+      { label: 'Мой прогресс', icon: 'pi pi-chart-line', to: '/fst-learning-progress' },
+      { label: 'Начать тур', icon: 'pi pi-map', action: 'show-tours-menu', special: true },
       { label: 'Мини-квизы', icon: 'pi pi-question-circle', to: '/fst-quiz' },
       { label: 'Школа агентов', icon: 'pi pi-star', to: '/fst-school' },
       { label: 'Claude CLI', icon: 'pi pi-code', to: '/fst-terminal' },

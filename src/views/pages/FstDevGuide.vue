@@ -1,961 +1,1145 @@
 <template>
-  <FstPageLayout title="Курс для управляющих фондом">
+  <FstPageLayout
+    title="Центр обучения ФСТ НТИ"
+    subtitle="Всё для освоения платформы: туры, видео, квизы, сценарии"
+    icon="pi pi-graduation-cap"
+  >
+    <template #actions>
+      <Button
+        label="Мой прогресс"
+        icon="pi pi-chart-line"
+        severity="secondary"
+        size="small"
+        @click="$router.push('/fst-learning-progress')"
+      />
+      <Button
+        v-if="learningStore.overallProgress > 0"
+        label="Начать тур заново"
+        icon="pi pi-refresh"
+        severity="secondary"
+        size="small"
+        outlined
+        @click="handleResetTour"
+      />
+    </template>
 
-    <div class="guide-hero">
-      <div class="hero-badge">Курс для управляющих фондом</div>
-      <h1>Вы — разработчик.<br>Серьёзно.</h1>
-      <p class="hero-sub">
-        За 4 дня вы пройдёте путь от «я не программист» до «я только что смержил pull request».
-        Никакого кода вручную. Только задачи — Claude сделает остальное.
-      </p>
-      <div class="hero-days">
-        <div v-for="day in days" :key="day.n" class="hero-day" :class="{ done: day.done }">
-          <div class="day-n">День {{ day.n }}</div>
-          <div class="day-title">{{ day.title }}</div>
+    <div class="dg-page">
+
+      <!-- ── Hero ── -->
+      <div class="dg-hero">
+        <div class="dg-hero-left">
+          <div class="dg-hero-badge">
+            <i class="pi pi-graduation-cap"></i>
+            Центр обучения
+          </div>
+          <h1 class="dg-hero-title">
+            Добро пожаловать<span v-if="learningStore.userName">, {{ learningStore.userName }}</span>!
+          </h1>
+          <p class="dg-hero-sub">
+            Освойте платформу управления венчурным фондом шаг за шагом.
+            Туры, видео, квизы и сценарии — всё в одном месте.
+          </p>
+          <div class="dg-progress-block">
+            <div class="dg-progress-header">
+              <span class="dg-progress-label">Ваш прогресс</span>
+              <span class="dg-progress-pct">{{ learningStore.overallProgress }}%</span>
+            </div>
+            <div class="dg-progress-track">
+              <div class="dg-progress-fill" :style="{ width: learningStore.overallProgress + '%' }"></div>
+            </div>
+          </div>
+          <div class="dg-hero-actions">
+            <Button
+              v-if="learningStore.nextRecommended"
+              :label="'Продолжить: ' + learningStore.nextRecommended.title"
+              icon="pi pi-play"
+              size="small"
+              @click="handleContinue"
+            />
+            <Button
+              v-else
+              label="Все ресурсы"
+              icon="pi pi-book"
+              size="small"
+              @click="activeTab = 'tours'"
+            />
+          </div>
+        </div>
+        <div class="dg-hero-right">
+          <div class="dg-stats-mini">
+            <div class="dg-stat-mini" v-for="stat in heroStats" :key="stat.label">
+              <div class="dg-stat-mini-val" :style="{ color: stat.color }">{{ stat.value }}</div>
+              <div class="dg-stat-mini-label">{{ stat.label }}</div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- ── Quick Start (если роль не выбрана или показываем по умолчанию) ── -->
+      <div class="dg-section">
+        <div class="dg-section-header">
+          <h2 class="dg-section-title">
+            <i class="pi pi-bolt"></i>
+            Быстрый старт
+          </h2>
+          <Button
+            v-if="!learningStore.userRole"
+            label="Выбрать мою роль"
+            icon="pi pi-user-edit"
+            size="small"
+            severity="secondary"
+            @click="showRoleDialog = true"
+          />
+          <span v-else class="dg-role-badge" @click="showRoleDialog = true">
+            <i class="pi pi-user"></i>
+            {{ currentRoleLabel }}
+            <i class="pi pi-pencil dg-role-edit"></i>
+          </span>
+        </div>
+
+        <div class="dg-quickstart-grid">
+          <div
+            v-for="task in learningStore.quickStartTasks"
+            :key="task.title"
+            class="dg-qs-card"
+            :class="{ done: task.tourId && learningStore.completedTours.includes(task.tourId) }"
+            @click="$router.push(task.route)"
+          >
+            <div class="dg-qs-icon">
+              <i :class="task.icon"></i>
+            </div>
+            <div class="dg-qs-title">{{ task.title }}</div>
+            <i
+              v-if="task.tourId && learningStore.completedTours.includes(task.tourId)"
+              class="pi pi-check-circle dg-qs-check"
+            ></i>
+            <i v-else class="pi pi-arrow-right dg-qs-arrow"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Каталог ресурсов ── -->
+      <div class="dg-section">
+        <div class="dg-section-header">
+          <h2 class="dg-section-title">
+            <i class="pi pi-book"></i>
+            Каталог ресурсов
+          </h2>
+        </div>
+
+        <!-- Tabs -->
+        <div class="dg-tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            class="dg-tab"
+            :class="{ active: activeTab === tab.id }"
+            @click="activeTab = tab.id"
+          >
+            <i :class="tab.icon"></i>
+            {{ tab.label }}
+            <span class="dg-tab-badge">{{ tab.count }}</span>
+          </button>
+        </div>
+
+        <!-- Tours tab -->
+        <div v-if="activeTab === 'tours'" class="dg-catalog-grid">
+          <div
+            v-for="tour in learningStore.tours"
+            :key="tour.id"
+            class="dg-catalog-card"
+            :class="{ done: learningStore.completedTours.includes(tour.id) }"
+          >
+            <div class="dg-cc-header">
+              <div class="dg-cc-icon">
+                <i :class="tour.icon"></i>
+              </div>
+              <span v-if="learningStore.completedTours.includes(tour.id)" class="dg-cc-done-badge">
+                <i class="pi pi-check"></i> Пройден
+              </span>
+            </div>
+            <div class="dg-cc-title">{{ tour.title }}</div>
+            <div class="dg-cc-meta"><i class="pi pi-clock"></i> {{ tour.duration }}</div>
+            <router-link :to="tour.route" class="dg-cc-btn">
+              {{ learningStore.completedTours.includes(tour.id) ? 'Повторить' : 'Начать тур' }}
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Videos tab -->
+        <div v-if="activeTab === 'videos'" class="dg-catalog-grid">
+          <div
+            v-for="video in learningStore.videos"
+            :key="video.id"
+            class="dg-catalog-card"
+            :class="{ done: learningStore.completedVideos.includes(video.id) }"
+          >
+            <div class="dg-cc-header">
+              <div class="dg-cc-icon" style="background: color-mix(in srgb, #d97706 15%, transparent)">
+                <i class="pi pi-video" style="color: #d97706"></i>
+              </div>
+              <span v-if="learningStore.completedVideos.includes(video.id)" class="dg-cc-done-badge">
+                <i class="pi pi-check"></i> Просмотрено
+              </span>
+              <span class="dg-cc-tag">{{ video.tag }}</span>
+            </div>
+            <div class="dg-cc-title">{{ video.title }}</div>
+            <div class="dg-cc-meta"><i class="pi pi-clock"></i> {{ video.duration }}</div>
+            <button class="dg-cc-btn" @click="learningStore.completeVideo(video.id)">
+              {{ learningStore.completedVideos.includes(video.id) ? 'Смотреть снова' : 'Смотреть' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Quizzes tab -->
+        <div v-if="activeTab === 'quizzes'" class="dg-catalog-grid">
+          <div
+            v-for="quiz in learningStore.quizzes"
+            :key="quiz.id"
+            class="dg-catalog-card"
+            :class="{ done: learningStore.completedQuizzes.includes(quiz.id) }"
+          >
+            <div class="dg-cc-header">
+              <div class="dg-cc-icon" style="background: color-mix(in srgb, #2ca5e0 15%, transparent)">
+                <i class="pi pi-question-circle" style="color: #2ca5e0"></i>
+              </div>
+              <span v-if="learningStore.completedQuizzes.includes(quiz.id)" class="dg-cc-done-badge">
+                <i class="pi pi-check"></i> Сдан
+              </span>
+              <span class="dg-cc-tag">{{ quiz.tag }}</span>
+            </div>
+            <div class="dg-cc-title">{{ quiz.title }}</div>
+            <div class="dg-cc-meta"><i class="pi pi-list-check"></i> {{ quiz.questions }} вопросов</div>
+            <router-link to="/fst-quiz" class="dg-cc-btn">
+              {{ learningStore.completedQuizzes.includes(quiz.id) ? 'Пройти снова' : 'Начать квиз' }}
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Scenarios tab -->
+        <div v-if="activeTab === 'scenarios'" class="dg-catalog-grid">
+          <div
+            v-for="scenario in learningStore.scenarios"
+            :key="scenario.id"
+            class="dg-catalog-card"
+            :class="{ done: learningStore.completedScenarios.includes(scenario.id) }"
+          >
+            <div class="dg-cc-header">
+              <div class="dg-cc-icon" style="background: color-mix(in srgb, #16a34a 15%, transparent)">
+                <i class="pi pi-play" style="color: #16a34a"></i>
+              </div>
+              <span v-if="learningStore.completedScenarios.includes(scenario.id)" class="dg-cc-done-badge">
+                <i class="pi pi-check"></i> Выполнен
+              </span>
+              <span class="dg-cc-tag">{{ scenario.tag }}</span>
+            </div>
+            <div class="dg-cc-title">{{ scenario.title }}</div>
+            <div class="dg-cc-meta"><i class="pi pi-list"></i> {{ scenario.steps }} шагов</div>
+            <button class="dg-cc-btn" @click="learningStore.completeScenario(scenario.id)">
+              {{ learningStore.completedScenarios.includes(scenario.id) ? 'Повторить' : 'Запустить' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Glossary tab -->
+        <div v-if="activeTab === 'glossary'" class="dg-glossary-promo">
+          <div class="dg-gp-icon"><i class="pi pi-book"></i></div>
+          <div>
+            <div class="dg-gp-title">Глоссарий венчурных терминов</div>
+            <p class="dg-gp-desc">
+              Более 150 терминов с пояснениями: от IRR и Waterfall до Cap Table и SAFE.
+              Поиск, категории, примеры из практики.
+            </p>
+            <router-link to="/fst-glossary" class="dg-cc-btn" style="display:inline-block">
+              Открыть глоссарий
+            </router-link>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Последние активности ── -->
+      <div v-if="learningStore.recentActivities.length > 0" class="dg-section">
+        <div class="dg-section-header">
+          <h2 class="dg-section-title">
+            <i class="pi pi-history"></i>
+            Последние активности
+          </h2>
+          <router-link to="/fst-learning-progress" class="dg-see-all">
+            Весь прогресс <i class="pi pi-arrow-right"></i>
+          </router-link>
+        </div>
+        <div class="dg-activity-list">
+          <div v-for="(act, idx) in learningStore.recentActivities" :key="idx" class="dg-activity-row">
+            <i :class="activityIcon(act.type)" class="dg-act-icon"></i>
+            <div class="dg-act-body">
+              <span class="dg-act-title">Вы {{ activityVerb(act.type) }}: {{ act.resourceTitle }}</span>
+            </div>
+            <span class="dg-act-time">{{ formatTime(act.timestamp) }}</span>
+          </div>
+        </div>
+        <div v-if="learningStore.nextRecommended" class="dg-next-rec">
+          <i class="pi pi-arrow-right"></i>
+          <span>
+            <strong>Следующее:</strong>
+            {{ learningStore.nextRecommended.title }}
+          </span>
+        </div>
+      </div>
+
+      <!-- ── Для AI-агентов ── -->
+      <div class="dg-section dg-ai-section">
+        <div class="dg-section-header">
+          <h2 class="dg-section-title">
+            <i class="pi pi-microchip-ai"></i>
+            Для AI-агентов
+          </h2>
+        </div>
+        <div class="dg-ai-grid">
+          <div class="dg-ai-card">
+            <div class="dg-ai-card-title">
+              <i class="pi pi-link"></i> Platform Manifest
+            </div>
+            <p class="dg-ai-card-desc">
+              Агент может изучить структуру платформы через manifest-эндпоинт:
+            </p>
+            <code class="dg-ai-code">GET /api/platform/manifest</code>
+            <p class="dg-ai-card-desc" style="margin-top: 0.5rem">
+              Возвращает JSON: все модули, маршруты, описания, роли пользователей.
+            </p>
+          </div>
+          <div class="dg-ai-card">
+            <div class="dg-ai-card-title">
+              <i class="pi pi-code"></i> MCP-инструменты
+            </div>
+            <p class="dg-ai-card-desc">
+              Агент может работать с данными фонда через 60+ MCP-инструментов Integram:
+            </p>
+            <div class="dg-ai-examples">
+              <code class="dg-ai-code-sm">integram_get_all_objects({ db: 'fst', typeId: 1155 })</code>
+              <code class="dg-ai-code-sm">integram_create_object({ db: 'fst', typeId: 1155, name: '...' })</code>
+              <code class="dg-ai-code-sm">integram_natural_query({ query: 'проекты на стадии ИК' })</code>
+            </div>
+          </div>
+          <div class="dg-ai-card">
+            <div class="dg-ai-card-title">
+              <i class="pi pi-send"></i> Как агент изучает платформу
+            </div>
+            <ol class="dg-ai-steps">
+              <li>Получает manifest → понимает структуру модулей</li>
+              <li>Аутентифицируется в Integram через MCP</li>
+              <li>Использует <code>integram_get_schema</code> для каждой базы</li>
+              <li>Обходит данные через <code>integram_get_all_objects</code></li>
+              <li>Строит контекст для ответов пользователю</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- ─── ДЕНЬ 1 ─── -->
-    <section class="day-section" id="day1">
-      <div class="day-label"><span class="day-badge">День 1</span> GitHub — ваш рабочий стол</div>
-
-      <div class="lesson">
-        <div class="lesson-num">1.1</div>
-        <div class="lesson-body">
-          <h3>Создайте аккаунт на GitHub</h3>
-          <p>GitHub — это как Google Docs, только для кода. Там хранится весь проект, история изменений и задачи.</p>
-
-          <div class="steps">
-            <div class="step">
-              <div class="step-circle">1</div>
-              <div>Откройте <span class="link-fake">github.com</span> и нажмите <strong>Sign up</strong></div>
-            </div>
-            <div class="step">
-              <div class="step-circle">2</div>
-              <div>Введите email, придумайте логин (например <code>ivanov-fund</code>) и пароль</div>
-            </div>
-            <div class="step">
-              <div class="step-circle">3</div>
-              <div>Подтвердите email — придёт письмо</div>
-            </div>
-            <div class="step">
-              <div class="step-circle">4</div>
-              <div>Готово. Сообщите свой логин администратору — вас добавят в команду</div>
-            </div>
-          </div>
-
-          <div class="screen-block">
-            <div class="screen-bar browser-bar">
-              <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-              <div class="address-bar"><i class="pi pi-lock"></i> github.com/join</div>
-            </div>
-            <div class="screen-body browser-ui">
-              <div class="gh-signup">
-                <div class="gh-logo">GitHub</div>
-                <div class="gh-title">Create your account</div>
-                <div class="gh-field"><span class="gh-label">Username</span><div class="gh-input">ivanov-fund<span class="cursor-blink">|</span></div></div>
-                <div class="gh-field"><span class="gh-label">Email address</span><div class="gh-input">ivan@fund.ru</div></div>
-                <div class="gh-field"><span class="gh-label">Password</span><div class="gh-input">••••••••••••</div></div>
-                <div class="gh-btn">Continue</div>
-              </div>
-            </div>
-          </div>
+    <!-- ── Role selection dialog ── -->
+    <Dialog v-model:visible="showRoleDialog" modal header="Выберите вашу роль" :style="{ width: '480px' }">
+      <div class="dg-role-grid">
+        <div
+          v-for="role in learningStore.availableRoles"
+          :key="role.id"
+          class="dg-role-card"
+          :class="{ selected: learningStore.userRole === role.id }"
+          @click="selectRole(role.id)"
+        >
+          <i :class="role.icon" class="dg-role-icon"></i>
+          <div class="dg-role-label">{{ role.label }}</div>
+          <div class="dg-role-desc">{{ role.description }}</div>
         </div>
       </div>
+    </Dialog>
 
-      <div class="lesson">
-        <div class="lesson-num">1.2</div>
-        <div class="lesson-body">
-          <h3>Найдите репозиторий проекта</h3>
-          <p>Репозиторий — это папка с кодом на GitHub. Наш проект:</p>
-
-          <div class="repo-links">
-            <div class="repo-link-card">
-              <div class="rl-icon fst"><i class="pi pi-briefcase"></i></div>
-              <div>
-                <div class="rl-name">ФСТ НТИ — инвест-платформа</div>
-                <code class="rl-url">github.com/unidel2035/fund</code>
-                <div class="rl-desc">Ветка для работы: <strong>main</strong></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="callout info">
-            <i class="pi pi-info-circle"></i>
-            Зайдите в репозиторий и нажмите <strong>Star</strong> (звёздочка справа вверху) — так вы добавите его в закладки.
-          </div>
+    <!-- ── Feature Hints Reset ── -->
+    <div class="dg-hints-section">
+      <div class="dg-hints-header">
+        <i class="pi pi-lightbulb" style="color: var(--p-primary-color)"></i>
+        <span>Подсказки платформы</span>
+      </div>
+      <p class="dg-hints-desc">
+        При первом посещении каждой страницы платформа показывает обучающие подсказки-пульсы.
+        Если хотите увидеть их снова — нажмите кнопку ниже.
+      </p>
+      <div class="dg-hints-row">
+        <span class="dg-hints-count">
+          <i class="pi pi-check-circle" style="color: var(--p-primary-color)"></i>
+          Просмотрено подсказок: <strong>{{ hintsSeenCount }}</strong>
+        </span>
+        <button class="dg-hints-reset-btn" @click="resetFeatureHints">
+          <i class="pi pi-refresh"></i>
+          Показать все подсказки заново
+        </button>
+      </div>
+      <Transition name="dg-fade">
+        <div v-if="hintsResetDone" class="dg-hints-ok">
+          <i class="pi pi-check"></i>
+          Сброшено! При следующем посещении страниц подсказки появятся снова.
         </div>
-      </div>
-
-      <div class="lesson">
-        <div class="lesson-num">1.3</div>
-        <div class="lesson-body">
-          <h3>Создайте свою первую задачу (Issue)</h3>
-          <p>Issue — это задача или баг. Создайте её — и Claude автоматически напишет код.</p>
-
-          <div class="steps">
-            <div class="step">
-              <div class="step-circle">1</div>
-              <div>Откройте репозиторий → вкладка <strong>Issues</strong> → кнопка <strong>New issue</strong></div>
-            </div>
-            <div class="step">
-              <div class="step-circle">2</div>
-              <div>Напишите <strong>название</strong> — коротко и ясно, что нужно сделать</div>
-            </div>
-            <div class="step">
-              <div class="step-circle">3</div>
-              <div>В <strong>описании</strong> — подробнее: что должно быть, что сейчас не так</div>
-            </div>
-            <div class="step">
-              <div class="step-circle">4</div>
-              <div>Нажмите <strong>Submit new issue</strong></div>
-            </div>
-          </div>
-
-          <div class="screen-block">
-            <div class="screen-bar browser-bar">
-              <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-              <div class="address-bar"><i class="pi pi-lock"></i> github.com/unidel2035/fund/issues/new</div>
-            </div>
-            <div class="screen-body browser-ui">
-              <div class="gh-issue-form">
-                <div class="gif-label">Title</div>
-                <div class="gif-input">На странице /fst-committee не показываются проекты из базы</div>
-                <div class="gif-label" style="margin-top:0.75rem">Description</div>
-                <div class="gif-textarea">
-                  При открытии страницы https://ai2fund.ru/fst-committee<br>
-                  список проектов пустой. Ожидаемо должны загрузиться 6 проектов<br>
-                  из базы ai2o.ru/fst/1155.<br><br>
-                  Консоль браузера показывает 401 Unauthorized.
-                </div>
-                <div class="gif-submit">Submit new issue</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="callout success">
-            <i class="pi pi-check-circle"></i>
-            <strong>Пример хорошей задачи:</strong> «Добавить фильтр по субфонду на странице /fst-committee.
-            Сейчас показываются все проекты. Нужно выпадающее меню: БАС / РОБО / МЭ / Все.»
-          </div>
-        </div>
-      </div>
-
-      <div class="day-result">
-        <i class="pi pi-check-circle"></i>
-        <span>Итог дня 1: у вас есть аккаунт GitHub, вы нашли репозиторий и создали первую задачу</span>
-      </div>
-    </section>
-
-    <!-- ─── ДЕНЬ 2 ─── -->
-    <section class="day-section" id="day2">
-      <div class="day-label"><span class="day-badge day2">День 2</span> Telegram-бот решает задачи</div>
-
-      <div class="lesson">
-        <div class="lesson-num">2.1</div>
-        <div class="lesson-body">
-          <h3>Познакомьтесь с ботом</h3>
-          <p>
-            У нас есть Telegram-бот, который связан с Claude. Вы пишете боту номер задачи —
-            бот отдаёт её Claude, который читает код, пишет исправление и создаёт Pull Request.
-          </p>
-
-          <div class="bot-flow">
-            <div class="bf-step">
-              <div class="bf-icon tg"><i class="pi pi-send"></i></div>
-              <div class="bf-label">Вы пишете боту</div>
-            </div>
-            <div class="bf-arrow"><i class="pi pi-arrow-right"></i></div>
-            <div class="bf-step">
-              <div class="bf-icon ai"><i class="pi pi-microchip-ai"></i></div>
-              <div class="bf-label">Claude читает код</div>
-            </div>
-            <div class="bf-arrow"><i class="pi pi-arrow-right"></i></div>
-            <div class="bf-step">
-              <div class="bf-icon gh"><i class="pi pi-code-branch"></i></div>
-              <div class="bf-label">Создаётся PR</div>
-            </div>
-            <div class="bf-arrow"><i class="pi pi-arrow-right"></i></div>
-            <div class="bf-step">
-              <div class="bf-icon ok"><i class="pi pi-check"></i></div>
-              <div class="bf-label">Вы мержите</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="lesson">
-        <div class="lesson-num">2.2</div>
-        <div class="lesson-body">
-          <h3>Отправьте команду solve issue</h3>
-          <p>Когда issue создан, скопируйте его номер (например <code>#142</code>) и напишите боту:</p>
-
-          <div class="screen-block">
-            <div class="screen-bar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="screen-title">Telegram — @DronDocBot</span></div>
-            <div class="screen-body tg-chat">
-              <div class="tg-msg out">
-                <div class="tg-bubble out">solve issue #142</div>
-                <div class="tg-time">14:32</div>
-              </div>
-              <div class="tg-msg in">
-                <div class="tg-bubble in">
-                  Принял задачу #142<br>
-                  Читаю код проекта...<br><br>
-                  <span class="tg-code">Нашёл проблему: fstApi.js использует<br>
-                  неверный эндпоинт _m_list вместо object/.<br>
-                  Исправляю...</span>
-                </div>
-                <div class="tg-time">14:32</div>
-              </div>
-              <div class="tg-msg in">
-                <div class="tg-bubble in">
-                  Готово! Создан Pull Request:<br>
-                  <span class="tg-link">github.com/.../pull/143</span><br><br>
-                  Проверьте и смержите.
-                </div>
-                <div class="tg-time">14:34</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="callout info">
-            <i class="pi pi-info-circle"></i>
-            Можно писать и свободным текстом: <em>«Почини загрузку проектов на странице инвест-комитета»</em> —
-            бот сам найдёт подходящий issue или создаст новый.
-          </div>
-        </div>
-      </div>
-
-      <div class="day-result">
-        <i class="pi pi-check-circle"></i>
-        <span>Итог дня 2: вы отправили задачу боту и получили Pull Request от Claude</span>
-      </div>
-    </section>
-
-    <!-- ─── ДЕНЬ 3 ─── -->
-    <section class="day-section" id="day3">
-      <div class="day-label"><span class="day-badge day3">День 3</span> Pull Request — смотрим и мержим</div>
-
-      <div class="lesson">
-        <div class="lesson-num">3.1</div>
-        <div class="lesson-body">
-          <h3>Что такое Pull Request?</h3>
-          <p>
-            Pull Request (PR) — это предложение изменить код. Claude написал исправление в отдельной ветке
-            и просит вас его одобрить. Пока вы не нажмёте «Merge», код в продакшен не попадёт.
-          </p>
-          <div class="analogy-card">
-            <div class="analogy-icon"><i class="pi pi-file-edit"></i></div>
-            <div>
-              <strong>Аналогия из финансов:</strong> PR — как инвестиционный меморандум на одобрение комитета.
-              Claude — аналитик, который подготовил документ. Вы — комитет, который его утверждает.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="lesson">
-        <div class="lesson-num">3.2</div>
-        <div class="lesson-body">
-          <h3>Просмотр изменений</h3>
-
-          <div class="steps">
-            <div class="step">
-              <div class="step-circle">1</div>
-              <div>Откройте репозиторий → вкладка <strong>Pull requests</strong></div>
-            </div>
-            <div class="step">
-              <div class="step-circle">2</div>
-              <div>Нажмите на PR от Claude (обычно помечен как <code>bot</code> или <code>claude-fix</code>)</div>
-            </div>
-            <div class="step">
-              <div class="step-circle">3</div>
-              <div>Вкладка <strong>Files changed</strong> — видите что именно изменилось:<br>
-                <span class="code-diff add">+ зелёное = добавлено</span><br>
-                <span class="code-diff remove">- красное = удалено</span>
-              </div>
-            </div>
-            <div class="step">
-              <div class="step-circle">4</div>
-              <div>Вкладка <strong>Conversation</strong> — читаете описание от Claude, что он сделал и почему</div>
-            </div>
-          </div>
-
-          <div class="screen-block">
-            <div class="screen-bar browser-bar">
-              <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-              <div class="address-bar"><i class="pi pi-lock"></i> github.com/unidel2035/fund/pull/143</div>
-            </div>
-            <div class="screen-body browser-ui">
-              <div class="gh-pr">
-                <div class="gh-pr-title">
-                  <span class="pr-badge open">Open</span>
-                  fix: починить загрузку проектов в /fst-committee
-                </div>
-                <div class="gh-pr-meta">claude-bot открыл · 2 минуты назад · 1 commit · 3 files changed</div>
-                <div class="gh-pr-desc">
-                  <strong>Проблема:</strong> fstApi.js использовал _m_list/1155 вместо object/1155.<br>
-                  Сервер возвращал меню ролей вместо списка проектов.<br><br>
-                  <strong>Исправлено:</strong> изменён эндпоинт + убран _xsrf из GET-запросов.
-                </div>
-                <div class="gh-pr-files">
-                  <div class="pr-file"><i class="pi pi-file-edit"></i> src/services/fstApi.js <span class="pr-changes">+18 -8</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="lesson">
-        <div class="lesson-num">3.3</div>
-        <div class="lesson-body">
-          <h3>Смержить PR</h3>
-
-          <div class="steps">
-            <div class="step">
-              <div class="step-circle">1</div>
-              <div>Прокрутите вниз до кнопки <strong style="color:#2ea043">Merge pull request</strong></div>
-            </div>
-            <div class="step">
-              <div class="step-circle">2</div>
-              <div>Нажмите её → подтвердите <strong>Confirm merge</strong></div>
-            </div>
-            <div class="step">
-              <div class="step-circle">3</div>
-              <div>Код автоматически деплоится на сервер (CI/CD)</div>
-            </div>
-            <div class="step">
-              <div class="step-circle">4</div>
-              <div>Откройте страницу в браузере и проверьте результат</div>
-            </div>
-          </div>
-
-          <div class="screen-block">
-            <div class="screen-bar browser-bar">
-              <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-              <div class="address-bar"><i class="pi pi-lock"></i> github.com/.../pull/143</div>
-            </div>
-            <div class="screen-body browser-ui">
-              <div class="gh-merge-block">
-                <div class="merge-checks">
-                  <span class="check-ok"><i class="pi pi-check-circle"></i> All checks passed</span>
-                  <span class="check-ok"><i class="pi pi-check-circle"></i> No conflicts</span>
-                </div>
-                <div class="merge-btn">Merge pull request</div>
-                <div class="merge-sub">Merges 1 commit into dev from fix/fst-projects</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="callout warning">
-            <i class="pi pi-exclamation-triangle"></i>
-            Если видите красный крестик на проверках — напишите боту: <em>«PR #143 не проходит проверки, исправь»</em>.
-            Claude посмотрит логи и пофиксит.
-          </div>
-        </div>
-      </div>
-
-      <div class="day-result">
-        <i class="pi pi-check-circle"></i>
-        <span>Итог дня 3: вы посмотрели PR, поняли что изменилось, и смержили его в продакшен</span>
-      </div>
-    </section>
-
-    <!-- ─── ДЕНЬ 4 ─── -->
-    <section class="day-section" id="day4">
-      <div class="day-label"><span class="day-badge day4">День 4</span> Claude CLI — прямой разговор с кодом</div>
-
-      <div class="lesson">
-        <div class="lesson-num">4.1</div>
-        <div class="lesson-body">
-          <h3>Зайти на сервер через SSH</h3>
-          <p>
-            SSH — это защищённое подключение к серверу через терминал.
-            Терминал — это текстовый интерфейс для управления компьютером.
-          </p>
-
-          <div class="callout info">
-            <i class="pi pi-info-circle"></i>
-            <strong>На Mac/Linux:</strong> откройте Terminal.app<br>
-            <strong>На Windows:</strong> скачайте <strong>Windows Terminal</strong> из Microsoft Store (бесплатно)
-          </div>
-
-          <div class="screen-block">
-            <div class="screen-bar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="screen-title">Terminal</span></div>
-            <div class="screen-body">
-              <div class="cmd-line"><span class="prompt">$</span> ssh new@173.249.2.184</div>
-              <div class="cmd-out gray"># Вводим пароль: new123</div>
-              <div class="cmd-out gray"># (пароль не отображается при вводе — это нормально)</div>
-              <div class="cmd-out green">Welcome to Ubuntu 22.04.3 LTS</div>
-              <div class="cmd-line"><span class="prompt">new@vps#</span> cd fund</div>
-              <div class="cmd-line"><span class="prompt">new@vps:~/fund#</span> <span class="cmd-cursor">_</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="lesson">
-        <div class="lesson-num">4.2</div>
-        <div class="lesson-body">
-          <h3>Запустить Claude и поговорить с кодом</h3>
-
-          <div class="screen-block">
-            <div class="screen-bar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="screen-title">Terminal</span></div>
-            <div class="screen-body">
-              <div class="cmd-line"><span class="prompt">new@vps:~/fund#</span> claude</div>
-              <div class="cmd-out green">╔════════════════════════════════════╗</div>
-              <div class="cmd-out green">║     Claude Code  — ФСТ НТИ         ║</div>
-              <div class="cmd-out green">╚════════════════════════════════════╝</div>
-              <div class="cmd-out gray">Привет! Я вижу весь код проекта.</div>
-              <div class="cmd-out gray">Что нужно сделать?</div>
-              <div class="cmd-out white"><br>You: Добавь на страницу /fst-committee фильтр<br>по субфонду (БАС / РОБО / МЭ)</div>
-              <div class="cmd-out gray"><br>Claude: Смотрю файл FstCommittee.vue...</div>
-              <div class="cmd-out gray">Нашёл секцию с проектами. Добавляю<br>выпадающее меню с фильтрацией...</div>
-              <div class="cmd-out green">✓ Готово! Изменил src/views/pages/FstCommittee.vue</div>
-              <div class="cmd-out gray">Страница обновится автоматически.</div>
-            </div>
-          </div>
-
-          <div class="examples-grid">
-            <div class="eg-card" v-for="ex in claudeExamples" :key="ex.text">
-              <div class="eg-icon"><i class="pi pi-send"></i></div>
-              <div class="eg-body">
-                <div class="eg-text">{{ ex.text }}</div>
-                <div class="eg-tag">{{ ex.tag }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="lesson">
-        <div class="lesson-num">4.3</div>
-        <div class="lesson-body">
-          <h3>Полезные команды Claude</h3>
-          <div class="cmd-table">
-            <div class="ct-row" v-for="cmd in claudeCmds" :key="cmd.cmd">
-              <code class="ct-cmd">{{ cmd.cmd }}</code>
-              <span class="ct-desc">{{ cmd.desc }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="day-result day4">
-        <i class="pi pi-star-fill"></i>
-        <div>
-          <strong>Поздравляем!</strong> Вы прошли полный цикл разработки:
-          GitHub → Issue → Telegram-бот → PR → Merge → Claude CLI.
-          Теперь вы управляете кодом так же, как управляете портфелем.
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── Шпаргалка ─── -->
-    <section class="cheatsheet" id="cheatsheet">
-      <h2><i class="pi pi-bookmark"></i> Шпаргалка</h2>
-      <div class="cs-grid">
-        <div class="cs-card" v-for="item in cheatsheet" :key="item.title">
-          <div class="cs-icon" :style="{ background: item.color }"><i :class="item.icon"></i></div>
-          <div class="cs-body">
-            <div class="cs-title">{{ item.title }}</div>
-            <div class="cs-items">
-              <div v-for="line in item.lines" :key="line" class="cs-item">
-                <i class="pi pi-angle-right"></i> {{ line }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      </Transition>
+    </div>
 
   </FstPageLayout>
 </template>
 
 <script setup>
-const days = [
-  { n: 1, title: 'GitHub и первый Issue' },
-  { n: 2, title: 'Бот решает задачи' },
-  { n: 3, title: 'PR — смотрим и мержим' },
-  { n: 4, title: 'Claude CLI' },
-]
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import { useLearningStore } from '@/stores/learningStore'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import { useFeatureHints } from '@/composables/useFeatureHints.js'
 
-const claudeExamples = [
-  { text: 'Покажи мне все проекты со статусом "На рассмотрении ИК"', tag: 'аналитика данных' },
-  { text: 'Добавь экспорт таблицы проектов в Excel', tag: 'новая функция' },
-  { text: 'Объясни как работает инвест-комитет в коде', tag: 'объяснение' },
-  { text: 'Почему на странице /fst-committee пустой список? Консоль: 401', tag: 'отладка' },
-  { text: 'Сделай кнопку "Отправить на ИК" у каждого проекта', tag: 'UI' },
-  { text: 'Что изменилось за последнюю неделю в проекте?', tag: 'история' },
-]
+const router = useRouter()
+const learningStore = useLearningStore()
+const { resetAllHints, seenCount: hintsSeenCount } = useFeatureHints()
 
-const claudeCmds = [
-  { cmd: '/help',    desc: 'Показать все доступные команды' },
-  { cmd: '/clear',   desc: 'Начать разговор заново (очистить память)' },
-  { cmd: '/compact', desc: 'Сжать историю — если Claude начал "забывать"' },
-  { cmd: '/cost',    desc: 'Сколько потрачено токенов за сессию' },
-  { cmd: 'Ctrl+C',   desc: 'Остановить выполнение и задать новый вопрос' },
-  { cmd: 'Ctrl+D',   desc: 'Выйти из Claude и вернуться в терминал' },
-]
+const hintsResetDone = ref(false)
+function resetFeatureHints() {
+  resetAllHints()
+  hintsResetDone.value = true
+  setTimeout(() => { hintsResetDone.value = false }, 3000)
+}
 
-const cheatsheet = [
+const showRoleDialog = ref(false)
+const activeTab = ref('tours')
+
+const tabs = computed(() => [
+  { id: 'tours',     label: 'Туры',     icon: 'pi pi-map',             count: learningStore.tours.length },
+  { id: 'videos',    label: 'Видео',    icon: 'pi pi-video',           count: learningStore.videos.length },
+  { id: 'quizzes',   label: 'Квизы',    icon: 'pi pi-question-circle', count: learningStore.quizzes.length },
+  { id: 'scenarios', label: 'Сценарии', icon: 'pi pi-play',            count: learningStore.scenarios.length },
+  { id: 'glossary',  label: 'Глоссарий', icon: 'pi pi-book',           count: null },
+])
+
+const heroStats = computed(() => [
   {
-    title: 'GitHub',
-    icon: 'pi pi-github',
-    color: '#24292e',
-    lines: [
-      'Issues → New issue → описать задачу → Submit',
-      'Pull requests → выбрать PR → Files changed → Merge',
-      'Репо ФСТ: github.com/unidel2035/fund (ветка main)',
-    ]
+    label: 'Туров',
+    value: learningStore.completedTours.length + ' / ' + learningStore.tours.length,
+    color: 'var(--p-primary-color)',
   },
   {
-    title: 'Telegram-бот',
-    icon: 'pi pi-send',
+    label: 'Квизов',
+    value: learningStore.completedQuizzes.length + ' / ' + learningStore.quizzes.length,
     color: '#2ca5e0',
-    lines: [
-      'solve issue #N — решить задачу N',
-      'status — статус текущих задач',
-      'deploy — задеплоить последние изменения',
-      'Можно писать свободным текстом на русском',
-    ]
   },
   {
-    title: 'Сервер SSH',
-    icon: 'pi pi-server',
-    color: '#6366f1',
-    lines: [
-      'ssh new@173.249.2.184',
-      'Пароль: new123',
-      'cd fund',
-      'Сайт: https://ai2fund.ru',
-    ]
-  },
-  {
-    title: 'Claude CLI',
-    icon: 'pi pi-microchip-ai',
+    label: 'Видео',
+    value: learningStore.completedVideos.length + ' / ' + learningStore.videos.length,
     color: '#d97706',
-    lines: [
-      'На сервере: команда claude',
-      'Пишите задачи на русском — Claude понимает',
-      'Чем точнее задача — тем лучше результат',
-      'Можно просить объяснить код, найти баги, добавить фичи',
-    ]
   },
-]
+])
+
+const currentRoleLabel = computed(() => {
+  const role = learningStore.availableRoles.find(r => r.id === learningStore.userRole)
+  return role?.label || ''
+})
+
+function selectRole(roleId) {
+  learningStore.setRole(roleId)
+  showRoleDialog.value = false
+}
+
+function handleContinue() {
+  const next = learningStore.nextRecommended
+  if (!next) return
+  if (next.route) router.push(next.route)
+  else if (next.type === 'quiz') router.push('/fst-quiz')
+}
+
+function handleResetTour() {
+  learningStore.resetProgress()
+}
+
+function activityIcon(type) {
+  const map = { tour: 'pi pi-map', video: 'pi pi-video', quiz: 'pi pi-question-circle', scenario: 'pi pi-play' }
+  return map[type] || 'pi pi-circle'
+}
+
+function activityVerb(type) {
+  const map = { tour: 'прошли тур', video: 'посмотрели', quiz: 'сдали квиз', scenario: 'выполнили сценарий' }
+  return map[type] || 'завершили'
+}
+
+function formatTime(iso) {
+  const d = new Date(iso)
+  const now = new Date()
+  const diff = now - d
+  if (diff < 60000) return 'только что'
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' мин назад'
+  if (diff < 86400000) return Math.floor(diff / 3600000) + ' ч назад'
+  if (diff < 172800000) return 'вчера'
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+}
 </script>
 
 <style scoped>
-.dev-guide {
-  max-width: 860px;
+.dg-page {
+  max-width: 980px;
   margin: 0 auto;
-  padding: 2rem;
-  color: var(--p-text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 /* ── Hero ── */
-.guide-hero {
-  text-align: center;
-  padding: 3rem 2rem;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--p-primary-color) 15%, var(--surface-card)) 0%, var(--surface-card) 100%);
-  border-radius: 1.25rem;
-  margin-bottom: 3rem;
+.dg-hero {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  padding: 2rem;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--p-primary-color) 12%, var(--p-surface-card)) 0%,
+    var(--p-surface-card) 100%
+  );
   border: 1px solid var(--p-content-border-color);
+  border-radius: 1.25rem;
 }
-.hero-badge {
-  display: inline-block;
-  background: var(--p-primary-color);
-  color: white;
-  padding: 0.3rem 1rem;
-  border-radius: 2rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.guide-hero h1 {
-  font-size: 2.25rem;
-  font-weight: 800;
-  margin: 0 0 1rem;
-  line-height: 1.2;
-}
-.hero-sub {
-  font-size: 1.05rem;
-  color: var(--p-text-muted-color);
-  max-width: 580px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
-}
-.hero-days {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.hero-day {
-  background: var(--surface-card);
-  border: 1px solid var(--p-surface-300);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1.25rem;
-  text-align: center;
-  min-width: 140px;
-}
-.day-n { font-size: 0.72rem; text-transform: uppercase; color: var(--p-primary-color); font-weight: 700; margin-bottom: 0.2rem; }
-.day-title { font-size: 0.875rem; font-weight: 600; }
 
-/* ── Day section ── */
-.day-section {
-  margin-bottom: 4rem;
+.dg-hero-left {
+  flex: 1;
 }
-.day-label {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1.75rem;
-  display: flex;
+
+.dg-hero-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-}
-.day-badge {
+  gap: 0.4rem;
   background: var(--p-primary-color);
   color: white;
   padding: 0.25rem 0.875rem;
   border-radius: 2rem;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.875rem;
 }
-.day-badge.day2 { background: #2ca5e0; }
-.day-badge.day3 { background: #16a34a; }
-.day-badge.day4 { background: #d97706; }
 
-/* ── Lesson ── */
-.lesson {
-  display: flex;
-  gap: 1.25rem;
-  margin-bottom: 2.5rem;
+.dg-hero-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 0.625rem;
+  line-height: 1.25;
+  color: var(--p-text-color);
 }
-.lesson-num {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--p-content-border-color);
+
+.dg-hero-sub {
+  font-size: 0.9rem;
   color: var(--p-text-muted-color);
+  margin: 0 0 1.25rem;
+  line-height: 1.6;
+}
+
+.dg-progress-block {
+  margin-bottom: 1.25rem;
+}
+
+.dg-progress-header {
+  display: flex;
+  justify-content: space-between;
   font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.dg-progress-pct {
+  color: var(--p-primary-color);
+}
+
+.dg-progress-label {
+  color: var(--p-text-muted-color);
+}
+
+.dg-progress-track {
+  height: 8px;
+  background: var(--p-content-border-color);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.dg-progress-fill {
+  height: 100%;
+  background: var(--p-primary-color);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+  min-width: 4px;
+}
+
+.dg-hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dg-hero-right {
+  flex-shrink: 0;
+}
+
+.dg-stats-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  min-width: 130px;
+}
+
+.dg-stat-mini {
+  text-align: right;
+}
+
+.dg-stat-mini-val {
+  font-size: 1.2rem;
   font-weight: 700;
+  line-height: 1;
+}
+
+.dg-stat-mini-label {
+  font-size: 0.72rem;
+  color: var(--p-text-muted-color);
+  margin-top: 0.2rem;
+}
+
+/* ── Section ── */
+.dg-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dg-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dg-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--p-text-color);
+}
+
+.dg-section-title i {
+  color: var(--p-primary-color);
+}
+
+.dg-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--p-primary-color);
+  border: 1px solid var(--p-primary-color);
+  border-radius: 2rem;
+  padding: 0.2rem 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dg-role-edit {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+/* ── Quick start ── */
+.dg-quickstart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.875rem;
+}
+
+.dg-qs-card {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.875rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.dg-qs-card:hover {
+  border-color: var(--p-primary-color);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--p-primary-color) 15%, transparent);
+}
+
+.dg-qs-card.done {
+  background: color-mix(in srgb, #16a34a 6%, var(--p-surface-card));
+  border-color: color-mix(in srgb, #16a34a 25%, var(--p-content-border-color));
+}
+
+.dg-qs-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  margin-top: 0.1rem;
+  color: var(--p-primary-color);
+  font-size: 1rem;
 }
-.lesson-body { flex: 1; }
-.lesson-body h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
-.lesson-body p { color: var(--p-text-muted-color); margin: 0 0 1rem; line-height: 1.6; font-size: 0.925rem; }
 
-/* ── Steps ── */
-.steps { display: flex; flex-direction: column; gap: 0.625rem; margin-bottom: 1.25rem; }
-.step {
-  display: flex;
-  gap: 0.875rem;
-  align-items: flex-start;
-  padding: 0.625rem 0.875rem;
-  background: var(--surface-card);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 0.625rem;
-  font-size: 0.9rem;
-  line-height: 1.5;
+.dg-qs-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  line-height: 1.3;
 }
-.step-circle {
-  width: 26px; height: 26px;
-  border-radius: 50%;
+
+.dg-qs-check {
+  color: #16a34a;
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 1rem;
+}
+
+.dg-qs-arrow {
+  color: var(--p-text-muted-color);
+  position: absolute;
+  top: 0.875rem;
+  right: 0.875rem;
+  font-size: 0.85rem;
+}
+
+/* ── Tabs ── */
+.dg-tabs {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  padding: 0.375rem;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.75rem;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.dg-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--p-text-muted-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dg-tab:hover {
+  background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+  color: var(--p-text-color);
+}
+
+.dg-tab.active {
   background: var(--p-primary-color);
   color: white;
-  font-size: 0.8rem;
-  font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-code { font-family: monospace; background: color-mix(in srgb, var(--p-text-color) 10%, transparent); padding: 0.1em 0.4em; border-radius: 0.25rem; font-size: 0.875em; }
-
-/* ── Screen blocks ── */
-.screen-block {
-  border-radius: 0.75rem;
-  overflow: hidden;
-  border: 1px solid var(--p-content-border-color);
-  margin-bottom: 1rem;
-  background: var(--surface-card);
-}
-.screen-bar {
-  display: flex; align-items: center; gap: 0.4rem;
-  padding: 0.5rem 0.875rem;
-  background: var(--surface-ground);
-}
-.screen-bar.browser-bar { background: var(--p-content-border-color); }
-.dot { width: 12px; height: 12px; border-radius: 50%; }
-.dot.red { background: #ff5f57; }
-.dot.yellow { background: #febc2e; }
-.dot.green { background: #28c840; }
-.screen-title { margin-left: 0.5rem; font-size: 0.75rem; color: var(--p-text-muted-color); }
-.address-bar {
-  flex: 1; background: var(--surface-card); border-radius: 2rem;
-  padding: 0.2rem 0.875rem; font-size: 0.78rem; color: var(--p-text-muted-color);
-  display: flex; align-items: center; gap: 0.4rem; border: 1px solid var(--p-surface-300);
-}
-.address-bar i { color: #22c55e; font-size: 0.7rem; }
-.screen-body {
-  padding: 1rem 1.25rem;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-  line-height: 1.7;
-  color: var(--p-text-color);
-}
-.screen-body.browser-ui {
-  background: var(--surface-card);
-  font-family: inherit;
-  color: var(--p-text-color);
-}
-.cmd-line { display: flex; gap: 0.5rem; }
-.prompt { color: #16a34a; font-weight: bold; flex-shrink: 0; }
-.cmd-out.gray { color: var(--p-text-muted-color); }
-.cmd-out.green { color: #16a34a; }
-.cmd-out.white { color: var(--p-text-color); }
-.cmd-cursor { animation: blink 1s step-end infinite; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-/* ── GitHub UI mocks ── */
-.gh-signup { max-width: 320px; margin: 0 auto; padding: 1.5rem; }
-.gh-logo { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.75rem; }
-.gh-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
-.gh-field { margin-bottom: 0.75rem; }
-.gh-label { font-size: 0.78rem; font-weight: 600; margin-bottom: 0.2rem; display: block; }
-.gh-input {
-  border: 1px solid var(--p-surface-300);
-  border-radius: 0.375rem;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.875rem;
-  background: var(--surface-card);
-}
-.gh-btn {
-  background: #2ea043; color: white; border-radius: 0.375rem;
-  padding: 0.45rem 1rem; font-size: 0.875rem; font-weight: 600;
-  display: inline-block; margin-top: 0.25rem; cursor: default;
-}
-.cursor-blink { animation: blink 1s step-end infinite; }
-.gh-issue-form { padding: 1.25rem; max-width: 500px; }
-.gif-label { font-size: 0.78rem; font-weight: 700; margin-bottom: 0.3rem; }
-.gif-input {
-  border: 2px solid #0969da; border-radius: 0.375rem;
-  padding: 0.4rem 0.75rem; font-size: 0.875rem;
-  background: var(--surface-card);
-}
-.gif-textarea {
-  border: 1px solid var(--p-surface-300); border-radius: 0.375rem;
-  padding: 0.625rem 0.75rem; font-size: 0.8rem; line-height: 1.6;
-  min-height: 80px; background: var(--surface-card); color: var(--p-text-muted-color);
-}
-.gif-submit {
-  margin-top: 0.75rem; background: #2ea043; color: white;
-  border-radius: 0.375rem; padding: 0.45rem 1rem;
-  font-size: 0.875rem; font-weight: 600; display: inline-block; cursor: default;
 }
 
-/* ── Repo links ── */
-.repo-links { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
-.repo-link-card {
-  display: flex; gap: 0.875rem; padding: 0.875rem 1rem;
-  border-radius: 0.625rem; border: 1px solid var(--p-content-border-color);
-  background: var(--surface-card);
+.dg-tab-badge {
+  background: color-mix(in srgb, currentColor 15%, transparent);
+  border-radius: 99px;
+  padding: 0 0.4rem;
+  font-size: 0.7rem;
+  min-width: 1.2em;
+  text-align: center;
 }
-.rl-icon {
-  width: 40px; height: 40px; border-radius: 0.5rem;
-  background: var(--p-surface-600, #24292e); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.rl-icon.fst { background: #1d4ed8; }
-.rl-icon i { color: white; font-size: 1.1rem; }
-.rl-name { font-weight: 600; margin-bottom: 0.2rem; font-size: 0.9rem; }
-.rl-url { font-family: monospace; font-size: 0.8rem; color: var(--p-primary-color); display: block; margin-bottom: 0.2rem; }
-.rl-desc { font-size: 0.8rem; color: var(--p-text-muted-color); }
 
-/* ── Callouts ── */
-.callout {
-  display: flex; gap: 0.75rem; align-items: flex-start;
-  padding: 0.75rem 1rem; border-radius: 0.625rem; margin-bottom: 1rem;
-  font-size: 0.875rem; line-height: 1.6;
-}
-.callout i { flex-shrink: 0; margin-top: 0.1rem; }
-.callout.info { background: color-mix(in srgb, #3b82f6 10%, var(--surface-card)); border: 1px solid color-mix(in srgb, #3b82f6 25%, var(--surface-card)); color: color-mix(in srgb, #3b82f6 70%, var(--p-text-color)); }
-.callout.info i { color: #3b82f6; }
-.callout.success { background: color-mix(in srgb, #16a34a 10%, var(--surface-card)); border: 1px solid color-mix(in srgb, #16a34a 25%, var(--surface-card)); color: color-mix(in srgb, #16a34a 70%, var(--p-text-color)); }
-.callout.success i { color: #16a34a; }
-.callout.warning { background: color-mix(in srgb, #ca8a04 10%, var(--surface-card)); border: 1px solid color-mix(in srgb, #ca8a04 25%, var(--surface-card)); color: color-mix(in srgb, #ca8a04 70%, var(--p-text-color)); }
-.callout.warning i { color: #ca8a04; }
-
-/* ── Bot flow ── */
-.bot-flow {
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: 0.5rem; margin-bottom: 1.25rem;
-}
-.bf-step { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
-.bf-icon {
-  width: 48px; height: 48px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--p-content-border-color);
-}
-.bf-icon i { font-size: 1.2rem; }
-.bf-icon.tg { background: #2ca5e0; }
-.bf-icon.tg i { color: white; }
-.bf-icon.ai { background: #d97706; }
-.bf-icon.ai i { color: white; }
-.bf-icon.gh { background: var(--p-surface-600, #24292e); }
-.bf-icon.gh i { color: white; }
-.bf-icon.ok { background: #16a34a; }
-.bf-icon.ok i { color: white; }
-.bf-label { font-size: 0.75rem; color: var(--p-text-muted-color); text-align: center; }
-.bf-arrow { color: var(--p-text-muted-color); }
-
-/* ── Telegram chat ── */
-.screen-body.tg-chat {
-  background: var(--surface-card);
-  display: flex; flex-direction: column; gap: 0.625rem;
-}
-.tg-msg { display: flex; flex-direction: column; }
-.tg-msg.out { align-items: flex-end; }
-.tg-msg.in { align-items: flex-start; }
-.tg-bubble {
-  max-width: 75%; padding: 0.5rem 0.875rem;
-  border-radius: 0.875rem; font-size: 0.82rem; line-height: 1.5;
-}
-.tg-bubble.out { background: color-mix(in srgb, var(--p-primary-color) 20%, var(--surface-ground)); color: var(--p-text-color); border-bottom-right-radius: 0.2rem; }
-.tg-bubble.in  { background: var(--surface-ground); color: var(--p-text-muted-color); border-bottom-left-radius: 0.2rem; }
-.tg-code { font-family: monospace; font-size: 0.78rem; opacity: 0.85; }
-.tg-link { color: var(--p-primary-color); }
-.tg-time { font-size: 0.68rem; color: var(--p-text-muted-color); margin-top: 0.15rem; padding: 0 0.3rem; }
-
-/* ── Analogy card ── */
-.analogy-card {
-  display: flex; gap: 1rem; align-items: flex-start;
-  padding: 1rem 1.25rem;
-  background: var(--surface-card);
-  border-radius: 0.75rem;
-  border: 1px solid var(--p-content-border-color);
-  margin-bottom: 1.25rem;
-  font-size: 0.9rem; line-height: 1.6;
-}
-.analogy-icon { font-size: 1.5rem; flex-shrink: 0; color: var(--p-primary-color); }
-
-/* ── PR mock ── */
-.gh-pr { padding: 1rem 1.25rem; }
-.gh-pr-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem; }
-.pr-badge { padding: 0.15rem 0.6rem; border-radius: 2rem; font-size: 0.72rem; font-weight: 600; }
-.pr-badge.open { background: #2ea043; color: white; }
-.gh-pr-meta { font-size: 0.78rem; color: var(--p-text-muted-color); margin-bottom: 0.75rem; }
-.gh-pr-desc { font-size: 0.82rem; line-height: 1.6; padding: 0.75rem; background: var(--surface-card); border-radius: 0.5rem; border: 1px solid var(--p-content-border-color); margin-bottom: 0.75rem; }
-.gh-pr-files { display: flex; flex-direction: column; gap: 0.3rem; }
-.pr-file { font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; color: var(--p-text-muted-color); }
-.pr-changes { color: #16a34a; font-family: monospace; margin-left: auto; }
-.code-diff { font-family: monospace; font-size: 0.8rem; display: block; }
-.code-diff.add { color: #16a34a; }
-.code-diff.remove { color: #dc2626; }
-
-/* ── Merge block ── */
-.gh-merge-block { padding: 1.25rem; }
-.merge-checks { display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.82rem; }
-.check-ok { display: flex; align-items: center; gap: 0.35rem; color: #16a34a; }
-.merge-btn {
-  display: inline-block; background: #2ea043; color: white;
-  padding: 0.5rem 1.25rem; border-radius: 0.375rem;
-  font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; cursor: default;
-}
-.merge-sub { font-size: 0.78rem; color: var(--p-text-muted-color); }
-
-/* ── Examples grid ── */
-.examples-grid {
+/* ── Catalog grid ── */
+.dg-catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.dg-catalog-card {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.875rem;
+  padding: 1.125rem;
+  display: flex;
+  flex-direction: column;
   gap: 0.625rem;
-  margin-top: 1rem;
+  transition: border-color 0.15s;
 }
-.eg-card {
-  display: flex; gap: 0.75rem; padding: 0.75rem 0.875rem;
-  border-radius: 0.625rem; border: 1px solid var(--p-content-border-color);
-  background: var(--surface-card);
-}
-.eg-icon { color: var(--p-primary-color); flex-shrink: 0; margin-top: 0.15rem; }
-.eg-text { font-size: 0.82rem; line-height: 1.4; margin-bottom: 0.3rem; }
-.eg-tag { font-size: 0.7rem; color: var(--p-primary-color); font-weight: 600; text-transform: uppercase; }
 
-/* ── Command table ── */
-.cmd-table { display: flex; flex-direction: column; border-radius: 0.625rem; overflow: hidden; border: 1px solid var(--p-content-border-color); }
-.ct-row {
-  display: flex; align-items: center; gap: 1rem; padding: 0.625rem 1rem;
-  border-bottom: 1px solid var(--p-content-border-color); font-size: 0.875rem;
+.dg-catalog-card:hover {
+  border-color: var(--p-primary-color);
 }
-.ct-row:last-child { border-bottom: none; }
-.ct-row:nth-child(even) { background: var(--surface-card); }
-.ct-cmd { font-family: monospace; font-size: 0.875rem; color: var(--p-primary-color); font-weight: 600; min-width: 80px; flex-shrink: 0; }
-.ct-desc { color: var(--p-text-muted-color); }
 
-/* ── Day result ── */
-.day-result {
-  display: flex; align-items: flex-start; gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  background: color-mix(in srgb, #16a34a 10%, var(--surface-card));
-  border: 1px solid color-mix(in srgb, #16a34a 25%, var(--surface-card));
-  border-radius: 0.75rem;
-  color: color-mix(in srgb, #16a34a 70%, var(--p-text-color));
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-top: 0.5rem;
+.dg-catalog-card.done {
+  background: color-mix(in srgb, #16a34a 5%, var(--p-surface-card));
 }
-.day-result i { color: #16a34a; flex-shrink: 0; margin-top: 0.1rem; font-size: 1.1rem; }
-.day-result.day4 { background: color-mix(in srgb, #ca8a04 10%, var(--surface-card)); border-color: color-mix(in srgb, #ca8a04 25%, var(--surface-card)); color: color-mix(in srgb, #ca8a04 70%, var(--p-text-color)); }
-.day-result.day4 i { color: #ca8a04; }
 
-/* ── Cheatsheet ── */
-.cheatsheet {
-  background: var(--surface-card);
-  border-radius: 1rem;
-  padding: 2rem;
-  border: 1px solid var(--p-content-border-color);
+.dg-cc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-.cheatsheet h2 {
-  margin: 0 0 1.5rem;
-  font-size: 1.2rem;
-  display: flex; align-items: center; gap: 0.625rem;
-}
-.cheatsheet h2 i { color: var(--p-primary-color); }
-.cs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
-.cs-card {
-  display: flex; gap: 1rem; padding: 1rem 1.125rem;
-  background: var(--surface-card);
-  border-radius: 0.75rem;
-  border: 1px solid var(--p-content-border-color);
-}
-.cs-icon {
-  width: 40px; height: 40px; border-radius: 0.5rem;
-  display: flex; align-items: center; justify-content: center;
+
+.dg-cc-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--p-primary-color);
+  font-size: 1rem;
   flex-shrink: 0;
 }
-.cs-icon i { color: white; font-size: 1.1rem; }
-.cs-title { font-weight: 700; margin-bottom: 0.5rem; font-size: 0.9rem; }
-.cs-item { font-size: 0.8rem; color: var(--p-text-muted-color); display: flex; align-items: flex-start; gap: 0.3rem; line-height: 1.5; margin-bottom: 0.2rem; }
-.cs-item i { color: var(--p-primary-color); font-size: 0.7rem; margin-top: 0.25rem; flex-shrink: 0; }
 
-/* ── Link fake ── */
-.link-fake { color: var(--p-primary-color); text-decoration: underline; cursor: default; }
+.dg-cc-done-badge {
+  font-size: 0.7rem;
+  color: #16a34a;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;
+}
 
-@media (max-width: 640px) {
-  .dev-guide { padding: 1rem; }
-  .guide-hero h1 { font-size: 1rem; font-weight: 600; }
-  .hero-days { gap: 0.5rem; }
-  .hero-day { min-width: 110px; }
-  .lesson { flex-direction: column; gap: 0.75rem; }
-  .lesson-num { width: 36px; height: 36px; }
-  .bot-flow { justify-content: center; }
-  .cs-grid { grid-template-columns: 1fr; }
-  .examples-grid { grid-template-columns: 1fr; }
+.dg-cc-tag {
+  font-size: 0.7rem;
+  color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  padding: 0.1rem 0.5rem;
+  border-radius: 2rem;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.dg-cc-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  line-height: 1.35;
+  flex: 1;
+}
+
+.dg-cc-meta {
+  font-size: 0.775rem;
+  color: var(--p-text-muted-color);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dg-cc-btn {
+  display: inline-block;
+  text-align: center;
+  padding: 0.4rem 1rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
+  color: var(--p-primary-color);
+  border: 1px solid var(--p-primary-color);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+  margin-top: auto;
+}
+
+.dg-cc-btn:hover {
+  background: color-mix(in srgb, var(--p-primary-color) 22%, transparent);
+}
+
+/* ── Glossary promo ── */
+.dg-glossary-promo {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 1rem;
+}
+
+.dg-gp-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 0.875rem;
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--p-primary-color);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.dg-gp-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.dg-gp-desc {
+  font-size: 0.875rem;
+  color: var(--p-text-muted-color);
+  line-height: 1.6;
+  margin: 0 0 0.875rem;
+}
+
+/* ── Activity ── */
+.dg-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dg-activity-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+}
+
+.dg-act-icon {
+  color: var(--p-primary-color);
+  flex-shrink: 0;
+}
+
+.dg-act-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.dg-act-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.dg-act-time {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dg-see-all {
+  font-size: 0.8rem;
+  color: var(--p-primary-color);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.dg-next-rec {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--p-primary-color) 8%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--p-primary-color) 25%, var(--p-content-border-color));
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--p-text-color);
+}
+
+.dg-next-rec > i {
+  color: var(--p-primary-color);
+  flex-shrink: 0;
+}
+
+/* ── AI section ── */
+.dg-ai-section {
+  padding: 1.5rem;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 1.25rem;
+}
+
+.dg-ai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.dg-ai-card {
+  padding: 1.125rem;
+  background: color-mix(in srgb, var(--p-primary-color) 4%, var(--p-surface-card));
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.875rem;
+}
+
+.dg-ai-card-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 0.625rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--p-text-color);
+}
+
+.dg-ai-card-title i {
+  color: var(--p-primary-color);
+}
+
+.dg-ai-card-desc {
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+  line-height: 1.5;
+  margin: 0 0 0.5rem;
+}
+
+.dg-ai-code {
+  display: block;
+  font-family: monospace;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.625rem;
+  background: color-mix(in srgb, var(--p-text-color) 8%, transparent);
+  border-radius: 0.375rem;
+  color: var(--p-text-color);
+  word-break: break-all;
+}
+
+.dg-ai-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.dg-ai-code-sm {
+  display: block;
+  font-family: monospace;
+  font-size: 0.72rem;
+  padding: 0.3rem 0.5rem;
+  background: color-mix(in srgb, var(--p-text-color) 8%, transparent);
+  border-radius: 0.375rem;
+  color: var(--p-text-color);
+  word-break: break-all;
+}
+
+.dg-ai-steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+  line-height: 1.7;
+}
+
+.dg-ai-steps code {
+  font-family: monospace;
+  background: color-mix(in srgb, var(--p-text-color) 10%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  font-size: 0.78em;
+}
+
+/* ── Role dialog ── */
+.dg-role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.875rem;
+  padding-top: 0.25rem;
+}
+
+.dg-role-card {
+  padding: 1.125rem;
+  border: 2px solid var(--p-content-border-color);
+  border-radius: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+}
+
+.dg-role-card:hover {
+  border-color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 5%, transparent);
+}
+
+.dg-role-card.selected {
+  border-color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+}
+
+.dg-role-icon {
+  font-size: 1.5rem;
+  color: var(--p-primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.dg-role-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.dg-role-desc {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  line-height: 1.4;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .dg-hero {
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.25rem;
+  }
+  .dg-hero-right {
+    width: 100%;
+  }
+  .dg-stats-mini {
+    flex-direction: row;
+    justify-content: space-around;
+    min-width: unset;
+  }
+  .dg-stat-mini {
+    text-align: center;
+  }
+  .dg-hero-title {
+    font-size: 1.25rem;
+  }
+  .dg-quickstart-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dg-role-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .dg-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+  .dg-quickstart-grid {
+    grid-template-columns: 1fr;
+  }
+  .dg-ai-grid {
+    grid-template-columns: 1fr;
+  }
+  .dg-tabs {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
