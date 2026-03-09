@@ -109,10 +109,10 @@ const crumb = computed(() => {
   flex-shrink: 0;
 }
 .fst-bc-home:hover { color: var(--p-primary-color); }
-.fst-bc-home .pi-home { font-size: 12px; }
+.fst-bc-home .pi-home { font-size: 0.875rem; }
 
 .fst-bc-sep {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   opacity: 0.4;
   flex-shrink: 0;

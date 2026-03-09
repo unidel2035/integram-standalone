@@ -369,7 +369,7 @@
             </div>
             <ul v-if="session.decision.conditions?.length" class="fst-decision-conds">
               <li v-for="c in session.decision.conditions.slice(0, 3)" :key="c">
-                <i class="pi pi-angle-right" style="color:#ffa726;font-size:9px"></i> {{ c }}
+                <i class="pi pi-angle-right" style="color:#ffa726;font-size:0.6875rem"></i> {{ c }}
               </li>
             </ul>
             <div v-if="session.decision.humanApproval" class="fst-human-result">
@@ -462,14 +462,14 @@
           </span>
           <span class="fst-ac-name">{{ agent.shortName }}</span>
           <span v-if="agentStatus(agent.id).thinking" class="fst-ac-status">
-            <i class="pi pi-spin pi-spinner" style="font-size:9px;color:var(--ac)"></i>
+            <i class="pi pi-spin pi-spinner" style="font-size:0.6875rem;color:var(--ac)"></i>
             <span v-if="agentActivity[agent.id]?.tool" class="fst-ac-tool">
               {{ agentActivity[agent.id].tool }}
             </span>
           </span>
           <span v-else-if="agentStatus(agent.id).vote" class="fst-ac-vote"
             :style="{ background: VERDICTS[agentStatus(agent.id).vote]?.color }">
-            <i :class="VERDICTS[agentStatus(agent.id).vote]?.icon" style="font-size:8px"></i>
+            <i :class="VERDICTS[agentStatus(agent.id).vote]?.icon" style="font-size:0.625rem"></i>
             {{ agentStatus(agent.id).voteScore }}
           </span>
           <!-- Дельта позиции (OPENING → SUMMARY) -->
@@ -479,7 +479,7 @@
             {{ stanceEmoji(session.positionDeltas[agent.id].from) }}→{{ stanceEmoji(session.positionDeltas[agent.id].to) }}
           </span>
           <span v-else-if="agentStatus(agent.id).done" class="fst-ac-status">
-            <i class="pi pi-check" style="font-size:9px;color:#4caf50"></i>
+            <i class="pi pi-check" style="font-size:0.6875rem;color:#4caf50"></i>
           </span>
           <div class="fst-ac-pipe">
             <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.integram, '#42a5f5')" title="Данные"></span>
@@ -749,7 +749,7 @@
               <span>Модели агентов</span>
               <span class="fst-policy-summary">{{ activeProfileLabel }}</span>
               <i :class="modelPanelExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
+                style="margin-left:auto;font-size:0.8125rem;color:var(--p-text-muted-color)"></i>
             </div>
           </div>
           <div v-if="useAI && modelPanelExpanded" class="fst-model-panel">
@@ -801,7 +801,7 @@
               <span>Параметры оценки ФСТ</span>
               <span class="fst-policy-summary">Сув. ≥ {{ fstPolicy.minSovereignty }}/9 · TRL ≥ {{ fstPolicy.minTRL }}</span>
               <i :class="policyExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
+                style="margin-left:auto;font-size:0.8125rem;color:var(--p-text-muted-color)"></i>
             </div>
           </div>
           <div v-if="policyExpanded" class="fst-policy-grid">
@@ -827,7 +827,7 @@
               <span>Пороги решений ИК</span>
               <span class="fst-policy-summary">Одобр. ≥ {{ icParams.approveThreshold }}% · Откл. &lt; {{ icParams.deferThreshold }}%</span>
               <i :class="icParamsExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
+                style="margin-left:auto;font-size:0.8125rem;color:var(--p-text-muted-color)"></i>
             </div>
             <div v-if="icParamsExpanded" class="fst-policy-grid">
               <div class="fst-policy-item">
@@ -1799,7 +1799,7 @@ onUnmounted(() => {
   min-width: 0;
 }
 .fst-header-title {
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--p-text-color);
   white-space: nowrap;
@@ -1808,7 +1808,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 .fst-header-subfund {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #fff;
   padding: 2px 8px;
@@ -1845,7 +1845,7 @@ onUnmounted(() => {
   box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
 }
 .fst-step-label {
-  font-size: 8px;
+  font-size: 0.625rem;
   color: var(--p-text-muted-color);
   white-space: nowrap;
   max-width: 58px;
@@ -1870,7 +1870,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 .fst-score-badge {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 900;
   line-height: 1;
   display: flex;
@@ -1878,7 +1878,7 @@ onUnmounted(() => {
   gap: 2px;
 }
 .fst-score-denom {
-  font-size: 11px;
+  font-size: 0.8125rem;
   opacity: 0.55;
   font-weight: 400;
 }
@@ -1886,7 +1886,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-primary-color);
   padding: 3px 10px;
   background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
@@ -1928,7 +1928,7 @@ onUnmounted(() => {
   border: none;
   background: none;
   color: var(--p-text-muted-color);
-  font-size: 12px;
+  font-size: 0.875rem;
   cursor: pointer;
   border-radius: 6px;
   transition: all 0.15s;
@@ -1936,7 +1936,7 @@ onUnmounted(() => {
 .fst-tab:hover { background: var(--surface-hover); color: var(--p-text-color); }
 .fst-tab--on { background: var(--p-primary-color, #42a5f5); color: #fff; }
 .fst-tab-count {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 8px;
@@ -1966,7 +1966,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -1988,18 +1988,18 @@ onUnmounted(() => {
   border: 1px solid var(--surface-border);
 }
 .fst-kpi-v {
-  font-size: 17px;
+  font-size: 1.125rem;
   font-weight: 800;
   line-height: 1.1;
   color: var(--p-text-color);
 }
 .fst-kpi-u {
-  font-size: 9px;
+  font-size: 0.6875rem;
   color: var(--p-text-muted-color);
   line-height: 1;
 }
 .fst-kpi-l {
-  font-size: 8.5px;
+  font-size: 0.6875rem;
   color: var(--p-text-muted-color);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -2022,7 +2022,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 .fst-dim-lbl {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   width: 48px;
   flex-shrink: 0;
@@ -2043,7 +2043,7 @@ onUnmounted(() => {
   transition: width 0.5s ease;
 }
 .fst-dim-num {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   width: 22px;
   text-align: right;
@@ -2063,7 +2063,7 @@ onUnmounted(() => {
   padding: 3px 8px;
   border: 1px solid;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 0.75rem;
 }
 .fst-vc-n { color: var(--p-text-muted-color); }
 .fst-vc-s { font-weight: 700; }
@@ -2071,7 +2071,7 @@ onUnmounted(() => {
 /* Decision */
 .fst-rs--decision { background: var(--surface-card); }
 .fst-decision-score {
-  font-size: 44px;
+  font-size: 2.75rem;
   font-weight: 900;
   line-height: 1;
   margin-bottom: 8px;
@@ -2080,7 +2080,7 @@ onUnmounted(() => {
   gap: 4px;
 }
 .fst-decision-denom {
-  font-size: 16px;
+  font-size: 1rem;
   opacity: 0.45;
   font-weight: 400;
 }
@@ -2091,7 +2091,7 @@ onUnmounted(() => {
   padding: 7px 16px;
   border-radius: 8px;
   color: #fff;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 700;
   margin-bottom: 10px;
 }
@@ -2107,7 +2107,7 @@ onUnmounted(() => {
   display: flex;
   align-items: flex-start;
   gap: 4px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   line-height: 1.4;
 }
@@ -2118,7 +2118,7 @@ onUnmounted(() => {
   background: var(--surface-card);
   border-radius: 8px;
   padding: 8px 12px;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 .fst-contradiction-dim {
   display: inline-block;
@@ -2126,12 +2126,12 @@ onUnmounted(() => {
   border-radius: 10px;
   background: var(--p-primary-100);
   color: var(--p-primary-700);
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   margin-right: 6px;
 }
 .fst-contradiction-severity {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 1px 6px;
   border-radius: 8px;
   font-weight: 600;
@@ -2148,12 +2148,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 .fst-cond-type {
   padding: 1px 6px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -2161,7 +2161,7 @@ onUnmounted(() => {
 .fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
 .fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
 .fst-cond-text { flex: 1; color: var(--p-text-color); }
-.fst-cond-metric { color: var(--p-text-muted-color); font-size: 11px; }
+.fst-cond-metric { color: var(--p-text-muted-color); font-size: 0.8125rem; }
 
 /* Belief Drift */
 .fst-belief-drift-grid {
@@ -2187,15 +2187,15 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 .fst-drift-name {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--p-text-color);
 }
 .fst-drift-changed {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 1px 5px;
   border-radius: 6px;
   background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
@@ -2208,12 +2208,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 0.75rem;
 }
 .fst-drift-label {
   width: 42px;
   color: var(--p-text-muted-color);
-  font-size: 10px;
+  font-size: 0.75rem;
 }
 .fst-drift-bar {
   height: 6px;
@@ -2222,13 +2222,13 @@ onUnmounted(() => {
   transition: width 0.5s ease;
 }
 .fst-drift-val {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   white-space: nowrap;
 }
 .fst-drift-delta {
   text-align: center;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 700;
   margin-top: 4px;
   color: var(--p-text-muted-color);
@@ -2240,7 +2240,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.875rem;
   margin-top: 6px;
   color: var(--p-text-color);
 }
@@ -2251,7 +2251,7 @@ onUnmounted(() => {
   border-color: color-mix(in srgb, #ffa726 25%, transparent);
 }
 .fst-approval-hint {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
   line-height: 1.5;
   margin: 0 0 10px;
@@ -2301,14 +2301,14 @@ onUnmounted(() => {
 }
 .fst-ac--thinking .fst-ac-dot { animation: fst-dot-blink 1s ease-in-out infinite; }
 .fst-ac-name {
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--p-text-color);
   white-space: nowrap;
 }
 .fst-ac-status { display: flex; align-items: center; gap: 4px; }
 .fst-ac-tool {
-  font-size: 8px;
+  font-size: 0.625rem;
   color: var(--ac);
   background: color-mix(in srgb, var(--ac) 15%, transparent);
   border: 1px solid color-mix(in srgb, var(--ac) 40%, transparent);
@@ -2335,7 +2335,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
@@ -2358,7 +2358,7 @@ onUnmounted(() => {
 .fst-activity-item--result .fst-activity-tool { color: #4caf50; }
 .fst-activity-result-arrow { color: #4caf50; font-weight: bold; flex-shrink: 0; }
 .fst-ac-delta {
-  font-size: 9px;
+  font-size: 0.6875rem;
   opacity: 0.85;
   margin-left: 4px;
   cursor: help;
@@ -2371,7 +2371,7 @@ onUnmounted(() => {
   padding: 1px 6px;
   border-radius: 4px;
   color: #fff;
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .fst-ac-pipe {
@@ -2449,7 +2449,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -2458,7 +2458,7 @@ onUnmounted(() => {
 }
 .fst-setup-empty {
   color: var(--p-text-muted-color);
-  font-size: 13px;
+  font-size: 0.875rem;
   padding: 20px 0;
   display: flex;
   align-items: center;
@@ -2473,9 +2473,9 @@ onUnmounted(() => {
   gap: 8px;
 }
 .fst-launch-btn { width: 100%; justify-content: center; }
-.fst-launch-hint { text-align: center; font-size: 12px; color: var(--p-text-muted-color); }
+.fst-launch-hint { text-align: center; font-size: 0.875rem; color: var(--p-text-muted-color); }
 .fst-policy-summary {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   margin-left: 8px;
   font-weight: 400;
@@ -2505,7 +2505,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 .fst-policy-label {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
 }
 .fst-policy-label b {
@@ -2529,7 +2529,7 @@ onUnmounted(() => {
   color: var(--p-text-color);
 }
 .fst-intro-text {
-  font-size: 13px;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
   line-height: 1.6;
   margin: 0 0 12px;
@@ -2543,18 +2543,18 @@ onUnmounted(() => {
   border: 1px solid;
   border-radius: 6px;
   padding: 4px 10px;
-  font-size: 12px;
+  font-size: 0.875rem;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 .fst-subfund-budget {
-  font-size: 11px;
+  font-size: 0.8125rem;
   opacity: 0.7;
   margin-left: 4px;
 }
 .fst-lobby-label {
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 10px;
   color: var(--p-text-muted-color);
@@ -2562,7 +2562,7 @@ onUnmounted(() => {
 /* ── Project Grid Cards ───────────────────────────────────── */
 .fst-selected-badge {
   margin-left: 10px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: #4caf50;
   font-weight: 600;
   display: flex;
@@ -2613,7 +2613,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: #fff;
 }
 .fst-pcard-top {
@@ -2623,35 +2623,35 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 .fst-pcard-subfund {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 4px;
   color: #fff;
 }
 .fst-pcard-stage {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   background: var(--surface-hover);
   padding: 2px 7px;
   border-radius: 4px;
 }
 .fst-pcard-title {
-  font-size: 14px;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--p-text-color);
   line-height: 1.3;
   flex: 1;
 }
 .fst-pcard-company {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   display: flex;
   align-items: center;
   gap: 5px;
 }
 .fst-pcard-amount {
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--pc);
 }
@@ -2662,7 +2662,7 @@ onUnmounted(() => {
 }
 .fst-pcard-hint {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   display: flex;
   align-items: center;
@@ -2683,14 +2683,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 6px;
   color: #fff;
 }
 .fst-pmodal-stage {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
   background: var(--surface-hover);
   padding: 4px 10px;
@@ -2700,7 +2700,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 0.9375rem;
   color: var(--p-text-color);
 }
 .fst-pmodal-metrics {
@@ -2713,20 +2713,20 @@ onUnmounted(() => {
 }
 .fst-pmodal-metric { text-align: center; }
 .fst-pmodal-metric-val {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--p-text-color);
   line-height: 1.2;
 }
 .fst-pmodal-metric-label {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   margin-top: 3px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .fst-pmodal-desc {
-  font-size: 13px;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
   line-height: 1.6;
   padding: 12px;
@@ -2739,7 +2739,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 .fst-pmodal-tag {
-  font-size: 11px;
+  font-size: 0.8125rem;
   padding: 3px 10px;
   border-radius: 20px;
   background: var(--surface-hover);
@@ -2758,12 +2758,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 .fst-pmodal-check-item.pass { color: #4caf50; }
 .fst-pmodal-check-item.fail { color: #ef5350; }
 .fst-metric {
-  font-size: 11px;
+  font-size: 0.8125rem;
   padding: 2px 7px;
   border-radius: 4px;
   font-weight: 500;
@@ -2807,8 +2807,13 @@ onUnmounted(() => {
   border: 1px solid var(--surface-border);
   border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 0.875rem;
   transition: all 0.15s;
+}
+.fst-speed-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--p-primary-color);
+  color: var(--p-primary-color);
 }
 .fst-speed-btn.active {
   border-color: var(--p-primary-color);
@@ -2842,7 +2847,7 @@ onUnmounted(() => {
   min-width: 200px;
 }
 .fst-logo {
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--p-text-color);
   white-space: nowrap;
@@ -2851,7 +2856,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 .fst-project-name {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
   max-width: 200px;
   overflow: hidden;
@@ -2909,7 +2914,7 @@ onUnmounted(() => {
   background: var(--phase-color);
 }
 .fst-phase-label {
-  font-size: 9px;
+  font-size: 0.6875rem;
   color: var(--p-text-muted-color);
   text-align: center;
   line-height: 1.2;
@@ -2920,7 +2925,7 @@ onUnmounted(() => {
   font-weight: 600;
 }
 .fst-phase-tag {
-  font-size: 11px;
+  font-size: 0.8125rem;
 }
 
 /* ── Main 3-column ────────────────────────────────────────── */
@@ -2932,7 +2937,7 @@ onUnmounted(() => {
   gap: 0;
 }
 .fst-panel-title {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--p-text-muted-color);
   text-transform: uppercase;
@@ -2944,7 +2949,7 @@ onUnmounted(() => {
   gap: 8px;
 }
 .fst-panel-subtitle {
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--p-text-muted-color);
   text-transform: uppercase;
@@ -2952,7 +2957,7 @@ onUnmounted(() => {
   margin: 12px 0 6px;
 }
 .fst-arg-count {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   font-weight: 400;
   margin-left: auto;
@@ -2991,7 +2996,7 @@ onUnmounted(() => {
 }
 .fst-agent-avatar {
   position: relative;
-  font-size: 20px;
+  font-size: 1.25rem;
   flex-shrink: 0;
   line-height: 1;
 }
@@ -3012,7 +3017,7 @@ onUnmounted(() => {
   min-width: 0;
 }
 .fst-agent-name {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -3020,13 +3025,13 @@ onUnmounted(() => {
   color: var(--agent-color);
 }
 .fst-agent-role-label {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   line-height: 1.3;
   margin-top: 2px;
 }
 .fst-agent-think-text {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-primary-color);
   font-style: italic;
   margin-top: 3px;
@@ -3035,7 +3040,7 @@ onUnmounted(() => {
   gap: 4px;
 }
 .fst-agent-vote-badge {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 2px 6px;
   border-radius: 4px;
   color: #fff;
@@ -3060,7 +3065,7 @@ onUnmounted(() => {
 }
 @keyframes fst-pulse { 0%,100% { box-shadow: 0 0 0 0 currentColor; } 50% { box-shadow: 0 0 4px 1px currentColor; } }
 .fst-agent-ready {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: #4caf50;
   margin-top: 3px;
   display: flex;
@@ -3068,7 +3073,7 @@ onUnmounted(() => {
   gap: 3px;
 }
 .fst-agent-weight {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   align-self: center;
   flex-shrink: 0;
@@ -3083,7 +3088,7 @@ onUnmounted(() => {
   background: var(--surface-card);
 }
 .fst-project-mini-title {
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   margin-bottom: 8px;
   line-height: 1.3;
@@ -3092,7 +3097,7 @@ onUnmounted(() => {
 .fst-project-mini-row {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   padding: 2px 0;
 }
@@ -3121,7 +3126,7 @@ onUnmounted(() => {
   margin-bottom: 12px;
 }
 .fst-loading-title {
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 12px;
   color: var(--p-primary-color);
@@ -3135,9 +3140,9 @@ onUnmounted(() => {
   gap: 8px;
   margin-bottom: 8px;
 }
-.fst-la-avatar { font-size: 16px; }
+.fst-la-avatar { font-size: 1rem; }
 .fst-la-bar-wrap { flex: 1; }
-.fst-la-name { font-size: 10px; color: var(--p-text-muted-color); margin-bottom: 3px; }
+.fst-la-name { font-size: 0.75rem; color: var(--p-text-muted-color); margin-bottom: 3px; }
 .fst-la-bar {
   height: 4px;
   background: var(--surface-border);
@@ -3149,7 +3154,7 @@ onUnmounted(() => {
   border-radius: 2px;
   transition: width 0.5s ease;
 }
-.fst-la-status { font-size: 12px; }
+.fst-la-status { font-size: 0.875rem; }
 
 /* Arguments */
 .fst-args-stream {
@@ -3185,10 +3190,10 @@ onUnmounted(() => {
   gap: 6px;
   margin-bottom: 6px;
 }
-.fst-arg-avatar { font-size: 14px; }
-.fst-arg-agent-name { font-size: 11px; font-weight: 600; }
+.fst-arg-avatar { font-size: 0.9375rem; }
+.fst-arg-agent-name { font-size: 0.8125rem; font-weight: 600; }
 .fst-arg-type-badge {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 1px 6px;
   border-radius: 3px;
   background: var(--surface-border);
@@ -3196,7 +3201,7 @@ onUnmounted(() => {
 }
 .fst-arg-ai-badge {
   margin-left: auto;
-  font-size: 9px;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: #a78bfa;
   background: rgba(167,139,250,0.12);
@@ -3210,13 +3215,13 @@ onUnmounted(() => {
 }
 .fst-arg-tpl-badge {
   margin-left: auto;
-  font-size: 9px;
+  font-size: 0.6875rem;
   color: var(--p-text-muted-color);
   opacity: 0.5;
   flex-shrink: 0;
 }
 .fst-arg-dim {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   margin-left: auto;
 }
@@ -3224,7 +3229,7 @@ onUnmounted(() => {
   display: flex;
   align-items: baseline;
   gap: 4px;
-  font-size: 10px;
+  font-size: 0.75rem;
   background: var(--surface-ground);
   border-left: 2px solid var(--surface-border);
   border-radius: 0 4px 4px 0;
@@ -3245,7 +3250,7 @@ onUnmounted(() => {
   font-style: italic;
 }
 .fst-arg-text {
-  font-size: 12px;
+  font-size: 0.875rem;
   line-height: 1.6;
   color: var(--p-text-color);
 }
@@ -3259,7 +3264,7 @@ onUnmounted(() => {
   border: 1px solid var(--surface-border);
 }
 .fst-vote-title {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 10px;
   color: var(--p-primary-color);
@@ -3273,15 +3278,15 @@ onUnmounted(() => {
   gap: 8px;
   margin-bottom: 6px;
 }
-.fst-vote-avatar { font-size: 14px; }
-.fst-vote-name { font-size: 11px; font-weight: 600; min-width: 55px; }
+.fst-vote-avatar { font-size: 0.9375rem; }
+.fst-vote-name { font-size: 0.8125rem; font-weight: 600; min-width: 55px; }
 .fst-vote-pill-sm {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 2px 8px;
   border-radius: 4px;
   color: #fff;
 }
-.fst-vote-score { font-size: 11px; color: var(--p-text-muted-color); min-width: 40px; }
+.fst-vote-score { font-size: 0.8125rem; color: var(--p-text-muted-color); min-width: 40px; }
 .fst-vote-conf-bar {
   flex: 1;
   height: 4px;
@@ -3303,7 +3308,7 @@ onUnmounted(() => {
   justify-content: center;
   height: 200px;
   color: var(--p-text-muted-color);
-  font-size: 13px;
+  font-size: 0.875rem;
 }
 
 /* Argument animation */
@@ -3343,7 +3348,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 .fst-dim-label {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   min-width: 70px;
 }
@@ -3360,7 +3365,7 @@ onUnmounted(() => {
   transition: width 0.5s ease;
 }
 .fst-dim-value {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 600;
   min-width: 24px;
   text-align: right;
@@ -3376,12 +3381,12 @@ onUnmounted(() => {
   background: var(--surface-card);
 }
 .fst-agg-score-label {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   margin-bottom: 4px;
 }
 .fst-agg-score-value {
-  font-size: 42px;
+  font-size: 2.625rem;
   font-weight: 700;
   line-height: 1;
   margin-bottom: 8px;
@@ -3393,7 +3398,7 @@ onUnmounted(() => {
   padding: 4px 16px;
   border-radius: 20px;
   color: #fff;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
@@ -3412,7 +3417,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 .fst-vd-label {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   min-width: 65px;
 }
@@ -3429,7 +3434,7 @@ onUnmounted(() => {
   transition: width 0.5s ease;
 }
 .fst-vd-count {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   min-width: 14px;
   text-align: right;
@@ -3442,7 +3447,7 @@ onUnmounted(() => {
   margin: 0;
 }
 .fst-cond-item, .fst-risk-item {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   padding: 3px 0;
   display: flex;
@@ -3462,7 +3467,7 @@ onUnmounted(() => {
   margin-top: auto;
 }
 .fst-human-prompt {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   line-height: 1.5;
   margin: 6px 0 10px;
@@ -3472,7 +3477,7 @@ onUnmounted(() => {
 }
 .fst-human-comment {
   width: 100%;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 .fst-human-buttons {
   display: flex;
@@ -3482,13 +3487,13 @@ onUnmounted(() => {
 .fst-human-buttons .p-button {
   flex: 1;
   min-width: 0;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 
 /* Vote pills in conclusion */
 .fst-votes-summary { display: flex; gap: 8px; flex-wrap: wrap; }
 .fst-vote-pill {
-  font-size: 12px;
+  font-size: 0.875rem;
   padding: 4px 12px;
   border-radius: 12px;
   color: #fff;
@@ -3497,7 +3502,7 @@ onUnmounted(() => {
 /* Conclusion */
 .fst-conclusion { text-align: center; }
 .fst-conclusion-score {
-  font-size: 56px;
+  font-size: 3.5rem;
   font-weight: 700;
   line-height: 1;
   margin-bottom: 12px;
@@ -3509,7 +3514,7 @@ onUnmounted(() => {
   padding: 6px 20px;
   border-radius: 20px;
   color: #fff;
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 700;
   margin-bottom: 16px;
 }
@@ -3518,14 +3523,14 @@ onUnmounted(() => {
   margin-bottom: 12px;
 }
 .fst-conclusion-label {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--p-text-muted-color);
   margin-bottom: 6px;
   text-transform: uppercase;
 }
 .fst-conditions-list {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
   padding-left: 16px;
 }
@@ -3538,7 +3543,7 @@ onUnmounted(() => {
   background: var(--surface-card);
   border-radius: 8px;
   padding: 8px 12px;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 .fst-contradiction-dim {
   display: inline-block;
@@ -3546,12 +3551,12 @@ onUnmounted(() => {
   border-radius: 10px;
   background: var(--p-primary-100);
   color: var(--p-primary-700);
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   margin-right: 6px;
 }
 .fst-contradiction-severity {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 1px 6px;
   border-radius: 8px;
   font-weight: 600;
@@ -3568,12 +3573,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 .fst-cond-type {
   padding: 1px 6px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -3581,7 +3586,7 @@ onUnmounted(() => {
 .fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
 .fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
 .fst-cond-text { flex: 1; color: var(--p-text-color); }
-.fst-cond-metric { color: var(--p-text-muted-color); font-size: 11px; }
+.fst-cond-metric { color: var(--p-text-muted-color); font-size: 0.8125rem; }
 
 /* Belief Drift */
 .fst-belief-drift-grid {
@@ -3607,15 +3612,15 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 0.875rem;
 }
 .fst-drift-name {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--p-text-color);
 }
 .fst-drift-changed {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 1px 5px;
   border-radius: 6px;
   background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
@@ -3628,12 +3633,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 0.75rem;
 }
 .fst-drift-label {
   width: 42px;
   color: var(--p-text-muted-color);
-  font-size: 10px;
+  font-size: 0.75rem;
 }
 .fst-drift-bar {
   height: 6px;
@@ -3642,13 +3647,13 @@ onUnmounted(() => {
   transition: width 0.5s ease;
 }
 .fst-drift-val {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   white-space: nowrap;
 }
 .fst-drift-delta {
   text-align: center;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 700;
   margin-top: 4px;
   color: var(--p-text-muted-color);
@@ -3660,7 +3665,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 0.875rem;
   color: #4caf50;
   margin-top: 12px;
   justify-content: center;
@@ -3716,7 +3721,7 @@ onUnmounted(() => {
   border: 1px solid transparent;
   background: none;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--p-text-muted-color);
   transition: all 0.15s;
@@ -3830,7 +3835,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--p-text-color);
 }
 
@@ -3852,7 +3857,7 @@ onUnmounted(() => {
   border: 1px solid var(--surface-border);
   background: var(--surface-card);
   color: var(--p-text-color);
-  font-size: 11px;
+  font-size: 0.8125rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.15s;
@@ -3866,7 +3871,7 @@ onUnmounted(() => {
   border-color: transparent;
 }
 .fst-model-profile-desc {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   padding: 0 2px;
 }
@@ -3881,16 +3886,16 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
 }
-.fst-am-avatar { font-size: 14px; }
+.fst-am-avatar { font-size: 0.9375rem; }
 .fst-am-name {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .fst-am-select {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 3px 5px;
   border-radius: 5px;
   border: 1px solid var(--surface-border);
@@ -3906,7 +3911,7 @@ onUnmounted(() => {
   border: 1px solid var(--surface-border);
   border-radius: 5px;
   padding: 3px 8px;
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--p-text-muted-color);
   cursor: pointer;
   display: flex;
@@ -3946,7 +3951,7 @@ onUnmounted(() => {
 }
 /* Issue #160: agent mode icon */
 .fst-ac-mode {
-  font-size: 10px;
+  font-size: 0.75rem;
   line-height: 1;
   margin-right: 1px;
   opacity: 0.85;
@@ -3958,7 +3963,7 @@ onUnmounted(() => {
   border-radius: 6px;
   padding: 8px 10px;
   margin: 4px 8px;
-  font-size: 11px;
+  font-size: 0.8125rem;
 }
 .fst-debug-title {
   display: flex;
@@ -3968,11 +3973,11 @@ onUnmounted(() => {
   color: var(--p-text-color);
   margin-bottom: 6px;
 }
-.fst-debug-title i { color: #ef5350; font-size: 12px; }
+.fst-debug-title i { color: #ef5350; font-size: 0.875rem; }
 .fst-debug-summary {
   font-weight: 400;
   color: var(--p-text-muted-color);
-  font-size: 10px;
+  font-size: 0.75rem;
   margin-left: auto;
 }
 .fst-debug-grid {
@@ -3989,17 +3994,17 @@ onUnmounted(() => {
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
 }
-.fst-debug-name { font-weight: 600; font-size: 10px; }
+.fst-debug-name { font-weight: 600; font-size: 0.75rem; }
 .fst-debug-mode {
-  font-size: 10px;
+  font-size: 0.75rem;
   padding: 1px 4px;
   border-radius: 3px;
 }
 .fst-debug-mode.ok { background: #1b5e2040; color: #66bb6a; }
 .fst-debug-mode.warn { background: #e6511040; color: #ff7043; }
-.fst-debug-val { color: var(--p-text-muted-color); font-size: 10px; }
-.fst-debug-model { color: #ab47bc; font-size: 9px; }
-.fst-debug-forced { color: #ff9800; font-size: 9px; font-weight: 600; }
+.fst-debug-val { color: var(--p-text-muted-color); font-size: 0.75rem; }
+.fst-debug-model { color: #ab47bc; font-size: 0.6875rem; }
+.fst-debug-forced { color: #ff9800; font-size: 0.6875rem; font-weight: 600; }
 
 /* Issue #163: New project button & form */
 .fst-new-project-btn {
@@ -4010,7 +4015,7 @@ onUnmounted(() => {
   width: 22px; height: 22px;
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 0.8125rem;
   margin-left: 8px;
   vertical-align: middle;
   transition: background .15s;
@@ -4019,7 +4024,7 @@ onUnmounted(() => {
 
 .fst-newproj-form { display: flex; flex-direction: column; gap: 10px; }
 .fst-newproj-section {
-  font-weight: 600; font-size: 13px;
+  font-weight: 600; font-size: 0.875rem;
   color: var(--p-primary-color);
   border-bottom: 1px solid var(--surface-border);
   padding-bottom: 4px; margin-top: 6px;
@@ -4028,7 +4033,7 @@ onUnmounted(() => {
 .fst-newproj-row label,
 .fst-newproj-row2 label,
 .fst-newproj-row3 label {
-  font-size: 12px; color: var(--p-text-muted-color); font-weight: 500;
+  font-size: 0.875rem; color: var(--p-text-muted-color); font-weight: 500;
 }
 .fst-newproj-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .fst-newproj-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -4041,7 +4046,7 @@ onUnmounted(() => {
   border-radius: 6px;
   background: var(--surface-ground);
   color: var(--p-text-color);
-  font-size: 13px;
+  font-size: 0.875rem;
   outline: none;
   transition: border-color .15s;
 }
@@ -4052,7 +4057,7 @@ onUnmounted(() => {
   padding: 8px 18px;
   border-radius: 8px;
   border: none;
-  font-size: 13px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px;
@@ -4092,7 +4097,7 @@ onUnmounted(() => {
   }
   .fst-header-title {
     max-width: 180px;
-    font-size: 12px;
+    font-size: 0.875rem;
   }
   .fst-stepper {
     order: 3;

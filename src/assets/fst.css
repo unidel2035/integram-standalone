@@ -32,6 +32,22 @@
   --fst-nav-backdrop:    color-mix(in srgb, var(--p-surface-ground) 88%, transparent);
 }
 
+/* ── Типографическая шкала (rem, base 16px) ── */
+:root {
+  --fst-text-3xs: 0.625rem;   /* 10px — мета, timestamps           */
+  --fst-text-2xs: 0.6875rem;  /* 11px — мелкие лейблы              */
+  --fst-text-xs:  0.75rem;    /* 12px — вторичный текст            */
+  --fst-text-sm:  0.8125rem;  /* 13px — компактные элементы        */
+  --fst-text-base:0.875rem;   /* 14px — базовый текст (body)       */
+  --fst-text-md:  1rem;       /* 16px — акцентный текст            */
+  --fst-text-lg:  1.125rem;   /* 18px — подзаголовки секций        */
+  --fst-text-xl:  1.25rem;    /* 20px — заголовки карточек         */
+  --fst-text-2xl: 1.5rem;     /* 24px — заголовки страниц          */
+  --fst-text-3xl: 1.875rem;   /* 30px — KPI                        */
+  --fst-text-4xl: 2.125rem;   /* 34px — крупные KPI                */
+  --fst-text-5xl: 2.5rem;     /* 40px — hero-числа                 */
+}
+
 /* ── Типографика ── */
 /* Заголовок страницы */
 .fst-page-h1 {
