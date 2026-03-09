@@ -62,16 +62,20 @@ found/
 
 | Маршрут | Файл | Назначение |
 |---------|------|-----------|
-| `/fst` | FstHub.vue | Хаб — все модули фонда |
+| `/fst` | FstLanding.vue | Лендинг (публичный) |
+| `/fst-hub` | FstHub.vue | Хаб — все модули фонда |
 | `/fst-committee` | FstCommittee.vue | AI-инвесткомитет (6 агентов) |
+| `/fst-protocol` | FstProtocol.vue | Протоколы заседаний ИК |
 | `/fst-deal` | FstDeal.vue | Сделка: SPV, транши, Term Sheet, финмодель |
 | `/fst-portfolio` | FstPortfolio.vue | Портфель: светофор, датчики, AI-отчёты |
 | `/fst-execution` | FstExecution.vue | Исполнение: Kanban, KPI, действия фонда |
 | `/fst-twin` | FstDigitalTwin.vue | ЦД компании: симуляция tick-engine |
 | `/fst-fund` | FstFundTwin.vue | ЦД фонда: NAV, IRR, субфонды |
-| `/fst-director` | FstDirector.vue | Обучение директора + каталог агентов |
-| `/onto` | OntologySpace.vue | Онтология БПЛА (~1100 концептов) |
-| `/spaces` | Spaces.vue | Каталог всех агентов платформы |
+| `/fst-sourcing` | FstSourcing.vue | AI Deal Sourcing |
+| `/fst-transparency` | FstTransparency.vue | Публичная витрина фонда |
+| `/fst-administration` | FstAdministration.vue | Бэк-офис фонда |
+| `/fst-terminal` | FstTerminal.vue | Claude Code CLI (WebSocket TTY) |
+| `/fst-dev-guide` | FstDevGuide.vue | Путь обучения VentureOS |
 
 ---
 

@@ -84,6 +84,9 @@ function getWsUrl(mode = 'auto') {
 }
 
 onMounted(async () => {
+  // Full-bleed mode: hide footer, remove padding (same pattern as committee-page)
+  document.documentElement.classList.add('terminal-page')
+
   themeObserver = new MutationObserver(() => {
     isDark.value = document.documentElement.classList.contains('app-dark')
   })
@@ -98,11 +101,12 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  document.documentElement.classList.remove('terminal-page')
   if (themeObserver) themeObserver.disconnect()
   if (heartbeatTimer) clearInterval(heartbeatTimer)
   if (reconnectTimer) clearTimeout(reconnectTimer)
   if (ws.value) ws.value.close(1000, 'User navigated away')
-  if (terminal.value) terminal.value.dispose()
+  try { terminal.value?.dispose() } catch { /* addon not yet loaded */ }
   window.removeEventListener('resize', handleResize)
 })
 
@@ -191,10 +195,16 @@ function connectWebSocket(mode = 'auto') {
         }
       } else if (message.type === 'exit') {
         terminal.value.writeln('')
-        terminal.value.writeln(`\x1b[33mClaude завершился с кодом ${message.code}\x1b[0m`)
+        // SIGHUP (129) = navigated away / tab closed — not a crash
+        const exitMsg = message.code === 129
+          ? 'Сессия приостановлена'
+          : message.code === 0
+            ? 'Сессия завершена'
+            : `Claude завершился с кодом ${message.code}`
+        terminal.value.writeln(`\x1b[33m${exitMsg}\x1b[0m`)
         terminal.value.writeln('\x1b[90mНажмите «Продолжить» чтобы возобновить или «Новая» для новой сессии\x1b[0m')
         isConnected.value = false
-        statusText.value = 'Завершён'
+        statusText.value = message.code === 129 ? 'Приостановлен' : 'Завершён'
         clientId.value = null
         localStorage.removeItem(`claude_clientId_${workspaceId.value}`)
         stopHeartbeat()
@@ -456,11 +466,9 @@ function startSession(mode) {
 .fst-terminal-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 60px);
+  height: 100%;
   background: var(--surface-ground);
-  border-radius: 12px;
   overflow: hidden;
-  margin: -1.5rem;
 }
 
 .terminal-toolbar {
@@ -569,7 +577,22 @@ function startSession(mode) {
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {
-  .help-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .fst-terminal-page {
+    height: 100%;
+  }
+
+  .toolbar-title {
+    display: none;
+  }
+
+  .terminal-toolbar {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .terminal-container {
+    padding: 2px;
+  }
+
   .help-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 </style>

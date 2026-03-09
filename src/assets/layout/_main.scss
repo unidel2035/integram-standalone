@@ -112,3 +112,47 @@ html.committee-page .layout-main > * {
 html.committee-page .layout-footer {
     display: none;
 }
+
+/* =====================================================
+   Terminal page — full-bleed mode (no footer, no scroll)
+   Applied via html.terminal-page class from FstTerminal.vue
+   ===================================================== */
+html.terminal-page,
+html.terminal-page body {
+    overflow: hidden;
+    height: 100%;
+}
+
+html.terminal-page .layout-wrapper {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+html.terminal-page .layout-main-container {
+    padding: 4rem 0 0 0;
+    min-height: unset;
+    height: unset;
+    flex: 1 1 0;
+    overflow: hidden;
+    justify-content: flex-start;
+}
+
+html.terminal-page .layout-main {
+    height: 100%;
+    overflow: hidden;
+    padding: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+html.terminal-page .layout-main > * {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+html.terminal-page .layout-footer {
+    display: none;
+}
