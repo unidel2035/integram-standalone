@@ -98,6 +98,28 @@ export const SPEED_PROFILES = {
   },
 }
 
+// ── Режимы мышления агентов ───────────────────────────────────────────────────
+//
+// fast  — System 1 (быстро, интуитивно, короткий ответ)
+// slow  — System 2 (Chain-of-Thought, развёрнутые шаги рассуждения)
+
+export const THINKING_MODES = {
+  fast: { maxTokens: 400,  temperature: 0.8, chainOfThought: false },
+  slow: { maxTokens: 1200, temperature: 0.4, chainOfThought: true  },
+}
+
+/**
+ * Определяет режим мышления агента для данного типа задачи.
+ * Chairman, dialectic, devil в CHALLENGE — всегда slow.
+ * SYNTHESIS-фаза — всегда slow.
+ */
+export function resolveThinkingMode(agentId, argType) {
+  if (argType === 'SYNTHESIS') return 'slow'
+  if (agentId === 'chairman' || agentId === 'dialectic') return 'slow'
+  if (agentId === 'devil' && argType === 'CHALLENGE') return 'slow'
+  return 'fast'
+}
+
 // ── Матрица оптимальных моделей по роли агента ───────────────────────────────
 // Определяет предпочтение модели исходя из типа задачи агента:
 //   OPENING = первичная позиция (развёрнутая, аналитическая)
@@ -153,6 +175,27 @@ export const AGENT_MODEL_MATRIX = {
     COUNTER:   { fast: 'polza/qwen/qwen-turbo',              balanced: 'polza/qwen/qwen-turbo',              quality: 'polza/qwen/qwen-turbo' },
     SYNTHESIS: { fast: 'polza/qwen/qwen-turbo',              balanced: 'polza/google/gemini-2.5-flash-lite', quality: 'deepseek-chat' },
     default:   { fast: 'polza/qwen/qwen-turbo',              balanced: 'polza/qwen/qwen-turbo',              quality: 'polza/google/gemini-2.5-flash-lite' },
+  },
+  // Председатель: всегда лучшая модель — синтез всех позиций
+  chairman: {
+    SYNTHESIS: { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'deepseek-chat',                      quality: 'polza/anthropic/claude-sonnet-4.6' },
+    default:   { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'deepseek-chat',                      quality: 'polza/anthropic/claude-sonnet-4.6' },
+  },
+  // Диалектик: поиск синтеза противоречий — логика + нюансы
+  dialectic: {
+    CHALLENGE: { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'deepseek-chat',                      quality: 'deepseek-chat' },
+    SYNTHESIS: { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'deepseek-chat',                      quality: 'deepseek-chat' },
+    default:   { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'deepseek-chat',                      quality: 'deepseek-chat' },
+  },
+  // Аналитик фаундера: NLP-паттерны и психологический профиль
+  founder: {
+    OPENING:   { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'polza/google/gemini-2.5-flash-lite', quality: 'deepseek-chat' },
+    default:   { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'polza/google/gemini-2.5-flash-lite', quality: 'deepseek-chat' },
+  },
+  // Аналитик динамики: временные ряды и экстраполяция
+  temporal: {
+    OPENING:   { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'polza/google/gemini-2.5-flash-lite', quality: 'deepseek-chat' },
+    default:   { fast: 'polza/google/gemini-2.5-flash-lite', balanced: 'polza/google/gemini-2.5-flash-lite', quality: 'deepseek-chat' },
   },
 }
 

@@ -14,11 +14,11 @@
  *     {"action": "publish", "text": "...", "dimension": "...", "confidence": 0.0-1.0, "stance": "APPROVE|DEFER|REJECT"}
  */
 
-import { resolveModel, SPEED_PROFILES } from './fstCommitteeModelOrchestrator.js'
+import { resolveModel, SPEED_PROFILES, resolveThinkingMode, THINKING_MODES } from './fstCommitteeModelOrchestrator.js'
 import { getCurrentUserId } from '@/services/aiTokenService.js'
 import {
   getToolsForAgent, formatToolsForPrompt,
-  execCalcIrr, execCalcNpv, execMonteCarlo, execPowerScore, execBayesian,
+  execCalcIrr, execCalcNpv, execMonteCarlo, execPowerScore, execBayesian, execAnalyzeTimeseries,
 } from './AgentToolRegistry.js'
 
 const API_BASE      = ''
@@ -121,6 +121,74 @@ web_search для волатильности аналогов.`,
 Специализация: Nash Equilibrium, Shapley Value, механизмы стимулов.
 Порядок: read_room → exec_code(Shapley расчёт) → query_data → publish.
 exec_code для точных математических расчётов теории игр.`,
+
+  chairman: `Ты Председатель инвесткомитета ФСТ НТИ — мета-агент финального синтеза.
+Твоя роль: взвесить все позиции коллег и вынести итоговый вердикт. Ты не выражаешь личное мнение — ты синтезируешь.
+
+Порядок работы:
+1. read_room(30) — прочитай все аргументы сессии
+2. read_context — получи агрегированные позиции агентов и противоречия
+3. exec_code — вычисли взвешенный балл: tech+monte_carlo=0.25, finance+real_options+bayesian=0.30, portfolio+market_timing+power_score=0.20, risk+game_theory=0.15, devil+dialectic=0.10
+4. search_precedents — найди аналогичные решения в базе
+5. publish — структурированный вердикт
+
+Формат публикации text (строго):
+"ВЕРДИКТ: [APPROVE|DEFER|REJECT|CONDITIONAL_APPROVE]
+
+Основание: [2-3 предложения с ключевыми аргументами]
+
+Ключевые условия: [если CONDITIONAL — конкретные требования с метриками и сроками]
+
+Главный риск: [одна фраза]
+
+Следующий шаг для инвестора: [конкретное действие]"`,
+
+  dialectic: `Ты Диалектик инвесткомитета ФСТ НТИ — аналитик противоречий.
+Твоя роль: не занимать позицию, а находить путь к синтезу противоречивых мнений.
+
+Порядок работы:
+1. read_room(20) — прочитай все аргументы
+2. read_context — получи список обнаруженных противоречий
+3. exec_code — найди пары агентов с противоположными stance (APPROVE vs REJECT)
+4. publish — для каждого ключевого противоречия предложи синтез
+
+Формат каждого противоречия в аргументе:
+"Противоречие [измерение]: [агент A] утверждает [тезис]. [агент B] утверждает [антитезис].
+Синтез: [конкретное условие сделки — метрика: порог, срок]"
+
+Всегда завершай конкретными условиями с числами и дедлайнами.`,
+
+  founder: `Ты Аналитик команды инвесткомитета ФСТ НТИ.
+Специализация: оценка фаундера по текстовым сигналам. Результат — набор сигналов, не диагноз.
+
+Порядок работы:
+1. query_data(founderBio, founderPitchText, founderLinkedIn, teamStrength) — данные команды
+2. analyze_founder_text — NLP-анализ текста фаундера
+3. web_search("[имя фаундера] [компания] достижения") — публичный трек-рекорд
+4. memory_search(команда фаундер) — прецеденты из базы знаний
+5. read_room — контекст дебатов
+6. publish — оценка по 5 критериям
+
+Оценивай сигналы (каждый 0-10): Конкретность/Stressоустойчивость/Честность/Экспертиза/Трек-рекорд.
+Красные флаги: избегание конкретики, завышенные обещания без данных, неудобные вопросы без ответа.
+Зелёные сигналы: конкретные метрики роста, признание ошибок с выводами, знание конкурентов.
+Обязательно: упомяни что оценка носит вспомогательный характер.`,
+
+  temporal: `Ты Аналитик динамики инвесткомитета ФСТ НТИ.
+Специализация: временные ряды ключевых метрик — скорость роста, ускорение, прогноз, аномалии.
+
+Порядок работы:
+1. query_data(metricsHistory) — история метрик по периодам
+2. analyze_timeseries — анализ каждой важной метрики (revenue, teamSize, trl)
+3. exec_code — вычисли производную роста и сравни периоды
+4. read_room — учти позиции коллег
+5. publish — динамические выводы с прогнозом
+
+Ключевые вопросы:
+- Рост ускоряется или замедляется?
+- Какой прогноз на 12 месяцев при текущем тренде?
+- Есть ли аномальные скачки (признак манипуляции или внешнего шока)?
+Если metricsHistory пустая — скажи об этом явно и оцени по косвенным признакам из описания.`,
 }
 
 // ── Форматирование проекта ────────────────────────────────────────────────────
@@ -263,6 +331,81 @@ async function executeTool(toolName, args = {}, context) {
         break
       }
 
+      case 'analyze_timeseries': {
+        const metric  = args.metric  || 'metric'
+        const values  = args.values  || []
+        const periods = args.periods || []
+        result = execAnalyzeTimeseries(metric, values, periods)
+        // Если агент не передал values — ищем в metricsHistory проекта
+        if (result.error && project.metricsHistory?.[metric]) {
+          const mh = project.metricsHistory[metric]
+          result = execAnalyzeTimeseries(metric, mh.values || [], mh.periods || [])
+        }
+        break
+      }
+
+      case 'analyze_founder_text': {
+        const founderText = (args.text || project.founderPitchText || project.founderBio || '').slice(0, 1500)
+        if (!founderText.trim()) {
+          result = { error: 'Нет текста фаундера. Добавьте поля founderBio или founderPitchText в карточку проекта.' }
+          break
+        }
+        try {
+          const analyzePrompt = `Проанализируй текст фаундера стартапа по 4 осям.
+Верни ТОЛЬКО JSON без пояснений:
+{
+  "sentiment": 0.0-1.0,
+  "specificity": 0.0-1.0,
+  "hedging_ratio": 0.0-1.0,
+  "bold_claims": ["необоснованные заявления"],
+  "positive_signals": ["конкретные факты и достижения"]
+}
+Текст: "${founderText}"`
+          const resp = await fetch(`${API_BASE}/api/ai-tokens/chat`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal:  AbortSignal.timeout(15_000),
+            body: JSON.stringify({
+              modelId:     'deepseek/deepseek-chat',
+              prompt:      analyzePrompt,
+              application: 'FounderTextAnalysis',
+              maxTokens:   350,
+              temperature: 0.2,
+            }),
+          })
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+          const d = await resp.json()
+          const raw = d.response || d.text || d.content || ''
+          const jsonStr = (() => {
+            let depth = 0, start = -1
+            for (let i = 0; i < raw.length; i++) {
+              if (raw[i] === '{') { if (depth++ === 0) start = i }
+              else if (raw[i] === '}' && --depth === 0 && start !== -1) return raw.slice(start, i + 1)
+            }
+            return null
+          })()
+          result = jsonStr ? JSON.parse(jsonStr) : { error: 'parse failed', raw: raw.slice(0, 200) }
+          result._disclaimer = 'Результат носит вспомогательный характер. Оценка основана на текстовых сигналах, не на личном суждении.'
+        } catch (e) {
+          result = { error: `analyze_founder_text: ${e.message}` }
+        }
+        break
+      }
+
+      case 'read_context': {
+        const sc = session._sharedContext || {}
+        result = {
+          stances:        sc.stances        || {},
+          conditions:     (sc.conditions    || []).map(c => c.text || String(c)),
+          contradictions: (sc.contradictions|| []).map(c =>
+            `${c.thesis?.agentId} (APPROVE) vs ${c.antithesis?.agentId} (REJECT): ${c.dimension} (острота ${((c.severity||0)*100).toFixed(0)}%)`
+          ),
+          round:          sc.round          || 0,
+          agentCount:     Object.keys(sc.stances || {}).length,
+        }
+        break
+      }
+
       default:
         result = { error: `Неизвестный инструмент: ${toolName}` }
     }
@@ -306,11 +449,15 @@ function parseLoopResponse(raw) {
 
 // ── LLM вызов ────────────────────────────────────────────────────────────────
 
-async function callLLM({ agent, argType, conversationHistory, systemPrompt, modelId, projectBrief }) {
+async function callLLM({ agent, argType, conversationHistory, systemPrompt, modelId, projectBrief, thinkingMode = 'fast' }) {
   const ddToken   = await getLoopToken()
   const authToken = ddToken || getLocalAuth()
-  // Без токена backend использует virtual_token — вызов всё равно пройдёт
-  console.debug(`[AgentLoop] callLLM: agent=${agent.id} model=${modelId} auth=${authToken ? authToken.slice(0,8)+'...' : 'virtual'}`)
+  console.debug(`[AgentLoop] callLLM: agent=${agent.id} model=${modelId} mode=${thinkingMode} auth=${authToken ? authToken.slice(0,8)+'...' : 'virtual'}`)
+
+  // Параметры зависят от режима мышления
+  const modeOpts = THINKING_MODES[thinkingMode] || THINKING_MODES.fast
+  const maxTok   = modeOpts.maxTokens
+  const temp     = modeOpts.temperature
 
   // Строим user-prompt из истории
   const historyStr = conversationHistory.length
@@ -333,8 +480,8 @@ async function callLLM({ agent, argType, conversationHistory, systemPrompt, mode
         prompt:       historyStr,
         systemPrompt,
         application:  'FstCommitteeAgentLoop',
-        maxTokens:    MAX_TOKENS,
-        temperature:  TEMPERATURE,
+        maxTokens:    maxTok,
+        temperature:  temp,
       }),
     })
     clearTimeout(tid)
@@ -371,6 +518,8 @@ export async function runAgentLoop(agent, argType, room, project, targetArg = nu
   const toolsDesc = formatToolsForPrompt(tools)
   const modelId   = resolveModel(agent.id, argType, opts.speedProfile || 'balanced', opts.modelOverrides || {})
   const projectBrief = formatProjectBrief(project)
+  // Режим мышления: явный opts.thinkingMode > авторазрешение по агенту/фазе
+  const thinkingMode = opts.thinkingMode || resolveThinkingMode(agent.id, argType)
 
   const VALID_DIMS    = ['trl','mrl','sovereignty','market','finance','risk','team']
   const VALID_STANCES = ['APPROVE','DEFER','REJECT']
@@ -387,6 +536,13 @@ export async function runAgentLoop(agent, argType, room, project, targetArg = nu
     SYNTHESIS: 'СИНТЕЗ — итоговая взвешенная позиция с учётом всех аргументов.',
     CLOSING:   'ФИНАЛЬНОЕ СЛОВО — подведи итог и назови свой вердикт.',
   }
+
+  // CoT-суффикс для режима slow (System 2 — явные шаги рассуждения)
+  const COT_SUFFIX = THINKING_MODES[thinkingMode]?.chainOfThought ? `
+
+РЕЖИМ ГЛУБОКОГО АНАЛИЗА (Chain-of-Thought):
+При публикации финального аргумента добавь поле "reasoning" со шагами:
+{"action": "publish", "reasoning": {"step1_facts": "...", "step2_assumptions": "...", "step3_counter": "...", "step4_resolution": "...", "step5_conclusion": "..."}, "text": "...", "dimension": "...", "confidence": 0.0-1.0, "stance": "..."}` : ''
 
   const systemPrompt = `${baseRole}
 
@@ -410,7 +566,7 @@ ${toolsDesc}
 — Сначала вызови хотя бы 1 инструмент (данные или зал), потом публикуй
 — Максимум 5 tool_call итераций, потом обязательно publish
 — Аргумент должен содержать конкретные числа из инструментов
-— confidence отражает уверенность в своём вердикте`
+— confidence отражает уверенность в своём вердикте${COT_SUFFIX}`
 
   // ── История диалога в loop ────────────────────────────────────────────────
   const history = []
@@ -431,6 +587,7 @@ ${toolsDesc}
       systemPrompt,
       modelId,
       projectBrief,
+      thinkingMode,
     })
 
     if (!rawResponse) {
@@ -496,7 +653,7 @@ ${toolsDesc}
 Ответь ТОЛЬКО JSON без лишнего текста:
 {"action":"publish","text":"твой аргумент с конкретными числами","dimension":"${agent.focus?.[0]||'finance'}","confidence":0.7,"stance":"APPROVE"}`,
     })
-    const forceRaw = await callLLM({ agent, argType, conversationHistory: history, systemPrompt, modelId, projectBrief })
+    const forceRaw = await callLLM({ agent, argType, conversationHistory: history, systemPrompt, modelId, projectBrief, thinkingMode })
     if (forceRaw) {
       const fp = parseLoopResponse(forceRaw)
       if (fp?.type === 'publish' && fp.text) {

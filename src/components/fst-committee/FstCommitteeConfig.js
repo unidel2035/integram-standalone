@@ -12,6 +12,7 @@ export const PHASES = {
   LOADING:          { id: 'LOADING',          label: 'Анализ документов',   icon: 'pi pi-file-search',    color: '#42a5f5' },
   PRIMARY_POSITIONS:{ id: 'PRIMARY_POSITIONS',label: 'Первичные позиции',   icon: 'pi pi-comments',       color: '#7e57c2' },
   CROSS_DEBATE:     { id: 'CROSS_DEBATE',     label: 'Дебаты',              icon: 'pi pi-bolt',           color: '#ef5350' },
+  REFLECTION:       { id: 'REFLECTION',       label: 'Рефлексия',           icon: 'pi pi-eye',            color: '#8d6e63' },
   FINAL_POSITIONS:  { id: 'FINAL_POSITIONS',  label: 'Финальные позиции',   icon: 'pi pi-flag',           color: '#ff7043' },
   VOTING:           { id: 'VOTING',           label: 'Голосование',         icon: 'pi pi-check-square',   color: '#26c6da' },
   SYNTHESIS:        { id: 'SYNTHESIS',        label: 'Синтез решения',      icon: 'pi pi-chart-bar',      color: '#66bb6a' },
@@ -26,6 +27,7 @@ export const PHASES = {
 
 export const PHASE_ORDER = [
   'IDLE', 'LOADING', 'PRIMARY_POSITIONS', 'CROSS_DEBATE',
+  'REFLECTION',
   'FINAL_POSITIONS', 'VOTING', 'SYNTHESIS', 'HUMAN_APPROVAL',
   'NODE_NEGOTIATION', 'NODE_VOTING', 'CONCLUDED',
 ]
@@ -33,6 +35,7 @@ export const PHASE_ORDER = [
 // Phases shown in progress bar for each round
 export const ROUND_PHASE_ORDER = [
   'LOADING', 'PRIMARY_POSITIONS', 'CROSS_DEBATE',
+  'REFLECTION',
   'FINAL_POSITIONS', 'VOTING', 'SYNTHESIS', 'HUMAN_APPROVAL',
 ]
 

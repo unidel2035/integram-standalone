@@ -112,6 +112,30 @@ export const TOOL_SCHEMAS = {
     },
   },
 
+  analyze_timeseries: {
+    name: 'analyze_timeseries',
+    description: 'Анализирует временной ряд метрики: тренд, средний темп роста, ускорение/замедление, прогноз на 12 месяцев, аномальные значения (3σ).',
+    params: {
+      metric:  'string — название метрики (revenue, teamSize, trl и т.д.)',
+      values:  'array of number — значения по периодам',
+      periods: 'array of string — метки периодов (Q1-24, Q2-24 …)',
+    },
+  },
+
+  analyze_founder_text: {
+    name: 'analyze_founder_text',
+    description: 'NLP-анализ текста фаундера: тональность, конкретность, уклончивость, необоснованные заявления, позитивные сигналы. Возвращает структурированные сигналы — не диагноз.',
+    params: {
+      text: 'string — текст из bio, pitch, LinkedIn или транскрипта',
+    },
+  },
+
+  read_context: {
+    name: 'read_context',
+    description: 'Получить агрегированный контекст сессии: позиции агентов (stances), предложенные условия сделки, найденные противоречия, номер раунда.',
+    params: {},
+  },
+
 }
 
 // ── Набор инструментов по роли агента ────────────────────────────────────────
@@ -132,6 +156,11 @@ export const AGENT_TOOLS = {
   bayesian:      [...BASE_TOOLS, 'calc_bayesian', 'search_precedents'],
   power_score:   [...BASE_TOOLS, 'calc_power_score'],
   game_theory:   [...BASE_TOOLS],
+  // Новые агенты
+  chairman:      [...BASE_TOOLS, 'search_precedents', 'read_context'],
+  dialectic:     [...BASE_TOOLS, 'read_context'],
+  founder:       [...BASE_TOOLS, 'analyze_founder_text'],
+  temporal:      [...BASE_TOOLS, 'analyze_timeseries'],
 }
 
 export function getToolsForAgent(agentId) {
@@ -205,5 +234,51 @@ export function execBayesian(prior, evidence_up = [], evidence_down = []) {
     posterior_pct: +(p * 100).toFixed(1),
     delta_pct: +((p - prior) * 100).toFixed(1),
     interpretation: p > 0.5 ? 'Положительный прогноз' : p > 0.25 ? 'Сомнительный' : 'Негативный прогноз',
+  }
+}
+
+/**
+ * Анализ временного ряда: тренд, темп роста, прогноз, аномалии.
+ */
+export function execAnalyzeTimeseries(metric, values, periods = []) {
+  if (!Array.isArray(values) || values.length < 2) {
+    return { error: 'Требуется минимум 2 точки данных' }
+  }
+
+  const diffs = values.slice(1).map((v, i) => v - values[i])
+  const growthRates = values.slice(1).map((v, i) =>
+    values[i] !== 0 ? (v - values[i]) / Math.abs(values[i]) : null
+  ).filter(x => x !== null)
+
+  const avgGrowth = growthRates.length
+    ? growthRates.reduce((s, x) => s + x, 0) / growthRates.length
+    : 0
+
+  // Ускорение: последний diff > первый diff
+  const isAccelerating = diffs.length > 1 && diffs[diffs.length - 1] > diffs[0]
+
+  // Линейная экстраполяция: средний прирост × 4 периода
+  const avgDiff = diffs.reduce((s, x) => s + x, 0) / diffs.length
+  const projected = values[values.length - 1] + avgDiff * 4
+
+  // Аномалии: abs(diff - mean) > 3σ
+  const meanDiff = avgDiff
+  const variance = diffs.reduce((s, x) => s + (x - meanDiff) ** 2, 0) / diffs.length
+  const std = Math.sqrt(variance)
+  const anomalyPeriods = diffs
+    .map((d, i) => Math.abs(d - meanDiff) > 3 * std ? (periods[i + 1] || `период ${i + 1}`) : null)
+    .filter(Boolean)
+
+  return {
+    metric,
+    dataPoints:     values.length,
+    current:        values[values.length - 1],
+    first:          values[0],
+    avgGrowthRate:  (avgGrowth * 100).toFixed(1) + '%',
+    trend:          isAccelerating ? 'ускоряется' : 'замедляется',
+    projected12m:   +projected.toFixed(2),
+    anomalyPeriods,
+    periods,
+    values,
   }
 }
