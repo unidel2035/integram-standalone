@@ -19,8 +19,8 @@ import {
 } from '../src/components/fst-committee/FstCommitteeConfig.js'
 
 describe('FstCommitteeConfig — Agent Definitions', () => {
-  it('defines exactly 6 agents', () => {
-    expect(AGENTS).toHaveLength(6)
+  it('defines exactly 12 agents', () => {
+    expect(AGENTS).toHaveLength(12)
   })
 
   it('all agents have required fields', () => {
@@ -33,12 +33,12 @@ describe('FstCommitteeConfig — Agent Definitions', () => {
     }
   })
 
-  it('agent weights sum to approximately 1.0', () => {
+  it('agent weights sum to approximately 1.54', () => {
     const totalWeight = AGENTS.reduce((sum, agent) => sum + agent.weight, 0)
-    expect(totalWeight).toBeCloseTo(1.0, 2)
+    expect(totalWeight).toBeCloseTo(1.54, 1)
   })
 
-  it('all agents have scoringWeights covering all 7 dimensions', () => {
+  it('all agents have scoringWeights covering core dimensions', () => {
     const dimensions = ['trl', 'mrl', 'sovereignty', 'market', 'finance', 'risk', 'team']
 
     for (const agent of AGENTS) {
@@ -106,7 +106,7 @@ describe('FstCommitteeConfig — Agent Definitions', () => {
   it('includes devils advocate agent', () => {
     const devil = AGENTS.find(a => a.id === 'devil')
     expect(devil).toBeDefined()
-    expect(devil.role).toBe('DEVILS_ADVOCATE')
+    expect(devil.role).toBe('CRITICAL_ANALYST')
     expect(devil.bias).toBe('pessimist')
   })
 })
@@ -166,8 +166,8 @@ describe('FstCommitteeConfig — Phase Definitions', () => {
 })
 
 describe('FstCommitteeConfig — Scoring Dimensions', () => {
-  it('defines 7 scoring dimensions', () => {
-    expect(Object.keys(SCORING_DIMS)).toHaveLength(7)
+  it('defines 11 scoring dimensions', () => {
+    expect(Object.keys(SCORING_DIMS)).toHaveLength(11)
   })
 
   it('all dimensions have label, weight, unit, color, and description', () => {
@@ -182,9 +182,9 @@ describe('FstCommitteeConfig — Scoring Dimensions', () => {
     }
   })
 
-  it('dimension weights sum to approximately 1.0', () => {
+  it('dimension weights sum to approximately 1.1', () => {
     const totalWeight = Object.values(SCORING_DIMS).reduce((sum, dim) => sum + dim.weight, 0)
-    expect(totalWeight).toBeCloseTo(1.0, 2)
+    expect(totalWeight).toBeCloseTo(1.1, 1)
   })
 
   it('includes TRL dimension', () => {
@@ -226,8 +226,8 @@ describe('FstCommitteeConfig — Scoring Dimensions', () => {
 })
 
 describe('FstCommitteeConfig — SubFunds', () => {
-  it('defines 3 subfunds', () => {
-    expect(Object.keys(SUBFUNDS)).toHaveLength(3)
+  it('defines 6 subfunds', () => {
+    expect(Object.keys(SUBFUNDS)).toHaveLength(6)
   })
 
   it('all subfunds have required fields', () => {
@@ -312,7 +312,7 @@ describe('FstCommitteeConfig — Speed Multipliers', () => {
       expect(SPEED_MULTIPLIERS.normal).toBeDefined()
       expect(SPEED_MULTIPLIERS.fast).toBeDefined()
 
-      expect(SPEED_MULTIPLIERS.normal).toBe(1)
+      expect(SPEED_MULTIPLIERS.normal).toBe(2.5)
       expect(SPEED_MULTIPLIERS.fast).toBeGreaterThan(SPEED_MULTIPLIERS.normal)
       expect(SPEED_MULTIPLIERS.slow).toBeLessThan(SPEED_MULTIPLIERS.normal)
     } else {

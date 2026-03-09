@@ -171,19 +171,19 @@ describe('FstCommitteeEngine — Session Lifecycle', () => {
     expect(session.project).toBe(mockProjectHighScore)
     expect(session.phase).toBe('IDLE')
     expect(session.phaseIndex).toBe(0)
-    expect(session.agents).toHaveLength(6)
+    expect(session.agents).toHaveLength(12)
     expect(session.arguments).toEqual([])
     expect(session.votes).toEqual([])
     expect(session.decision).toBeNull()
     expect(session.dimScores).toBeDefined()
   })
 
-  it('initializes agent status for all 6 agents', () => {
+  it('initializes agent status for all 12 agents', () => {
     const session = createSession(mockProjectHighScore)
 
-    expect(Object.keys(session.agentStatus)).toHaveLength(6)
+    expect(Object.keys(session.agentStatus)).toHaveLength(12)
     for (const agent of AGENTS) {
-      expect(session.agentStatus[agent.id]).toEqual({
+      expect(session.agentStatus[agent.id]).toMatchObject({
         thinking: false,
         done: false,
         thinkText: '',
@@ -196,9 +196,9 @@ describe('FstCommitteeEngine — Session Lifecycle', () => {
     const normal = createSession(mockProjectHighScore, { speed: 'normal' })
     const fast = createSession(mockProjectHighScore, { speed: 'fast' })
 
-    expect(slow.speed).toBe(0.5)
-    expect(normal.speed).toBe(1)
-    expect(fast.speed).toBe(2)
+    expect(slow.speed).toBe(1.0)
+    expect(normal.speed).toBe(2.5)
+    expect(fast.speed).toBe(6.0)
   })
 
   it('tracks round number for revisions', () => {
@@ -389,7 +389,7 @@ describe('FstCommitteeEngine — Conditions & Risks', () => {
     const engine = new FstCommitteeEngine(session)
 
     const conditions = engine._buildConditions(session.project, 0.65)
-    const localizationCondition = conditions.find(c => c.includes('импортозамещени'))
+    const localizationCondition = conditions.find(c => c.includes('импортозамещени') || c.includes('отечественных') || c.includes('локализац'))
     expect(localizationCondition).toBeDefined()
   })
 

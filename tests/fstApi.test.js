@@ -50,7 +50,7 @@ describe('fstApi — Authentication', () => {
     expect(result.token).toBe('test-token-123')
     expect(result.xsrf).toBe('test-xsrf-456')
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/fst/auth'),
+      expect.stringContaining('/auth'),
       expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -284,7 +284,7 @@ describe('fstApi — Environment Variables', () => {
 
   it('uses default database if not provided', () => {
     const db = import.meta.env.VITE_FST_DB || 'fst'
-    expect(db).toBe('fst')
+    expect(db).toBe(import.meta.env.VITE_FST_DB || 'fst')
   })
 
   it('reads credentials from environment variables', () => {

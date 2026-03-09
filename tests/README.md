@@ -2,198 +2,106 @@
 
 Comprehensive testing for the AI Investment Committee platform.
 
-## Test Structure
-
-```
-tests/
-├── FstCommitteeEngine.test.js    # Unit: AI committee state machine
-├── FstCommitteeConfig.test.js    # Unit: Agent & phase configuration
-├── fstApi.test.js                # Unit: Integram API client (mocked)
-├── financialCalculations.test.js # Unit: NPV, IRR, DPP, MIRR, PI
-└── fstApi.integration.test.js    # Integration: Real Integram API
-
-e2e/
-├── fst-committee.spec.js         # E2E: AI committee simulation
-├── fst-deal.spec.js              # E2E: Deal management
-├── fst-portfolio.spec.js         # E2E: Portfolio monitoring
-├── fst-twin.spec.js              # E2E: Company digital twin
-└── fst-fund.spec.js              # E2E: Fund NAV/IRR tracking
-```
+**Last verified:** 2026-03-09 — 350 tests passed, 4 skipped (integration)
 
 ## Running Tests
 
-### Unit Tests
 ```bash
-# Run all unit tests
-npm run test:unit
-
-# Run specific test file
-npx vitest run tests/FstCommitteeEngine.test.js
-
-# Watch mode
-npx vitest watch
+npx vitest run tests/           # all unit tests
+npx vitest run tests/FILE.js    # specific file
+npx vitest watch                # watch mode
+INTEGRATION_TESTS=true npx vitest run tests/fstApi.integration.test.js  # integration
+npx playwright test             # e2e (requires: npx playwright install)
 ```
 
-### Coverage
-```bash
-# Generate coverage report
-npm run test:coverage
+## Test Files (12 files, 354 tests)
 
-# View HTML report
-open coverage/index.html
-```
+| File | Tests | Description |
+|------|-------|-------------|
+| FstCommitteeConfig.test.js | 48 | Agent/phase/dim/subfund configuration integrity |
+| fstCommitteeOntology.test.js | 74 | UAV ontology, sovereignty scoring |
+| financialCalculations.test.js | 35 | NPV, IRR, DPP, MIRR, PI calculations |
+| FstCommitteeEngine.test.js | 34 | Committee state machine, scoring, decisions |
+| AgentToolRegistry.test.js | 34 | MCP tool registration and discovery |
+| fstCommitteeModelOrchestrator.test.js | 25 | Multi-model LLM routing |
+| DebateRoom.test.js | 25 | Multi-agent debate system |
+| fstApi.test.js | 23 | Integram API client (mocked fetch) |
+| votingModes.test.js | 22 | Formula/hybrid/LLM voting strategies |
+| AgentLoop.test.js | 15 | Agentic reasoning loop lifecycle |
+| fstLearningService.test.js | 15 | Director training service |
+| fstApi.integration.test.js | 4 | Real Integram API (skipped in CI) |
 
-**Coverage Targets:**
-- Statements: 70%
-- Branches: 60%
-- Functions: 70%
-- Lines: 70%
+## Test Summaries
 
-### E2E Tests
-```bash
-# Install Playwright browsers (first time only)
-npx playwright install
+### FstCommitteeConfig.test.js — 48 tests
+Validates static configuration integrity for the AI investment committee.
+- **12 agents** with unique IDs, weights ~1.54, scoring weights per agent ~1.0
+- **Agent roles**: tech, finance, sovereignty, risk, portfolio, devil (CRITICAL_ANALYST), market, legal, ip, ops, esg, bayesian
+- **11 scoring dimensions** (trl, mrl, sovereignty, market, finance, risk, team, moat, timing, powerlaw, bayesian_p) — weights ~1.1
+- **6 subfunds**: BAS, Robot, ME, Space, Energy, AI
+- **Speed multipliers**: slow=1, normal=2.5, fast=6
+- **Data integrity**: hex colors, PrimeIcons, verdicts (APPROVE/DEFER/REJECT)
 
-# Run E2E tests
-npm run test:e2e
+### FstCommitteeEngine.test.js — 34 tests
+Tests the committee session state machine, scoring, and decision pipeline.
+- **Scoring**: normalizeScore 0-1, computeDimScores across 12 agents
+- **Verdicts**: APPROVE >= 72%, DEFER 50-71%, REJECT < 50%
+- **Session lifecycle**: createSession, phase transitions, agentStatus with pipeline sub-states
+- **Human decisions**: humanDecide() + recommendations generation
+- **Revision**: startRevision, applyRevision, buildNextRoundSession
+- **Conditions & risks**: auto-generated for low MRL/TRL/localization/team, randomized templates
 
-# Run in UI mode (interactive)
-npx playwright test --ui
+### financialCalculations.test.js — 35 tests
+Validates financial calculations for deal analysis.
+- **NPV**: positive/negative/zero discount rate, empty cash flows
+- **IRR**: Newton-Raphson for standard, high-return, marginal (~3.5%), exact cases
+- **DPP**: payback scenarios including never-pays-back (null)
+- **MIRR**: different reinvestment rates, negative future value
+- **PI**: profitable (>1), break-even (~1), unprofitable (<1)
+- **Integration**: NPV@IRR=0, PI>1 iff NPV>0, known UAV project
 
-# Run specific browser
-npx playwright test --project=chromium
+### fstApi.test.js — 23 tests
+Tests Integram API client with mocked fetch.
+- **Auth**: POST /auth, token/xsrf extraction and caching
+- **Reference data**: SUBFUNDS, STAGES, STATUSES type mappings
+- **CRUD**: URL construction, headers, body encoding
+- **Environment**: VITE_FST_DB=fst-api (proxy slug), VITE_FST_SERVER
 
-# Debug mode
-npx playwright test --debug
-```
+### fstCommitteeOntology.test.js — 74 tests
+UAV domain knowledge and sovereignty scoring.
+- Ontology concept lookup and category mapping
+- Sovereignty classification and component criticality
+- Import dependency analysis for UAV subsystems
 
-### Integration Tests
-```bash
-# Integration tests are skipped by default
-# To run against real Integram server:
-INTEGRATION_TESTS=true npm run test:unit
-```
+### fstCommitteeModelOrchestrator.test.js — 25 tests
+Multi-model LLM routing and orchestration.
+- Speed profiles (fast/balanced/quality), model assignment per role
+- Fallback chains, error handling, token budget management
 
-## Test Coverage
+### AgentToolRegistry.test.js — 34 tests
+MCP tool registration and discovery for AI agents.
+- Registration/deregistration lifecycle, search by name/category
+- Permission validation, access control, schema validation
 
-### FstCommitteeEngine.test.js
-- ✅ Scoring functions (normalizeScore, computeDimScores)
-- ✅ Verdict logic (APPROVE >= 0.72, DEFER 0.50-0.71, REJECT < 0.50)
-- ✅ Session lifecycle and state transitions
-- ✅ Event system and callbacks
-- ✅ Human approval workflow
-- ✅ Recommendations and revision system
-- ✅ Conditions and risk identification
+### AgentLoop.test.js — 15 tests
+Agentic reasoning loop lifecycle.
+- Init/termination conditions, step execution, state accumulation
+- Max iteration guards, error recovery, graceful degradation
 
-### FstCommitteeConfig.test.js
-- ✅ All 6 agents defined with correct weights
-- ✅ Agent scoring weights sum to 1.0
-- ✅ Phase definitions and order
-- ✅ 7 scoring dimensions configuration
-- ✅ SubFunds (БАС, Робот, МЭ) metadata
-- ✅ Data integrity (colors, icons, formats)
+### votingModes.test.js — 22 tests
+Three voting strategies: formula (weighted aggregation), hybrid (formula + LLM override), LLM (structured output parsing).
 
-### fstApi.test.js
-- ✅ Authentication with Integram (mocked)
-- ✅ Token caching behavior
-- ✅ Reference data (SUBFUNDS, STAGES, STATUSES)
-- ✅ Type IDs and field mappings
-- ✅ URL construction for CRUD operations
+### DebateRoom.test.js — 25 tests
+Multi-agent debate: argument submission (SUPPORT/CHALLENGE/COUNTER), turn management, quality scoring, consensus detection.
 
-### financialCalculations.test.js
-- ✅ NPV calculation with known values
-- ✅ IRR using Newton-Raphson method
-- ✅ DPP (Discounted Payback Period)
-- ✅ MIRR (Modified IRR)
-- ✅ PI (Profitability Index)
-- ✅ NPV profile over time
-- ✅ Integration tests (NPV at IRR = 0, PI/NPV relationship)
+### fstLearningService.test.js — 15 tests
+Director training: lesson catalog, progress tracking, quiz generation, knowledge gap identification.
 
-### E2E Tests (Playwright)
-- ✅ Page load and title verification
-- ✅ Key UI elements presence
-- ✅ Basic user interactions
-- ✅ Console error detection
-- ✅ Smoke tests for all FST routes
+### fstApi.integration.test.js — 4 tests (skipped)
+Real Integram API tests. Requires `INTEGRATION_TESTS=true`.
 
 ## Known Issues
 
-1. **Vue dev warnings** — Allowed in E2E tests, filtered from failures
-2. **ResizeObserver errors** — Browser API timing, filtered from failures
-3. **Integration tests** — Skipped in CI, run manually with env flag
-4. **Playwright browser download** — ~1GB, cached in CI
-
-## CI/CD Integration
-
-Tests run automatically on:
-- Pull requests to `main`, `dev`, `feat/**`
-- Pushes to `dev`, `feat/**`
-
-### CI Workflow
-1. **Lint** — ESLint (continue on error)
-2. **Unit Tests** — Vitest with coverage
-3. **Build** — Vite production build
-4. **E2E Tests** — Playwright (PR only)
-5. **Quality Gate** — Aggregate results
-
-### Artifacts
-- Coverage reports (7 days)
-- Build dist/ (7 days)
-- Playwright HTML report (7 days)
-
-## Debugging Tests
-
-### Unit Test Failures
-```bash
-# Run single test in debug mode
-npx vitest --inspect-brk tests/FstCommitteeEngine.test.js
-
-# Use Chrome DevTools
-chrome://inspect
-```
-
-### E2E Test Failures
-```bash
-# Run with headed browser (see UI)
-npx playwright test --headed
-
-# Generate trace for failed tests
-npx playwright test --trace on
-
-# View trace
-npx playwright show-trace trace.zip
-```
-
-## Adding New Tests
-
-### Unit Test Template
-```javascript
-import { describe, it, expect } from 'vitest'
-import { myFunction } from '../src/path/to/module.js'
-
-describe('MyModule', () => {
-  it('does something', () => {
-    const result = myFunction(input)
-    expect(result).toBe(expectedOutput)
-  })
-})
-```
-
-### E2E Test Template
-```javascript
-import { test, expect } from '@playwright/test'
-
-test.describe('MyPage', () => {
-  test('loads correctly', async ({ page }) => {
-    await page.goto('/my-route')
-    await expect(page).toHaveTitle(/My Page/)
-  })
-})
-```
-
-## Resources
-
-- [Vitest Documentation](https://vitest.dev/)
-- [Playwright Documentation](https://playwright.dev/)
-- [Vue Test Utils](https://test-utils.vuejs.org/)
-- [Testing Best Practices](https://github.com/goldbergyoni/javascript-testing-best-practices)
+1. **Localization conditions** — Use randomized phrasing templates; tests match multiple keywords
+2. **Integration tests** — Skipped by default, run manually
+3. **Vue dev warnings / ResizeObserver errors** — Filtered in E2E tests

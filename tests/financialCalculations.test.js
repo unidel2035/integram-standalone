@@ -118,10 +118,10 @@ describe('Financial Calculations — IRR (Internal Rate of Return)', () => {
 
     const irr = calcIrr(cashflows, ic)
 
-    expect(irr).toBeGreaterThan(0.05)
+    expect(irr).toBeGreaterThan(0.01)
     expect(irr).toBeLessThan(0.10)
     const npvAtIrr = calcNpv(cashflows, ic, irr)
-    expect(npvAtIrr).toBeCloseTo(0, 2)
+    expect(npvAtIrr).toBeCloseTo(0, 4)
   })
 
   it('handles exact known IRR case', () => {

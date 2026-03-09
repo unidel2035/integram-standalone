@@ -88,6 +88,7 @@ AI:        DeepSeek (default) / Claude / GPT-4o / YandexGPT
 Knowledge: KAG (hybrid vector+graph), ~1100 UAV концептов в kval
 Protocol:  MCP (60+ Integram-инструментов для агентов)
 Infra:     systemd (НЕ pm2), SOCKS5:9050, Telegram Bot
+Deploy:    sshpass -p 'k7x21PZkGFMR' ssh root@185.252.147.243
 ```
 
 ---
@@ -139,7 +140,7 @@ XSRF:     в теле запроса, НЕ в заголовке
 
 ## Правила разработки
 
-1. **Ветка:** `dev` (основная), PR → `dev`
+1. **Ветка:** `main` (основная)
 2. **Сервисы:** systemd, НЕ pm2
    - `sudo systemctl restart dronedoc-backend`
    - `sudo systemctl restart dronedoc-frontend`
