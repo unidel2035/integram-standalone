@@ -4167,5 +4167,20 @@ onUnmounted(() => {
   .fst-setup-subfunds {
     flex-wrap: wrap;
   }
+
+  /* Settings compact on mobile */
+  .fst-setup-col--settings {
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  .fst-speed-row { gap: 6px; }
+  .fst-speed-btn { padding: 6px 10px; font-size: 0.8rem; }
+  .fst-ai-mode-label { font-size: 0.75rem; }
+  .fst-policy-toggle { font-size: 0.8rem; }
+  .fst-model-panel { font-size: 0.8rem; }
+  .fst-agent-model-grid { grid-template-columns: 1fr !important; }
+  /* New project dialog — full width on mobile */
+  .p-dialog { width: 95vw !important; max-width: 95vw !important; }
+  .fst-newproj-grid { grid-template-columns: 1fr !important; }
 }
 </style>

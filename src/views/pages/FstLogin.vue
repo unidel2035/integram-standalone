@@ -111,4 +111,17 @@ async function doLogin() {
 }
 .fst-field :deep(.p-password) { width: 100%; }
 .fst-login-btn { width: 100%; margin-top: 0.5rem; }
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .fst-login-wrap { padding: 1rem; }
+  .fst-login-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 2rem 1.5rem;
+    border-radius: 12px;
+  }
+  .fst-logo-icon { font-size: 2rem; }
+  .fst-logo-title { font-size: 1.2rem; }
+}
 </style>

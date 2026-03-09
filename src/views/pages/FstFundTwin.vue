@@ -529,10 +529,22 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {
-  .fft-kpi-bar { flex-wrap: wrap; gap: 8px; }
-  .fft-top-kpi { flex-wrap: wrap; gap: 8px; }
+  .fft-kpi-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
+  .fft-top-kpi { gap: 2px; }
+  .fft-top-kpi-val { font-size: 14px; }
+  .fft-top-kpi-label { font-size: 9px; }
   .fft-main { grid-template-columns: 1fr !important; }
   .fft-subfunds { grid-template-columns: 1fr !important; }
   .fft-sidebar, .fft-detail { max-height: 40vh; overflow-y: auto; border: none; border-bottom: 1px solid var(--surface-border); }
+  .fft-col { border-right: none; border-bottom: 1px solid var(--surface-border); }
+  .fft-col:last-child { border-bottom: none; }
+  /* Health matrix: larger cells on mobile */
+  .fft-health-matrix { gap: 6px; }
+  .fft-hm-cell { min-width: 56px; padding: 6px 10px; }
+  .fft-hm-val { font-size: 16px; }
+  /* Header buttons: icon-only */
+  .fft-header-right .p-button .p-button-label { display: none; }
+  .fft-header-right .p-button .p-button-icon { margin-right: 0; }
+  .fft-header-right { gap: 6px; }
 }
 </style>
