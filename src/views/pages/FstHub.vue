@@ -72,24 +72,31 @@
       <div class="hub-modules">
         <div v-for="group in modulesByPhase" :key="group.phase" class="hub-phase-group">
           <div class="hub-phase-label">{{ group.phase }}</div>
-          <div
+          <FeatureHint
             v-for="mod in group.items"
             :key="mod.id"
-            class="hub-mod"
-            :style="{ '--mc': mod.color }"
-            @click="go(mod.path)"
+            :id="mod.id === 'twin' ? 'hub-digital-twin' : ''"
+            :title="mod.id === 'twin' ? 'Цифровой двойник компании' : ''"
+            :description="mod.id === 'twin' ? 'Запустите симуляцию жизненного цикла портфельной компании — tick-engine моделирует развитие в реальном времени' : ''"
+            position="bottom"
           >
-            <div class="hub-mod-left">
-              <div class="hub-mod-icon"><i :class="mod.icon"></i></div>
+            <div
+              class="hub-mod"
+              :style="{ '--mc': mod.color }"
+              @click="go(mod.path)"
+            >
+              <div class="hub-mod-left">
+                <div class="hub-mod-icon"><i :class="mod.icon"></i></div>
+              </div>
+              <div class="hub-mod-body">
+                <div class="hub-mod-name">{{ mod.name }}</div>
+              </div>
+              <div class="hub-mod-right">
+                <span class="hub-mod-status" :class="'hub-mod-status--' + mod.status">{{ mod.status }}</span>
+                <i class="pi pi-chevron-right hub-mod-arrow"></i>
+              </div>
             </div>
-            <div class="hub-mod-body">
-              <div class="hub-mod-name">{{ mod.name }}</div>
-            </div>
-            <div class="hub-mod-right">
-              <span class="hub-mod-status" :class="'hub-mod-status--' + mod.status">{{ mod.status }}</span>
-              <i class="pi pi-chevron-right hub-mod-arrow"></i>
-            </div>
-          </div>
+          </FeatureHint>
         </div>
       </div>
     </div>
@@ -112,6 +119,7 @@ import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
 import SandboxBanner from '@/components/SandboxBanner.vue'
 import PracticeScenariosDialog from '@/components/PracticeScenariosDialog.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
+import FeatureHint from '@/components/FeatureHint.vue'
 
 const router = useRouter()
 const sandboxStore = useSandboxStore()

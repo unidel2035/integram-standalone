@@ -870,18 +870,25 @@
           </div>
 
           <div class="fst-setup-launch">
-            <Button
-              label="Запустить инвесткомитет"
-              icon="pi pi-play"
-              severity="success"
-              size="large"
-              :disabled="!selectedProjectId"
-              @click="startSession"
-              class="fst-launch-btn"
-              data-action="run-investment-committee"
-              data-description="Запускает голосование 6 AI-агентов по инвестиционной заявке"
-              data-agent-hint="Требует выбранную компанию. После нажатия ждать 30–60 сек до получения результата."
-            />
+            <FeatureHint
+              id="committee-run-btn"
+              title="Запуск AI-инвесткомитета"
+              description="Нажмите, чтобы запустить голосование 6 AI-агентов по выбранной заявке"
+              position="bottom"
+            >
+              <Button
+                label="Запустить инвесткомитет"
+                icon="pi pi-play"
+                severity="success"
+                size="large"
+                :disabled="!selectedProjectId"
+                @click="startSession"
+                class="fst-launch-btn"
+                data-action="run-investment-committee"
+                data-description="Запускает голосование 6 AI-агентов по инвестиционной заявке"
+                data-agent-hint="Требует выбранную компанию. После нажатия ждать 30–60 сек до получения результата."
+              />
+            </FeatureHint>
             <div v-if="!selectedProjectId" class="fst-launch-hint">Выберите проект слева</div>
           </div>
         </div>
@@ -1037,6 +1044,7 @@ import ScenarioNodesPanel from '@/components/fst-committee/ScenarioNodesPanel.vu
 import LinksGraphViz from '@/components/links/LinksGraphViz.vue'
 import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import FeatureHint from '@/components/FeatureHint.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
 import { logger } from '@/utils/logger'

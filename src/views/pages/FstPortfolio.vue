@@ -67,14 +67,23 @@
 
         <!-- Grid of cards -->
         <div class="fsp-cards-grid">
-          <div v-for="c in filteredCompanies" :key="c.id"
+          <div v-for="(c, cIdx) in filteredCompanies" :key="c.id"
             class="fsp-card" :class="{ selected: selectedCompany?.id === c.id, ['risk-' + c.riskLevel]: true }"
             @click="selectCompany(c)">
             <div class="fsp-card-header">
               <div class="fsp-card-name">{{ c.name }}</div>
               <div class="fsp-card-badges">
                 <Tag :value="c.subfund" style="font-size:10px;background:#1565c0;color:#fff" />
-                <div class="fsp-traffic-light" :style="{ background: riskColor(c.riskLevel) }" :title="riskLabel(c.riskLevel)"></div>
+                <FeatureHint
+                  v-if="cIdx === 0"
+                  id="portfolio-traffic-light"
+                  title="Светофор рисков"
+                  description="Цвет индикатора показывает уровень риска компании: зелёный — норма, жёлтый — требует внимания, красный — критический риск"
+                  position="bottom"
+                >
+                  <div class="fsp-traffic-light" :style="{ background: riskColor(c.riskLevel) }" :title="riskLabel(c.riskLevel)"></div>
+                </FeatureHint>
+                <div v-else class="fsp-traffic-light" :style="{ background: riskColor(c.riskLevel) }" :title="riskLabel(c.riskLevel)"></div>
               </div>
             </div>
             <div class="fsp-card-stage">{{ c.stage }} · {{ c.inn }}</div>
@@ -260,6 +269,7 @@ import { useToast } from 'primevue/usetoast'
 import { getPortfolio, getProjects } from '@/services/fstApi'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import FeatureHint from '@/components/FeatureHint.vue'
 import EntityLinksPanel from '@/components/links/EntityLinksPanel.vue'
 
 const toast = useToast()

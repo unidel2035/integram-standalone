@@ -124,6 +124,12 @@
         </div>
 
         <!-- SPV Parameters -->
+        <FeatureHint
+          id="deal-spv-tab"
+          title="Структура SPV"
+          description="SPV (Special Purpose Vehicle) — отдельное юридическое лицо для изоляции рисков сделки. Заполните название, юрисдикцию и управляющего"
+          position="bottom"
+        >
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
             <i class="pi pi-sitemap" style="color:#ab47bc"></i> Структура SPV
@@ -149,6 +155,7 @@
             </div>
           </div>
         </div>
+        </FeatureHint>
       </div>
 
       <!-- Col 2: Tranches & KPIs -->
@@ -345,6 +352,12 @@
     </div>
 
     <!-- Финансовая модель компании (full-width) -->
+    <FeatureHint
+      id="finmodel-hyperformula"
+      title="Финансовая модель (HyperFormula)"
+      description="Интерактивная таблица с формулами для расчёта NPV, IRR и MOIC. Изменяйте входные данные — результаты пересчитываются автоматически"
+      position="bottom"
+    >
     <div class="fst-deal-finmodel-section">
       <div class="fst-deal-finmodel-header" @click="finmodelExpanded = !finmodelExpanded">
         <div class="fst-deal-finmodel-title">
@@ -365,14 +378,13 @@
       <div v-if="finmodelExpanded" class="fst-deal-finmodel-body">
         <div class="fst-fm-info">
           <i class="pi pi-info-circle" style="color:#42a5f5;font-size:12px"></i>
-          Заполните данные о компании. Формулы рассчитываются автоматически.
-          Результаты NPV / MOIC / IRR обновляют AI-оценку сделки в правой панели.
+          Финансовая модель загружается из базы ai2o.ru/fm. Подключите модель по ID или создайте новую.
+          Результаты NPV / MOIC / IRR обновляют AI-оценку сделки.
         </div>
-        <TemplateRenderer
-          :template="fstStartupTemplate"
-          :actorName="deal.companyName"
-          actorColor="#ffa726"
-          @values-changed="onFinmodelChange"
+        <FstFinModelBlock
+          v-model:modelId="finModelId"
+          database="fm"
+          server="ai2o.ru"
         />
         <div class="fst-fm-actions">
           <Button label="Применить к AI-оценке" icon="pi pi-refresh" size="small" severity="success"
@@ -404,12 +416,12 @@ import Checkbox from 'primevue/checkbox'
 import DatePicker from 'primevue/datepicker'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
-import TemplateRenderer from '@/components/finmodel/TemplateRenderer.vue'
+import FstFinModelBlock from '@/components/finmodel/FstFinModelBlock.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import FeatureHint from '@/components/FeatureHint.vue'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
-import fstStartupTemplate from '@/templates/finmodel/fst_startup.json'
 
 const toast = useToast()
 
@@ -660,6 +672,7 @@ async function refreshAI() {
 // ─── FinModel integration ────────────────────────────────────────────────────
 const finmodelExpanded = ref(true)
 const finmodelValues = ref({})
+const finModelId = ref('')
 
 function onFinmodelChange(vals) {
   finmodelValues.value = { ...vals }

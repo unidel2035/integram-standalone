@@ -15,6 +15,12 @@
     </div>
 
     <!-- Kanban воронка -->
+    <FeatureHint
+      id="dealflow-kanban"
+      title="Kanban-воронка сделок"
+      description="Карточки заявок распределены по стадиям инвестиционного процесса. Кликните на карточку, чтобы посмотреть детали и перевести на следующий этап"
+      position="bottom"
+    >
     <div class="df-kanban">
       <div v-for="col in columns" :key="col.id" class="df-column">
         <div class="df-col-header" :style="{ borderTop: `3px solid ${col.color}` }">
@@ -45,6 +51,7 @@
         </div>
       </div>
     </div>
+    </FeatureHint>
 
     <!-- Детальная панель -->
     <div v-if="selectedDeal" class="df-detail-overlay" @click.self="selectedDeal = null">
@@ -126,6 +133,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import FeatureHint from '@/components/FeatureHint.vue'
 
 const columns = [
   { id: 'new',       label: 'Новые',            color: '#90a4ae' },
