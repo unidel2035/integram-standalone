@@ -4,3 +4,15 @@ dist/
 .env.local
 *.log
 .DS_Store
+
+# Playwright MCP screenshots
+.playwright-mcp/
+
+# Mobile audit screenshots
+mobile-audit/
+
+# Test results
+test-results/
+
+# E2E test specs (ad-hoc)
+e2e/verify-*.spec.js
