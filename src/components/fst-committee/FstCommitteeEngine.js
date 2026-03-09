@@ -638,6 +638,13 @@ export class FstCommitteeEngine {
       this.emit('ContradictionsFound', { count: contradictions.length, contradictions })
     }
 
+    // 3a. Revision cycle: попытка разрешить высокосеверные противоречия
+    const hasHighSev = contradictions.some(c => (c.severity || 0) > 0.75)
+    if (hasHighSev && this.session.useAgentLoop) {
+      await this._runRevisionCycle()
+      if (!this._running) return
+    }
+
     // 4. dialectic синтезирует противоречия (если есть что синтезировать)
     const dialecticAgent = this.session.agents.find(a => a.id === 'dialectic')
     if (dialecticAgent && contradictions.length > 0) {
@@ -1028,6 +1035,93 @@ export class FstCommitteeEngine {
 
     // Передаём в стандартный humanDecide
     this.humanDecide(type === 'APPROVE' ? 'APPROVE' : 'REJECT', reason)
+  }
+
+  // ── Revision Cycle: разрешение высокосеверных противоречий ────────
+  //
+  // Запускается автоматически из _phaseReflection если есть
+  // противоречия с severity > 0.75.  Максимум maxRounds итераций.
+  async _runRevisionCycle(maxRounds = 2) {
+    if (this._revisionCycleRunning) return
+    const contradictions = this.session._contradictions || []
+    const highSev = contradictions.filter(c => (c.severity || 0) > 0.75)
+    if (highSev.length === 0) return
+
+    this._revisionCycleRunning = true
+    const originalHighCount = highSev.length
+    this.session._revisionRounds = 0
+
+    try {
+      for (let round = 0; round < maxRounds; round++) {
+        if (!this._running) break
+        this.session._revisionRounds = round + 1
+        this.emit('RevisionCycleStart', { round: round + 1, highSevCount: highSev.length })
+
+        // Находим агентов с противоположными позициями по первому высоко-северному противоречию
+        const topContradiction = highSev[0]
+        const approvers = this.session.arguments
+          .filter(a => a.stance === 'APPROVE' && a.agentId)
+          .map(a => a.agentId)
+        const rejecters = this.session.arguments
+          .filter(a => a.stance === 'REJECT' && a.agentId)
+          .map(a => a.agentId)
+
+        const agentsToRun = []
+        if (approvers.length > 0) {
+          const agentId = approvers[Math.floor(Math.random() * approvers.length)]
+          const agent = this.session.agents.find(a => a.id === agentId)
+          if (agent) agentsToRun.push(agent)
+        }
+        if (rejecters.length > 0) {
+          const agentId = rejecters[Math.floor(Math.random() * rejecters.length)]
+          const agent = this.session.agents.find(a => a.id === agentId)
+          if (agent && !agentsToRun.find(a => a.id === agentId)) agentsToRun.push(agent)
+        }
+
+        // Запускаем COUNTER-аргументы от обеих сторон
+        for (const agent of agentsToRun) {
+          if (!this._running) break
+          this._setAgentStatus(agent.id, { thinking: true, thinkText: 'Уточняю позицию (доработка)...' })
+          try {
+            const targetArg = this.session.arguments.find(
+              a => a.agentId === (agentsToRun.find(x => x.id !== agent.id)?.id)
+            ) || null
+            const counterArg = await runAgentLoop(
+              agent, 'COUNTER', this.room, this.session.project,
+              targetArg, this.session,
+              { speedProfile: this.session.speedProfile },
+              (p) => this.emit('AgentLoopProgress', p)
+            )
+            if (counterArg) {
+              const annotated = annotateArg(counterArg, this.session.arguments)
+              this.session.arguments.push(annotated)
+              this.room.publish(agent.id, annotated)
+              this.emit('ArgumentRaised', { agentId: agent.id, argument: annotated })
+            }
+          } catch (e) {
+            console.warn('[RevisionCycle] agent error:', e.message)
+          }
+          this._setAgentStatus(agent.id, { thinking: false })
+        }
+
+        // Пересчитываем противоречия
+        const newContradictions = detectContradictions(this.session.arguments)
+        this.session._contradictions = newContradictions
+        this._updateSharedContext()
+
+        const newHighSev = newContradictions.filter(c => (c.severity || 0) > 0.75)
+        this.emit('RevisionCycleEnd', {
+          round: round + 1,
+          contradictionsBefore: highSev.length,
+          contradictionsAfter: newHighSev.length,
+        })
+
+        // Ранний выход если снизили кол-во высокосеверных противоречий на 50%+
+        if (newHighSev.length < originalHighCount * 0.5) break
+      }
+    } finally {
+      this._revisionCycleRunning = false
+    }
   }
 
   // Called by UI when human approves/rejects/defers

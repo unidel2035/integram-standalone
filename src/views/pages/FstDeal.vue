@@ -352,12 +352,7 @@
     </div>
 
     <!-- Финансовая модель компании (full-width) -->
-    <FeatureHint
-      id="finmodel-hyperformula"
-      title="Финансовая модель (HyperFormula)"
-      description="Интерактивная таблица с формулами для расчёта NPV, IRR и MOIC. Изменяйте входные данные — результаты пересчитываются автоматически"
-      position="bottom"
-    >
+    <FeatureHint id="finmodel-hyperformula" title="Финансовая модель" description="Интерактивная финансовая модель из базы ai2o.ru/fm. Расчёт NPV, IRR, MOIC." position="bottom">
     <div class="fst-deal-finmodel-section">
       <div class="fst-deal-finmodel-header" @click="finmodelExpanded = !finmodelExpanded">
         <div class="fst-deal-finmodel-title">
@@ -391,7 +386,7 @@
             @click="applyFinmodelToAI" />
         </div>
       </div>
-    </div>
+    </div></FeatureHint>
 
     <!-- Page Tutor -->
     <PageTutorButton pageId="fst-deal" :getContext="getPageContext" />

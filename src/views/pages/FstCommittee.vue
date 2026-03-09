@@ -1113,6 +1113,8 @@ const _newProjDefaults = () => ({
   amountMln: null, projectedIRR: null, marketSizeMln: null,
   trl: null, mrl: null, sovereigntyScore: null,
   teamStrength: null, employees: null, patents: null,
+  metricsHistory: '',
+  _showHistory: false,
 })
 const newProj = ref(_newProjDefaults())
 
@@ -1136,6 +1138,7 @@ async function submitNewProject() {
       teamStrength: d.teamStrength || 0,
       employees: d.employees || 0,
       patents: d.patents || 0,
+      metricsHistory: d.metricsHistory ? (() => { try { return JSON.parse(d.metricsHistory) } catch { return undefined } })() : undefined,
     })
     const newId = result?.obj || result?.id
     // Reload projects and auto-select
@@ -1550,6 +1553,8 @@ function handleEvent(event) {
     session.value.votes          = [...s.votes]
     session.value.dimScores      = { ...s.dimScores }
     session.value.positionDeltas = s.positionDeltas ? { ...s.positionDeltas } : null
+    session.value._contradictions = s._contradictions ? [...s._contradictions] : null
+    session.value._sharedContext  = s._sharedContext  ? { ...s._sharedContext, contradictions: s._sharedContext.contradictions ? [...s._sharedContext.contradictions] : [] } : null
     session.value._tick          = (session.value._tick || 0) + 1
   }
 
@@ -1608,6 +1613,10 @@ function handleEvent(event) {
 
   if (event.type === 'ConditionalDecisionReady') {
     session.value.conditionalDecision = event
+  }
+
+  if (event.type === 'ContradictionsFound') {
+    session.value._contradictions = event.contradictions ? [...event.contradictions] : []
   }
 
   if (event.type === 'SessionConcluded') {
@@ -2304,6 +2313,156 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+.fst-approval-extra-btns {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.fst-approval-weights-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 6px;
+  user-select: none;
+}
+.fst-weights-score {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.fst-approval-weights {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 8px;
+  background: var(--p-surface-card);
+  border-radius: 6px;
+  border: 1px solid var(--p-content-border-color);
+}
+.fst-weight-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fst-weight-label {
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color);
+  width: 80px;
+  flex-shrink: 0;
+}
+.fst-weight-slider { flex: 1 }
+.fst-weight-val {
+  font-size: 0.78rem;
+  font-weight: 600;
+  width: 28px;
+  text-align: right;
+}
+.fst-veto-panel,
+.fst-revision-panel {
+  background: color-mix(in srgb, #ef5350 6%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, #ef5350 30%, transparent);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.fst-revision-panel {
+  background: color-mix(in srgb, #ffa726 6%, var(--p-surface-card));
+  border-color: color-mix(in srgb, #ffa726 30%, transparent);
+}
+.fst-veto-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.fst-revision-textarea {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 4px;
+  resize: vertical;
+}
+
+/* ── Contradiction Map ────────────────────── */
+.fst-rs--contradictions {
+  background: color-mix(in srgb, #ef5350 5%, transparent);
+  border-color: color-mix(in srgb, #ef5350 25%, transparent);
+}
+.fst-badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef5350;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  margin-left: 6px;
+}
+.fst-contradiction-map {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.fst-cmap-item {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+.fst-cmap-agents {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.fst-cmap-agent {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.fst-cmap-avatar { font-size: 1rem; }
+.fst-cmap-name { font-size: 0.78rem; color: var(--p-text-muted-color); }
+.fst-cmap-vs {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ef5350;
+  padding: 1px 5px;
+}
+.fst-cmap-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.fst-cmap-thesis {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, #4caf50 80%, var(--p-text-color));
+  margin-bottom: 2px;
+}
+.fst-cmap-antithesis {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, #ef5350 80%, var(--p-text-color));
+  margin-bottom: 2px;
+}
+.fst-cmap-synthesis {
+  font-size: 0.78rem;
+  color: #4caf50;
+  margin-top: 4px;
+  padding: 4px 6px;
+  background: color-mix(in srgb, #4caf50 8%, var(--p-surface-card));
+  border-radius: 4px;
 }
 
 /* ── Agents Bar ───────────────────────────── */

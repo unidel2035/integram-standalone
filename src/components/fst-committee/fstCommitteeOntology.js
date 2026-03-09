@@ -746,6 +746,14 @@ export function exportToKagEntities(session) {
       `Аргументов: ${session.arguments?.length}`,
       `Профиль моделей: ${session.speedProfile || 'fast'}`,
       ...(modelSummary ? [`Модели агентов: ${modelSummary}`] : []),
+      ...(session.qualityMetrics ? [
+        `Качество сессии — охват оспаривания: ${(session.qualityMetrics.challengeCoverage * 100).toFixed(0)}%`,
+        `Консенсус агентов: ${(session.qualityMetrics.agentConsensus * 100).toFixed(0)}%`,
+        `Разрешено противоречий: ${(session.qualityMetrics.contradictionResolution * 100).toFixed(0)}%`,
+        `Использование инструментов: ${(session.qualityMetrics.toolUsageRate * 100).toFixed(0)}%`,
+        `Тулмин средний: ${(session.qualityMetrics.avgToulminStrength || 0).toFixed(2)}`,
+        `Покрытие: temporal=${session.qualityMetrics.temporalCoverage}, founder=${session.qualityMetrics.founderCoverage}`,
+      ] : []),
     ],
   })
 
