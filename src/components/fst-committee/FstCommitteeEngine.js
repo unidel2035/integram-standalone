@@ -195,6 +195,15 @@ export function createSession(project, options = {}) {
     concludedAt: null,
     _kagContext: '',           // KAG context (loaded at start)
     _ontologyContext: '',      // Issue #162: БПЛА ontology context
+    _contradictions: [],       // найденные противоречия (заполняется в REFLECTION)
+    _sharedContext: {          // агрегированный контекст для инструмента read_context
+      stances: {},
+      conditions: [],
+      contradictions: [],
+      round: 1,
+    },
+    chairmanSynthesis: null,   // нарративный вердикт ChairmanAgent
+    qualityMetrics: null,      // метрики качества сессии
     nodeProposals:  [],   // предложения агентов по нодам
     contractNodes:  [],   // финальные согласованные ноды
     nodeVotes:      [],   // протокол голосования по нодам
@@ -421,6 +430,8 @@ export class FstCommitteeEngine {
       if (!this._running) return
       await this._phaseCrossDebate()
       if (!this._running) return
+      await this._phaseReflection()
+      if (!this._running) return
       await this._phaseFinalPositions()
       if (!this._running) return
       await this._phaseVoting()
@@ -567,6 +578,87 @@ export class FstCommitteeEngine {
       }
     }
 
+    await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+  }
+
+  // ── Phase: REFLECTION ─────────────────────────────────────
+  //
+  // Фаза рефлексии: после дебатов devil атакует неоспоренные аргументы,
+  // dialectic строит синтез противоречий. Обновляется _sharedContext.
+
+  async _phaseReflection() {
+    this._transitionPhase('REFLECTION')
+    this.room.setPhase('REFLECTION')
+    await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+
+    if (!this.session.useAgentLoop) {
+      // Без агентного лупа — только детекция противоречий
+      const contradictions = detectContradictions(this.session.arguments)
+      this.session._contradictions = contradictions
+      this._updateSharedContext()
+      if (contradictions.length) {
+        this.emit('ContradictionsFound', { count: contradictions.length, contradictions })
+      }
+      await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+      return
+    }
+
+    // 1. Находим 3 самых сильных неоспоренных аргумента
+    const unchallenged = this.room.getUnchallengedArgs(null)
+      .filter(a => (a.confidence || a.strength || 0) > 0.65)
+      .sort((a, b) => (b.confidence || b.strength || 0) - (a.confidence || a.strength || 0))
+      .slice(0, 3)
+
+    // 2. devil атакует каждый в режиме slow (CoT)
+    const devilAgent = this.session.agents.find(a => a.id === 'devil')
+    if (devilAgent && unchallenged.length > 0) {
+      this._setAgentStatus(devilAgent.id, { thinking: true, thinkText: 'Ищу уязвимые места...' })
+      for (const target of unchallenged) {
+        if (!this._running) break
+        const arg = await runAgentLoop(
+          devilAgent, 'CHALLENGE', this.room, this.session.project,
+          target, this.session,
+          { speedProfile: this.session.speedProfile, thinkingMode: 'slow' },
+          (p) => this.emit('AgentLoopProgress', p)
+        )
+        if (arg) {
+          const annotated = annotateArg(arg, this.session.arguments)
+          this.session.arguments.push(annotated)
+          this.room.publish(devilAgent.id, annotated)
+          this.emit('ReflectionChallenge', { arg: annotated, targetId: target.id })
+        }
+      }
+      this._setAgentStatus(devilAgent.id, { thinking: false, thinkText: '' })
+    }
+
+    // 3. Обнаружение противоречий
+    const contradictions = detectContradictions(this.session.arguments)
+    this.session._contradictions = contradictions
+    if (contradictions.length) {
+      this.emit('ContradictionsFound', { count: contradictions.length, contradictions })
+    }
+
+    // 4. dialectic синтезирует противоречия (если есть что синтезировать)
+    const dialecticAgent = this.session.agents.find(a => a.id === 'dialectic')
+    if (dialecticAgent && contradictions.length > 0) {
+      this._setAgentStatus(dialecticAgent.id, { thinking: true, thinkText: 'Ищу синтез противоречий...' })
+      this._updateSharedContext()
+      const synthArg = await runAgentLoop(
+        dialecticAgent, 'SYNTHESIS', this.room, this.session.project,
+        null, this.session,
+        { speedProfile: this.session.speedProfile, thinkingMode: 'slow' },
+        (p) => this.emit('AgentLoopProgress', p)
+      )
+      if (synthArg) {
+        const annotated = annotateArg(synthArg, this.session.arguments)
+        this.session.arguments.push(annotated)
+        this.room.publish(dialecticAgent.id, annotated)
+        this.emit('DialecticSynthesis', { arg: annotated })
+      }
+      this._setAgentStatus(dialecticAgent.id, { thinking: false, thinkText: '' })
+    }
+
+    this._updateSharedContext()
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
   }
 
@@ -757,7 +849,7 @@ export class FstCommitteeEngine {
     this.session.decision = decision
 
     // ── ConditionalDecision: обогащаем вердикт противоречиями из дебатов ──
-    const contradictions = detectContradictions(this.session.arguments)
+    const contradictions = this.session._contradictions || detectContradictions(this.session.arguments)
     if (contradictions.length) {
       const derivedConditions = deriveConditionsFromContradictions(contradictions, this.session.project)
       this.session.conditionalDecision = assembleConditionalDecision({
@@ -771,8 +863,74 @@ export class FstCommitteeEngine {
 
     this.emit('DecisionFormed', { decision })
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+
+    // ── ChairmanAgent: финальный нарративный синтез (только в agentLoop-режиме) ──
+    if (this.session.useAgentLoop) {
+      const chairmanAgent = this.session.agents.find(a => a.id === 'chairman')
+      if (chairmanAgent) {
+        this._setAgentStatus(chairmanAgent.id, { thinking: true, thinkText: 'Синтезирую итоговый вердикт...' })
+        this._updateSharedContext()
+        const chairArg = await runAgentLoop(
+          chairmanAgent, 'SYNTHESIS', this.room, this.session.project,
+          null, this.session,
+          { speedProfile: this.session.speedProfile, thinkingMode: 'slow',
+            modelOverrides: { chairman: 'polza/anthropic/claude-sonnet-4.6' } },
+          (p) => this.emit('AgentLoopProgress', p)
+        ).catch(e => { console.warn('[Engine] ChairmanAgent error:', e.message); return null })
+        if (chairArg) {
+          this.session.chairmanSynthesis = chairArg
+          this.emit('ChairmanVerdictReady', { arg: chairArg })
+        }
+        this._setAgentStatus(chairmanAgent.id, { thinking: false, thinkText: '' })
+      }
+    }
+
+    // ── qualityMetrics — метрики качества сессии ──
+    this.session.qualityMetrics = this._computeQualityMetrics()
+    this.emit('QualityMetricsReady', { metrics: this.session.qualityMetrics })
+
     this.emit('DecisionPublished', { decision })
     await this.delay(TIMING.PHASE_TRANSITION_DELAY)
+  }
+
+  // Вычисляет метрики качества сессии
+  _computeQualityMetrics() {
+    const args = this.session.arguments || []
+    const challenged = new Set(args.filter(a => a.targetArgId).map(a => a.targetArgId))
+    const totalArgs = args.length || 1
+    const challengedCount = args.filter(a => challenged.has(a.id)).length
+
+    const stances = args.filter(a => a.stance).map(a => a.stance)
+    const stanceDist = { APPROVE: 0, DEFER: 0, REJECT: 0 }
+    for (const s of stances) stanceDist[s] = (stanceDist[s] || 0) + 1
+    const mean = stances.length ? Object.values(stanceDist).reduce((a, b) => a + b, 0) / 3 : 0
+    const variance = Object.values(stanceDist).reduce((s, v) => s + (v - mean) ** 2, 0) / 3
+    const agentConsensus = 1 - Math.min(1, Math.sqrt(variance) / (stances.length || 1))
+
+    const touStrengths = args.map(a => a.toulminStrength || 0.5)
+    const avgToulminStrength = touStrengths.reduce((s, v) => s + v, 0) / (touStrengths.length || 1)
+
+    const agentsWithTools = new Set(args.filter(a => a.toolsUsed?.length > 0).map(a => a.agentId))
+    const totalAgents = (this.session.agents || []).length || 1
+    const toolUsageRate = agentsWithTools.size / totalAgents
+
+    const contradictions = this.session._contradictions || []
+    const resolvedContradictions = contradictions.filter(c => c.status !== 'OPEN').length
+
+    return {
+      challengeCoverage:       +(challengedCount / totalArgs).toFixed(2),
+      agentConsensus:          +agentConsensus.toFixed(2),
+      avgToulminStrength:      +avgToulminStrength.toFixed(2),
+      toolUsageRate:           +toolUsageRate.toFixed(2),
+      contradictionResolution: contradictions.length
+        ? +(resolvedContradictions / contradictions.length).toFixed(2)
+        : 1,
+      temporalCoverage:  args.some(a => a.agentId === 'temporal'),
+      founderCoverage:   args.some(a => a.agentId === 'founder'),
+      chairmanCoverage:  args.some(a => a.agentId === 'chairman'),
+      dialecticCoverage: args.some(a => a.agentId === 'dialectic'),
+      totalArguments:    args.length,
+    }
   }
 
   // ── Phase: HUMAN_APPROVAL ─────────────────────────────────
@@ -781,6 +939,95 @@ export class FstCommitteeEngine {
     this._transitionPhase('HUMAN_APPROVAL')
     this.emit('HumanApprovalRequested', { decision: this.session.decision })
     // Engine waits here — human interaction is via humanDecide()
+  }
+
+  // Обновляет _sharedContext агрегированными данными сессии
+  _updateSharedContext() {
+    const args = this.session.arguments || []
+    const stances = {}
+    for (const a of args) {
+      if (a.stance && a.agentId) stances[a.agentId] = a.stance
+    }
+    const conditions = (this.session.conditionalDecision?.conditions || [])
+    const contradictions = this.session._contradictions || []
+    this.session._sharedContext = {
+      stances,
+      conditions,
+      contradictions,
+      round: this.session.roundNumber || 1,
+    }
+  }
+
+  // ── Расширенное взаимодействие с инвестором (Human Approval) ──────────────
+  //
+  // Типы действий:
+  //   APPROVE          — утвердить решение ИК
+  //   REJECT           — отклонить (с обоснованием)
+  //   VETO             — наложить вето (поверх вердикта агентов)
+  //   REQUEST_REVISION — вернуть на доработку с вопросом в DebateRoom
+  //   MODIFY_CONDITIONS — скорректировать условия сделки
+
+  async applyHumanDecision(humanAction) {
+    const { type, reason = '', modifiedConditions, customWeights } = humanAction
+
+    if (type === 'VETO') {
+      this.session.decision.recommendation = 'REJECTED_BY_HUMAN'
+      this.session.decision.humanVeto = { reason, ts: Date.now() }
+      this.emit('HumanVeto', { reason })
+      this._concludeSession('REJECT')
+      return
+    }
+
+    if (type === 'MODIFY_CONDITIONS' && modifiedConditions) {
+      if (this.session.decision) this.session.decision.conditions = modifiedConditions
+      if (this.session.conditionalDecision) this.session.conditionalDecision.conditions = modifiedConditions
+      this.emit('ConditionsModified', { conditions: modifiedConditions })
+    }
+
+    if (type === 'REQUEST_REVISION' && reason) {
+      // Добавляем вопрос инвестора в DebateRoom и возвращаемся к дебатам
+      this.room.publish('human_investor', {
+        type: 'QUESTION',
+        text: `[Запрос инвестора]: ${reason}`,
+        confidence: 1.0,
+        stance: null,
+      })
+      this._updateSharedContext()
+      this.emit('HumanRevisionRequested', { reason })
+      // Запускаем дополнительный раунд CROSS_DEBATE
+      if (this.session.useAgentLoop) {
+        this._transitionPhase('CROSS_DEBATE')
+        await this._phaseCrossDebate()
+        if (!this._running) return
+        await this._phaseReflection()
+        if (!this._running) return
+      }
+      // Пересчитываем синтез
+      await this._phaseSynthesis()
+      if (!this._running) return
+      await this._phaseHumanApproval()
+      return
+    }
+
+    if (customWeights && Object.keys(customWeights).length > 0) {
+      // Пересчёт агрегированного балла с пользовательскими весами
+      const reweighted = (this.session.agentScores || []).map(({ agent, score, verdict }) => ({
+        agent: { ...agent, weight: customWeights[agent.id] ?? agent.weight },
+        score,
+        verdict,
+      }))
+      if (reweighted.length > 0) {
+        const newAgg = aggregateScore(reweighted)
+        const newVerdict = scoreToVerdict(newAgg, this.session.icParams)
+        this.session.decision.aggregatedScore = Math.round(newAgg * 100)
+        this.session.decision.recommendation  = newVerdict
+        this.session.decision.customWeightsApplied = customWeights
+        this.emit('ScoreRecomputed', { aggregatedScore: Math.round(newAgg * 100), recommendation: newVerdict })
+      }
+    }
+
+    // Передаём в стандартный humanDecide
+    this.humanDecide(type === 'APPROVE' ? 'APPROVE' : 'REJECT', reason)
   }
 
   // Called by UI when human approves/rejects/defers
