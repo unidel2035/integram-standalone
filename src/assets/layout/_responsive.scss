@@ -141,17 +141,64 @@
             .layout-sidebar {
                 transform: translateX(0);
                 z-index: 1001;
+                width: 16rem !important;
+
+                // Force show labels in mobile overlay (override sidebar-collapsed)
+                .sidebar-search {
+                    opacity: 1 !important;
+                    pointer-events: auto !important;
+                }
+
+                // Override collapsed sidebar — show text labels
+                .layout-menuitem-text {
+                    display: inline !important;
+                }
+                .layout-submenu-toggler {
+                    display: inline-block !important;
+                }
+                .layout-menuitem-root-text {
+                    display: flex !important;
+                }
+                .sidebar-header {
+                    flex-direction: row !important;
+                    padding: 0.5rem 0.75rem !important;
+                }
             }
 
             .layout-mask {
                 display: block;
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(2px);
             }
 
             // Чат сдвигается вправо, чтобы не перекрывать сайдбар
             .layout-chat {
-                left: 20rem;
-                width: calc(100% - 20rem) !important;
+                left: 16rem;
+                width: calc(100% - 16rem) !important;
             }
         }
+    }
+}
+
+/* ── Mobile UX improvements (P0/P1) ── */
+@media (max-width: 768px) {
+    // Sidebar touch targets — minimum 44px (Apple HIG)
+    .layout-sidebar {
+        .layout-menu li > a,
+        .layout-menu li > .router-link-active {
+            min-height: 44px;
+            padding: 0.625rem 0.75rem;
+        }
+
+        .layout-menuitem-root-text {
+            min-height: 40px;
+            padding: 0.5rem 0.75rem;
+        }
+    }
+
+    // Charts — bigger on mobile for readability
+    .chart-container canvas,
+    .fst-chart canvas {
+        min-height: 200px !important;
     }
 }

@@ -978,6 +978,30 @@ function applyFinmodelToAI() {
 }
 @media (max-width: 700px) {
   .fst-deal-main { grid-template-columns: 1fr; }
+
+  /* FinModel tables — horizontal scroll with indicator */
+  .fst-deal-finmodel-section table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  /* Toolbar buttons — icon-only on small screens */
+  .fst-deal-toolbar .p-button .p-button-label {
+    display: none;
+  }
+  .fst-deal-toolbar .p-button .p-button-icon {
+    margin-right: 0;
+  }
+
+  /* Touch-friendly checkboxes */
+  .fst-deal-rights label {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+  }
 }
 
 /* FinModel Section */

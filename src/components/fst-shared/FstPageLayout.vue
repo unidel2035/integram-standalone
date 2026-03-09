@@ -102,28 +102,58 @@ defineProps({
 
 @media (max-width: 768px) {
   .fst-page-toolbar {
-    padding: 8px 16px !important;
+    padding: 8px 12px !important;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .fst-page-toolbar :deep(.p-toolbar-start) {
+    width: 100%;
+    min-width: 0;
+  }
+  .fst-page-toolbar :deep(.p-toolbar-end) {
+    width: 100%;
+    justify-content: flex-start;
   }
   .fst-page-title {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+  }
+  .fst-page-subtitle {
+    font-size: 0.75rem;
   }
   .fst-page-body {
-    padding: 16px;
+    padding: 12px;
   }
   .fst-page-actions {
     width: 100%;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+  .fst-page-actions :deep(.p-button) {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .fst-page-actions :deep(.p-button .p-button-label) {
+    display: none;
+  }
+  .fst-page-actions :deep(.p-button .p-button-icon) {
+    margin-right: 0;
   }
 }
 
 @media (max-width: 480px) {
   .fst-page-toolbar {
-    padding: 6px 12px !important;
+    padding: 6px 10px !important;
   }
   .fst-page-title {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
   .fst-page-body {
-    padding: 12px;
+    padding: 8px;
   }
 }
 </style>

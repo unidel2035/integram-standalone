@@ -12,6 +12,14 @@ import LogoDisplay from '@/components/LogoDisplay.vue'
 const route = useRoute()
 const { layoutState, toggleSidebarCollapse } = useLayout()
 
+// On mobile (<992px), when sidebar overlay is open, always show full sidebar with labels
+const effectiveCollapsed = computed(() => {
+  if (typeof window !== 'undefined' && window.innerWidth <= 991 && layoutState.staticMenuMobileActive) {
+    return false
+  }
+  return layoutState.sidebarCollapsed
+})
+
 const searchQuery = ref('')
 const searchInputRef = ref(null)
 const searchResults = ref(null)
@@ -127,14 +135,14 @@ const showToursMenu = () => {
 </script>
 
 <template>
-    <div class="layout-sidebar" :class="{ 'sidebar-collapsed': layoutState.sidebarCollapsed }">
+    <div class="layout-sidebar" :class="{ 'sidebar-collapsed': effectiveCollapsed }">
         <!-- Sticky header with toggle button only (logo removed) -->
         <div class="sidebar-header">
             <Button
-                :icon="layoutState.sidebarCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'"
+                :icon="effectiveCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'"
                 @click="toggleSidebarCollapse"
                 class="p-button-text p-button-rounded sidebar-toggle-btn"
-                v-tooltip.right="layoutState.sidebarCollapsed ? 'Развернуть меню' : 'Свернуть меню'"
+                v-tooltip.right="effectiveCollapsed ? 'Развернуть меню' : 'Свернуть меню'"
                 aria-label="Переключить меню"
             />
         </div>
@@ -165,13 +173,13 @@ const showToursMenu = () => {
             <div>
                 <app-menu
                     :search-query="searchQuery"
-                    :collapsed="layoutState.sidebarCollapsed"
+                    :collapsed="effectiveCollapsed"
                     @menu-loaded="menuModel = $event"
                 />
             </div>
 
             <!-- Tours menu button -->
-            <div v-if="!layoutState.sidebarCollapsed" class="tours-menu-button-wrapper">
+            <div v-if="!effectiveCollapsed" class="tours-menu-button-wrapper">
                 <Button
                     label="Интерактивные туры"
                     icon="pi pi-map"
@@ -183,7 +191,7 @@ const showToursMenu = () => {
 
             <!-- Smart Search Extras (routes, agents, Integram) - shown BELOW menu -->
             <div
-                v-if="hasExtraResults && !layoutState.sidebarCollapsed"
+                v-if="hasExtraResults && !effectiveCollapsed"
                 id="smart-search-extras"
                 class="smart-search-extras"
             >
@@ -309,6 +317,36 @@ const showToursMenu = () => {
     .sidebar-search {
         opacity: 0;
         pointer-events: none;
+    }
+}
+
+/* On mobile, when sidebar is open (via hamburger), always show full sidebar with labels */
+@media (max-width: 991px) {
+    :global(.layout-mobile-active) .layout-sidebar.sidebar-collapsed {
+        width: 16rem !important;
+
+        .sidebar-header {
+            flex-direction: row;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .sidebar-search {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    }
+
+    // Force show labels in mobile overlay
+    :global(.layout-mobile-active) .layout-sidebar.sidebar-collapsed :deep(.layout-menuitem-text) {
+        display: inline !important;
+    }
+
+    :global(.layout-mobile-active) .layout-sidebar.sidebar-collapsed :deep(.layout-submenu-toggler) {
+        display: inline-block !important;
+    }
+
+    :global(.layout-mobile-active) .layout-sidebar.sidebar-collapsed :deep(.layout-menuitem-root-text span) {
+        display: inline !important;
     }
 }
 

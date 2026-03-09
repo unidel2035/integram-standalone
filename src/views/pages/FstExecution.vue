@@ -926,10 +926,23 @@ function unlockTranche() {
   overflow-x: auto;
   flex: 1;
   align-items: flex-start;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
 }
 .fex-kanban-col {
   flex: 0 0 220px;
   min-height: 200px;
+  scroll-snap-align: start;
+}
+@media (max-width: 768px) {
+  .fex-kanban {
+    scroll-snap-type: x mandatory;
+    scroll-padding: 12px;
+  }
+  .fex-kanban-col {
+    flex: 0 0 calc(100vw - 48px);
+    min-width: calc(100vw - 48px);
+  }
 }
 .fex-kanban-col-header {
   display: flex;

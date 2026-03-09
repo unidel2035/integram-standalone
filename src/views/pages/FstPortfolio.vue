@@ -991,5 +991,21 @@ async function generateAiReport() {
   .fsp-right { max-height: 50vh; overflow-y: auto; border-left: none; border-top: 1px solid var(--surface-border); }
   .fsp-filter-bar { flex-wrap: wrap; gap: 6px; }
   .fsp-filter-sel, .fsp-search { width: 100% !important; }
+
+  /* Hide empty detail placeholder on mobile — show only when company selected */
+  .fsp-detail-empty { display: none; }
+
+  /* Toolbar buttons — scrollable row */
+  .fsp-toolbar-actions {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .fsp-toolbar-actions .p-button {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    padding: 0.375rem 0.5rem;
+  }
 }
 </style>

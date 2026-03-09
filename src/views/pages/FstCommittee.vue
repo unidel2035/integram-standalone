@@ -4077,6 +4077,22 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .fst-committee { padding: 0; }
 
+  /* 3-column main layout → single column on mobile */
+  .fst-main {
+    grid-template-columns: 1fr !important;
+    overflow-y: auto;
+  }
+  .fst-main > *:nth-child(2) {
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--surface-border);
+    border-bottom: 1px solid var(--surface-border);
+  }
+  .fst-main > *:last-child {
+    border-left: none;
+    max-height: none;
+  }
+
   /* Setup: stack project list + settings vertically */
   .fst-setup-body {
     grid-template-columns: 1fr !important;
