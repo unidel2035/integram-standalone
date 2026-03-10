@@ -106,8 +106,8 @@
               </div>
             </div>
             <div class="fsp-health-bar-wrap">
-              <div class="fsp-health-bar" :style="{ width: c.health + '%', background: riskColor(c.riskLevel) }"></div>
-              <span class="fsp-health-val">{{ c.health }}%</span>
+              <div class="fsp-health-bar" :style="{ width: companyHealth(c) + '%', background: companyHealthBarColor(c) }"></div>
+              <span class="fsp-health-val">{{ companyHealth(c) }}%</span>
             </div>
             <!-- GR-статус badge -->
             <div class="fsp-gr-badge" v-if="getGrStatus(c).total > 0 || true">
@@ -136,8 +136,8 @@
               <div class="fsp-detail-name">{{ selectedCompany.name }}</div>
               <div class="fsp-detail-sub">{{ selectedCompany.inn }} · {{ selectedCompany.stage }} · Субфонд {{ selectedCompany.subfund }}</div>
             </div>
-            <div class="fsp-detail-health-badge" :style="{ background: riskColor(selectedCompany.riskLevel) }">
-              {{ selectedCompany.health }}%
+            <div class="fsp-detail-health-badge" :style="{ background: companyHealthBarColor(selectedCompany) }">
+              {{ companyHealth(selectedCompany) }}%
             </div>
           </div>
 
@@ -310,6 +310,8 @@ import FeatureHint from '@/components/FeatureHint.vue'
 import EntityLinksPanel from '@/components/links/EntityLinksPanel.vue'
 import { useEventStore } from '@/stores/eventStore.js'
 import { PORTFOLIO_EVENT_TYPES, getEventDef } from '@/config/eventRegistry.js'
+import { buildEntityContext, buildContextPrompt, buildPortfolioContext } from '@/services/ontologyContextBuilder.js'
+import { companyHealthScore, healthToColor } from '@/services/portfolioHealth.js'
 import { useGrEventStore } from '@/stores/grEventStore.js'
 import { nextPossibleEvents } from '@/services/grEventEngine.js'
 import { GR_MEASURES } from '@/config/grMeasuresData.js'
@@ -317,6 +319,29 @@ import { GR_MEASURES } from '@/config/grMeasuresData.js'
 const toast = useToast()
 const eventStore = useEventStore()
 const grEventStore = useGrEventStore()
+
+// ── Динамический health score из онтологии событий (issue #186) ───────────────
+// Возвращает карту { companyId → score } реактивно через eventStore.timelines
+const liveHealthScores = computed(() => {
+  const scores = {}
+  for (const company of PORTFOLIO) {
+    const id = String(company.id)
+    const timeline = eventStore.getTimeline('company', id)
+    scores[company.id] = companyHealthScore(timeline)
+  }
+  return scores
+})
+
+function companyHealth(company) {
+  const live = liveHealthScores.value[company.id]
+  // Если есть события — используем живой score, иначе статичный из данных
+  return live > 0 ? live : (company.health ?? 50)
+}
+
+function companyHealthBarColor(company) {
+  const score = companyHealth(company)
+  return healthToColor(score)
+}
 
 // GR-статус каждой компании
 function getGrStatus(company) {
@@ -394,11 +419,19 @@ function onLinkAdded(link) {
 // ── Page Tutor Context ────────────────────────────────────────
 function getPageContext() {
   const company = PORTFOLIO.find(c => c.id === selectedCompanyId.value)
+  // Build portfolio ontology context for all companies
+  const companiesData = PORTFOLIO.map(c => ({
+    entityType: 'company',
+    entityId: String(c.id),
+    timeline: eventStore.getTimeline('company', String(c.id)),
+    state: { name: c.name, health: c.health }
+  }))
   return {
     module: 'Портфель компаний',
     selectedCompany: company ? company.name : null,
     totalCompanies: PORTFOLIO.length,
-    monitoringStatus: monitoringStatus.value
+    monitoringStatus: monitoringStatus.value,
+    ontology: buildPortfolioContext(companiesData)
   }
 }
 

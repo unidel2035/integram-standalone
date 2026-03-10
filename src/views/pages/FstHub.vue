@@ -127,10 +127,12 @@ import { usePageHelp } from '@/composables/usePageHelp'
 import FeatureHint from '@/components/FeatureHint.vue'
 import { useEventStore } from '@/stores/eventStore.js'
 import OntologyGapAlerts from '@/components/ontology/OntologyGapAlerts.vue'
+import { useToast } from 'primevue/usetoast'
 
 const router = useRouter()
 const sandboxStore = useSandboxStore()
 const eventStore = useEventStore()
+const toast = useToast()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
 const showScenarios = ref(false)
 
@@ -145,6 +147,16 @@ onMounted(() => {
   // Фоновая загрузка всех лент для агрегации метрик
   eventStore.load('session', '_all').catch(() => {})
   eventStore.load('deal', '_all').catch(() => {})
+
+  // ── Automation emitter: показываем toast при кросс-сущностных триггерах ──
+  eventStore.setAutomationEmitter(({ type, message, severity }) => {
+    toast.add({
+      severity: severity === 'critical' ? 'error' : severity === 'warning' ? 'warn' : 'info',
+      summary: 'Автоматизация',
+      detail: message,
+      life: 5000
+    })
+  })
 })
 
 // Агрегированные метрики из eventStore (дополняют данные из Integram)

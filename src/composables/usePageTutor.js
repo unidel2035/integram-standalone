@@ -113,11 +113,18 @@ export function usePageTutor(config = {}) {
       const pageContext = getContext()
 
       // Build enhanced system prompt with context
+      // Extract ontology section (pre-formatted) from the rest of the context
+      const { ontology, ...restContext } = pageContext || {}
+      const contextStr = Object.keys(restContext).length
+        ? JSON.stringify(restContext, null, 2)
+        : ''
+      const ontologySection = ontology ? `\n\n**Онтологический контекст:**\n${ontology}` : ''
+
       const enhancedSystemPrompt = `${systemPrompt}
 
 **Текущая страница:** ${pageId}
 **Контекст:**
-${JSON.stringify(pageContext, null, 2)}
+${contextStr}${ontologySection}
 
 Отвечай кратко и по делу. Используй контекст страницы для точных ответов.`
 

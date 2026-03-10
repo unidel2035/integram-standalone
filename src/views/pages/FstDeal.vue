@@ -442,6 +442,7 @@ import FeatureHint from '@/components/FeatureHint.vue'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
+import { buildEntityContext, buildContextPrompt } from '@/services/ontologyContextBuilder.js'
 
 const toast = useToast()
 const eventStore = useEventStore()
@@ -454,13 +455,17 @@ const dealId = computed(() => `deal-${deal.value?.inn || 'draft'}`)
 
 // ── Page Tutor Context ────────────────────────────────────────
 function getPageContext() {
+  const id = dealId.value
+  const timeline = eventStore.getTimeline('deal', id)
+  const ctx = buildEntityContext('deal', id, timeline, {}, { stage: deal.value?.stage })
   return {
     module: 'Управление сделкой',
-    company: deal.value.companyName,
-    subFund: deal.value.subFund,
-    dealType: deal.value.type,
-    totalAmount: deal.value.totalAmount,
-    stage: deal.value.stage
+    company: deal.value?.companyName,
+    subFund: deal.value?.subFund,
+    dealType: deal.value?.type,
+    totalAmount: deal.value?.totalAmount,
+    stage: deal.value?.stage,
+    ontology: buildContextPrompt(ctx)
   }
 }
 
