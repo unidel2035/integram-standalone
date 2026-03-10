@@ -5,7 +5,7 @@
       <div class="sec-title-block">
         <i class="pi pi-share-alt" style="color:var(--p-primary-color)"></i>
         <span class="sec-title">Сценарное прогнозирование</span>
-        <span class="sec-subtitle">Цепочка событий развития стартапа · условия возникновения · обсуждение агентов</span>
+        <span class="sec-subtitle">Событийная онтология · цепочка вех · обсуждение агентов</span>
       </div>
       <div class="sec-actions">
         <div class="sec-path-tabs">
@@ -27,12 +27,12 @@
     <div v-if="!chain.length && !generating" class="sec-empty">
       <i class="pi pi-share-alt sec-empty-icon"></i>
       <div class="sec-empty-text">
-        Нажмите «AI-генерация цепочки» — AI ИК сгенерирует сценарии развития стартапа
-        как последовательность событий с условиями и вероятностями
+        AI отберёт события из событийной онтологии (TRL-переходы, пилоты, контракты, меры поддержки)
+        и оценит вероятность и горизонт каждого для данного проекта
       </div>
     </div>
 
-    <!-- Лоадер генерации -->
+    <!-- Лоадер -->
     <div v-if="generating" class="sec-loading">
       <div class="sec-loading-steps">
         <div v-for="(step, i) in loadSteps" :key="i"
@@ -46,27 +46,34 @@
     <!-- Цепочка событий -->
     <div v-if="chain.length" class="sec-chain-area">
 
-      <!-- Горизонтальная лента событий -->
+      <!-- Горизонтальная лента -->
       <div class="sec-timeline">
         <div v-for="(node, i) in visibleNodes" :key="node.id"
           :class="['sec-node', `path-${node.path}`, { selected: selectedNode?.id === node.id, dimmed: activePath !== 'all' && node.path !== activePath && node.path !== 'all' }]"
           @click="selectNode(node)">
 
-          <!-- Линия связи -->
+          <!-- Стрелка между нодами -->
           <div v-if="i < visibleNodes.length - 1" class="sec-connector">
             <div class="sec-connector-line"></div>
             <i class="pi pi-chevron-right sec-connector-arrow"></i>
           </div>
 
-          <!-- Карточка события -->
+          <!-- Карточка ноды -->
           <div class="sec-node-card" :style="{ borderColor: pathColor(node.path) }">
             <div class="sec-node-top">
-              <span class="sec-node-type-badge" :style="{ background: pathColor(node.path) + '22', color: pathColor(node.path) }">
-                {{ node.phase || 'milestone' }}
+              <!-- Chain badge из онтологии -->
+              <span v-if="node.chain" class="sec-chain-badge"
+                :style="{ background: `color-mix(in srgb, ${chainColor(node.chain)} 14%, transparent)`, color: chainColor(node.chain) }">
+                {{ chainLabel(node.chain) }}
+              </span>
+              <span v-else class="sec-node-type-badge"
+                :style="{ background: `color-mix(in srgb, ${pathColor(node.path)} 14%, transparent)`, color: pathColor(node.path) }">
+                {{ node.phase }}
               </span>
               <span class="sec-node-horizon">~{{ node.horizonMonths }}м</span>
             </div>
-            <div class="sec-node-icon-wrap" :style="{ background: pathColor(node.path) + '18' }">
+            <div class="sec-node-icon-wrap"
+              :style="{ background: `color-mix(in srgb, ${pathColor(node.path)} 14%, transparent)` }">
               <i :class="node.icon || 'pi pi-circle'" :style="{ color: pathColor(node.path) }"></i>
             </div>
             <div class="sec-node-label">{{ node.label }}</div>
@@ -76,7 +83,6 @@
               </div>
               <span class="sec-prob-val" :style="{ color: probColor(node.probability) }">{{ node.probability }}%</span>
             </div>
-            <!-- Условия (сколько выполнено) -->
             <div class="sec-node-conds-summary">
               <i class="pi pi-list-check" style="font-size:0.65rem"></i>
               {{ (node.conditions || []).length }} условий
@@ -93,8 +99,15 @@
         <div class="sec-detail-header">
           <i :class="selectedNode.icon || 'pi pi-circle'" :style="{ color: pathColor(selectedNode.path) }"></i>
           <span class="sec-detail-title">{{ selectedNode.label }}</span>
-          <span class="sec-detail-path-badge" :style="{ background: pathColor(selectedNode.path) + '22', color: pathColor(selectedNode.path) }">
+          <!-- Path badge -->
+          <span class="sec-detail-path-badge"
+            :style="{ background: `color-mix(in srgb, ${pathColor(selectedNode.path)} 14%, transparent)`, color: pathColor(selectedNode.path) }">
             {{ pathLabel(selectedNode.path) }}
+          </span>
+          <!-- Ontology ID badge -->
+          <span v-if="selectedNode.eventTypeId" class="sec-ontology-badge">
+            <i class="pi pi-database"></i>
+            {{ selectedNode.eventTypeId }}
           </span>
           <button class="sec-close-btn" @click="selectedNode = null">
             <i class="pi pi-times"></i>
@@ -102,10 +115,10 @@
         </div>
 
         <div class="sec-detail-body">
-          <!-- Описание -->
+          <!-- Описание из онтологии -->
           <div class="sec-detail-desc">{{ selectedNode.description }}</div>
 
-          <!-- Мета -->
+          <!-- Мета: горизонт, вероятность, импакт -->
           <div class="sec-detail-meta">
             <div class="sec-meta-item">
               <span class="sec-meta-label">Горизонт</span>
@@ -122,6 +135,30 @@
             <div v-if="selectedNode.impact?.valuation" class="sec-meta-item">
               <span class="sec-meta-label">Оценка</span>
               <span class="sec-meta-value">{{ selectedNode.impact.valuation }}</span>
+            </div>
+            <div v-if="selectedNode.impact?.trl" class="sec-meta-item">
+              <span class="sec-meta-label">TRL</span>
+              <span class="sec-meta-value">{{ selectedNode.impact.trl }}</span>
+            </div>
+            <div v-if="selectedNode.subject" class="sec-meta-item">
+              <span class="sec-meta-label">Субъект</span>
+              <span class="sec-meta-value sec-meta-value--sm">{{ selectedNode.subject }}</span>
+            </div>
+          </div>
+
+          <!-- Связи из онтологии (preconditions / enables) -->
+          <div v-if="selectedNode.preconditions?.length || selectedNode.enables?.length" class="sec-ontology-links">
+            <div v-if="selectedNode.preconditions?.length" class="sec-onto-group">
+              <span class="sec-onto-label"><i class="pi pi-arrow-left"></i> Предусловия</span>
+              <div class="sec-onto-chips">
+                <span v-for="p in selectedNode.preconditions" :key="p" class="sec-onto-chip sec-onto-chip--pre">{{ p }}</span>
+              </div>
+            </div>
+            <div v-if="filteredEnables(selectedNode).length" class="sec-onto-group">
+              <span class="sec-onto-label"><i class="pi pi-arrow-right"></i> Открывает</span>
+              <div class="sec-onto-chips">
+                <span v-for="e in filteredEnables(selectedNode)" :key="e" class="sec-onto-chip sec-onto-chip--ena">{{ e }}</span>
+              </div>
             </div>
           </div>
 
@@ -180,7 +217,7 @@
         </div>
       </div>
 
-      <!-- Сводка по пути -->
+      <!-- Сводка по путям -->
       <div class="sec-path-summary">
         <div v-for="path in PATHS" :key="path.id" class="sec-path-stat">
           <span class="sec-ps-dot" :style="{ background: path.color }"></span>
@@ -200,23 +237,29 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import {
+  filterCandidateNodes,
+  buildEnrichPrompt,
+  mergeWithOntology,
+  CHAIN_META,
+} from '@/composables/useEventChain.js'
 
 // ── Константы ──────────────────────────────────────────────────────────────────
 
 const PATHS = [
-  { id: 'all',         label: 'Все пути',     color: '#64748b' },
-  { id: 'optimistic',  label: 'Оптимист',      color: '#22c55e' },
-  { id: 'base',        label: 'Базовый',       color: '#3b82f6' },
-  { id: 'pessimistic', label: 'Риск-сценарий', color: '#ef4444' },
+  { id: 'all',         label: 'Все пути',     color: 'var(--p-text-muted-color)' },
+  { id: 'optimistic',  label: 'Оптимист',     color: 'var(--fst-green)' },
+  { id: 'base',        label: 'Базовый',      color: 'var(--fst-blue)' },
+  { id: 'pessimistic', label: 'Риск',         color: 'var(--fst-red)' },
 ]
 
 const AGENT_META = {
-  tech:        { name: 'Техн. аналитик',  av: 'ТА', color: '#6366f1' },
-  finance:     { name: 'Фин. аналитик',   av: 'ФА', color: '#3b82f6' },
-  sovereignty: { name: 'Эксперт сувер.',  av: 'ЭС', color: '#f59e0b' },
-  risk:        { name: 'Риск-менеджер',   av: 'РМ', color: '#ef4444' },
-  portfolio:   { name: 'Стратег',         av: 'СТ', color: '#8b5cf6' },
-  devil:       { name: 'Критик',          av: 'КР', color: '#64748b' },
+  tech:        { name: 'Техн. аналитик',  av: 'ТА', color: 'var(--fst-blue)' },
+  finance:     { name: 'Фин. аналитик',   av: 'ФА', color: 'var(--fst-green)' },
+  sovereignty: { name: 'Эксперт сувер.',  av: 'ЭС', color: 'var(--fst-brand)' },
+  risk:        { name: 'Риск-менеджер',   av: 'РМ', color: 'var(--fst-red)' },
+  portfolio:   { name: 'Стратег',         av: 'СТ', color: 'var(--fst-purple)' },
+  devil:       { name: 'Критик',          av: 'КР', color: 'var(--p-text-muted-color)' },
 }
 
 const COND_TYPE_LABELS = {
@@ -230,12 +273,12 @@ const COND_TYPE_LABELS = {
 }
 
 const LOAD_STEPS = [
-  'Анализ проекта и отрасли...',
-  'Построение событийной онтологии...',
-  'Генерация оптимистичного пути...',
-  'Генерация базового пути...',
-  'Генерация пути рисков...',
-  'Расчёт условий и вероятностей...',
+  'Анализ проекта — сектор, TRL, стадия...',
+  'Фильтрация онтологии — отбор событий...',
+  'AI оценивает вероятности и горизонты...',
+  'Назначение путей (оптимист / база / риск)...',
+  'Построение условий возникновения...',
+  'Сборка сценарного графа...',
 ]
 
 // ── Props ──────────────────────────────────────────────────────────────────────
@@ -246,14 +289,14 @@ const props = defineProps({
 })
 
 // ── State ──────────────────────────────────────────────────────────────────────
-const chain       = ref([])
-const activePath  = ref('all')
+const chain        = ref([])
+const activePath   = ref('all')
 const selectedNode = ref(null)
-const generating  = ref(false)
-const discussing  = ref(false)
-const error       = ref('')
-const loadingStep = ref(0)
-const loadSteps   = ref(LOAD_STEPS)
+const generating   = ref(false)
+const discussing   = ref(false)
+const error        = ref('')
+const loadingStep  = ref(0)
+const loadSteps    = ref(LOAD_STEPS)
 
 // ── Вычисляемые ────────────────────────────────────────────────────────────────
 const visibleNodes = computed(() => {
@@ -272,19 +315,32 @@ function avgProb(pid) {
   return Math.round(nodes.reduce((s, n) => s + n.probability, 0) / nodes.length)
 }
 
+// Фильтрует enables — убирает measure-specific вида "MEASURE_APPLIED:fasie-umnik"
+function filteredEnables(node) {
+  return (node.enables || []).filter(e => !e.includes(':'))
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function pathColor(pid) {
-  return PATHS.find(p => p.id === pid)?.color || '#64748b'
+  return PATHS.find(p => p.id === pid)?.color || 'var(--p-text-muted-color)'
 }
 function pathLabel(pid) {
   return PATHS.find(p => p.id === pid)?.label || pid
 }
 function probColor(p) {
-  return p >= 70 ? '#22c55e' : p >= 40 ? '#f59e0b' : '#ef4444'
+  if (p >= 70) return 'var(--fst-green)'
+  if (p >= 40) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
+}
+function chainColor(chain) {
+  return CHAIN_META[chain]?.color || 'var(--p-text-muted-color)'
+}
+function chainLabel(chain) {
+  return CHAIN_META[chain]?.label || chain
 }
 function agentName(id)  { return AGENT_META[id]?.name  || id }
 function agentAv(id)    { return AGENT_META[id]?.av    || '?' }
-function agentColor(id) { return AGENT_META[id]?.color || '#64748b' }
+function agentColor(id) { return AGENT_META[id]?.color || 'var(--p-text-muted-color)' }
 function condTypeLabel(t) { return COND_TYPE_LABELS[t] || t || 'Условие' }
 function stanceLabel(s) {
   return { SUPPORT: '✓ Поддерж.', NEUTRAL: '⊙ Нейтр.', CONCERN: '⚠ Риск', BLOCK: '✗ Блокир.' }[s] || s
@@ -295,7 +351,7 @@ function selectNode(node) {
   selectedNode.value = selectedNode.value?.id === node.id ? null : node
 }
 
-// ── AI-генерация цепочки ───────────────────────────────────────────────────────
+// ── AI-генерация цепочки (онтология → AI обогащение) ──────────────────────────
 async function generateChain() {
   generating.value = true
   error.value = ''
@@ -303,79 +359,16 @@ async function generateChain() {
   chain.value = []
   selectedNode.value = null
 
-  // Имитация прогресса шагов
   const stepTimer = setInterval(() => {
     if (loadingStep.value < LOAD_STEPS.length - 1) loadingStep.value++
-  }, 1800)
+  }, 1600)
 
   try {
-    const proj = props.project || {}
-    const dec  = props.decision || {}
+    // 1. Фильтруем кандидатные ноды из онтологии
+    const candidates = filterCandidateNodes(props.project)
 
-    const conditions = (dec.conditions || [])
-      .map(c => typeof c === 'string' ? c : c.text || '')
-      .filter(Boolean)
-      .join('; ')
-
-    const prompt = `Ты — AI-аналитик венчурного фонда. Построй цепочку событий-вех развития стартапа.
-
-ПРОЕКТ:
-- Название: ${proj.title || proj.name || proj.company || 'неизвестно'}
-- Отрасль: ${proj.industry || proj.subfund || 'БПЛА / беспилотники'}
-- TRL: ${proj.trl || '4-5'}
-- Стадия: ${proj.stage || 'Pre-seed / Seed'}
-- Сумма раунда: ${proj.askRub ? (proj.askRub / 1e6).toFixed(1) + ' млн ₽' : proj.askAmount || 'не указана'}
-- Краткое описание: ${proj.description || proj.problem || ''}
-
-УСЛОВИЯ ИК: ${conditions || 'не определены'}
-
-ЗАДАЧА: сгенерируй 6-9 событий-вех как цепочку для трёх сценариев: оптимистичный, базовый, риск-сценарий.
-
-Каждое событие — конкретный milestone стартапа (TRL-переход, пилот, сертификация, контракт, раунд, масштаб).
-Каждое событие должно иметь:
-- условия возникновения (что должно произойти ДО него)
-- вероятность реализации (0-100%)
-- горизонт (месяцев от текущего момента)
-- финансовый импакт
-
-Ответь СТРОГО в JSON (без markdown-блоков):
-{
-  "events": [
-    {
-      "id": "e1",
-      "path": "all|optimistic|base|pessimistic",
-      "label": "Короткое название события",
-      "description": "Что именно происходит и почему это важно",
-      "phase": "seed|pilot|growth|scale|exit",
-      "icon": "pi pi-arrow-up-right",
-      "horizonMonths": 6,
-      "probability": 75,
-      "conditions": [
-        {
-          "type": "precondition|trigger|financial|regulatory|tech|market",
-          "text": "Текст условия",
-          "threshold": null,
-          "unit": null
-        }
-      ],
-      "impact": {
-        "revenue": "+30%",
-        "valuation": "+2x",
-        "trl": "+2"
-      }
-    }
-  ]
-}
-
-Требования:
-- path="all" — событие присутствует во всех сценариях (например PROJECT_START)
-- path="optimistic" — только в лучшем сценарии
-- path="base" — в базовом, но не обязательно в оптимистичном
-- path="pessimistic" — негативный исход / риск-событие
-- Суммарно 6-9 событий, охватывающих все три пути
-- Условия должны ссылаться на предыдущие события ("После завершения пилота", "При TRL ≥ 7")
-- Вероятности реалистичные для венчурного проекта (не все 80%+)
-- Иконки ТОЛЬКО из PrimeVue: pi pi-arrow-up-right, pi pi-play, pi pi-check, pi pi-file-edit, pi pi-wallet, pi pi-expand, pi pi-shield, pi pi-star, pi pi-users, pi pi-chart-line, pi pi-exclamation-triangle`
+    // 2. AI оценивает вероятности/горизонты/условия — не придумывает события
+    const prompt = buildEnrichPrompt(candidates, props.project, props.decision)
 
     const res = await fetch('/api/ai-tokens/chat', {
       method: 'POST',
@@ -393,19 +386,11 @@ async function generateChain() {
     if (!m) throw new Error('Модель вернула неверный формат')
     const data = JSON.parse(m[0])
 
-    if (!data.events?.length) throw new Error('Пустая цепочка от модели')
+    if (!data.events?.length) throw new Error('Пустой ответ от модели')
 
-    chain.value = data.events.map((e, i) => ({
-      ...e,
-      id:          e.id || `e${i}`,
-      path:        e.path || 'base',
-      probability: e.probability ?? 60,
-      horizonMonths: e.horizonMonths ?? (i + 1) * 3,
-      conditions:  e.conditions || [],
-      agentVotes:  [],
-    }))
+    // 3. Мержим AI-оценки с определениями из онтологии
+    chain.value = mergeWithOntology(data.events, candidates)
 
-    // Выбираем первый узел по умолчанию
     if (chain.value.length) selectedNode.value = chain.value[0]
 
   } catch (e) {
@@ -432,29 +417,23 @@ async function discussWithAgents() {
       .map(c => `• [${c.type}] ${c.text}${c.threshold ? ' ≥ ' + c.threshold : ''}`)
       .join('\n') || '(без условий)'
 
-    const prompt = `Ты симулятор инвесткомитета. Верни мнение ВСЕХ шести агентов ИК по конкретному событию-вехе стартапа.
+    const prompt = `Ты симулятор инвесткомитета. Верни мнение ВСЕХ шести агентов ИК по событию-вехе стартапа.
 
-ПРОЕКТ: ${proj.title || proj.name || 'стартап'}, отрасль: ${proj.industry || 'БПЛА'}
+ПРОЕКТ: ${proj.title || proj.name || 'стартап'}, отрасль: ${proj.subfund || proj.industry || 'БПЛА'}
 
-СОБЫТИЕ: «${node.label}»
+СОБЫТИЕ: «${node.label}» [${node.eventTypeId || node.phase}]
 Описание: ${node.description}
+Цепочка: ${node.chain || 'core'}
 Горизонт: ${node.horizonMonths} месяцев
-Текущая вероятность: ${node.probability}%
+Вероятность: ${node.probability}%
+Субъект: ${node.subject || 'команда'}
+
 Условия возникновения:
 ${condText}
 
-Каждый агент должен:
-1. Оценить реалистичность условий
-2. Назвать главный риск или фактор успеха
-3. Скорректировать вероятность события (свою оценку %)
+Каждый агент — оценить реалистичность, назвать главный риск/фактор, скорректировать вероятность.
 
-Агенты:
-- tech (технический аналитик)
-- finance (финансовый аналитик)
-- sovereignty (эксперт по суверенитету / регуляторике)
-- risk (риск-менеджер)
-- portfolio (портфельный стратег)
-- devil (критик / адвокат дьявола)
+Агенты: tech, finance, sovereignty, risk, portfolio, devil
 
 Ответь ТОЛЬКО в JSON:
 {
@@ -463,7 +442,7 @@ ${condText}
       "agentId": "tech",
       "stance": "SUPPORT|NEUTRAL|CONCERN|BLOCK",
       "probEstimate": 70,
-      "comment": "Краткий профессиональный комментарий (2-3 предложения)"
+      "comment": "Краткий комментарий (2-3 предложения)"
     }
   ]
 }`
@@ -485,8 +464,7 @@ ${condText}
     const data = JSON.parse(m[0])
 
     if (data.votes?.length) {
-      // Мутируем прямо в chain чтобы Vue обновил
-      const idx = chain.value.findIndex(n => n.id === node.id)
+      const idx = chain.value.findIndex(n => n.id === selectedNode.value.id)
       if (idx !== -1) {
         chain.value[idx].agentVotes = data.votes
         selectedNode.value = chain.value[idx]
@@ -543,10 +521,7 @@ ${condText}
 }
 
 /* Path tabs */
-.sec-path-tabs {
-  display: flex;
-  gap: 4px;
-}
+.sec-path-tabs { display: flex; gap: 4px; }
 .sec-path-btn {
   border: 1px solid var(--p-content-border-color);
   background: var(--p-surface-card);
@@ -557,10 +532,7 @@ ${condText}
   cursor: pointer;
   transition: all 0.15s;
 }
-.sec-path-btn.active {
-  font-weight: 600;
-  background: var(--p-surface-ground);
-}
+.sec-path-btn.active { font-weight: 600; background: var(--p-surface-ground); }
 .sec-path-btn:hover:not(.active) { background: var(--p-surface-ground); }
 
 .sec-btn-ai {
@@ -591,19 +563,11 @@ ${condText}
   text-align: center;
 }
 .sec-empty-icon { font-size: 2rem; opacity: 0.3; }
-.sec-empty-text { font-size: 0.8rem; max-width: 400px; line-height: 1.5; }
+.sec-empty-text { font-size: 0.8rem; max-width: 440px; line-height: 1.5; }
 
 /* Loading */
-.sec-loading {
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-}
-.sec-loading-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.sec-loading { padding: 16px; display: flex; justify-content: center; }
+.sec-loading-steps { display: flex; flex-direction: column; gap: 6px; }
 .sec-loading-step {
   display: flex;
   align-items: center;
@@ -613,14 +577,10 @@ ${condText}
   transition: color 0.3s;
 }
 .sec-loading-step.active { color: var(--p-primary-color); font-weight: 600; }
-.sec-loading-step.done   { color: #22c55e; }
+.sec-loading-step.done   { color: var(--fst-green); }
 
 /* Chain area */
-.sec-chain-area {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.sec-chain-area { display: flex; flex-direction: column; gap: 12px; }
 
 /* Timeline */
 .sec-timeline {
@@ -648,11 +608,7 @@ ${condText}
   flex-shrink: 0;
   position: relative;
 }
-.sec-connector-line {
-  height: 1px;
-  width: 100%;
-  background: var(--p-content-border-color);
-}
+.sec-connector-line { height: 1px; width: 100%; background: var(--p-content-border-color); }
 .sec-connector-arrow {
   position: absolute;
   right: -4px;
@@ -662,7 +618,7 @@ ${condText}
 
 /* Node card */
 .sec-node-card {
-  width: 140px;
+  width: 144px;
   background: var(--p-surface-card);
   border: 1.5px solid var(--p-content-border-color);
   border-radius: 10px;
@@ -680,19 +636,22 @@ ${condText}
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 3px;
 }
+.sec-chain-badge,
 .sec-node-type-badge {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-radius: 4px;
   padding: 1px 5px;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.sec-node-horizon {
-  font-size: 0.62rem;
-  color: var(--p-text-muted-color);
-}
+.sec-node-horizon { font-size: 0.62rem; color: var(--p-text-muted-color); flex-shrink: 0; }
 
 .sec-node-icon-wrap {
   width: 32px;
@@ -719,22 +678,10 @@ ${condText}
   border-radius: 2px;
   overflow: hidden;
 }
-.sec-prob-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.5s;
-}
-.sec-node-prob {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
+.sec-prob-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+.sec-node-prob { display: flex; align-items: center; gap: 5px; }
 .sec-node-prob .sec-prob-bar { flex: 1; }
-.sec-prob-val {
-  font-size: 0.65rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
+.sec-prob-val { font-size: 0.65rem; font-weight: 700; flex-shrink: 0; }
 
 .sec-node-conds-summary {
   font-size: 0.62rem;
@@ -775,6 +722,18 @@ ${condText}
   padding: 2px 8px;
   font-weight: 600;
 }
+.sec-ontology-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-family: monospace;
+  color: var(--p-text-muted-color);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
 .sec-close-btn {
   margin-left: auto;
   background: none;
@@ -785,17 +744,16 @@ ${condText}
 }
 .sec-close-btn:hover { color: var(--p-text-color); }
 
+.sec-detail-body { display: flex; flex-direction: column; gap: 12px; }
+
 .sec-detail-desc {
   font-size: 0.8rem;
   color: var(--p-text-muted-color);
   line-height: 1.5;
 }
 
-.sec-detail-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
+/* Meta strip */
+.sec-detail-meta { display: flex; flex-wrap: wrap; gap: 8px; }
 .sec-meta-item {
   display: flex;
   flex-direction: column;
@@ -804,7 +762,7 @@ ${condText}
   border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   padding: 6px 10px;
-  min-width: 80px;
+  min-width: 72px;
 }
 .sec-meta-label {
   font-size: 0.63rem;
@@ -816,6 +774,43 @@ ${condText}
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--p-text-color);
+}
+.sec-meta-value--sm { font-size: 0.72rem; font-weight: 400; }
+
+/* Ontology links (preconditions / enables) */
+.sec-ontology-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 7px;
+}
+.sec-onto-group { display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap; }
+.sec-onto-label {
+  font-size: 0.68rem;
+  color: var(--p-text-muted-color);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+.sec-onto-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.sec-onto-chip {
+  font-size: 0.62rem;
+  font-family: monospace;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+.sec-onto-chip--pre {
+  background: color-mix(in srgb, var(--fst-brand) 12%, transparent);
+  color: var(--fst-brand);
+}
+.sec-onto-chip--ena {
+  background: color-mix(in srgb, var(--fst-blue) 12%, transparent);
+  color: var(--fst-blue);
 }
 
 /* Conditions */
@@ -850,12 +845,7 @@ ${condText}
   border-radius: 6px;
   padding: 7px 10px;
 }
-.sec-cond-left {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  flex: 1;
-}
+.sec-cond-left { display: flex; align-items: flex-start; gap: 6px; flex: 1; }
 .sec-cond-type {
   font-size: 0.62rem;
   font-weight: 700;
@@ -864,25 +854,37 @@ ${condText}
   flex-shrink: 0;
   text-transform: uppercase;
 }
-.cond-precondition { background: #6366f122; color: #6366f1; }
-.cond-trigger      { background: #f59e0b22; color: #f59e0b; }
-.cond-financial    { background: #22c55e22; color: #22c55e; }
-.cond-regulatory   { background: #8b5cf622; color: #8b5cf6; }
-.cond-tech         { background: #3b82f622; color: #3b82f6; }
-.cond-market       { background: #ec489922; color: #ec4899; }
-.cond-milestone    { background: #0ea5e922; color: #0ea5e9; }
+.cond-precondition {
+  background: color-mix(in srgb, var(--fst-purple) 14%, transparent);
+  color: var(--fst-purple);
+}
+.cond-trigger {
+  background: color-mix(in srgb, var(--fst-brand) 14%, transparent);
+  color: var(--fst-brand);
+}
+.cond-financial {
+  background: color-mix(in srgb, var(--fst-green) 14%, transparent);
+  color: var(--fst-green);
+}
+.cond-regulatory {
+  background: color-mix(in srgb, var(--fst-purple) 14%, transparent);
+  color: var(--fst-purple);
+}
+.cond-tech {
+  background: color-mix(in srgb, var(--fst-blue) 14%, transparent);
+  color: var(--fst-blue);
+}
+.cond-market {
+  background: color-mix(in srgb, var(--fst-cyan) 14%, transparent);
+  color: var(--fst-cyan);
+}
+.cond-milestone {
+  background: color-mix(in srgb, var(--fst-cyan) 14%, transparent);
+  color: var(--fst-cyan);
+}
 
-.sec-cond-text {
-  font-size: 0.75rem;
-  color: var(--p-text-color);
-  line-height: 1.4;
-}
-.sec-cond-threshold {
-  font-size: 0.72rem;
-  color: var(--p-primary-color);
-  font-weight: 600;
-  flex-shrink: 0;
-}
+.sec-cond-text { font-size: 0.75rem; color: var(--p-text-color); line-height: 1.4; }
+.sec-cond-threshold { font-size: 0.72rem; color: var(--p-primary-color); font-weight: 600; flex-shrink: 0; }
 
 /* Agent discussion */
 .sec-discuss-btn {
@@ -902,11 +904,7 @@ ${condText}
 .sec-discuss-btn:disabled { opacity: 0.5; cursor: default; }
 .sec-discuss-btn:hover:not(:disabled) { background: var(--p-surface-ground); }
 
-.sec-agent-votes {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.sec-agent-votes { display: flex; flex-direction: column; gap: 6px; }
 .sec-agent-vote {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
@@ -917,16 +915,12 @@ ${condText}
   gap: 5px;
   border-left-width: 3px;
 }
-.sec-agent-vote.stance-support { border-left-color: #22c55e; }
-.sec-agent-vote.stance-neutral  { border-left-color: #64748b; }
-.sec-agent-vote.stance-concern  { border-left-color: #f59e0b; }
-.sec-agent-vote.stance-block    { border-left-color: #ef4444; }
+.sec-agent-vote.stance-support { border-left-color: var(--fst-green); }
+.sec-agent-vote.stance-neutral  { border-left-color: var(--p-text-muted-color); }
+.sec-agent-vote.stance-concern  { border-left-color: var(--fst-brand); }
+.sec-agent-vote.stance-block    { border-left-color: var(--fst-red); }
 
-.sec-av-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+.sec-av-header { display: flex; align-items: center; gap: 6px; }
 .sec-av-avatar {
   width: 22px;
   height: 22px;
@@ -939,33 +933,26 @@ ${condText}
   color: #fff;
   flex-shrink: 0;
 }
-.sec-av-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--p-text-color);
-  flex: 1;
+.sec-av-name { font-size: 0.75rem; font-weight: 600; color: var(--p-text-color); flex: 1; }
+.sec-av-stance { font-size: 0.65rem; border-radius: 4px; padding: 1px 6px; }
+.stance-badge-support {
+  background: color-mix(in srgb, var(--fst-green) 14%, transparent);
+  color: var(--fst-green);
 }
-.sec-av-stance {
-  font-size: 0.65rem;
-  border-radius: 4px;
-  padding: 1px 6px;
-}
-.stance-badge-support { background: #22c55e22; color: #22c55e; }
-.stance-badge-neutral  { background: #64748b22; color: #64748b; }
-.stance-badge-concern  { background: #f59e0b22; color: #f59e0b; }
-.stance-badge-block    { background: #ef535022; color: #ef5350; }
-
-.sec-av-prob {
-  font-size: 0.7rem;
-  font-weight: 700;
+.stance-badge-neutral {
+  background: color-mix(in srgb, var(--p-text-muted-color) 14%, transparent);
   color: var(--p-text-muted-color);
-  flex-shrink: 0;
 }
-.sec-av-comment {
-  font-size: 0.75rem;
-  color: var(--p-text-muted-color);
-  line-height: 1.45;
+.stance-badge-concern {
+  background: color-mix(in srgb, var(--fst-brand) 14%, transparent);
+  color: var(--fst-brand);
 }
+.stance-badge-block {
+  background: color-mix(in srgb, var(--fst-red) 14%, transparent);
+  color: var(--fst-red);
+}
+.sec-av-prob { font-size: 0.7rem; font-weight: 700; color: var(--p-text-muted-color); flex-shrink: 0; }
+.sec-av-comment { font-size: 0.75rem; color: var(--p-text-muted-color); line-height: 1.45; }
 
 /* Path summary */
 .sec-path-summary {
@@ -977,18 +964,8 @@ ${condText}
   border-radius: 8px;
   border: 1px solid var(--p-content-border-color);
 }
-.sec-path-stat {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.75rem;
-}
-.sec-ps-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+.sec-path-stat { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; }
+.sec-ps-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .sec-ps-label { font-weight: 600; color: var(--p-text-color); }
 .sec-ps-nodes { color: var(--p-text-color); }
 .sec-ps-avg   { color: var(--p-text-muted-color); }
@@ -996,9 +973,9 @@ ${condText}
 /* Error */
 .sec-error {
   font-size: 0.78rem;
-  color: #ef5350;
-  background: #ef535011;
-  border: 1px solid #ef535033;
+  color: var(--fst-red);
+  background: color-mix(in srgb, var(--fst-red) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-red) 25%, transparent);
   border-radius: 6px;
   padding: 6px 10px;
   display: flex;
