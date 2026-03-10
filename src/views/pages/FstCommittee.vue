@@ -569,24 +569,23 @@
     <!-- ═══ Setup Screen ═══ -->
     <div v-else class="fst-setup">
       <div class="fst-setup-header">
-        <div class="fst-setup-brand">
-          <i class="pi pi-building"></i>
-          ФСТ НТИ — AI Инвестиционный Комитет
+        <div class="fst-setup-header-left">
+          <div class="fst-setup-brand">AI-Инвесткомитет</div>
+          <p class="fst-setup-desc">6 агентов · дебаты · решение с обоснованием</p>
         </div>
-        <p class="fst-setup-desc">6 AI-агентов анализируют проект, дебатируют и выносят решение с обоснованием</p>
-        <div class="fst-setup-actions">
-          <Button icon="pi pi-file-check" label="История заседаний" size="small" severity="secondary"
+        <div class="fst-setup-header-right">
+          <div class="fst-setup-subfunds" v-if="Object.keys(SUBFUNDS).length">
+            <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
+              :style="{ borderColor: sf.color, color: sf.color }">
+              <i :class="sf.icon"></i> {{ sf.name }}
+              <span class="fst-subfund-budget">{{ (sf.budget / 1e9).toFixed(1) }} млрд</span>
+            </div>
+          </div>
+          <Button icon="pi pi-clock" label="История" size="small" severity="secondary"
             @click="$router.push('/fst-protocol')"
             data-action="view-protocol"
             data-description="Открывает историю заседаний инвестиционного комитета"
           />
-        </div>
-        <div class="fst-setup-subfunds" v-if="Object.keys(SUBFUNDS).length">
-          <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
-            :style="{ borderColor: sf.color, color: sf.color }">
-            <i :class="sf.icon"></i> {{ sf.name }}
-            <span class="fst-subfund-budget">{{ (sf.budget / 1e9).toFixed(1) }} млрд</span>
-          </div>
         </div>
       </div>
 
@@ -2946,31 +2945,41 @@ onUnmounted(() => {
   overflow-y: auto;
 }
 .fst-setup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 12px 20px;
   border-bottom: 1px solid var(--p-content-border-color);
   background: transparent;
+  flex-shrink: 0;
+}
+.fst-setup-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .fst-setup-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 700;
   color: var(--p-text-color);
-  margin-bottom: 5px;
+  letter-spacing: -0.01em;
 }
 .fst-setup-desc {
   color: var(--p-text-muted-color);
-  font-size: 0.85rem;
-  margin: 0 0 12px;
+  font-size: 0.75rem;
+  margin: 0;
 }
-.fst-setup-actions {
-  margin-bottom: 12px;
+.fst-setup-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 .fst-setup-subfunds {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 .fst-setup-body {
   display: grid;
