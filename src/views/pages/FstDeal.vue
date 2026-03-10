@@ -245,36 +245,29 @@
             <i class="pi pi-chart-bar"></i> KPI-цели проекта
             <Button icon="pi pi-plus" size="small" text severity="success" @click="addKpi" class="fst-deal-panel-btn" />
           </div>
-          <table class="fst-kpi-table" v-if="deal.kpis.length">
-            <colgroup>
-              <col style="width:38%">
-              <col style="width:18%">
-              <col style="width:13%">
-              <col style="width:13%">
-              <col style="width:13%">
-              <col style="width:5%">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Метрика</th>
-                <th>Ед.</th>
-                <th>2025</th>
-                <th>2026</th>
-                <th>2027</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(kpi, idx) in deal.kpis" :key="idx">
-                <td><InputText v-model="kpi.name" placeholder="Выручка, TRL…" class="fst-input" /></td>
-                <td><Select v-model="kpi.unit" :options="kpiUnits" placeholder="ед." class="fst-input" /></td>
-                <td><InputNumber v-model="kpi.target2025" :min="0" class="fst-input" /></td>
-                <td><InputNumber v-model="kpi.target2026" :min="0" class="fst-input" /></td>
-                <td><InputNumber v-model="kpi.target2027" :min="0" class="fst-input" /></td>
-                <td><Button icon="pi pi-times" size="small" text severity="secondary" @click="removeKpi(idx)" /></td>
-              </tr>
-            </tbody>
-          </table>
+          <div v-if="deal.kpis.length" class="fst-kpi-list">
+            <div v-for="(kpi, idx) in deal.kpis" :key="idx" class="fst-kpi-card">
+              <div class="fst-kpi-card-top">
+                <InputText v-model="kpi.name" placeholder="Выручка, TRL, Headcount…" class="fst-input fst-kpi-name" />
+                <Select v-model="kpi.unit" :options="kpiUnits" placeholder="ед." class="fst-kpi-unit" />
+                <Button icon="pi pi-times" size="small" text severity="secondary" @click="removeKpi(idx)" />
+              </div>
+              <div class="fst-kpi-card-years">
+                <div class="fst-kpi-year">
+                  <span class="fst-kpi-year-lbl">2025</span>
+                  <InputNumber v-model="kpi.target2025" :min="0" class="fst-input" />
+                </div>
+                <div class="fst-kpi-year">
+                  <span class="fst-kpi-year-lbl">2026</span>
+                  <InputNumber v-model="kpi.target2026" :min="0" class="fst-input" />
+                </div>
+                <div class="fst-kpi-year">
+                  <span class="fst-kpi-year-lbl">2027</span>
+                  <InputNumber v-model="kpi.target2027" :min="0" class="fst-input" />
+                </div>
+              </div>
+            </div>
+          </div>
           <div v-else class="fst-deal-empty">
             <i class="pi pi-chart-bar" />
             Добавьте KPI-цели проекта
@@ -829,7 +822,6 @@ onMounted(async () => {
 }
 .fst-deal-col {
   min-width: 0;
-  overflow: hidden;
 }
 
 /* Panel */
@@ -913,28 +905,41 @@ onMounted(async () => {
   color: var(--p-text-color);
 }
 
-/* KPI table */
-.fst-kpi-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--fst-text-xs);
+/* KPI cards */
+.fst-kpi-list { display: flex; flex-direction: column; gap: 8px; }
+.fst-kpi-card {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--p-surface-ground);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.fst-kpi-table th {
-  text-align: left;
+.fst-kpi-card-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fst-kpi-name { flex: 1; min-width: 0; }
+.fst-kpi-unit { width: 90px; flex-shrink: 0; }
+.fst-kpi-card-years {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.fst-kpi-year {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.fst-kpi-year-lbl {
   font-size: var(--fst-text-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--p-text-muted-color);
-  padding: 0 6px 8px;
-  border-bottom: 1px solid var(--p-content-border-color);
 }
-.fst-kpi-table td {
-  padding: 4px 6px;
-  vertical-align: middle;
-}
-.fst-kpi-table td:last-child { width: 32px; text-align: center; }
-.fst-kpi-table td .fst-input { width: 100%; }
 .fst-deal-panel-btn { margin-left: auto; }
 .fst-deal-empty {
   display: flex;
