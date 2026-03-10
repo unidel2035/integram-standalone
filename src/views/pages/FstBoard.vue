@@ -4,7 +4,7 @@
     <template #header>
       <div class="fstb-header-left">
         <div class="fstb-logo">
-          <i class="pi pi-sitemap" style="color:#ab47bc;font-size:20px"></i>
+          <i class="pi pi-sitemap" style="color:var(--fst-purple);font-size:20px"></i>
           <span>ФСТ НТИ · <b>Совет директоров</b></span>
           <Tag :value="`${companies.length} компаний`" severity="info" style="font-size:11px" />
           <Tag v-if="upcomingMeetings > 0" :value="`${upcomingMeetings} заседаний`" severity="warn" style="font-size:11px" />
@@ -19,6 +19,40 @@
         <Button icon="pi pi-arrow-left" label="Портфель" severity="secondary" size="small" text @click="$router.push('/fst-portfolio')" />
       </div>
     </template>
+
+    <!-- ─── Metrics strip ─── -->
+    <div class="fstb-board-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-building fst-metric-item-icon" style="color:var(--fst-blue)"></i>
+        <div class="fst-metric-item-val">{{ companies.length }}</div>
+        <div class="fst-metric-item-label">Компаний</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-calendar fst-metric-item-icon" :style="{ color: upcomingMeetings > 0 ? 'var(--fst-brand)' : 'var(--fst-green)' }"></i>
+        <div class="fst-metric-item-val">{{ upcomingMeetings }}</div>
+        <div class="fst-metric-item-label">Заседаний</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-chart-pie fst-metric-item-icon" :style="{ color: activeVotings.length > 0 ? 'var(--fst-brand)' : 'var(--fst-green)' }"></i>
+        <div class="fst-metric-item-val">{{ activeVotings.length }}</div>
+        <div class="fst-metric-item-label">Голосований</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-check-circle fst-metric-item-icon" :style="{ color: pendingApprovals > 0 ? 'var(--fst-brand)' : 'var(--fst-green)' }"></i>
+        <div class="fst-metric-item-val">{{ pendingApprovals }}</div>
+        <div class="fst-metric-item-label">На одобрении</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-exclamation-triangle fst-metric-item-icon" :style="{ color: violations.length > 0 ? 'var(--fst-red)' : 'var(--fst-green)' }"></i>
+        <div class="fst-metric-item-val">{{ violations.length }}</div>
+        <div class="fst-metric-item-label">Нарушений</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-shield fst-metric-item-icon" style="color:var(--fst-purple)"></i>
+        <div class="fst-metric-item-val">{{ companyRights.length }}</div>
+        <div class="fst-metric-item-label">Прав фонда</div>
+      </div>
+    </div>
 
     <!-- Main Content -->
     <div class="fstb-main">
@@ -44,7 +78,7 @@
             <!-- Upcoming Meetings -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-calendar" style="color:#42a5f5"></i> Предстоящие заседания
+                <i class="pi pi-calendar" style="color:var(--fst-blue)"></i> Предстоящие заседания
                 <Button icon="pi pi-plus" size="small" text severity="success" @click="showAddMeeting = true" style="margin-left:auto" />
               </div>
               <div v-if="filteredMeetings.length === 0" class="fstb-empty">
@@ -79,7 +113,7 @@
             <!-- Notifications -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-bell" style="color:#ffa726"></i> Уведомления
+                <i class="pi pi-bell" style="color:var(--fst-brand)"></i> Уведомления
               </div>
               <div v-for="notif in notifications" :key="notif.id" class="fstb-notification" :class="notif.type">
                 <div class="fstb-notif-icon">
@@ -103,7 +137,7 @@
             <!-- Board Pack Template -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-file-word" style="color:#42a5f5"></i> Шаблон Board Pack
+                <i class="pi pi-file-word" style="color:var(--fst-blue)"></i> Шаблон Board Pack
                 <Button label="Сгенерировать" icon="pi pi-sparkles" size="small" severity="info"
                   @click="generateBoardPack" :loading="generatingBoardPack" style="margin-left:auto" />
               </div>
@@ -121,7 +155,7 @@
             <!-- Generated Materials -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-files" style="color:#66bb6a"></i> Материалы заседаний
+                <i class="pi pi-files" style="color:var(--fst-green)"></i> Материалы заседаний
               </div>
               <div v-if="boardPackContent" class="fstb-boardpack-preview">
                 <div class="fstb-bp-toolbar">
@@ -153,7 +187,7 @@
             <!-- Rights Registry -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-shield" style="color:#ef5350"></i> Реестр прав фонда
+                <i class="pi pi-shield" style="color:var(--fst-red)"></i> Реестр прав фонда
                 <Button icon="pi pi-plus" label="Добавить право" size="small" text severity="success"
                   @click="showAddRight = true" style="margin-left:auto" />
               </div>
@@ -179,7 +213,7 @@
             <!-- Approval Requests -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-check-circle" style="color:#ffa726"></i> Запросы на одобрение
+                <i class="pi pi-check-circle" style="color:var(--fst-brand)"></i> Запросы на одобрение
               </div>
               <div v-if="approvalRequests.length === 0" class="fstb-empty">
                 <i class="pi pi-check-circle" style="font-size:32px;color:var(--p-text-muted-color)"></i>
@@ -199,7 +233,7 @@
                 </div>
                 <div v-else class="fstb-approval-decision">
                   <i :class="req.status === 'Одобрено' ? 'pi pi-check' : 'pi pi-times'"
-                    :style="{ color: req.status === 'Одобрено' ? '#66bb6a' : '#ef5350' }"></i>
+                    :style="{ color: req.status === 'Одобрено' ? 'var(--fst-green)' : 'var(--fst-red)' }"></i>
                   {{ req.decision }}
                 </div>
               </div>
@@ -208,11 +242,11 @@
             <!-- Violations -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-exclamation-triangle" style="color:#ef5350"></i> Нарушения прав
+                <i class="pi pi-exclamation-triangle" style="color:var(--fst-red)"></i> Нарушения прав
               </div>
               <div v-if="violations.length === 0" class="fstb-empty">
-                <i class="pi pi-check" style="font-size:32px;color:#66bb6a"></i>
-                <div style="color:#66bb6a">Нарушений не обнаружено</div>
+                <i class="pi pi-check" style="font-size:32px;color:var(--fst-green)"></i>
+                <div style="color:var(--fst-green)">Нарушений не обнаружено</div>
               </div>
               <div v-for="v in violations" :key="v.id" class="fstb-violation-card">
                 <div class="fstb-violation-header">
@@ -239,7 +273,7 @@
             <!-- Active Votings -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-chart-pie" style="color:#42a5f5"></i> Текущие голосования
+                <i class="pi pi-chart-pie" style="color:var(--fst-blue)"></i> Текущие голосования
               </div>
               <div v-if="activeVotings.length === 0" class="fstb-empty">
                 <i class="pi pi-chart-pie" style="font-size:32px;color:var(--p-text-muted-color)"></i>
@@ -264,7 +298,7 @@
                     @click="castVote(vote.id, 'abstain')" :disabled="vote.voted" />
                 </div>
                 <div v-if="vote.voted" class="fstb-voting-cast">
-                  <i class="pi pi-check-circle" style="color:#66bb6a"></i>
+                  <i class="pi pi-check-circle" style="color:var(--fst-green)"></i>
                   Голос подан: {{ vote.decision }}
                 </div>
               </div>
@@ -273,7 +307,7 @@
             <!-- Voting History -->
             <div class="fstb-panel">
               <div class="fstb-panel-title">
-                <i class="pi pi-history" style="color:#26c6da"></i> История голосований
+                <i class="pi pi-history" style="color:var(--fst-cyan)"></i> История голосований
               </div>
               <div class="fstb-voting-history">
                 <div v-for="hist in votingHistory" :key="hist.id" class="fstb-history-item">
@@ -320,10 +354,10 @@ const boardPackVersion = ref('1.0')
 
 // ─── Tabs ──────────────────────────────────────────────────────────────────
 const tabs = [
-  { id: 'calendar', label: 'Календарь заседаний', icon: 'pi pi-calendar', color: '#42a5f5', badge: null },
-  { id: 'materials', label: 'Материалы совета', icon: 'pi pi-file-word', color: '#66bb6a', badge: null },
-  { id: 'rights', label: 'Права фонда', icon: 'pi pi-shield', color: '#ef5350', badge: '3' },
-  { id: 'voting', label: 'Голосования', icon: 'pi pi-chart-pie', color: '#ffa726', badge: '2' },
+  { id: 'calendar', label: 'Календарь заседаний', icon: 'pi pi-calendar', color: 'var(--fst-blue)', badge: null },
+  { id: 'materials', label: 'Материалы совета', icon: 'pi pi-file-word', color: 'var(--fst-green)', badge: null },
+  { id: 'rights', label: 'Права фонда', icon: 'pi pi-shield', color: 'var(--fst-red)', badge: '3' },
+  { id: 'voting', label: 'Голосования', icon: 'pi pi-chart-pie', color: 'var(--fst-brand)', badge: '2' },
 ]
 
 // ─── Companies ─────────────────────────────────────────────────────────────
@@ -382,6 +416,10 @@ const upcomingMeetings = computed(() => {
   const today = new Date()
   return meetings.value.filter(m => new Date(m.date) >= today).length
 })
+
+const pendingApprovals = computed(() =>
+  approvalRequests.value.filter(r => r.status === 'Ожидание').length
+)
 
 // ─── Notifications ─────────────────────────────────────────────────────────
 const notifications = ref([
@@ -598,10 +636,10 @@ ${selectedSections.map(section => {
     return `<h3 style="color:var(--p-text-color);font-size:14px;margin:20px 0 10px">2. Финансовые результаты</h3>
 <table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0">
   <tr style="background:var(--surface-card)"><th style="padding:6px 8px;text-align:left">Показатель</th><th style="padding:6px 8px;text-align:right">Факт</th><th style="padding:6px 8px;text-align:right">План</th><th style="padding:6px 8px;text-align:right">%</th></tr>
-  <tr><td style="padding:6px 8px">Выручка (млн ₽)</td><td style="padding:6px 8px;text-align:right">18.2</td><td style="padding:6px 8px;text-align:right">20.0</td><td style="padding:6px 8px;text-align:right;color:#ffa726">91%</td></tr>
-  <tr style="background:var(--surface-card)"><td style="padding:6px 8px">EBITDA (млн ₽)</td><td style="padding:6px 8px;text-align:right">-2.1</td><td style="padding:6px 8px;text-align:right">-1.5</td><td style="padding:6px 8px;text-align:right;color:#ef5350">—</td></tr>
-  <tr><td style="padding:6px 8px">Cash (млн ₽)</td><td style="padding:6px 8px;text-align:right">32.5</td><td style="padding:6px 8px;text-align:right">28.0</td><td style="padding:6px 8px;text-align:right;color:#66bb6a">116%</td></tr>
-  <tr style="background:var(--surface-card)"><td style="padding:6px 8px">Runway (мес.)</td><td style="padding:6px 8px;text-align:right">14</td><td style="padding:6px 8px;text-align:right">12</td><td style="padding:6px 8px;text-align:right;color:#66bb6a">117%</td></tr>
+  <tr><td style="padding:6px 8px">Выручка (млн ₽)</td><td style="padding:6px 8px;text-align:right">18.2</td><td style="padding:6px 8px;text-align:right">20.0</td><td style="padding:6px 8px;text-align:right;color:var(--fst-brand)">91%</td></tr>
+  <tr style="background:var(--surface-card)"><td style="padding:6px 8px">EBITDA (млн ₽)</td><td style="padding:6px 8px;text-align:right">-2.1</td><td style="padding:6px 8px;text-align:right">-1.5</td><td style="padding:6px 8px;text-align:right;color:var(--fst-red)">—</td></tr>
+  <tr><td style="padding:6px 8px">Cash (млн ₽)</td><td style="padding:6px 8px;text-align:right">32.5</td><td style="padding:6px 8px;text-align:right">28.0</td><td style="padding:6px 8px;text-align:right;color:var(--fst-green)">116%</td></tr>
+  <tr style="background:var(--surface-card)"><td style="padding:6px 8px">Runway (мес.)</td><td style="padding:6px 8px;text-align:right">14</td><td style="padding:6px 8px;text-align:right">12</td><td style="padding:6px 8px;text-align:right;color:var(--fst-green)">117%</td></tr>
 </table>`
   }
   if (section.id === 'kpi') {
@@ -616,11 +654,11 @@ ${selectedSections.map(section => {
   if (section.id === 'risks') {
     return `<h3 style="color:var(--p-text-color);font-size:14px;margin:20px 0 10px">4. Риски и действия</h3>
 <div style="font-size:12px">
-  <div style="margin:10px 0;padding:8px;background:rgba(255,167,38,0.08);border-left:3px solid #ffa726;border-radius:4px">
+  <div style="margin:10px 0;padding:8px;background:color-mix(in srgb, var(--fst-brand) 8%, transparent);border-left:3px solid var(--fst-brand);border-radius:4px">
     <b>Риск:</b> Задержка сертификации Росавиации<br>
     <b>Действие:</b> Ускорение процесса через участие в пилотном проекте ФАС России
   </div>
-  <div style="margin:10px 0;padding:8px;background:rgba(66,165,245,0.08);border-left:3px solid #42a5f5;border-radius:4px">
+  <div style="margin:10px 0;padding:8px;background:color-mix(in srgb, var(--fst-blue) 8%, transparent);border-left:3px solid var(--fst-blue);border-radius:4px">
     <b>Возможность:</b> Интерес стратегического партнёра (Роснефть)<br>
     <b>Действие:</b> Подготовка коммерческого предложения Q2 2026
   </div>
@@ -880,8 +918,8 @@ onMounted(() => {
 .fstb-meeting-online {
   margin-left: 8px;
   padding: 2px 6px;
-  background: rgba(66, 165, 245, 0.1);
-  color: #42a5f5;
+  background: color-mix(in srgb, var(--fst-blue) 10%, transparent);
+  color: var(--fst-blue);
   border-radius: 3px;
   font-size: 10px;
   display: flex;
@@ -910,16 +948,16 @@ onMounted(() => {
   margin-bottom: 8px;
 }
 .fstb-notification.urgent {
-  border-left-color: #ef5350;
-  background: rgba(239, 83, 80, 0.06);
+  border-left-color: var(--fst-red);
+  background: color-mix(in srgb, var(--fst-red) 6%, transparent);
 }
 .fstb-notification.warn {
-  border-left-color: #ffa726;
-  background: rgba(255, 167, 38, 0.06);
+  border-left-color: var(--fst-brand);
+  background: color-mix(in srgb, var(--fst-brand) 6%, transparent);
 }
 .fstb-notification.info {
-  border-left-color: #42a5f5;
-  background: rgba(66, 165, 245, 0.06);
+  border-left-color: var(--fst-blue);
+  background: color-mix(in srgb, var(--fst-blue) 6%, transparent);
 }
 .fstb-notif-icon {
   width: 24px;
@@ -932,16 +970,16 @@ onMounted(() => {
   flex-shrink: 0;
 }
 .fstb-notification.urgent .fstb-notif-icon {
-  background: rgba(239, 83, 80, 0.15);
-  color: #ef5350;
+  background: color-mix(in srgb, var(--fst-red) 15%, transparent);
+  color: var(--fst-red);
 }
 .fstb-notification.warn .fstb-notif-icon {
-  background: rgba(255, 167, 38, 0.15);
-  color: #ffa726;
+  background: color-mix(in srgb, var(--fst-brand) 15%, transparent);
+  color: var(--fst-brand);
 }
 .fstb-notification.info .fstb-notif-icon {
-  background: rgba(66, 165, 245, 0.15);
-  color: #42a5f5;
+  background: color-mix(in srgb, var(--fst-blue) 15%, transparent);
+  color: var(--fst-blue);
 }
 .fstb-notif-content {
   flex: 1;
@@ -1134,8 +1172,8 @@ onMounted(() => {
 
 /* Violation Card */
 .fstb-violation-card {
-  background: rgba(239, 83, 80, 0.06);
-  border: 1px solid rgba(239, 83, 80, 0.3);
+  background: color-mix(in srgb, var(--fst-red) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-red) 30%, transparent);
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 8px;
@@ -1228,7 +1266,7 @@ onMounted(() => {
   font-size: 12px;
   color: var(--p-text-color);
   padding: 8px;
-  background: rgba(102, 187, 106, 0.1);
+  background: color-mix(in srgb, var(--fst-green) 10%, transparent);
   border-radius: 4px;
   margin-top: 8px;
 }
