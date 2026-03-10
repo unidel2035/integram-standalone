@@ -109,6 +109,14 @@
               <div class="fsp-health-bar" :style="{ width: c.health + '%', background: riskColor(c.riskLevel) }"></div>
               <span class="fsp-health-val">{{ c.health }}%</span>
             </div>
+            <!-- GR-статус badge -->
+            <div class="fsp-gr-badge" v-if="getGrStatus(c).total > 0 || true">
+              <span class="fsp-gr-label">GR:</span>
+              <span v-if="getGrStatus(c).funded > 0" class="fsp-gr-funded">✓ {{ getGrStatus(c).funded }}</span>
+              <span v-if="getGrStatus(c).applied > 0" class="fsp-gr-applied">→ {{ getGrStatus(c).applied }}</span>
+              <span v-if="getGrStatus(c).nextMeasure" class="fsp-gr-next">{{ getGrStatus(c).nextMeasure.slice(0, 18) }}…</span>
+              <span v-else class="fsp-gr-empty">нет мер</span>
+            </div>
             <div v-if="c.alerts.length" class="fsp-card-alerts">
               <div v-for="a in c.alerts.slice(0,2)" :key="a.type" class="fsp-card-alert" :class="a.severity">
                 <i :class="alertIcon(a.type)" style="font-size:10px"></i> {{ a.msg }}
@@ -197,19 +205,41 @@
           </div>
         </div>
 
-        <!-- Timeline Events -->
+        <!-- Timeline Events (EventStore) -->
         <div class="fsp-detail-panel">
           <div class="fsp-detail-panel-title">
             <i class="pi pi-history" style="color:#26c6da"></i> Лента событий
+            <span class="fsp-tl-count">{{ companyTimeline.length }}</span>
+            <Button icon="pi pi-plus" size="small" severity="secondary" text
+                    style="margin-left:auto" @click="addEventDialog = true" />
           </div>
+
+          <!-- EventStore лента -->
           <div class="fsp-events">
-            <div v-for="ev in selectedCompany.events" :key="ev.id" class="fsp-event">
-              <div class="fsp-event-dot" :style="{ background: eventColor(ev.type) }"></div>
+            <div v-for="ev in companyTimeline.slice().reverse()" :key="ev.id" class="fsp-event">
+              <div class="fsp-event-dot" :style="{ background: ev.color || eventColor(ev.data?.originalType || ev.type) }"></div>
               <div class="fsp-event-body">
-                <div class="fsp-event-title">{{ ev.title }}</div>
-                <div class="fsp-event-date">{{ ev.date }}</div>
+                <div class="fsp-event-title">
+                  <i v-if="ev.icon" :class="ev.icon" :style="{ color: ev.color, fontSize:'11px', marginRight:'4px' }" />
+                  {{ ev.label || ev.data?.title || ev.type }}
+                </div>
+                <div class="fsp-event-date">{{ new Date(ev.ts).toLocaleDateString('ru-RU') }}</div>
               </div>
-              <Tag :value="ev.type" :style="{ fontSize: '9px', background: eventColor(ev.type), color: '#fff' }" />
+              <Tag :value="ev.data?.originalType || ev.type.replace(/_/g,' ')"
+                   :style="{ fontSize: '9px', background: ev.color || '#42a5f5', color: '#fff', maxWidth:'90px', overflow:'hidden' }" />
+            </div>
+          </div>
+
+          <!-- Диалог добавления события -->
+          <div v-if="addEventDialog" class="fsp-add-event-dialog">
+            <div class="fsp-aed-title">Добавить событие</div>
+            <Select v-model="newEventType" :options="EVENT_TYPE_OPTIONS"
+                    option-label="label" option-value="value" style="width:100%;margin-bottom:0.4rem" />
+            <InputText v-model="newEventNote" placeholder="Примечание (необязательно)"
+                       style="width:100%;margin-bottom:0.4rem" />
+            <div style="display:flex;gap:0.4rem">
+              <Button label="Добавить" icon="pi pi-check" size="small" @click="addCompanyEvent" />
+              <Button label="Отмена" severity="secondary" size="small" @click="addEventDialog=false" />
             </div>
           </div>
         </div>
@@ -236,11 +266,15 @@
           </div>
         </div>
 
+        <!-- Ontology Next Steps -->
+        <OntologyNextSteps entity-type="company" :entity-id="selectedCompany.id" style="margin-bottom:10px" />
+
         <!-- Deal link -->
         <div class="fsp-detail-nav">
           <Button icon="pi pi-file-edit" label="Открыть сделку" severity="info" size="small" @click="$router.push('/fst-deal')" />
           <Button icon="pi pi-list-check" label="Исполнение" severity="success" size="small" @click="$router.push('/fst-execution')" />
           <Button icon="pi pi-chart-line" label="ЦД Компании" severity="secondary" size="small" @click="$router.push('/fst-twin')" />
+          <Button icon="pi pi-building" label="GR-план" severity="warning" size="small" @click="$router.push({ path: '/fst-gov', query: { company: selectedCompany.id, tab: 'timeline' } })" />
         </div>
       </div>
 
@@ -259,7 +293,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
@@ -269,10 +303,85 @@ import { useToast } from 'primevue/usetoast'
 import { getPortfolio, getProjects } from '@/services/fstApi'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
 import EntityLinksPanel from '@/components/links/EntityLinksPanel.vue'
+import { useEventStore } from '@/stores/eventStore.js'
+import { PORTFOLIO_EVENT_TYPES, getEventDef } from '@/config/eventRegistry.js'
+import { useGrEventStore } from '@/stores/grEventStore.js'
+import { nextPossibleEvents } from '@/services/grEventEngine.js'
+import { GR_MEASURES } from '@/config/grMeasuresData.js'
 
 const toast = useToast()
+const eventStore = useEventStore()
+const grEventStore = useGrEventStore()
+
+// GR-статус каждой компании
+function getGrStatus(company) {
+  const id = String(company.id)
+  const timeline = grEventStore.getTimeline(id)
+  const applied = timeline.filter(e => e.type === 'MEASURE_APPLIED').length
+  const funded = timeline.filter(e => e.type === 'MEASURE_FUNDED').length
+  const possible = nextPossibleEvents(timeline, GR_MEASURES)
+  const nextHigh = possible.find(p => p.probability === 'high')
+  return { applied, funded, total: timeline.length, nextMeasure: nextHigh?.measure?.name || nextHigh?.eventDef?.label || null }
+}
+
+// ─── EventStore: инициализация и работа с лентой компании ────────────────────
+
+// Преобразовать статичные события компании в типизированные события реестра
+const TYPE_MAP = {
+  'Контракт': 'CONTRACT_SIGNED',
+  'Финансы':  'TRANCHE_RELEASED',
+  'Найм':     'TEAM_CHANGE',
+  'IP':       'PRODUCT_LAUNCH',
+  'Риск':     'RISK_ELEVATED',
+}
+
+async function ensureCompanyTimeline(company) {
+  if (!company) return
+  // Сначала тянем из Integram (если были события в прошлых сессиях)
+  await eventStore.load('company', String(company.id))
+  const existing = eventStore.getTimeline('company', String(company.id))
+  if (existing.length) return // данные загружены из Integram — не перетираем
+
+  // Ничего не загрузилось → инициализируем из статичных данных компании
+  eventStore.add('company', String(company.id), 'COMPANY_ADDED', {
+    name: company.name, subfund: company.subfund, trl: company.trl, stage: company.stage,
+  })
+  for (const ev of (company.events || [])) {
+    const evType = TYPE_MAP[ev.type] || 'KPI_UPDATED'
+    eventStore.add('company', String(company.id), evType, { title: ev.title, date: ev.date, originalType: ev.type })
+  }
+  if (company.revenue) eventStore.add('company', String(company.id), 'KPI_UPDATED', { revenue: company.revenue, trl: company.trl, runway: company.runway })
+  if (company.riskLevel === 'red') eventStore.add('company', String(company.id), 'RISK_ELEVATED', { level: 'critical', auto: true })
+}
+
+// Лента событий выбранной компании (из EventStore)
+const companyTimeline = computed(() => {
+  if (!selectedCompany.value) return []
+  return eventStore.getTimeline('company', String(selectedCompany.value.id))
+})
+
+// Состояние компании из EventStore
+const companyEventState = computed(() => {
+  if (!selectedCompany.value) return {}
+  return eventStore.getState('company', String(selectedCompany.value.id))
+})
+
+// Добавить событие в ленту
+const addEventDialog = ref(false)
+const newEventType = ref('KPI_UPDATED')
+const newEventNote = ref('')
+const EVENT_TYPE_OPTIONS = Object.values(PORTFOLIO_EVENT_TYPES).map(e => ({ label: e.label, value: e.id }))
+
+function addCompanyEvent() {
+  if (!selectedCompany.value) return
+  eventStore.add('company', String(selectedCompany.value.id), newEventType.value, { note: newEventNote.value, manual: true })
+  addEventDialog.value = false
+  newEventNote.value = ''
+  toast.add({ severity: 'success', summary: 'Событие добавлено в ленту', life: 2000 })
+}
 
 // ── Links Platform ────────────────────────────────────────────
 const conceptLabelMap = ref({})
@@ -368,6 +477,16 @@ onMounted(() => {
   }, 3000)
   loadPortfolioFromDb()
 })
+
+// При изменении списка компаний (после loadPortfolioFromDb) инициализируем их ленты
+watch(companies, (list) => {
+  for (const c of list) {
+    const k = `company:${c.id}`
+    if (!eventStore.timelines[k]) {
+      ensureCompanyTimeline(c)
+    }
+  }
+}, { deep: false })
 onUnmounted(() => clearInterval(liveTimer))
 
 // ─── Filters ─────────────────────────────────────────────────────────────────
@@ -609,9 +728,10 @@ function eventColor(type) {
   return colors[type] || '#78909c'
 }
 
-function selectCompany(c) {
+async function selectCompany(c) {
   selectedCompany.value = c
   aiReport.value = null
+  await ensureCompanyTimeline(c)
 }
 
 async function refreshAll() {
@@ -953,6 +1073,9 @@ async function generateAiReport() {
 
 /* Events */
 .fsp-events { display: flex; flex-direction: column; gap: 6px; }
+.fsp-tl-count { background: var(--p-primary-color); color:#fff; border-radius:10px; padding:0 5px; font-size:10px; }
+.fsp-add-event-dialog { margin-top:0.6rem; padding:0.6rem; background:var(--p-surface-ground); border-radius:8px; border:1px solid var(--p-content-border-color); }
+.fsp-aed-title { font-size:0.78rem; font-weight:600; color:var(--p-text-color); margin-bottom:0.4rem; }
 .fsp-event {
   display: flex;
   align-items: center;
@@ -1018,4 +1141,23 @@ async function generateAiReport() {
     padding: 0.375rem 0.5rem;
   }
 }
+
+/* ─── GR-badge ─── */
+.fsp-gr-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  padding: 3px 6px;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.fsp-gr-label { color: var(--p-text-muted-color); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.fsp-gr-funded { color: #22c55e; font-weight: 700; }
+.fsp-gr-applied { color: #f59e0b; font-weight: 700; }
+.fsp-gr-next { color: var(--p-primary-color); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fsp-gr-empty { color: var(--p-text-muted-color); font-style: italic; }
 </style>

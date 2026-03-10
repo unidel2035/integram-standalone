@@ -83,6 +83,16 @@
           </div>
         </div>
 
+        <!-- Условия от ИК (если пришли из инвесткомитета) -->
+        <div v-if="icConditions.length" class="fst-deal-panel" style="border-left:3px solid var(--p-primary-color)">
+          <div class="fst-deal-panel-title">
+            <i class="pi pi-check-circle" style="color:var(--p-primary-color)"></i> Условия ИК
+          </div>
+          <ul style="margin:0;padding-left:18px;color:var(--p-text-color);font-size:13px;line-height:1.8">
+            <li v-for="(c, i) in icConditions" :key="i">{{ c }}</li>
+          </ul>
+        </div>
+
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
             <i class="pi pi-dollar" style="color:#66bb6a"></i> Условия инвестиции
@@ -352,7 +362,7 @@
     </div>
 
     <!-- Финансовая модель компании (full-width) -->
-    <FeatureHint id="finmodel-hyperformula" title="Финансовая модель" description="Интерактивная финансовая модель из базы ai2o.ru/fm. Расчёт NPV, IRR, MOIC." position="bottom">
+    <FeatureHint id="finmodel-hyperformula" title="Финансовая модель" description="Интерактивная финансовая модель из базы api.ai2o.ru/fm. Расчёт NPV, IRR, MOIC." position="bottom">
     <div class="fst-deal-finmodel-section">
       <div class="fst-deal-finmodel-header" @click="finmodelExpanded = !finmodelExpanded">
         <div class="fst-deal-finmodel-title">
@@ -373,13 +383,13 @@
       <div v-if="finmodelExpanded" class="fst-deal-finmodel-body">
         <div class="fst-fm-info">
           <i class="pi pi-info-circle" style="color:#42a5f5;font-size:12px"></i>
-          Финансовая модель загружается из базы ai2o.ru/fm. Подключите модель по ID или создайте новую.
+          Финансовая модель загружается из базы api.ai2o.ru/fm. Подключите модель по ID или создайте новую.
           Результаты NPV / MOIC / IRR обновляют AI-оценку сделки.
         </div>
         <FstFinModelBlock
           v-model:modelId="finModelId"
           database="fm"
-          server="ai2o.ru"
+          server="api.ai2o.ru"
         />
         <div class="fst-fm-actions">
           <Button label="Применить к AI-оценке" icon="pi pi-refresh" size="small" severity="success"
@@ -387,6 +397,11 @@
         </div>
       </div>
     </div></FeatureHint>
+
+    <!-- Ontology: Next Steps -->
+    <div class="fst-deal-ont-bar">
+      <OntologyNextSteps entity-type="deal" :entity-id="dealId" />
+    </div>
 
     <!-- Page Tutor -->
     <PageTutorButton pageId="fst-deal" :getContext="getPageContext" />
@@ -401,6 +416,7 @@
 import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { saveDeal as saveDealToFst } from '@/services/fstApi'
+import { useEventStore } from '@/stores/eventStore.js'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
@@ -413,15 +429,20 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import FstFinModelBlock from '@/components/finmodel/FstFinModelBlock.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
 
 const toast = useToast()
+const eventStore = useEventStore()
 
 // ── Page Help ─────────────────────────────────────────────────
 const { isOpen: helpOpen, pageHelp, toggleHelp } = usePageHelp('fst-deal')
+
+// ID сделки — производный от имени компании, стабильный в рамках сессии
+const dealId = computed(() => `deal-${deal.value?.inn || 'draft'}`)
 
 // ── Page Tutor Context ────────────────────────────────────────
 function getPageContext() {
@@ -481,6 +502,7 @@ const deal = ref({
 
 const saving = ref(false)
 const generatingTS = ref(false)
+const icConditions = ref([])   // условия от ИК (из TERM_SHEET_PROPOSED)
 const termSheet = ref('')
 const aiLoading = ref(false)
 const scCurrentStep = ref(2)
@@ -585,6 +607,10 @@ function trancheStatusSeverity(s) {
 function advanceStep(stepId) {
   if (stepId === scCurrentStep.value) {
     scCurrentStep.value++
+    // Фиксируем ключевые события сделки
+    if (stepId === 2) eventStore.add('deal', dealId.value, 'TERM_SHEET_SIGNED', { company: deal.value.companyName })
+    if (stepId === 3) eventStore.add('deal', dealId.value, 'DD_COMPLETED', { company: deal.value.companyName })
+    if (stepId === 6) eventStore.add('deal', dealId.value, 'TRANCHE_RELEASED', { tranche: 1, amount: deal.value.tranches[0]?.amount || 0 })
     toast.add({ severity: 'success', summary: 'Шаг выполнен', detail: scSteps.value[stepId - 1]?.label, life: 2500 })
   }
 }
@@ -631,6 +657,12 @@ async function saveDeal() {
       spvName:     deal.value.spvName || '',
       termSheet:   termSheet.value || '',
       signDate:    deal.value.signDate ? new Date(deal.value.signDate).toISOString() : new Date().toISOString()
+    })
+    eventStore.add('deal', dealId.value, 'DEAL_CLOSED', {
+      company:     deal.value.companyName,
+      amount:      deal.value.totalAmount,
+      type:        deal.value.type,
+      spv:         deal.value.spvName,
     })
     toast.add({ severity: 'success', summary: 'Сохранено в fst', detail: `Сделка ${deal.value.companyName} записана в Integram fst`, life: 3000 })
   } catch (err) {
@@ -715,6 +747,33 @@ function applyFinmodelToAI() {
 
   toast.add({ severity: 'success', summary: 'AI-оценка обновлена из финмодели', life: 2500 })
 }
+
+// ─── Event tracking ──────────────────────────────────────────────────────────
+
+onMounted(async () => {
+  await eventStore.load('deal', dealId.value)
+  const timeline = eventStore.getTimeline('deal', dealId.value)
+  // Если есть TERM_SHEET_PROPOSED от ИК — предзаполняем форму
+  const tsProposed = [...timeline].reverse().find(e => e.type === 'TERM_SHEET_PROPOSED')
+  if (tsProposed?.data) {
+    const d = tsProposed.data
+    if (d.company)     deal.value.companyName = d.company
+    if (d.amount)      deal.value.totalAmount = d.amount
+    if (d.conditions?.length) {
+      icConditions.value = Array.isArray(d.conditions) ? d.conditions : [d.conditions]
+    }
+    // ИК одобрил → шаг 1 выполнен, открываем шаг 2 (Term Sheet)
+    if (scCurrentStep.value < 2) scCurrentStep.value = 2
+  }
+  if (!timeline.length) {
+    eventStore.add('deal', dealId.value, 'DEAL_SOURCED', {
+      company: deal.value.companyName,
+      inn:     deal.value.inn,
+      subFund: deal.value.subFund,
+      stage:   deal.value.stage,
+    })
+  }
+})
 </script>
 
 <style scoped>
@@ -755,6 +814,11 @@ function applyFinmodelToAI() {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Ontology bar */
+.fst-deal-ont-bar {
+  padding: 0 12px 12px;
 }
 
 /* Main Grid */

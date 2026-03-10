@@ -131,6 +131,9 @@
           </div>
         </div>
 
+        <!-- Ontology: что дальше после решения ИК -->
+        <OntologyNextSteps entity-type="session" :entity-id="session.id" style="margin:12px 0" />
+
         <div v-if="session.decision.humanApproval" class="fst-human-result">
           <i class="pi pi-check-circle" style="color:#4caf50"></i>
           Решение комитета утверждено:
@@ -1037,6 +1040,8 @@ import {
 } from '@/components/fst-committee/fstCommitteeModelOrchestrator.js'
 import { saveDecision, createProject, saveCommitteeSession, authenticate, STATUSES, loadCommitteeConfigs, saveCommitteeConfig, loadCommitteeParams, saveCommitteeParams, IC_PARAMS_DEFAULTS } from '@/services/fstApi'
 import { saveSessionToKag, saveSessionToIntegram } from '@/components/fst-committee/fstCommitteeAI.js'
+import { useEventStore } from '@/stores/eventStore.js'
+import { useGrEventStore } from '@/stores/grEventStore.js'
 import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.vue'
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
 import DebateTimeline from '@/components/fst-committee/DebateTimeline.vue'
@@ -1044,6 +1049,7 @@ import ScenarioNodesPanel from '@/components/fst-committee/ScenarioNodesPanel.vu
 import LinksGraphViz from '@/components/links/LinksGraphViz.vue'
 import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
+import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
@@ -1058,18 +1064,34 @@ const router = useRouter()
 // Load data on component mount
 onMounted(async () => {
   await Promise.all([loadProjects(), loadSubfunds(), loadAgents()])
-  // Set initial project after data loads
+  // Если пришли из FstStartuper — пробуем авто-выбрать проект по twin
+  const twin = JSON.parse(localStorage.getItem('startuper_twin') || 'null')
+  if (twin?.company) {
+    const needle = twin.company.toLowerCase()
+    const match = PROJECTS_POOL.value.find(p =>
+      p.name?.toLowerCase().includes(needle) ||
+      (twin.inn && p.inn === twin.inn)
+    )
+    if (match) selectedProjectId.value = match.id
+    localStorage.removeItem('startuper_twin')
+  }
+  // Set initial project after data loads (if nothing matched above)
   if (PROJECTS_POOL.value.length > 0 && !selectedProjectId.value) {
     selectedProjectId.value = PROJECTS_POOL.value[0].id
   }
   // Issue #161: load IC thresholds from Integram
   loadCommitteeParams().then(p => { icParams.value = p }).catch(() => {})
+  // Загружаем ленты прошлых сессий из Integram
+  eventStore.load('session', '_all').catch(() => {})
 })
 
 // ── State ─────────────────────────────────────────────────────
 
 // Page Help
 const { isOpen: helpOpen, pageHelp, toggleHelp } = usePageHelp('fst-committee')
+
+const eventStore = useEventStore()
+const grEventStore = useGrEventStore()
 
 const conclusionVisible = ref(false)
 const projectModalVisible = ref(false)
@@ -1495,10 +1517,92 @@ function startSession() {
   session.value = sess
   agentActivity.value = {}
 
+  // ─── GR-контекст: инжектируем в сессию для агентов ────────────────────────
+  const grState    = grEventStore.getState(selectedProjectId.value)
+  const grTimeline = grEventStore.getTimeline(selectedProjectId.value)
+  if (grTimeline.length || grState.triggers?.length) {
+    const grLines = []
+    if (grState.triggers?.length)
+      grLines.push(`Выявленные барьеры: ${grState.triggers.join(', ')}`)
+    if (grState.trl)
+      grLines.push(`TRL по GR-событиям: ${grState.trl}`)
+    if (grState.totalFunding)
+      grLines.push(`Полученное финансирование: ${(grState.totalFunding/1e6).toFixed(1)} млн ₽`)
+    if (grState.fundedMeasures?.length)
+      grLines.push(`Одобренные меры: ${grState.fundedMeasures.filter(Boolean).join(', ')}`)
+    if (grState.appliedMeasures?.length)
+      grLines.push(`Поданные заявки: ${grState.appliedMeasures.filter(Boolean).join(', ')}`)
+    if (grState.pilotDone)
+      grLines.push('Пилот: завершён')
+    if (grState.hasContract)
+      grLines.push('Первый контракт: подписан')
+
+    const recentEvts = grTimeline.slice(-5).map(e => `  • [${e.type}] ${e.label || e.type}${e.data?.measure ? ` (${e.data.measure})` : ''}`).join('\n')
+
+    sess._grContext = `\n--- GR-статус проекта (событийная лента) ---\n${grLines.join('\n')}\nПоследние события:\n${recentEvts}\n---`
+  }
+
   engine = new FstCommitteeEngine(sess, handleEvent)
   running.value = true
+
+  // Фиксируем старт сессии ИК
+  const _evtProject = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
+  eventStore.add('session', sess.id, 'SESSION_STARTED', {
+    projectId:   selectedProjectId.value,
+    projectName: _evtProject?.name,
+    agents:      sess.agents?.length || 6,
+    votingMode:  votingMode.value,
+  })
+
   engine.start().then(() => {
     running.value = false
+    const projectId = selectedProjectId.value
+    const project   = PROJECTS_POOL.value.find(p => p.id === projectId) || {}
+
+    // Голоса каждого агента
+    for (const vote of (session.value?.votes || [])) {
+      eventStore.add('session', sess.id, 'VOTE_CAST', {
+        agentId:  vote.agentId || vote.agent,
+        verdict:  vote.verdict,
+        score:    vote.score,
+        reason:   vote.reason?.slice?.(0, 200),
+      })
+    }
+
+    // Решение ИК
+    if (session.value?.decision) {
+      const verdict = session.value.decision.recommendation
+      eventStore.add('session', sess.id, 'DECISION_MADE', {
+        projectId,
+        verdict,
+        score:      session.value.decision.aggregatedScore,
+        conditions: session.value.decision.conditions || [],
+      })
+
+      // ─── Цепочка: решение → deal / project ───────────────────────────────
+      if (verdict === 'APPROVE' || verdict === 'CONDITIONAL') {
+        // 1. Term Sheet в ленте сделки (entityType = deal, id = sess.id)
+        eventStore.add('deal', sess.id, 'TERM_SHEET_PROPOSED', {
+          projectId,
+          projectName: project.name || project.company,
+          amount:      project.askRub || project.amount || 0,
+          conditions:  session.value.decision.conditions || [],
+          score:       session.value.decision.aggregatedScore,
+        })
+
+        // 2. Инициализируем GR-трекинг проекта если ещё нет событий
+        const existingGr = grEventStore.getTimeline(projectId)
+        if (!existingGr.length) {
+          grEventStore.initProject(projectId, {
+            name:   project.name || project.company || projectId,
+            trl:    project.trl    || 4,
+            sector: project.subfund?.includes?.('БАС') || project.subfund?.includes?.('БПЛА')
+                      ? 'БАС' : (project.subfund || 'БАС'),
+            stage:  project.stage  || 'Pre-seed',
+          })
+        }
+      }
+    }
   }).catch(() => {
     running.value = false
   })
@@ -1600,6 +1704,17 @@ function handleEvent(event) {
         }
       }
     }
+    // Фиксируем аргумент в ленте сессии
+    if (session.value?.id) {
+      const stance = arg.stance || arg.verdict || null
+      const prevArg = session.value?.arguments?.at(-2) // предыдущий аргумент для детекции challenge
+      const isChallenging = prevArg && stance && prevArg.agentId !== aid &&
+        (stance === 'REJECT' || stance === 'CONDITIONAL') && prevArg.stance === 'APPROVE'
+      eventStore.add('session', session.value.id,
+        isChallenging ? 'ARGUMENT_CHALLENGED' : 'ARGUMENT_RAISED',
+        { agentId: aid, stance, dimension: arg.dimension, content: arg.content?.slice?.(0, 200) }
+      )
+    }
     nextTick(() => {
       if (timelineEl.value) {
         timelineEl.value.scrollTop = timelineEl.value.scrollHeight
@@ -1613,10 +1728,32 @@ function handleEvent(event) {
 
   if (event.type === 'ConditionalDecisionReady') {
     session.value.conditionalDecision = event
+    // Фиксируем условия в ленте сессии
+    if (session.value?.id) {
+      for (const cond of (event.conditions || [])) {
+        eventStore.add('session', session.value.id, 'CONDITION_PROPOSED', {
+          text: typeof cond === 'string' ? cond : cond.text,
+          type: cond.type,
+          metric: cond.metric,
+          threshold: cond.threshold,
+        })
+      }
+    }
   }
 
   if (event.type === 'ContradictionsFound') {
     session.value._contradictions = event.contradictions ? [...event.contradictions] : []
+    // Фиксируем противоречия в ленте сессии
+    if (session.value?.id) {
+      for (const c of (event.contradictions || [])) {
+        eventStore.add('session', session.value.id, 'CONTRADICTION_FOUND', {
+          dimension: c.dimension,
+          severity:  c.severity,
+          thesis:    c.thesis?.slice?.(0, 200),
+          antithesis: c.antithesis?.slice?.(0, 200),
+        })
+      }
+    }
   }
 
   if (event.type === 'SessionConcluded') {
@@ -1624,6 +1761,19 @@ function handleEvent(event) {
     // Issue #160: persist agentStats in session for protocol
     session.value.agentStats = { ...agentStats.value }
     agentActivity.value = {}
+
+    // Фиксируем синтез аргументов (итог дебатов)
+    if (session.value?.id && session.value?.arguments?.length) {
+      const approveCount = session.value.arguments.filter(a => a.stance === 'APPROVE').length
+      const rejectCount  = session.value.arguments.filter(a => a.stance === 'REJECT').length
+      eventStore.add('session', session.value.id, 'ARGUMENT_SYNTHESIZED', {
+        totalArgs:     session.value.arguments.length,
+        approveArgs:   approveCount,
+        rejectArgs:    rejectCount,
+        contradictions: session.value._contradictions?.length || 0,
+      })
+    }
+
     setTimeout(() => {
       conclusionVisible.value = true
     }, 1500)
