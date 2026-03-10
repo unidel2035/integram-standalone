@@ -2,20 +2,20 @@
  * Integram Configuration Utility
  *
  * Provides centralized configuration for Integram API endpoints.
- * Issue #5405: Migration from dronedoc.ru/my to ai2o.ru/my
+ * Issue #5405: Migration from dronedoc.ru/my to api.ai2o.ru/my
  *
  * @module integramConfig
  */
 
 /**
  * Get Integram server URL from environment variables
- * Defaults to ai2o.ru (punycode: ai2o.ru)
+ * Defaults to api.ai2o.ru (punycode: api.ai2o.ru)
  *
- * @returns {string} Integram server URL without protocol (e.g., 'ai2o.ru' or 'dronedoc.ru')
+ * @returns {string} Integram server URL without protocol (e.g., 'api.ai2o.ru' or 'dronedoc.ru')
  */
 export function getIntegramServerUrl() {
-  const raw = import.meta.env.VITE_INTEGRAM_SERVER_URL || 'ai2o.ru'
-  // Strip protocol if accidentally included in env (e.g. "https://ai2o.ru" → "ai2o.ru")
+  const raw = import.meta.env.VITE_INTEGRAM_SERVER_URL || 'api.ai2o.ru'
+  // Strip protocol if accidentally included in env (e.g. "https://api.ai2o.ru" → "api.ai2o.ru")
   return raw.replace(/^https?:\/\//, '')
 }
 

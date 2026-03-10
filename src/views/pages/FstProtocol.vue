@@ -211,9 +211,11 @@ import { agents as agentsList, loadAgents } from '@/components/fst-committee/age
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { getCommitteeSessions } from '@/services/fstApi'
+import { useEventStore } from '@/stores/eventStore.js'
 
 const router = useRouter()
 const toast = useToast()
+const eventStore = useEventStore()
 
 // ── State ─────────────────────────────────────────────────────────
 
@@ -270,7 +272,37 @@ const filteredSessions = computed(() => {
 async function loadSessions() {
   loading.value = true
   try {
-    sessions.value = await getCommitteeSessions()
+    const remote = await getCommitteeSessions()
+    // Загружаем сессии из eventStore (локальные + из Integram через /api/events)
+    await eventStore.load('session', '_all').catch(() => {})
+    const localIds = eventStore.getIds('session')
+    const localSessions = localIds.map(sid => {
+      const state = eventStore.getState('session', sid)
+      if (!state.projectName && !state.projectId) return null
+      return {
+        id:           sid,
+        name:         state.projectName || state.projectId || sid,
+        meetingDate:  new Date(state.started || Date.now()).toISOString(),
+        recommendation: state.decision,
+        aggregatedScore: state.score,
+        protocol: {
+          decision: {
+            projectName:     state.projectName,
+            recommendation:  state.decision,
+            aggregatedScore: state.score,
+            conditions:      state.conditions || [],
+          },
+          votes:     state.votes || [],
+          arguments: state.args  || [],
+        },
+        _fromEventStore: true,
+      }
+    }).filter(Boolean)
+
+    // Мержим: remote — источник истины, локальные добавляем только если нет по id
+    const remoteIds = new Set(remote.map(s => String(s.id)))
+    const newLocal = localSessions.filter(s => !remoteIds.has(String(s.id)))
+    sessions.value = [...remote, ...newLocal]
   } catch (err) {
     console.error('Failed to load committee sessions:', err)
     toast.add({ severity: 'error', summary: 'Ошибка', detail: 'Не удалось загрузить протоколы', life: 3000 })

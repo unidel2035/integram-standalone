@@ -5,7 +5,7 @@
  * Maps FNS API data to Integram requisites for the Организация table (ID: 197000).
  *
  * Issue #4293: Uses direct Integram API calls instead of backend proxy.
- * Writes directly to https://ai2o.ru/my/object/197000
+ * Writes directly to https://api.ai2o.ru/my/object/197000
  *
  * Issue #4303: Added comprehensive logging for debugging save failures
  */

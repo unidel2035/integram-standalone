@@ -498,7 +498,7 @@ function pickFocus(agentId) {
 
 // ── Промпты по типам аргументов ───────────────────────────────────────────────
 
-function buildUserPrompt(agent, type, project, prevArgs, targetArg, kagContext = '') {
+function buildUserPrompt(agent, type, project, prevArgs, targetArg, kagContext = '', grContext = '') {
   const projectInfo = formatProject(project)
   const history = formatDebateHistory(prevArgs, AGENT_SHORT_NAMES)
   const focus = pickFocus(agent.id)
@@ -507,9 +507,12 @@ function buildUserPrompt(agent, type, project, prevArgs, targetArg, kagContext =
 Ответь СТРОГО только JSON (без markdown, без пояснений):
 {"text": "твой аргумент", "dimension": "trl|mrl|sovereignty|market|finance|risk|team", "confidence": 0.0-1.0, "stance": "APPROVE|DEFER|REJECT"}`
 
+  // GR-контекст инжектируется только в OPENING — агенты должны учесть реальный статус проекта в GR
+  const grSection = grContext ? `\n${grContext}\nУЧТИ этот GR-статус в своём анализе. Если есть REGULATORY_BARRIER_DETECTED — учти регуляторный риск. Если есть MEASURE_FUNDED — компания уже получала господдержку.\n` : ''
+
   if (type === 'OPENING') {
     return `${projectInfo}
-${kagContext ? '\n' + kagContext + '\n' : ''}
+${kagContext ? '\n' + kagContext + '\n' : ''}${grSection}
 Фаза: ПЕРВИЧНЫЕ ПОЗИЦИИ
 Твоя задача: представь свою первичную позицию по проекту (2-3 конкретных предложения).
 Используй данные из заявки. Назови 1 сильную сторону и 1 ключевой риск/вопрос.
@@ -630,7 +633,7 @@ export async function generateArgumentAI(agent, type, project, prevArgs = [], ta
 
   if (!systemPrompt) return null
 
-  const userPrompt = buildUserPrompt(agent, type, project, prevArgs, targetArg, kagContext)
+  const userPrompt = buildUserPrompt(agent, type, project, prevArgs, targetArg, kagContext, opts.grContext || '')
 
   // Оркестратор выбирает оптимальную модель для агента + задачи
   const modelId = resolveModel(

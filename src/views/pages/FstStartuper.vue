@@ -882,7 +882,12 @@ async function sendToIC() {
       name:   twin.value.company,
     })
   }
-  localStorage.setItem('startuper_twin', JSON.stringify(twin.value))
+  localStorage.setItem('startuper_twin', JSON.stringify({
+    ...twin.value,
+    psychoProfile: psychoProfile.value || undefined,
+    beacons:       beacons.value?.length ? beacons.value : undefined,
+    scoring:       scoring.value?.total ?? undefined,
+  }))
   router.push('/fst-committee')
 }
 </script>

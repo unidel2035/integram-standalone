@@ -19,7 +19,7 @@ import { monitorCompaniesNews } from '../parsers/newsParser.js'
 import { initTelegramBot, triggerPortfolioAlert } from '../services/telegramBot.js'
 
 // Интеграция с Integram API (fst database)
-const INTEGRAM_SERVER = process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru'
+const INTEGRAM_SERVER = process.env.INTEGRAM_SERVER_URL || 'https://api.ai2o.ru'
 const INTEGRAM_DB = 'fst'
 const INTEGRAM_USERNAME = process.env.INTEGRAM_SYSTEM_USERNAME
 const INTEGRAM_PASSWORD = process.env.INTEGRAM_SYSTEM_PASSWORD

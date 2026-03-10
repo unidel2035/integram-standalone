@@ -589,7 +589,7 @@ export const glossaryTerms = {
     id: 'integram',
     title: 'Integram — NoSQL база ФСТ НТИ',
     category: 'platform',
-    definition: 'Фирменная NoSQL база данных на ai2o.ru для хранения всех данных платформы: сделки, портфель, агенты.',
+    definition: 'Фирменная NoSQL база данных на api.ai2o.ru для хранения всех данных платформы: сделки, портфель, агенты.',
     formula: 'REST API: POST /_m_new/{typeId}, GET /_d_req/{typeId}',
     example: 'Создание сделки: POST /fst/_m_new/123 → запись в типе "Deals".',
     relatedTerms: ['mcp', 'api', 'nosql'],

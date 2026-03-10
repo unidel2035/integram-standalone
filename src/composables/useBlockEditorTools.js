@@ -231,7 +231,7 @@ export const BLOCK_EDITOR_TOOL_DEFINITIONS = [
         properties: {
           modelId: { type: 'string', description: 'Existing FinModel ID to load (leave empty to create a new model)' },
           database: { type: 'string', description: 'Database name (default: fm)' },
-          server: { type: 'string', description: 'Server URL (default: ai2o.ru)' },
+          server: { type: 'string', description: 'Server URL (default: api.ai2o.ru)' },
           position: { type: 'string', enum: ['cursor', 'end'], description: 'Where to insert (default: end)' }
         },
         required: []
@@ -248,7 +248,7 @@ export const BLOCK_EDITOR_TOOL_DEFINITIONS = [
         properties: {
           ecosystemId: { type: 'string', description: 'Existing Ecosystem ID to load (leave empty to create new)' },
           database: { type: 'string', description: 'Database name (default: fm)' },
-          server: { type: 'string', description: 'Server URL (default: ai2o.ru)' },
+          server: { type: 'string', description: 'Server URL (default: api.ai2o.ru)' },
           position: { type: 'string', enum: ['cursor', 'end'], description: 'Where to insert (default: end)' }
         },
         required: []
@@ -281,7 +281,7 @@ export const BLOCK_EDITOR_TOOL_DEFINITIONS = [
         properties: {
           modelId: { type: 'string', description: 'FinModel block ID to read (uses active model if omitted)' },
           database: { type: 'string', description: 'Database name (default: fm)' },
-          server: { type: 'string', description: 'Server URL (default: ai2o.ru)' }
+          server: { type: 'string', description: 'Server URL (default: api.ai2o.ru)' }
         },
         required: []
       }
@@ -298,7 +298,7 @@ export const BLOCK_EDITOR_TOOL_DEFINITIONS = [
         properties: {
           ecosystemId: { type: 'string', description: 'Ecosystem block ID to read (uses active ecosystem if omitted)' },
           database: { type: 'string', description: 'Database name (default: fm)' },
-          server: { type: 'string', description: 'Server URL (default: ai2o.ru)' }
+          server: { type: 'string', description: 'Server URL (default: api.ai2o.ru)' }
         },
         required: []
       }
@@ -656,8 +656,8 @@ export function buildBlockEditorSystemPromptAddition(documentContext) {
   addition += '- `editor_append_section` — добавить раздел (заголовок + контент) в конец\n'
   addition += '- `editor_clear_and_write` — перезаписать весь документ (осторожно!)\n'
   addition += '- `integram_normalize_page_tables` — нормализовать HTML-таблицы в базу данных Integram\n'
-  addition += '- `editor_insert_finmodel` — вставить блок Финмодели (FinModel) в документ. Интерактивная таблица с P&L, NPV, IRR. Параметры: modelId (опц.), database (default: fm), server (default: ai2o.ru)\n'
-  addition += '- `editor_insert_ecosystem` — вставить блок Экосистемы (Ecosystem) в документ. Содержит Sankey-диаграмму, матрицу Леонтьева, Монте-Карло и другие аналитические инструменты. Параметры: ecosystemId (опц.), database (default: fm), server (default: ai2o.ru)\n'
+  addition += '- `editor_insert_finmodel` — вставить блок Финмодели (FinModel) в документ. Интерактивная таблица с P&L, NPV, IRR. Параметры: modelId (опц.), database (default: fm), server (default: api.ai2o.ru)\n'
+  addition += '- `editor_insert_ecosystem` — вставить блок Экосистемы (Ecosystem) в документ. Содержит Sankey-диаграмму, матрицу Леонтьева, Монте-Карло и другие аналитические инструменты. Параметры: ecosystemId (опц.), database (default: fm), server (default: api.ai2o.ru)\n'
   addition += '- `editor_update_finmodel` — отправить инструкцию активной Финмодели (например: "увеличь выручку на 30%", "добавь строку Маркетинг"). Требует активный блок FinModel (пользователь кликнул на него).\n'
   addition += '- `editor_read_finmodel` — прочитать данные из активного блока FinModel (P&L, NPV, IRR, сценарии). Используй когда пользователь задаёт вопрос о данных финмодели (например: "Какой NPV?", "Покажи P&L", "Какой IRR в сценарии X?").\n'
   addition += '- `editor_read_ecosystem` — прочитать данные из активного блока Ecosystem (бизнесы, Sankey-потоки, матрица Леонтьева, Монте-Карло). Используй когда пользователь задаёт аналитические вопросы об экосистеме (например: "Какой бизнес имеет наибольший мультипликатор?", "Покажи Sankey", "Какой диапазон NPV?").\n'

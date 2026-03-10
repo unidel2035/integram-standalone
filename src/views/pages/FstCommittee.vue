@@ -284,6 +284,71 @@
         <!-- Right: scoring + decision -->
         <div class="fst-right">
 
+          <!-- Issue #192: Брифинг стартапера -->
+          <div v-if="startuperTwin" class="fst-rs fst-rs--briefing">
+            <div class="fst-rs-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center"
+              @click="briefingOpen = !briefingOpen">
+              <span><i class="pi pi-bolt" style="color:#ffa726"></i> Брифинг: {{ startuperTwin.company }}</span>
+              <span style="display:flex;align-items:center;gap:6px">
+                <i :class="briefingOpen ? 'pi pi-angle-up' : 'pi pi-angle-down'"
+                  style="font-size:11px;color:var(--p-text-muted-color)"></i>
+                <i class="pi pi-times" style="font-size:11px;color:var(--p-text-muted-color)"
+                  @click.stop="closeBriefing()" title="Закрыть"></i>
+              </span>
+            </div>
+            <div v-if="briefingOpen">
+              <!-- Метрики -->
+              <div v-if="startuperTwin.metrics" class="fst-briefing-metrics">
+                <div v-for="(val, key) in startuperTwin.metrics" :key="key" class="fst-briefing-m">
+                  <div class="fst-briefing-mv">{{ typeof val === 'number' ? val.toFixed(val < 10 ? 1 : 0) : val }}</div>
+                  <div class="fst-briefing-mk">{{ key }}</div>
+                </div>
+              </div>
+              <!-- Скоринг -->
+              <div v-if="startuperTwin.scoring" class="fst-briefing-score-row">
+                <span class="fst-briefing-score-lbl">Скоринг</span>
+                <div class="fst-briefing-score-bar">
+                  <div :style="{ width: startuperTwin.scoring + '%',
+                    background: startuperTwin.scoring > 65 ? '#66bb6a' : startuperTwin.scoring > 40 ? '#ffa726' : '#ef5350'
+                  }"></div>
+                </div>
+                <span class="fst-briefing-score-val">{{ startuperTwin.scoring }}/100</span>
+              </div>
+              <!-- Психотип -->
+              <div v-if="startuperTwin.psychoProfile" class="fst-briefing-psycho">
+                <span class="fst-briefing-psycho-mbti">{{ startuperTwin.psychoProfile.mbti || '—' }}</span>
+                <span class="fst-briefing-psycho-conf" :style="{
+                  color: (startuperTwin.psychoProfile.confidence || 0) > 0.7 ? '#66bb6a' : '#ffa726'
+                }">уверенность {{ Math.round((startuperTwin.psychoProfile.confidence || 0) * 100) }}%</span>
+              </div>
+              <div v-if="startuperTwin.psychoProfile?.redFlags?.length" class="fst-briefing-flags">
+                <div v-for="f in startuperTwin.psychoProfile.redFlags.slice(0,2)" :key="f"
+                  class="fst-briefing-flag fst-briefing-flag--red">
+                  <i class="pi pi-exclamation-triangle"></i> {{ f }}
+                </div>
+              </div>
+              <div v-if="startuperTwin.psychoProfile?.greenSignals?.length" class="fst-briefing-flags">
+                <div v-for="g in startuperTwin.psychoProfile.greenSignals.slice(0,2)" :key="g"
+                  class="fst-briefing-flag fst-briefing-flag--green">
+                  <i class="pi pi-check-circle"></i> {{ g }}
+                </div>
+              </div>
+              <!-- Аномалии/маяки -->
+              <div v-if="startuperTwin.beacons?.length" class="fst-briefing-beacons">
+                <div v-for="b in startuperTwin.beacons.slice(0,3)" :key="b.text"
+                  class="fst-briefing-beacon"
+                  :style="{ borderLeft: '3px solid ' + (b.severity === 'critical' ? '#ef5350' : b.severity === 'warning' ? '#ffa726' : '#66bb6a') }">
+                  <div class="fst-briefing-beacon-text">{{ b.text }}</div>
+                  <div v-if="b.recommendation" class="fst-briefing-beacon-rec">{{ b.recommendation }}</div>
+                </div>
+              </div>
+              <!-- Сводка психопрофиля -->
+              <div v-if="startuperTwin.psychoProfile?.summary" class="fst-briefing-summary">
+                {{ startuperTwin.psychoProfile.summary }}
+              </div>
+            </div>
+          </div>
+
           <!-- Project KPIs -->
           <div class="fst-rs">
             <div class="fst-rs-title"><i class="pi pi-building"></i> Проект</div>
@@ -1064,16 +1129,17 @@ const router = useRouter()
 // Load data on component mount
 onMounted(async () => {
   await Promise.all([loadProjects(), loadSubfunds(), loadAgents()])
-  // Если пришли из FstStartuper — пробуем авто-выбрать проект по twin
+  // Если пришли из FstStartuper — загружаем twin для брифинга
   const twin = JSON.parse(localStorage.getItem('startuper_twin') || 'null')
   if (twin?.company) {
+    startuperTwin.value = twin
     const needle = twin.company.toLowerCase()
     const match = PROJECTS_POOL.value.find(p =>
       p.name?.toLowerCase().includes(needle) ||
       (twin.inn && p.inn === twin.inn)
     )
     if (match) selectedProjectId.value = match.id
-    localStorage.removeItem('startuper_twin')
+    // НЕ удаляем — briefing должен оставаться пока пользователь сам не закроет
   }
   // Set initial project after data loads (if nothing matched above)
   if (PROJECTS_POOL.value.length > 0 && !selectedProjectId.value) {
@@ -1096,6 +1162,13 @@ const grEventStore = useGrEventStore()
 const conclusionVisible = ref(false)
 const projectModalVisible = ref(false)
 const previewProject = ref(null)
+// Issue #192: брифинг из FstStartuper
+const startuperTwin = ref(null)
+const briefingOpen = ref(true)
+function closeBriefing() {
+  startuperTwin.value = null
+  try { localStorage.removeItem('startuper_twin') } catch {}
+}
 const selectedProjectId = ref(null)
 const selectedSpeed = ref('normal')
 const useAI        = ref(true)
@@ -2273,6 +2346,63 @@ onUnmounted(() => {
 
 /* Decision */
 .fst-rs--decision { background: var(--surface-card); }
+
+/* ── Issue #192: Briefing panel ── */
+.fst-rs--briefing {
+  border-left: 3px solid #ffa726;
+  background: color-mix(in srgb, #ffa726 6%, var(--p-surface-card));
+}
+.fst-briefing-metrics {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;
+}
+.fst-briefing-m {
+  flex: 1 1 60px; min-width: 60px;
+  background: var(--p-surface-card);
+  border-radius: 6px; padding: 4px 6px; text-align: center;
+  border: 1px solid var(--p-content-border-color);
+}
+.fst-briefing-mv { font-size: 0.9rem; font-weight: 700; color: var(--p-text-color); }
+.fst-briefing-mk { font-size: 0.6rem; color: var(--p-text-muted-color); margin-top: 1px; }
+.fst-briefing-score-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+}
+.fst-briefing-score-lbl { font-size: 0.7rem; color: var(--p-text-muted-color); white-space: nowrap; }
+.fst-briefing-score-bar {
+  flex: 1; height: 5px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden;
+}
+.fst-briefing-score-bar div { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.fst-briefing-score-val { font-size: 0.7rem; font-weight: 700; white-space: nowrap; color: var(--p-text-color); }
+.fst-briefing-psycho {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.fst-briefing-psycho-mbti {
+  background: #7c4dff22; color: #ce93d8;
+  border: 1px solid #ce93d855;
+  border-radius: 4px; padding: 1px 7px;
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;
+}
+.fst-briefing-psycho-conf { font-size: 0.65rem; color: var(--p-text-muted-color); }
+.fst-briefing-flags { display: flex; flex-direction: column; gap: 3px; margin-bottom: 5px; }
+.fst-briefing-flag {
+  font-size: 0.65rem; padding: 2px 6px; border-radius: 3px;
+  display: flex; align-items: center; gap: 4px;
+}
+.fst-briefing-flag--red { background: #ef535020; color: #ef9a9a; }
+.fst-briefing-flag--green { background: #66bb6a20; color: #a5d6a7; }
+.fst-briefing-beacons { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; }
+.fst-briefing-beacon {
+  padding: 4px 8px;
+  background: var(--p-surface-card);
+  border-radius: 4px;
+}
+.fst-briefing-beacon-text { font-size: 0.68rem; color: var(--p-text-color); }
+.fst-briefing-beacon-rec { font-size: 0.62rem; color: var(--p-text-muted-color); margin-top: 2px; }
+.fst-briefing-summary {
+  font-size: 0.67rem; color: var(--p-text-muted-color);
+  font-style: italic; line-height: 1.4;
+  border-top: 1px solid var(--p-content-border-color);
+  padding-top: 6px; margin-top: 6px;
+}
 .fst-decision-score {
   font-size: 2.75rem;
   font-weight: 900;

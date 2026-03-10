@@ -1305,7 +1305,7 @@ export default {
       info: 'Configure the connection settings for Integram database (ddadmin)',
       apiSettings: 'Integram API Settings',
       apiUrl: 'Integram API URL',
-      apiUrlPlaceholder: 'https://ai2o.ru',
+      apiUrlPlaceholder: 'https://api.ai2o.ru',
       apiUrlHelp: 'Base URL for Integram API',
       database: 'Database Name',
       databasePlaceholder: 'ddadmin',

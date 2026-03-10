@@ -1425,7 +1425,7 @@ export default {
       info: 'Настройте параметры подключения к базе данных Integram (ddadmin)',
       apiSettings: 'Настройки API Integram',
       apiUrl: 'URL API Integram',
-      apiUrlPlaceholder: 'https://ai2o.ru',
+      apiUrlPlaceholder: 'https://api.ai2o.ru',
       apiUrlHelp: 'Базовый URL для Integram API',
       database: 'Имя базы данных',
       databasePlaceholder: 'ddadmin',

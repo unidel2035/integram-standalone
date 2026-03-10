@@ -1,5 +1,5 @@
 /**
- * fstApi.js — Integram API клиент для базы данных ai2o.ru/fst
+ * fstApi.js — Integram API клиент для базы данных api.ai2o.ru/fst
  *
  * Таблицы и реквизиты (подтверждены через integram_get_type_metadata):
  *
@@ -48,7 +48,7 @@
  *   Статусы проектов (1088): Новый=1115, На рассмотрении ИК=1117, Одобрен=1119, В работе=1125, Закрыт=1127
  */
 
-// Пустая строка → использует Vite proxy /fst → https://ai2o.ru/fst
+// Пустая строка → использует Vite proxy /fst → https://api.ai2o.ru/fst
 const FST_SERVER = ''
 const FST_DB = import.meta.env.VITE_FST_DB || 'fst-api'
 
@@ -683,9 +683,104 @@ export async function saveWeeklyReport(report) {
   return api(`_m_new/${TYPE_WEEKLY_REPORTS}?JSON_KV`, { method: 'POST', body })
 }
 
+// ── Documents / Документы (type 1069) ────────────────────────────────────
+
+export const TYPE_DOCUMENTS = 1069
+
+/**
+ * Загрузить шаблоны документов из Integram (тип 1069)
+ * Возвращает отсортированный список с полями id, name, stage, num, desc, url
+ */
+export async function getDocumentTemplates(minId = 7610, maxId = 7690) {
+  const data = await api(`object/${TYPE_DOCUMENTS}?JSON_KV&l=100`)
+  const objects = data.object || []
+  const reqs = data.reqs || {}
+
+  return objects
+    .filter(obj => Number(obj.id) >= minId && Number(obj.id) <= maxId)
+    .map(obj => {
+      const r = reqs[obj.id] || {}
+      const stageMatch = obj.val.match(/Этап (\d+)/)
+      const numMatch   = obj.val.match(/#(\d+)/)
+      const cleanName  = obj.val.replace(/^\[Этап \d+ \/ #\d+\] /, '')
+      return {
+        id:    obj.id,
+        val:   obj.val,
+        name:  cleanName,
+        stage: stageMatch ? Number(stageMatch[1]) : -1,
+        num:   numMatch   ? Number(numMatch[1])   : 0,
+        desc:  r['1236'] || '',
+        url:   r['1235'] || '',
+        content: r['1070'] || '',
+      }
+    })
+    .sort((a, b) => a.num - b.num)
+}
+
+// ── Company / Компания (type 7828) ───────────────────────────────────────
+
+export const TYPE_COMPANY = 7828
+
+/**
+ * Создать запись Компания (7828) с реквизитами:
+ *   7830=ИНН, 7831=ОГРН, 7832=КПП, 7833=Email, 7834=Телефон,
+ *   7835=Сайт, 7836=Форма собственности, 7837=Юр. адрес, 7838=Регион,
+ *   7839=ФИО руководителя, 7840=Должность, 7841=Кол-во сотрудников,
+ *   7842=Год основания, 7843=Выручка, 7844=Команда, 7845=Отрасль, 7846=Резидентство
+ */
+export async function createCompany(company) {
+  const body = new URLSearchParams({
+    [`t${TYPE_COMPANY}`]: company.name || 'Новая компания',
+    up: 1,
+    ...(company.inn          ? { t7830: company.inn }          : {}),
+    ...(company.ogrn         ? { t7831: company.ogrn }         : {}),
+    ...(company.kpp          ? { t7832: company.kpp }          : {}),
+    ...(company.email        ? { t7833: company.email }        : {}),
+    ...(company.phone        ? { t7834: company.phone }        : {}),
+    ...(company.website      ? { t7835: company.website }      : {}),
+    ...(company.legalForm    ? { t7836: company.legalForm }    : {}),
+    ...(company.legalAddress ? { t7837: company.legalAddress } : {}),
+    ...(company.region       ? { t7838: company.region }       : {}),
+    ...(company.ceoName      ? { t7839: company.ceoName }      : {}),
+    ...(company.ceoTitle     ? { t7840: company.ceoTitle }     : {}),
+    ...(company.teamSize != null ? { t7841: company.teamSize } : {}),
+    ...(company.foundedYear  ? { t7842: company.foundedYear }  : {}),
+    ...(company.revenue3y    ? { t7843: company.revenue3y }    : {}),
+    ...(company.teamDesc     ? { t7844: company.teamDesc }     : {}),
+    ...(company.sector       ? { t7845: company.sector }       : {}),
+    ...(company.residency    ? { t7846: company.residency }    : {}),
+  })
+  return api(`_m_new/${TYPE_COMPANY}?JSON_KV`, { method: 'POST', body })
+}
+
 // ── Applications / Заявки (type 1956) ────────────────────────────────────
 
 export const TYPE_APPLICATIONS = 1956
+
+/**
+ * Получить список заявок из таблицы Заявки (1956)
+ */
+export async function getApplications() {
+  const data = await api(`_d_req/${TYPE_APPLICATIONS}?JSON_KV&l=100`)
+  const objects = data.object || []
+  const reqs    = data.reqs   || {}
+  return objects.map(obj => {
+    const r = reqs[obj.id] || {}
+    return {
+      id:          obj.id,
+      name:        obj.val,
+      inn:         r['2003'] || '',
+      email:       r['2029'] || '',
+      submittedAt: r['3512'] || null,
+      trl:         r['7708'] || '',
+      projectGoals: r['7698'] || '',
+      tamSamSomRf: r['7730'] || '',
+      irrForecast: r['7736'] || '',
+      exitStrategy:r['7738'] || '',
+      contacts:    r['7740'] || '',
+    }
+  })
+}
 
 /**
  * Создать заявку в таблице Заявки (1956) с полями НТИ-анкеты
@@ -694,10 +789,12 @@ export async function createApplication(application) {
   const body = new URLSearchParams({
     [`t${TYPE_APPLICATIONS}`]: application.companyName || 'Новая заявка',
     up: 1,
+    // --- Ссылка на Компанию ---
+    ...(application.companyId ? { t7829: application.companyId } : {}),
     // --- Базовые поля ---
-    ...(application.description  ? { t1158: application.description }         : {}),
-    ...(application.inn          ? { t2237: application.inn }                 : {}),
-    ...(application.email        ? { t2240: application.email }               : {}),
+    ...(application.description  ? { t3511: application.description }         : {}),
+    ...(application.inn          ? { t2003: application.inn }                 : {}),
+    ...(application.email        ? { t2029: application.email }               : {}),
     // --- Новые поля НТИ ---
     ...(application.projectGoals     ? { t7698: application.projectGoals }     : {}),
     ...(application.techResult       ? { t7700: application.techResult }       : {}),

@@ -33,17 +33,17 @@ export default defineConfig({
         headers: { 'Origin': 'https://ai2o.ru' }
       },
       '/api': {
-        target: 'http://127.0.0.1:8082',
+        target: 'http://127.0.0.1:8084',
         changeOrigin: true,
         ws: true
       },
       '/ws': {
-        target: 'http://127.0.0.1:8082',
+        target: 'http://127.0.0.1:8084',
         changeOrigin: true,
         ws: true
       },
       '/wsclaude': {
-        target: 'http://127.0.0.1:8082',
+        target: 'http://127.0.0.1:8084',
         changeOrigin: true,
         ws: true
       }

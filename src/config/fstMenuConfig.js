@@ -84,6 +84,7 @@ export const fstMenuConfig = [
       { label: 'Суверенитет', icon: 'pi pi-shield', to: '/fst-sovereignty' },
       { label: 'Нацпроект', icon: 'pi pi-flag', to: '/fst-natproject' },
       { label: 'GR-панель', svgIcon: svgLandmark, to: '/fst-gov' },
+      { label: 'Agent Room', icon: 'pi pi-comments', to: '/fst-room' },
     ]
   },
   {

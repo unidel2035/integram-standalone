@@ -101,7 +101,7 @@ export function isGroupCollapsed(groupLabel) {
  * @returns {Promise<{serverUrl: string, database: string, token: string, xsrf: string}>}
  */
 async function getAuthContext() {
-  const rawApiBase = localStorage.getItem('apiBase') || 'ai2o.ru'  // ai2o.ru (punycode)
+  const rawApiBase = localStorage.getItem('apiBase') || 'api.ai2o.ru'  // api.ai2o.ru (punycode)
   const apiBase = rawApiBase.replace(/^https?:\/\//, '')  // strip protocol if accidentally included
   const serverUrl = `https://${apiBase}`
 

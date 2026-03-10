@@ -35,24 +35,40 @@ async function authenticateIntegram() {
       return integramTokenCache
     }
 
+    // Integram auth возвращает 302 с Set-Cookie: {db}=<token>, не JSON
     const response = await fetch(`${INTEGRAM_SERVER}/${INTEGRAM_DB}/auth`, {
       method: 'POST',
+      redirect: 'manual',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        username: INTEGRAM_USERNAME,
-        password: INTEGRAM_PASSWORD
+        login: INTEGRAM_USERNAME,
+        pwd: INTEGRAM_PASSWORD
       })
     })
 
-    if (!response.ok) {
+    // 302 = успех, токен в Set-Cookie
+    if (response.status !== 302) {
       throw new Error(`Integram auth failed: ${response.status}`)
     }
 
-    const data = await response.json()
+    // Извлекаем токен из Set-Cookie: {db}=<token>
+    const setCookies = response.headers.getSetCookie?.() || []
+    let token = null
+    for (const c of setCookies) {
+      const m = c.match(new RegExp(`^${INTEGRAM_DB}=([^;]+)`))
+      if (m) { token = m[1]; break }
+    }
+    if (!token) throw new Error('Integram auth: no token in Set-Cookie')
+
+    // Получаем _xsrf через /xsrf endpoint
+    const xsrfRes = await fetch(`${INTEGRAM_SERVER}/${INTEGRAM_DB}/xsrf`, {
+      headers: { 'X-Authorization': token, 'Cookie': `${INTEGRAM_DB}=${token}` }
+    })
+    const xsrfData = xsrfRes.ok ? await xsrfRes.json() : {}
 
     integramTokenCache = {
-      token: data.token,
-      xsrf: data._xsrf,
+      token,
+      xsrf: xsrfData._xsrf || '',
       expiresAt: Date.now() + 55 * 60 * 1000 // 55 минут
     }
 

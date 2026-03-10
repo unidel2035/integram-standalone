@@ -2,6 +2,7 @@
   <FstPageLayout>
     <!-- Header -->
     <template #header>
+      <div class="fdt-header">
       <div class="fdt-header-left">
         <div class="fdt-logo">
           <i class="pi pi-building" style="color:#42a5f5;font-size:20px"></i>
@@ -26,9 +27,10 @@
           :severity="running ? 'warn' : 'success'"
           size="small" @click="toggleRun" />
         <Button icon="pi pi-refresh" severity="secondary" size="small" @click="resetSim" title="Сброс" />
-        <SelectButton :modelValue="speed" :options="speedOpts" optionLabel="l" optionValue="v"
-          :allowEmpty="false" @update:modelValue="v => speed = v" size="small" />
+        <SelectButton v-model="speed" :options="speedOpts" optionLabel="l" optionValue="v"
+          :allowEmpty="false" size="small" />
       </div>
+      </div><!-- /fdt-header -->
     </template>
 
     <!-- Main Grid -->
@@ -95,17 +97,13 @@
       <div class="fdt-col fdt-col-sensors">
         <div class="fdt-panel-title"><i class="pi pi-shield" style="color:#ffa726"></i> Датчики рисков</div>
 
-        <div class="fdt-sensors-list">
-          <div v-for="s in sensors" :key="s.id" class="fdt-sensor-card"
-            :style="{ borderLeft: `3px solid ${statusColor(s.status)}` }">
-            <div class="fdt-sensor-header">
-              <i :class="s.icon" :style="{ color: statusColor(s.status) }"></i>
-              <span class="fdt-sensor-name">{{ s.name }}</span>
-              <div class="fdt-sensor-status-dot" :style="{ background: statusColor(s.status) }"></div>
-              <span class="fdt-sensor-status-label" :style="{ color: statusColor(s.status) }">{{ s.status }}</span>
-            </div>
-            <div class="fdt-sensor-detail">{{ s.detail }}</div>
-            <div class="fdt-sensor-time">{{ s.updated }}</div>
+        <div class="fdt-sensors-chips">
+          <div v-for="s in sensors" :key="s.id" class="fdt-sensor-chip"
+            :style="{ '--sc': statusColor(s.status) }" :title="s.detail">
+            <div class="fdt-sensor-chip-dot"></div>
+            <i :class="s.icon" class="fdt-sensor-chip-icon"></i>
+            <span class="fdt-sensor-chip-name">{{ s.name }}</span>
+            <span class="fdt-sensor-chip-status">{{ s.status }}</span>
           </div>
         </div>
 
@@ -202,6 +200,99 @@
 
     </div>
 
+    <!-- ── Ontology Blocks Panel ─────────────────────────────── -->
+    <Transition name="fdt-ob-fade">
+      <div v-if="ontologyBlocks.length" class="fdt-ob-panel">
+        <div class="fdt-ob-header">
+          <i class="pi pi-share-alt" style="color:#42a5f5;font-size:13px"></i>
+          <span class="fdt-ob-title">Живые блоки <span class="fdt-ob-subtitle">— из событийной онтологии</span></span>
+          <span class="fdt-ob-count">{{ ontologyBlocks.length }}</span>
+        </div>
+        <TransitionGroup name="fdt-ob-list" tag="div" class="fdt-ob-list">
+
+          <!-- ── TICKER: живые KPI-метрики ── -->
+          <div v-for="block in ontologyBlocks" :key="block.id"
+            :class="['fdt-ob-scene', 'fdt-ob-scene--' + block.type]"
+            :style="{ '--sc': block.color }">
+
+            <!-- ticker -->
+            <template v-if="block.type === 'ticker'">
+              <div class="fdt-ticker-head">
+                <span class="fdt-ticker-dot">●</span>
+                <span class="fdt-ticker-live">LIVE</span>
+                <span class="fdt-ticker-stage">{{ block.stage }}</span>
+                <span class="fdt-ticker-tick">тик {{ block.tick }}</span>
+              </div>
+              <div class="fdt-ticker-metrics">
+                <div v-for="m in block.metrics" :key="m.k" class="fdt-ticker-metric">
+                  <span class="fdt-tm-val">{{ m.v }}</span>
+                  <span class="fdt-tm-lbl">{{ m.l }}</span>
+                  <span :class="['fdt-tm-arrow', m.up ? 'up' : 'dn']">{{ m.up ? '▲' : '▼' }}</span>
+                </div>
+              </div>
+            </template>
+
+            <!-- health: HP-полоса -->
+            <template v-else-if="block.type === 'health'">
+              <div class="fdt-health-scene-header">
+                <span class="fdt-hs-label">{{ block.label }}</span>
+                <span class="fdt-hs-num" :style="{ color: block.color }">{{ block.value }}<span class="fdt-hs-max">/100</span></span>
+              </div>
+              <div class="fdt-hp-track">
+                <div class="fdt-hp-fill" :style="{ width: block.value + '%', background: block.color }"></div>
+                <div class="fdt-hp-segments">
+                  <div v-for="i in 10" :key="i" class="fdt-hp-seg"></div>
+                </div>
+              </div>
+              <div class="fdt-hs-sub">{{ block.sub }}</div>
+            </template>
+
+            <!-- achievement: level-up бейдж -->
+            <template v-else-if="block.type === 'achievement'">
+              <div class="fdt-ach-scene">
+                <div class="fdt-ach-emoji">{{ block.emoji }}</div>
+                <div class="fdt-ach-badge">
+                  <span class="fdt-ach-lvl">{{ block.level }}</span>
+                  <span class="fdt-ach-max">/{{ block.maxLevel }}</span>
+                </div>
+                <div class="fdt-ach-text">
+                  <div class="fdt-ach-title">{{ block.title }}</div>
+                  <div class="fdt-ach-body">{{ block.body }}</div>
+                </div>
+              </div>
+            </template>
+
+            <!-- milestone: штамп-газета -->
+            <template v-else-if="block.type === 'milestone'">
+              <div class="fdt-ms-scene">
+                <div class="fdt-ms-stamp" :style="{ borderColor: block.color, color: block.color }">{{ block.stamp }}</div>
+                <div class="fdt-ms-main">
+                  <div class="fdt-ms-amount" :style="{ color: block.color }">{{ block.amount }}</div>
+                  <div class="fdt-ms-title">{{ block.title }}</div>
+                  <div class="fdt-ms-body">{{ block.body }}</div>
+                </div>
+                <Button v-if="block.action" :label="block.action.label" size="small" text
+                  :style="{ color: block.color, fontSize: '0.68rem', padding: '2px 6px' }"
+                  @click="block.action.route && router.push(block.action.route)" />
+              </div>
+            </template>
+
+            <!-- alert: сирена-баннер -->
+            <template v-else-if="block.type === 'alert'">
+              <div :class="['fdt-alert-scene', { 'fdt-alert-critical': block.critical }]">
+                <div class="fdt-alert-title">{{ block.title }}</div>
+                <div class="fdt-alert-body">{{ block.body }}</div>
+                <Button v-if="block.action" :label="block.action.label" size="small"
+                  :style="{ background: block.color, border: 'none', fontSize: '0.68rem' }"
+                  @click="block.action.route && router.push(block.action.route)" />
+              </div>
+            </template>
+
+          </div>
+        </TransitionGroup>
+      </div>
+    </Transition>
+
     <!-- Timeline bar -->
     <div class="fdt-timeline">
       <div class="fdt-tl-stages">
@@ -217,8 +308,15 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import ProgressBar from 'primevue/progressbar'
 import Chart from 'chart.js/auto'
+import { useEventStore } from '@/stores/eventStore.js'
+
+const eventStore = useEventStore()
+const router = useRouter()
+const DT_COMPANY_ID = 'aviaklogik'   // id компании в event log
 
 // ── Company Definition ────────────────────────────────────────
 const company = {
@@ -269,6 +367,8 @@ const burnHistory = ref([9, 9, 8.5, 8.5])
 let timer = null
 const lastUpdate = ref(new Date().toLocaleTimeString('ru-RU'))
 const liveColor = ref('#4caf50')
+// Дедупликация: не генерировать один и тот же uiBlock дважды
+const emittedBlocks = new Set()
 
 // ── Tranches ──────────────────────────────────────────────────
 const tranches = ref([
@@ -340,6 +440,22 @@ const verdictBg = computed(() => {
   return h >= 75 ? 'rgba(76,175,80,0.15)' : h >= 50 ? 'rgba(255,167,38,0.15)' : 'rgba(239,83,80,0.15)'
 })
 
+// ── Ontology UI Blocks ────────────────────────────────────────
+// Читаем timeline событий, вытаскиваем те, что несут uiBlock-нагрузку.
+// Этот computed — единственный источник правды для живой панели.
+const ontologyBlocks = computed(() => {
+  const timeline = eventStore.getTimeline('company', DT_COMPANY_ID)
+  // Map: id → последнее событие (перезапись)
+  const map = new Map()
+  for (const event of timeline) {
+    const b = event.data?.uiBlock
+    if (!b) continue
+    map.set(b.id, { ...b, _ts: event.ts, _eventType: event.type })
+  }
+  // Map сохраняет порядок первого появления — карточки не прыгают
+  return [...map.values()]
+})
+
 const vitals = computed(() => [
   { key: 'rev', label: 'Выручка/мес', value: fmtM(sim.value.revenue), delta: 3.2, unit: '%', color: '#4caf50' },
   { key: 'burn', label: 'Burn Rate/мес', value: fmtM(sim.value.burnRate), delta: -2.1, unit: '%', color: '#ef5350' },
@@ -360,10 +476,10 @@ function initChart() {
   chart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: revenueHistory.value.map((_, i) => `Q${i + 1}`),
+      labels: [...revenueHistory.value].map((_, i) => `Q${i + 1}`),
       datasets: [
-        { label: 'Выручка', data: revenueHistory.value, borderColor: '#4caf50', backgroundColor: 'rgba(76,175,80,0.1)', tension: 0.4, fill: true, pointRadius: 3 },
-        { label: 'Burn', data: burnHistory.value, borderColor: '#ef5350', backgroundColor: 'rgba(239,83,80,0.05)', tension: 0.4, fill: true, borderDash: [4,2], pointRadius: 2 },
+        { label: 'Выручка', data: [...revenueHistory.value], borderColor: '#4caf50', backgroundColor: 'rgba(76,175,80,0.1)', tension: 0.4, fill: true, pointRadius: 3 },
+        { label: 'Burn', data: [...burnHistory.value], borderColor: '#ef5350', backgroundColor: 'rgba(239,83,80,0.05)', tension: 0.4, fill: true, borderDash: [4,2], pointRadius: 2 },
       ],
     },
     options: {
@@ -372,7 +488,9 @@ function initChart() {
         x: { grid: { color: '#333' }, ticks: { color: '#aaa', font: { size: 10 } } },
         y: { grid: { color: '#333' }, ticks: { color: '#aaa', font: { size: 10 } } },
       },
-      animation: { duration: 300 },
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
     },
   })
 }
@@ -389,9 +507,25 @@ function step() {
   sim.value.valuation = Math.round(sim.value.valuation * (1 + 0.015 * Math.random()))
 
   // TRL/MRL slow growth
+  const prevTrl = sim.value.trl
   if (tick.value % 15 === 0 && sim.value.trl < 9) sim.value.trl++
   if (tick.value % 20 === 0 && sim.value.mrl < 10) sim.value.mrl++
   if (tick.value % 30 === 0 && sim.value.sovereignty < 9) sim.value.sovereignty++
+  if (sim.value.trl > prevTrl) {
+    eventStore.add('company', DT_COMPANY_ID, 'TRL_ADVANCED', {
+      from: prevTrl, to: sim.value.trl,
+      uiBlock: {
+        id: 'trl-current',
+        type: 'achievement',
+        color: '#42a5f5',
+        level: sim.value.trl,
+        maxLevel: 9,
+        emoji: sim.value.trl >= 8 ? '🚀' : sim.value.trl >= 6 ? '⚡' : '🔬',
+        title: `TRL ${prevTrl} → ${sim.value.trl}`,
+        body: `Технологическая готовность подтверждена. Открывает новые условия финансирования.`,
+      },
+    })
+  }
 
   // Hiring
   if (tick.value % 8 === 0) sim.value.headcount++
@@ -415,6 +549,18 @@ function step() {
     tranches.value[1].active = false
     tranches.value[2].active = true
     addEvent({ icon: 'pi pi-check-circle', color: '#4caf50', text: 'Транш 2 (70 млн): TRL 7 достигнут — выплата!' })
+    eventStore.add('company', DT_COMPANY_ID, 'TRANCHE_RELEASED', {
+      uiBlock: {
+        id: 'tranche-2-released',
+        type: 'milestone',
+        color: '#4caf50',
+        stamp: '✓ ВЫПЛАЧЕНО',
+        amount: '70 млн ₽',
+        title: 'Транш 2 разблокирован',
+        body: 'TRL 7 подтверждён. Смарт-контракт исполнен автоматически.',
+        action: { label: 'Смарт-контракт', scroll: 'contract' },
+      },
+    })
   }
 
   // Revenue chart every 5 ticks
@@ -423,22 +569,134 @@ function step() {
     burnHistory.value.push(+(sim.value.burnRate / 1_000_000).toFixed(1))
     if (revenueHistory.value.length > 12) revenueHistory.value.shift()
     if (burnHistory.value.length > 12) burnHistory.value.shift()
-    nextTick(updateChart)
+    nextTick(() => { try { updateChart() } catch (e) {} })
   }
 
   // Stage progression
   if (sim.value.trl >= 7 && sim.value.mrl >= 6 && sim.value.stage === 'seed') {
     sim.value.stage = 'round_a'
     addEvent({ icon: 'pi pi-arrow-up-right', color: '#7e57c2', text: 'Переход: Seed → Раунд A!' })
+    eventStore.add('company', DT_COMPANY_ID, 'ROUND_OPENED', {
+      round: 'A', trl: sim.value.trl,
+      uiBlock: {
+        id: 'round-a-opened',
+        type: 'milestone',
+        color: '#7e57c2',
+        stamp: '★ РАУНД A',
+        amount: '300 млн ₽',
+        title: 'Открыт Раунд A',
+        body: 'TRL 7 + MRL 6 достигнуты. Компания готова к масштабированию.',
+        action: { label: 'Структурировать сделку', route: '/fst-deal' },
+      },
+    })
   }
 
   // Survival & exit prediction
   sim.value.survivalProb = Math.min(0.98, 0.5 + (sim.value.trl / 9) * 0.15 + (sim.value.mrl / 10) * 0.1 + (sim.value.sovereignty / 9) * 0.1 + Math.min(1, runway.value / 12) * 0.13)
   sim.value.exitMultiple = 2 + (sim.value.trl / 9) * 3 + (sim.value.mrl / 10) * 2
 
-  // Verdict
+  // Verdict + risk event
   const h = healthScore.value
   sim.value.verdict = h >= 75 ? 'Портфель здоров — плановый мониторинг' : h >= 55 ? 'Внимание: риски под контролем, наблюдаем' : 'ВНИМАНИЕ: требуется вмешательство ФСТ!'
+
+  // Живой KPI-блок — тикер с метриками
+  eventStore.add('company', DT_COMPANY_ID, 'KPI_UPDATED', {
+    uiBlock: {
+      id: 'live-kpi',
+      type: 'ticker',
+      color: '#42a5f5',
+      stage: sim.value.stage === 'seed' ? 'Seed' : 'Раунд A',
+      tick: tick.value,
+      metrics: [
+        { k: 'rev',  l: 'Выручка',  v: fmtM(sim.value.revenue),  up: true },
+        { k: 'burn', l: 'Burn/мес', v: fmtM(sim.value.burnRate), up: false },
+        { k: 'run',  l: 'Runway',   v: runway.value + ' мес',    up: runway.value >= 9 },
+        { k: 'head', l: 'Команда',  v: sim.value.headcount + ' чел', up: true },
+      ],
+    },
+    revenue: sim.value.revenue, burnRate: sim.value.burnRate,
+    trl: sim.value.trl, headcount: sim.value.headcount,
+  })
+
+  // Здоровье — HP-полоса, обновляется каждые 3 тика
+  if (tick.value % 3 === 0) {
+    const hColor = h >= 75 ? '#4caf50' : h >= 55 ? '#ffa726' : '#ef5350'
+    eventStore.add('company', DT_COMPANY_ID, 'HEALTH_SNAPSHOT', {
+      uiBlock: {
+        id: 'live-health',
+        type: 'health',
+        color: hColor,
+        value: h,
+        label: h >= 75 ? 'Здоров' : h >= 55 ? 'Внимание' : 'Критично',
+        sub: `TRL ${sim.value.trl}/9 · MRL ${sim.value.mrl}/10 · выживаемость ${Math.round(sim.value.survivalProb * 100)}%`,
+      },
+      health: h,
+    })
+  }
+
+  // Риск-блок с фиксированным id (обновляется, не накапливается)
+  if (h < 50 && tick.value % 20 === 0) {
+    eventStore.add('company', DT_COMPANY_ID, 'RISK_ELEVATED', {
+      level: h < 30 ? 'critical' : 'high',
+      health: h,
+      runway: runway.value,
+      uiBlock: {
+        id: 'risk-current',
+        type: 'alert',
+        color: h < 30 ? '#ef5350' : '#ffa726',
+        critical: h < 30,
+        title: h < 30 ? '🚨 Критический риск' : '⚠️ Повышенный риск',
+        body: `Здоровье: ${h}/100 · Runway: ${runway.value} мес.`,
+        action: { label: 'Созвать ИК', route: '/fst-committee' },
+      },
+    })
+  }
+  // Runway warning block (один раз при падении ниже 6 мес)
+  if (runway.value <= 6 && runway.value > 0 && !emittedBlocks.has('runway-critical')) {
+    emittedBlocks.add('runway-critical')
+    eventStore.add('company', DT_COMPANY_ID, 'RUNWAY_CRITICAL', {
+      runway: runway.value,
+      uiBlock: {
+        id: 'runway-critical',
+        type: 'alert',
+        color: '#ef5350',
+        critical: true,
+        title: `🔴 Runway: ${runway.value} мес.`,
+        body: 'Денег осталось меньше 6 месяцев. Нужен бридж или раунд A.',
+        action: { label: 'Открыть Раунд A', route: '/fst-deal' },
+      },
+    })
+  }
+
+  // Обновление датчиков из симуляции каждые 5 тиков
+  if (tick.value % 5 === 0) {
+    const r = runway.value
+    const find = (id) => sensors.value.find(s => s.id === id)
+    const s_runway = find('runway')
+    if (s_runway) {
+      s_runway.status = r >= 9 ? 'OK' : r >= 6 ? 'WARN' : 'ERR'
+      s_runway.detail = `Runway ${r} мес. при текущем burn`
+      s_runway.updated = 'live'
+    }
+    const s_tech = find('tech')
+    if (s_tech) {
+      s_tech.status = sim.value.trl >= 7 ? 'OK' : sim.value.trl >= 5 ? 'WARN' : 'ERR'
+      s_tech.detail = `TRL ${sim.value.trl}/9, MRL ${sim.value.mrl}/10`
+      s_tech.updated = `тик ${tick.value}`
+    }
+    const s_hiring = find('hiring')
+    if (s_hiring) {
+      s_hiring.status = sim.value.headcount > 20 ? 'OK' : 'WARN'
+      s_hiring.detail = `Команда: ${sim.value.headcount} чел.`
+      s_hiring.updated = `тик ${tick.value}`
+    }
+    const s_patents = find('patents')
+    if (s_patents) {
+      s_patents.status = sim.value.patents >= 3 ? 'OK' : 'WARN'
+      s_patents.detail = `Патентов: ${sim.value.patents}`
+      s_patents.updated = `тик ${tick.value}`
+    }
+  }
 
   // Random events
   if (Math.random() < 0.05) {
@@ -461,11 +719,15 @@ function addEvent(e) {
 }
 
 function updateChart() {
-  if (!chart) return
-  chart.data.labels = revenueHistory.value.map((_, i) => `T${i + 1}`)
-  chart.data.datasets[0].data = [...revenueHistory.value]
-  chart.data.datasets[1].data = [...burnHistory.value]
-  chart.update('none')
+  if (!chart) { try { initChart() } catch(e) {} return }
+  try {
+    const rev = revenueHistory.value.map(Number)
+    const burn = burnHistory.value.map(Number)
+    chart.data.labels = rev.map((_, i) => `Q${i + 1}`)
+    chart.data.datasets[0].data = rev
+    chart.data.datasets[1].data = burn
+    chart.update('none')
+  } catch (e) { console.warn('[chart] update error:', e.message) }
 }
 
 function toggleRun() {
@@ -477,7 +739,10 @@ function toggleRun() {
 function scheduleTimer() {
   if (!running.value) return
   const ms = Math.round(2000 / speed.value)
-  timer = setTimeout(() => { step(); scheduleTimer() }, ms)
+  timer = setTimeout(() => {
+    try { step() } catch (e) { console.warn('[sim] step error:', e.message) }
+    scheduleTimer()
+  }, ms)
 }
 
 function resetSim() {
@@ -509,7 +774,8 @@ watch(speed, () => {
 })
 
 onMounted(() => {
-  nextTick(() => { initChart(); scheduleTimer() })
+  eventStore.load('company', DT_COMPANY_ID).catch(() => {})
+  nextTick(() => { try { initChart() } catch(e) { console.warn('[chart] init error:', e.message) } scheduleTimer() })
 })
 onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 </script>
@@ -529,13 +795,11 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 20px;
-  background: transparent;
-  border-bottom: 1px solid var(--p-content-border-color);
+  width: 100%;
 }
-.fdt-header-left { flex: 1 }
-.fdt-header-center { display: flex; justify-content: center }
-.fdt-header-right { display: flex; gap: 8px; align-items: center }
+.fdt-header-left { flex: 1; min-width: 0; }
+.fdt-header-center { display: flex; justify-content: center; flex-shrink: 0; }
+.fdt-header-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 
 .fdt-logo {
   display: flex;
@@ -628,28 +892,33 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 }
 .fdt-trl-val { font-size: 11px; font-weight: 600; min-width: 28px }
 
-/* Sensors */
-.fdt-sensors-list { display: flex; flex-direction: column; gap: 6px }
-.fdt-sensor-card {
-  background: var(--p-surface-section);
-  border-radius: 6px;
-  padding: 7px 10px;
+/* Sensors — компактные чипы */
+.fdt-sensors-chips {
+  display: flex; flex-wrap: wrap; gap: 5px;
 }
-.fdt-sensor-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
+.fdt-sensor-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 7px 3px 5px;
+  background: color-mix(in srgb, var(--sc, #4caf50) 8%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--sc, #4caf50) 25%, transparent);
+  border-radius: 20px;
+  font-size: 0.68rem; cursor: default;
+  transition: background 0.3s, border-color 0.3s;
 }
-.fdt-sensor-name { flex: 1 }
-.fdt-sensor-status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+.fdt-sensor-chip-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--sc, #4caf50); flex-shrink: 0;
 }
-.fdt-sensor-status-label { font-size: 10px; font-weight: 600 }
-.fdt-sensor-detail { font-size: 11px; color: var(--p-text-muted-color); margin-top: 3px }
-.fdt-sensor-time { font-size: 10px; color: var(--p-text-muted-color); opacity: 0.6 }
+.fdt-sensor-chip-icon {
+  font-size: 0.65rem; color: var(--sc, #4caf50);
+}
+.fdt-sensor-chip-name {
+  color: var(--p-text-color); font-weight: 500;
+  max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fdt-sensor-chip-status {
+  color: var(--sc, #4caf50); font-weight: 700; font-size: 0.6rem;
+}
 
 .fdt-events-feed { display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow-y: auto }
 .fdt-event-row { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; padding: 3px 0; border-bottom: 1px solid var(--p-content-border-color) }
@@ -740,6 +1009,180 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fdt-tl-stage.active .fdt-tl-stage-dot { border-color: #42a5f5; box-shadow: 0 0 6px #42a5f5 }
 .fdt-tl-stage-label { font-size: 10px; color: var(--p-text-muted-color) }
 .fdt-tl-stage.active .fdt-tl-stage-label { color: #42a5f5; font-weight: 600 }
+
+/* ── Ontology Blocks Panel ── */
+.fdt-ob-panel {
+  margin: 0 0 0 0;
+  padding: 12px 16px 14px;
+  background: color-mix(in srgb, #42a5f5 4%, var(--p-surface-card));
+  border-top: 1px solid var(--p-content-border-color);
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+.fdt-ob-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.fdt-ob-title {
+  font-size: 0.78rem; font-weight: 700; color: var(--p-text-color);
+}
+.fdt-ob-subtitle {
+  font-weight: 400; color: var(--p-text-muted-color); font-size: 0.72rem;
+}
+.fdt-ob-count {
+  margin-left: auto;
+  background: #42a5f522; color: #42a5f5;
+  border-radius: 10px; padding: 1px 8px; font-size: 0.7rem; font-weight: 700;
+}
+.fdt-ob-list {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+/* ── Ontology Scene Cards ── */
+.fdt-ob-scene {
+  border-radius: 10px;
+  overflow: hidden;
+  flex: 1 1 220px; min-width: 200px; max-width: 380px;
+}
+
+/* TICKER — живой Bloomberg-тикер */
+.fdt-ob-scene--ticker {
+  background: #0a0a14;
+  border: 1px solid #42a5f544;
+  padding: 8px 10px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+.fdt-ticker-head {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 7px;
+}
+.fdt-ticker-dot {
+  color: #42a5f5; font-size: 0.5rem;
+  animation: ob-dot-blink 1s step-start infinite;
+}
+.fdt-ticker-live {
+  background: #ef5350; color: #fff;
+  font-size: 0.55rem; font-weight: 900;
+  padding: 1px 5px; border-radius: 3px; letter-spacing: 1px;
+}
+.fdt-ticker-stage {
+  color: #42a5f5; font-size: 0.65rem; font-weight: 700;
+}
+.fdt-ticker-tick {
+  margin-left: auto; color: #555; font-size: 0.6rem;
+}
+.fdt-ticker-metrics {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+}
+.fdt-ticker-metric {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  background: #ffffff08; border-radius: 4px; padding: 4px 2px;
+}
+.fdt-tm-val { font-size: 0.72rem; font-weight: 700; color: #e0e0e0; }
+.fdt-tm-lbl { font-size: 0.52rem; color: #666; }
+.fdt-tm-arrow { font-size: 0.55rem; }
+.fdt-tm-arrow.up { color: #4caf50; }
+.fdt-tm-arrow.dn { color: #ef5350; }
+
+/* HEALTH — игровая HP-полоса */
+.fdt-ob-scene--health {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  padding: 10px 12px;
+}
+.fdt-health-scene-header {
+  display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;
+}
+.fdt-hs-label { font-size: 0.72rem; font-weight: 700; color: var(--p-text-color); }
+.fdt-hs-num { font-size: 1.1rem; font-weight: 900; font-family: monospace; }
+.fdt-hs-max { font-size: 0.6rem; color: var(--p-text-muted-color); font-weight: 400; }
+.fdt-hp-track {
+  position: relative; height: 12px;
+  background: var(--p-surface-section); border-radius: 6px; overflow: hidden; margin-bottom: 6px;
+}
+.fdt-hp-fill {
+  height: 100%; border-radius: 6px;
+  transition: width 0.5s ease, background 0.5s ease;
+  box-shadow: 0 0 6px var(--sc, #4caf50);
+}
+.fdt-hp-segments {
+  position: absolute; inset: 0; display: flex;
+}
+.fdt-hp-seg {
+  flex: 1; border-right: 1px solid rgba(0,0,0,0.3);
+}
+.fdt-hp-seg:last-child { border: none; }
+.fdt-hs-sub { font-size: 0.62rem; color: var(--p-text-muted-color); }
+
+/* ACHIEVEMENT — level-up бейдж */
+.fdt-ob-scene--achievement {
+  background: linear-gradient(135deg, #0a1628, #1a2a48);
+  border: 1px solid #42a5f566;
+  padding: 10px 12px;
+}
+.fdt-ach-scene {
+  display: flex; align-items: center; gap: 10px;
+}
+.fdt-ach-emoji { font-size: 2rem; line-height: 1; }
+.fdt-ach-badge {
+  display: flex; align-items: baseline; gap: 2px;
+  background: linear-gradient(135deg, #42a5f5, #7c4dff);
+  border-radius: 8px; padding: 4px 10px; flex-shrink: 0;
+}
+.fdt-ach-lvl { font-size: 1.5rem; font-weight: 900; color: #fff; font-family: monospace; }
+.fdt-ach-max { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+.fdt-ach-text { flex: 1; min-width: 0; }
+.fdt-ach-title { font-size: 0.78rem; font-weight: 700; color: #e3f2fd; margin-bottom: 3px; }
+.fdt-ach-body { font-size: 0.62rem; color: #90caf9; line-height: 1.4; }
+
+/* MILESTONE — газетный штамп */
+.fdt-ob-scene--milestone {
+  background: var(--p-surface-card);
+  border: 1px solid var(--sc, #4caf50);
+  padding: 10px 12px;
+}
+.fdt-ms-scene { display: flex; align-items: center; gap: 10px; }
+.fdt-ms-stamp {
+  flex-shrink: 0;
+  border: 2px solid var(--sc, #4caf50); border-radius: 6px;
+  padding: 4px 8px; font-size: 0.6rem; font-weight: 900;
+  letter-spacing: 1px; text-transform: uppercase; text-align: center;
+  transform: rotate(-8deg); white-space: nowrap;
+  opacity: 0.9;
+}
+.fdt-ms-main { flex: 1; min-width: 0; }
+.fdt-ms-amount { font-size: 1.1rem; font-weight: 900; font-family: monospace; line-height: 1; }
+.fdt-ms-title { font-size: 0.72rem; font-weight: 700; color: var(--p-text-color); margin: 2px 0 1px; }
+.fdt-ms-body { font-size: 0.62rem; color: var(--p-text-muted-color); }
+
+/* ALERT — сирена-баннер */
+.fdt-ob-scene--alert {
+  border: 2px solid var(--sc, #ffa726);
+  flex: 1 1 100%; max-width: 100%;
+}
+.fdt-alert-scene {
+  background: color-mix(in srgb, var(--sc, #ffa726) 10%, var(--p-surface-card));
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+}
+.fdt-alert-critical { animation: alert-flash 1.5s ease-in-out infinite; }
+@keyframes alert-flash {
+  0%, 100% { background: color-mix(in srgb, #ef5350 10%, var(--p-surface-card)); }
+  50%       { background: color-mix(in srgb, #ef5350 18%, var(--p-surface-card)); }
+}
+.fdt-alert-title { font-size: 0.85rem; font-weight: 900; color: var(--p-text-color); }
+.fdt-alert-body { flex: 1; font-size: 0.68rem; color: var(--p-text-muted-color); }
+
+/* Transitions */
+.fdt-ob-fade-enter-active, .fdt-ob-fade-leave-active { transition: opacity 0.4s, transform 0.4s; }
+.fdt-ob-fade-enter-from { opacity: 0; transform: translateY(8px); }
+.fdt-ob-fade-leave-to { opacity: 0; }
+.fdt-ob-list-enter-active { transition: all 0.35s ease; }
+.fdt-ob-list-enter-from { opacity: 0; transform: translateY(12px) scale(0.97); }
+.fdt-ob-list-leave-active { transition: all 0.2s ease; position: absolute; }
+.fdt-ob-list-leave-to { opacity: 0; transform: scale(0.95); }
+.fdt-ob-list-move { transition: transform 0.3s ease; }
+
+@keyframes ob-dot-blink {
+  0%, 100% { opacity: 1; } 50% { opacity: 0; }
+}
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {

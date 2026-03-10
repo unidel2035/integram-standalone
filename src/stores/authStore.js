@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
   const primaryUserId = ref(null)
   const primaryXsrf = ref(null)
   const primaryDatabase = ref('my') // Default database - unified auth entry point (issue #3691)
-  // Issue #5405: Changed default to use getIntegramServerUrl() from config (ai2o.ru)
+  // Issue #5405: Changed default to use getIntegramServerUrl() from config (api.ai2o.ru)
   const primaryApiBase = ref(getIntegramServerUrl()) // Default API base from config
 
   // ddadmin database authentication (for backward compatibility)
@@ -67,7 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
     primaryUserId.value = localStorage.getItem('id')
     primaryXsrf.value = localStorage.getItem('_xsrf')
     primaryDatabase.value = localStorage.getItem('db') || 'my'
-    // Issue #5405: Changed default to use getIntegramServerUrl() from config (ai2o.ru)
+    // Issue #5405: Changed default to use getIntegramServerUrl() from config (api.ai2o.ru)
     primaryApiBase.value = localStorage.getItem('apiBase') || getIntegramServerUrl()
 
     // Load ddadmin auth data from legacy localStorage
@@ -288,7 +288,7 @@ export const useAuthStore = defineStore('auth', () => {
    * 2. If logged into 'my': can access all user's databases via kernel routing
    * 3. If logged into other DB: direct access to that DB only
    */
-  // Issue #5405: Changed default to use getIntegramServerUrl() from config (ai2o.ru)
+  // Issue #5405: Changed default to use getIntegramServerUrl() from config (api.ai2o.ru)
   async function login(
     loginName,
     password,

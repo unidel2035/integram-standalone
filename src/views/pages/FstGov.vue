@@ -53,6 +53,8 @@
           <div v-if="matchedMeasures.length" class="gr-match-summary">
             <Tag :value="`Подходит мер: ${matchedMeasures.length}`" severity="success" />
             <Tag :value="`Потенциал: ${totalPotential}`" severity="info" />
+            <Button label="Открыть GR-ленту" icon="pi pi-history" size="small" severity="info"
+                    @click="activeTab = 'timeline'" />
           </div>
         </div>
 
@@ -110,6 +112,320 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         ТАБ: GR Арена
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab === 'timeline'" class="gr-content" @vue:mounted="ensureDemoTimeline">
+      <GrBossArena
+        :company="arenaCompany"
+        :projects="projects"
+        :events="tlEvents"
+        :possible="tlPossible"
+        :ai-suggestion="aiSuggestion"
+        :ai-suggestion-loading="aiSuggestionLoading"
+        @pick="p => { selectedProject = p; ensureDemoTimeline() }"
+        @init="ensureDemoTimeline"
+        @attack="tlApplyEvent"
+        @remove="tlRemoveEvent"
+      />
+    </div>
+    <div v-if="activeTab === 'timeline_old'" class="gr-content" @vue:mounted="ensureDemoTimeline">
+
+      <!-- ── Шапка арены: проект + сброс ── -->
+      <div class="gr-arena-head">
+        <Select v-model="selectedProject" :options="projects" optionLabel="name"
+                placeholder="Выбрать проект…" class="gr-arena-proj-sel"
+                @change="activeTab = 'timeline'" />
+        <div class="gr-arena-actions">
+          <Button label="Сброс" icon="pi pi-refresh" size="small" severity="secondary" text @click="tlReset" />
+          <button :class="['gr-tl-vs-btn', { active: tlView === 'dag' }]" @click="tlView = tlView === 'dag' ? 'timeline' : 'dag'">
+            <i class="pi pi-share-alt" /> DAG
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Экран старта (лента пуста) ── -->
+      <div v-if="!grEventStore.getTimeline(tlProjectId).length" class="gr-arena-start">
+        <div class="gr-arena-start-icon">⚔️</div>
+        <div class="gr-arena-start-title">GR Арена</div>
+        <div class="gr-arena-start-sub">
+          Деньги фонда — не единственная ценность.<br>
+          Настоящий актив — способность пробить барьер,<br>
+          который деньгами не пробьёшь.
+        </div>
+        <Button label="Обнаружить барьеры" icon="pi pi-search"
+                size="large" severity="warning"
+                @click="ensureDemoTimeline" />
+        <div class="gr-arena-start-hint">
+          Анализируем проект и ищем регуляторные, рыночные и технологические барьеры
+        </div>
+      </div>
+
+      <!-- ── Боевой экран (есть события) ── -->
+      <template v-else>
+
+        <!-- Мультипликатор IRR — главная метрика -->
+        <div :class="['gr-multiplier', { 'gr-multiplier--max': bossesDefeated >= activeBosses.length && activeBosses.length }]">
+          <div class="gr-multiplier-left">
+            <div class="gr-multiplier-val">{{ irrMultiplier }}x</div>
+            <div class="gr-multiplier-label">к IRR фонда</div>
+          </div>
+          <div class="gr-multiplier-center">
+            <div class="gr-multiplier-track">
+              <div class="gr-multiplier-fill"
+                   :style="{ width: Math.min(100, (irrMultiplier - 1) / 2 * 100) + '%' }" />
+            </div>
+            <div class="gr-multiplier-desc">
+              <span v-if="!activeBosses.length" style="color:var(--p-text-muted-color)">Барьеры не обнаружены — запустите диагностику</span>
+              <span v-else-if="bossesActive">⚔️ Повержено {{ bossesDefeated }} из {{ activeBosses.length }} барьеров</span>
+              <span v-else style="color:#22c55e">🏆 Все барьеры пробиты — максимальный мультипликатор!</span>
+            </div>
+          </div>
+          <div class="gr-multiplier-right">
+            <GrXpBar :events="grEventStore.getTimeline(tlProjectId)" />
+          </div>
+        </div>
+
+        <!-- AI-подсказка -->
+        <div v-if="aiSuggestionLoading" class="gr-ai-hint gr-ai-hint--loading">
+          <i class="pi pi-spin pi-spinner" /> AI анализирует следующие шаги…
+        </div>
+        <div v-else-if="aiSuggestion" class="gr-ai-hint">
+          <div class="gr-ai-hint-header">
+            <i class="pi pi-sparkles" style="color:#ab47bc" />
+            <strong>AI: следующие шаги после финансирования</strong>
+            <button class="gr-ai-hint-close" @click="aiSuggestion = null">×</button>
+          </div>
+          <div class="gr-ai-hint-body" style="white-space:pre-line">{{ aiSuggestion }}</div>
+        </div>
+
+        <!-- ══ БОССЫ ══ -->
+        <div v-if="activeBosses.length" class="gr-bosses-section">
+          <div class="gr-bosses-header">
+            <span class="gr-bosses-title">⚔️ Регуляторные барьеры</span>
+            <span v-if="bossesDefeated" class="gr-bosses-score gr-bosses-score--win">{{ bossesDefeated }} повержено</span>
+            <span v-if="bossesActive" class="gr-bosses-score gr-bosses-score--active">{{ bossesActive }} активных</span>
+          </div>
+          <div class="gr-bosses-grid">
+            <GrBossCard v-for="b in activeBosses" :key="b.boss.id"
+                        :boss="b.boss"
+                        :state="b.state"
+                        :available-moves="movesForBoss(b.boss)"
+                        @attack="tlApplyEvent" />
+          </div>
+        </div>
+
+        <!-- Нет боссов но есть лента → всё хорошо -->
+        <div v-else class="gr-no-bosses">
+          <i class="pi pi-shield-check" style="font-size:2rem;color:#22c55e;opacity:0.6" />
+          <div>Барьеры не обнаружены или все преодолены</div>
+          <div style="font-size:11px">Продолжайте добавлять события через лист возможных мер ниже</div>
+        </div>
+
+        <!-- Плотность событий (compact) -->
+        <GrDensityChart :events="grEventStore.getTimeline(tlProjectId)" style="margin:8px 0" />
+
+        <!-- Аккордеон: полная лента + DAG -->
+        <details class="gr-history-details">
+          <summary class="gr-history-summary">
+            <i class="pi pi-history" /> История событий
+            <span class="gr-tl-count">{{ grEventStore.getTimeline(tlProjectId).length }}</span>
+            <span style="margin-left:auto;font-size:11px;opacity:0.6">развернуть ▼</span>
+          </summary>
+          <div class="gr-history-body">
+            <div class="gr-tl-view-switch" style="margin-bottom:8px">
+              <button :class="['gr-tl-vs-btn', { active: tlView === 'timeline' }]" @click="tlView = 'timeline'">
+                <i class="pi pi-list" /> Лента
+              </button>
+              <button :class="['gr-tl-vs-btn', { active: tlView === 'dag' }]" @click="tlView = 'dag'">
+                <i class="pi pi-share-alt" /> DAG
+              </button>
+            </div>
+            <GrTimeline v-if="tlView === 'timeline'"
+              :events="tlEvents" :possible="tlPossible" :stats="tlStats" :editable="true"
+              @apply="tlApplyEvent" @remove="tlRemoveEvent" @counterfactual="showCounterfactual" />
+            <div v-else class="gr-tl-dag-wrap">
+              <GrCausalDag :events="tlEvents" />
+            </div>
+          </div>
+        </details>
+
+      </template>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         ТАБ: GR-карта портфеля
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab === 'grmap'" class="gr-content">
+      <div class="gr-section-title">
+        <i class="pi pi-map" style="color:#42a5f5"></i>
+        GR-карта всего портфеля
+        <span class="gr-count">{{ grMapProjects.length }} проектов</span>
+      </div>
+      <div class="gr-map-desc">
+        Все проекты портфеля на единой GR-карте. Кликните на проект — перейдёт в ленту событий.
+      </div>
+
+      <div v-if="!grMapProjects.length" class="gr-map-empty">
+        <i class="pi pi-inbox" style="font-size:2rem;opacity:0.2" />
+        <div>Загрузите проекты из БД на вкладке «Меры поддержки»</div>
+      </div>
+
+      <div v-else class="gr-map-grid">
+        <div v-for="proj in grMapProjects" :key="proj.id"
+             class="gr-map-card"
+             :style="{ borderLeftColor: GR_PHASE_META[proj.grPhase].color }"
+             @click="selectedProject = proj; activeTab = 'timeline'">
+          <div class="gr-map-card-header">
+            <div class="gr-map-card-name">{{ proj.name || proj.id }}</div>
+            <div class="gr-map-phase-badge"
+                 :style="{ background: GR_PHASE_META[proj.grPhase].color + '22', color: GR_PHASE_META[proj.grPhase].color }">
+              <i :class="GR_PHASE_META[proj.grPhase].icon" style="font-size:9px" />
+              {{ GR_PHASE_META[proj.grPhase].label }}
+            </div>
+          </div>
+          <div class="gr-map-card-stats">
+            <div class="gr-map-stat">
+              <span class="gr-map-stat-val">{{ proj.funded }}</span>
+              <span class="gr-map-stat-lbl">финанс.</span>
+            </div>
+            <div class="gr-map-stat">
+              <span class="gr-map-stat-val" style="color:#f59e0b">{{ proj.applied }}</span>
+              <span class="gr-map-stat-lbl">заявок</span>
+            </div>
+            <div class="gr-map-stat">
+              <span class="gr-map-stat-val" style="color:#ef4444">{{ proj.rejected }}</span>
+              <span class="gr-map-stat-lbl">откл.</span>
+            </div>
+            <div class="gr-map-stat">
+              <span class="gr-map-stat-val" style="color:var(--p-text-muted-color)">{{ proj.total }}</span>
+              <span class="gr-map-stat-lbl">событий</span>
+            </div>
+          </div>
+          <div v-if="proj.lastEvt" class="gr-map-card-last">
+            <i class="pi pi-clock" style="font-size:9px" />
+            {{ proj.lastEvt.type?.replace(/_/g, ' ') }} · {{ new Date(proj.lastEvt.ts).toLocaleDateString('ru-RU') }}
+          </div>
+          <div v-else class="gr-map-card-last" style="font-style:italic">нет событий — нажмите для инициализации</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         ТАБ 2.5: Онтология — классы, интерфейсы, событийные цепочки
+    ════════════════════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab === 'ontology'" class="gr-content">
+
+      <!-- Заголовок онтологии -->
+      <div class="gr-onto-header-block">
+        <div class="gr-section-title">
+          <i class="pi pi-share-alt" style="color:#7c3aed"></i>
+          Событийная онтология
+        </div>
+        <div class="gr-onto-desc">
+          Объект существует только через события. Интерфейс — граница между классами, через которую проходят события.
+          Состояние = проекция ленты событий.
+        </div>
+      </div>
+
+      <!-- Классы онтологии -->
+      <div class="gr-section-title" style="margin-top:4px">
+        <i class="pi pi-table" style="color:#3b82f6"></i>
+        Классы (типы объектов)
+      </div>
+      <div class="gr-onto-classes">
+        <div v-for="(cls, key) in ONTOLOGY_CLASSES" :key="key" class="gr-onto-class-card">
+          <div class="gr-onto-class-name">{{ cls.label }}</div>
+          <div class="gr-onto-class-desc">{{ cls.description }}</div>
+          <div v-if="cls.subtypes?.length" class="gr-onto-subtypes">
+            <span v-for="st in cls.subtypes" :key="st" class="gr-onto-subtype">{{ st }}</span>
+          </div>
+          <div v-if="cls.properties?.length" class="gr-onto-props">
+            <span v-for="p in cls.properties" :key="p" class="gr-onto-prop">{{ p }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Живые интерфейсы из событийной ленты -->
+      <div class="gr-section-title" style="margin-top:20px">
+        <i class="pi pi-arrow-right-arrow-left" style="color:#7c3aed"></i>
+        Интерфейсы — живые (из ленты проекта)
+      </div>
+      <div class="gr-onto-desc" style="margin-bottom:12px">
+        Интерфейс = граница между субъектами. Событие меняет реальность на обеих сторонах.
+        Один субъект видит «подали заявку», другой — «получили заявку».
+      </div>
+
+      <!-- Карта субъектов и интерфейсов -->
+      <div class="gr-iface-map">
+        <div v-for="iface in GR_INTERFACES" :key="iface.id" class="gr-iface-card"
+             :style="{ borderColor: iface.color + '44' }">
+          <div class="gr-iface-subjects">
+            <div class="gr-iface-subj" :style="{ color: SUBJECT_ROLES[iface.from]?.color || '#64748b' }">
+              <i :class="SUBJECT_ROLES[iface.from]?.icon || 'pi pi-user'" />
+              {{ SUBJECT_ROLES[iface.from]?.label || iface.from }}
+            </div>
+            <div class="gr-iface-line" :style="{ background: iface.color }">
+              <span class="gr-iface-line-label">{{ iface.label }}</span>
+            </div>
+            <div class="gr-iface-subj" :style="{ color: SUBJECT_ROLES[iface.to]?.color || '#64748b' }">
+              <i :class="SUBJECT_ROLES[iface.to]?.icon || 'pi pi-user'" />
+              {{ SUBJECT_ROLES[iface.to]?.label || iface.to }}
+            </div>
+          </div>
+          <div class="gr-iface-desc">{{ iface.description }}</div>
+          <!-- События этого интерфейса в текущей ленте -->
+          <div class="gr-iface-live">
+            <span v-for="evtType in iface.events" :key="evtType"
+                  :class="['gr-iface-evt-tag', { 'gr-iface-evt-tag--live': tlEventsSet.has(evtType) }]"
+                  :style="tlEventsSet.has(evtType) ? { background: iface.color+'22', color: iface.color } : {}">
+              <i v-if="tlEventsSet.has(evtType)" class="pi pi-check-circle" />
+              {{ evtType }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Классические интерфейсы из онтологии -->
+      <div class="gr-section-title" style="margin-top:20px">
+        <i class="pi pi-arrow-right-arrow-left" style="color:#7c3aed"></i>
+        Структурные интерфейсы (онтология мер)
+      </div>
+      <div class="gr-onto-interfaces">
+        <div v-for="rel in ONTOLOGY_RELATIONS" :key="rel.from+rel.rel+rel.to" class="gr-onto-iface">
+          <span class="gr-onto-iface-from">{{ ONTOLOGY_CLASSES[rel.from]?.label || rel.from }}</span>
+          <div class="gr-onto-iface-arrow">
+            <span class="gr-onto-iface-rel">{{ rel.rel.replace(/_/g, ' ') }}</span>
+            <div class="gr-onto-iface-line"><i class="pi pi-arrow-right" /></div>
+          </div>
+          <span class="gr-onto-iface-to">{{ ONTOLOGY_CLASSES[rel.to]?.label || rel.to }}</span>
+        </div>
+      </div>
+
+      <!-- Событийные цепочки (причинно-следственные) -->
+      <div class="gr-section-title" style="margin-top:20px">
+        <i class="pi pi-history" style="color:#f59e0b"></i>
+        Событийные цепочки (каузальная онтология)
+      </div>
+      <div class="gr-onto-desc" style="margin-bottom:12px">
+        Триггер запускает цепочку. Каждый шаг — событие, меняющее состояние мира.
+      </div>
+      <div class="gr-onto-chains-grid">
+        <div v-for="chain in GR_ONTO_TAGS.filter(t => t.group === 'trigger')" :key="chain.id" class="gr-onto-chain-row">
+          <div class="gr-onto-chain-trigger" :style="{ borderColor: chain.color, background: chain.color + '18' }">
+            <span :style="{ color: chain.color }">⚡</span>
+            {{ chain.label }}
+          </div>
+          <div class="gr-onto-chain-arrow">→</div>
+          <div class="gr-onto-chain-steps">
+            <span v-for="(step, i) in ['Диагностика', 'Рабочая группа', 'Концепция', 'Пилот', 'НПА', 'Мера']" :key="i"
+                  class="gr-onto-chain-step">{{ step }}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -540,7 +856,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
@@ -548,19 +865,234 @@ import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
+import GrTimeline from '@/components/gr/GrTimeline.vue'
+import GrCausalDag from '@/components/gr/GrCausalDag.vue'
+import GrDensityChart from '@/components/gr/GrDensityChart.vue'
+import GrBossCard  from '@/components/gr/GrBossCard.vue'
+import GrXpBar     from '@/components/gr/GrXpBar.vue'
+import GrBossArena from '@/components/gr/GrBossArena.vue'
+import { GR_BOSSES, getBossState } from '@/config/grBosses.js'
+import { checkAchievements, calcXp, getLevel } from '@/config/grAchievements.js'
+import { playAchievement, playLevelUp } from '@/services/grSoundEngine.js'
 import { useToast } from 'primevue/usetoast'
 import { getProjects } from '@/services/fstApi.js'
-import { getMeasures, matchMeasures as matchMeasuresFromService } from '@/services/grMeasuresService.js'
-import { ONTOLOGY_TAGS as GR_ONTO_TAGS } from '@/config/grOntology.js'
+import { getMeasures, matchMeasures as matchMeasuresFromService, inferMeasures, buildRoute } from '@/services/grMeasuresService.js'
+import { counterfactual, causeChain, happensBefore, GR_INTERFACES, SUBJECT_ROLES } from '@/services/grEventEngine.js'
+import { GR_MEASURES } from '@/config/grMeasuresData.js'
+import { ONTOLOGY_TAGS as GR_ONTO_TAGS, ONTOLOGY_CLASSES, ONTOLOGY_RELATIONS } from '@/config/grOntology.js'
+import { useGrEventStore } from '@/stores/grEventStore.js'
 
 const toast = useToast()
+const route = useRoute()
 const activeTab = ref('measures')
 
 const TABS = [
   { id: 'measures',    label: 'Меры поддержки стартапов',  icon: 'pi pi-wallet' },
-  { id: 'constructor', label: 'Конструктор новых мер',     icon: 'pi pi-sitemap' },
-  { id: 'radar',       label: 'Регуляторный радар',         icon: 'pi pi-shield' },
+  { id: 'timeline',   label: 'Лента событий',             icon: 'pi pi-history' },
+  { id: 'grmap',      label: 'GR-карта портфеля',         icon: 'pi pi-map' },
+  { id: 'ontology',   label: 'Онтология',                 icon: 'pi pi-share-alt' },
+  { id: 'constructor', label: 'Конструктор новых мер',    icon: 'pi pi-sitemap' },
+  { id: 'radar',       label: 'Регуляторный радар',        icon: 'pi pi-shield' },
 ]
+
+// ─── Проект — объявляем до всех computed/watch ────────────────────────────────
+const selectedProject = ref(null)
+
+// arenaCompany — обогащённый объект компании для арены (из projects или из router state)
+const arenaCompany = computed(() => {
+  const p = selectedProject.value
+  if (!p) return null
+  return {
+    id:       p.id,
+    name:     p.name || p.id,
+    trl:      p.trl || 4,
+    stage:    p.stageName || p.stage || 'Посевная',
+    runway:   p.runway || 12,
+    riskLevel: p.riskLevel || 'green',
+    subfund:  p.subFundName || p.subfund || 'БАС',
+  }
+})
+
+// ─── Событийная онтология (Timeline tab) ─────────────────────────────────────
+const grEventStore = useGrEventStore()
+
+// tlProjectId привязан к выбранному проекту; если не выбран — 'demo'
+const tlProjectId = computed(() =>
+  selectedProject.value ? String(selectedProject.value.id) : 'demo'
+)
+
+// Параметры проекта для инициализации ленты
+function tlProjectParams() {
+  const p = selectedProject.value
+  if (!p) return { trl: 2, sector: 'БАС', name: 'Демо-проект БАС' }
+  const sectorMap = { БАС: 'БАС', РОБО: 'РОБО', МЭ: 'МЭ' }
+  return {
+    trl:    p.trl || 4,
+    sector: sectorMap[p.subFundName] || 'БАС',
+    name:   p.name || p.id,
+    stage:  p.stageName || 'Посевная',
+  }
+}
+
+// Загрузка из Integram + инициализация если лента пуста
+async function ensureDemoTimeline() {
+  await grEventStore.load(tlProjectId.value)
+  if (!grEventStore.getTimeline(tlProjectId.value).length) {
+    grEventStore.initProject(tlProjectId.value, tlProjectParams())
+  }
+}
+
+// Когда выбирается новый проект — загружаем его ленту и переходим на вкладку
+watch(selectedProject, async (p) => {
+  if (!p) return
+  await ensureDemoTimeline()
+  activeTab.value = 'timeline'
+})
+
+const tlView     = ref('timeline') // 'timeline' | 'dag'
+const tlEvents   = computed(() => {
+  const evts = grEventStore.getTimeline(tlProjectId.value)
+  return tlView.value === 'dag' ? happensBefore(evts) : evts
+})
+const tlPossible = computed(() => grEventStore.getPossible(tlProjectId.value))
+const tlStats    = computed(() => grEventStore.getStats(tlProjectId.value))
+
+// Вывод онтологии для текущего проекта
+const tlInferResult = computed(() => {
+  const s = grEventStore.getState(tlProjectId.value)
+  return inferMeasures(s)
+})
+
+// Маршрут финансирования TRL→9
+const tlFundingRoute = computed(() => {
+  const s = grEventStore.getState(tlProjectId.value)
+  return buildRoute(s, 9)
+})
+
+// Множество типов событий в текущей ленте (для подсветки интерфейсов)
+const tlEventsSet = computed(() => new Set(grEventStore.getTimeline(tlProjectId.value).map(e => e.type)))
+
+// ─── Боссы ────────────────────────────────────────────────────────────────────
+const activeBosses = computed(() => {
+  const events = grEventStore.getTimeline(tlProjectId.value)
+  return GR_BOSSES
+    .map(boss => ({ boss, state: getBossState(boss, events) }))
+    .filter(b => b.state !== null) // показываем только заспавнившихся
+})
+
+const bossesDefeated = computed(() => activeBosses.value.filter(b => b.state.defeated).length)
+const bossesActive   = computed(() => activeBosses.value.filter(b => !b.state.defeated).length)
+
+// Мультипликатор IRR: 1.0x + 0.4x за каждого побеждённого босса + 0.5x бонус за полную зачистку
+const irrMultiplier = computed(() => {
+  const d = bossesDefeated.value
+  const total = activeBosses.value.length
+  if (!total) return 1.0
+  const allDefeated = d === total && total > 0
+  return +(1.0 + d * 0.4 + (allDefeated ? 0.5 : 0)).toFixed(1)
+})
+
+// Атаки, доступные конкретному боссу — фильтруем possibleEvents по типам атак босса
+function movesForBoss(boss) {
+  const bossAttackTypes = new Set(boss.attacks.map(a => a.type))
+  return tlPossible.value.filter(p =>
+    bossAttackTypes.has(p.type) && p.probability !== 'blocked'
+  )
+}
+
+// ─── XP + Ачивки ─────────────────────────────────────────────────────────────
+const unlockedAchievements = ref(new Set())
+
+const tlXp    = computed(() => calcXp(grEventStore.getTimeline(tlProjectId.value)))
+const tlLevel = computed(() => getLevel(tlXp.value))
+
+// Следим за лентой событий → проверяем новые ачивки + leveling
+watch(() => grEventStore.getTimeline(tlProjectId.value).length, () => {
+  const events = grEventStore.getTimeline(tlProjectId.value)
+  const newAch  = checkAchievements(events, unlockedAchievements.value)
+  for (const a of newAch) {
+    unlockedAchievements.value.add(a.id)
+    playAchievement()
+    toast.add({ severity: 'success', summary: a.title, detail: a.desc, life: 4000 })
+  }
+  // level up
+  const newLevel = getLevel(calcXp(events)).level
+  if (newLevel > (tlLevel.value?.level ?? 0)) {
+    playLevelUp()
+    toast.add({ severity: 'info', summary: `Уровень ${newLevel}!`, detail: 'GR-экспертиза фонда растёт', life: 3000 })
+  }
+})
+
+// Контрфактический анализ выбранного события
+const tlCounterfactual = ref(null)
+const tlCounterfactualEvent = ref(null)
+
+function showCounterfactual(evt) {
+  tlCounterfactualEvent.value = evt
+  tlCounterfactual.value = counterfactual(tlEvents.value, evt.id, GR_MEASURES)
+}
+
+function closeCounterfactual() {
+  tlCounterfactual.value = null
+  tlCounterfactualEvent.value = null
+}
+
+// Цепочка причин для события
+const tlCauseChain = ref(null)
+
+function showCauseChain(evt) {
+  tlCauseChain.value = causeChain(tlEvents.value, evt.id)
+}
+
+const aiSuggestion = ref(null)
+const aiSuggestionLoading = ref(false)
+
+async function fetchAiSuggestion(measureName, projectName) {
+  aiSuggestionLoading.value = true
+  aiSuggestion.value = null
+  try {
+    const resp = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'deepseek/deepseek-chat',
+        prompt: `Мера «${measureName}» одобрена и профинансирована для проекта «${projectName || 'стартап'}». Что должна сделать команда в первые 30 дней? Дай 3 конкретных шага (кратко, по одной строке каждый).`,
+        systemPrompt: 'Ты — опытный GR-менеджер фонда НТИ. Отвечай кратко, только по делу, на русском языке.',
+        application: 'GrTimeline'
+      })
+    })
+    const json = await resp.json()
+    aiSuggestion.value = json.response || null
+  } catch (e) {
+    aiSuggestion.value = null
+  } finally {
+    aiSuggestionLoading.value = false
+  }
+}
+
+function tlApplyEvent(possibleEvent) {
+  if (possibleEvent.probability === 'blocked') return
+  if (possibleEvent.type === 'MEASURE_APPLIED' && possibleEvent.measure) {
+    grEventStore.applyMeasure(tlProjectId.value, possibleEvent.measure.id)
+    setTimeout(() => {
+      grEventStore.approveMeasure(tlProjectId.value, possibleEvent.measure.id,
+        parseInt((possibleEvent.measure.amount || '').replace(/\D/g, '')) || 0)
+      // AI-подсказка после финансирования меры
+      fetchAiSuggestion(possibleEvent.measure.name, selectedProject.value?.name)
+    }, 600)
+  } else {
+    grEventStore.addEvent(tlProjectId.value, possibleEvent.type, {})
+  }
+}
+
+function tlRemoveEvent(eventId) {
+  grEventStore.removeEvent(tlProjectId.value, eventId)
+}
+
+function tlReset() {
+  grEventStore.clearTimeline(tlProjectId.value)
+  grEventStore.initProject(tlProjectId.value, tlProjectParams())
+}
 
 const MEASURE_TYPES = [
   { label: 'Грант',             value: 'grant' },
@@ -574,6 +1106,28 @@ const MEASURE_TYPES = [
 const SECTORS = ['БПЛА / БАС', 'Робототехника', 'Промышленность', 'ИТ / ПО', 'Аэрокосмос', 'Все секторы']
 
 const ONTO_TAGS = GR_ONTO_TAGS.map(t => t.label)
+
+// ─── GR-карта портфеля (Multi-project GR map) ─────────────────────────────────
+
+const grMapProjects = computed(() => {
+  return (projects.value || []).map(p => {
+    const id = String(p.id)
+    const timeline = grEventStore.getTimeline(id)
+    const applied  = timeline.filter(e => e.type === 'MEASURE_APPLIED').length
+    const funded   = timeline.filter(e => e.type === 'MEASURE_FUNDED').length
+    const rejected = timeline.filter(e => e.type === 'MEASURE_REJECTED').length
+    const lastEvt  = timeline[timeline.length - 1]
+    const grPhase  = funded > 0 ? 'funded' : applied > 0 ? 'applied' : timeline.length > 0 ? 'init' : 'none'
+    return { ...p, id, applied, funded, rejected, total: timeline.length, grPhase, lastEvt }
+  })
+})
+
+const GR_PHASE_META = {
+  none:    { label: 'Без событий', color: '#64748b', icon: 'pi pi-circle' },
+  init:    { label: 'Инициирован', color: '#3b82f6', icon: 'pi pi-play' },
+  applied: { label: 'Заявки поданы', color: '#f59e0b', icon: 'pi pi-send' },
+  funded:  { label: 'Финансирован', color: '#22c55e', icon: 'pi pi-check-circle' },
+}
 
 // ─── Банк мер поддержки (удалён, данные в grMeasuresData.js) ─────────────────
 // eslint-disable-next-line no-unused-vars
@@ -677,7 +1231,6 @@ const measuresLoading = ref(false)
 
 const projects = ref([])
 const projectsLoading = ref(false)
-const selectedProject = ref(null)
 const planLoading = ref(false)
 const planText = ref('')
 const matchedMeasures = ref([])
@@ -778,6 +1331,14 @@ ${measuresStr}
     })
     const data = await res.json()
     planText.value = (data.response || '').replace(/\n/g, '<br>')
+    // Сохраняем план как событие в ленту проекта
+    if (planText.value && selectedProject.value) {
+      grEventStore.addEvent(tlProjectId.value, 'AI_PLAN_GENERATED', {
+        measures: matchedMeasures.value.length,
+        potential: totalPotential.value,
+        summary: (data.response || '').substring(0, 200),
+      })
+    }
   } catch {
     planText.value = '<p style="color:red">Ошибка генерации плана</p>'
   } finally {
@@ -1233,8 +1794,21 @@ ${regStr}
   }
 }
 
-onMounted(() => {
-  loadProjects()
+onMounted(async () => {
+  await loadProjects()
+  // Фоновая загрузка всех project-лент из Integram
+  grEventStore.loadAll().catch(() => {})
+  await ensureDemoTimeline()
+
+  // Если пришли из портфеля с company=id&tab=timeline — сразу открыть арену
+  if (route.query.company && route.query.tab === 'timeline') {
+    const found = projects.value.find(p => String(p.id) === String(route.query.company))
+    if (found) {
+      selectedProject.value = found
+      matchMeasures()
+      activeTab.value = 'timeline'
+    }
+  }
 })
 </script>
 
@@ -1522,6 +2096,53 @@ onMounted(() => {
 .regmodal-npa { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; margin-bottom: 5px; }
 .regmodal-risk { font-size: 11px; font-weight: 600; }
 .regmodal-desc { font-size: 12px; color: var(--p-text-muted-color); line-height: 1.5; }
+
+/* ─── GR-карта портфеля ─── */
+.gr-map-desc {
+  font-size: 12px;
+  color: var(--p-text-muted-color);
+  margin-bottom: 14px;
+}
+.gr-map-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px;
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+}
+.gr-map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.gr-map-card {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-left: 4px solid;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.gr-map-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.gr-map-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.gr-map-card-name { font-weight: 600; font-size: 13px; flex: 1; }
+.gr-map-phase-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.gr-map-card-stats { display: flex; gap: 10px; margin-bottom: 6px; }
+.gr-map-stat { display: flex; flex-direction: column; align-items: center; min-width: 36px; }
+.gr-map-stat-val { font-size: 1rem; font-weight: 700; color: #22c55e; }
+.gr-map-stat-lbl { font-size: 8px; color: var(--p-text-muted-color); text-transform: uppercase; }
+.gr-map-card-last { font-size: 9px; color: var(--p-text-muted-color); }
 </style>
 
 <style>
@@ -1543,4 +2164,411 @@ onMounted(() => {
 .radar-tip-global .risk-high  { color: #f87171; }
 .radar-tip-global .risk-medium { color: #fb923c; }
 .radar-tip-global .risk-low   { color: #4ade80; }
+
+/* ─── Timeline tab toolbar ─── */
+.gr-tl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+.gr-tl-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.gr-tl-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color);
+  padding: 0.5rem 0.75rem;
+  background: var(--p-primary-color)0A;
+  border: 1px solid var(--p-primary-color)22;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+.gr-tl-hint i { color: var(--p-primary-color); flex-shrink: 0; }
+
+/* ─── Онтология ─────────────────────────────────────────────────────────── */
+.gr-onto-header-block { margin-bottom: 16px; }
+.gr-onto-desc { font-size: 13px; color: var(--p-text-muted-color); line-height: 1.6; margin-bottom: 8px; }
+
+.gr-onto-classes {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+}
+.gr-onto-class-card {
+  border: 1px solid var(--p-content-border-color); border-radius: 10px;
+  padding: 12px 14px; background: var(--p-surface-card);
+}
+.gr-onto-class-name { font-weight: 700; font-size: 13px; color: var(--p-primary-color); margin-bottom: 4px; }
+.gr-onto-class-desc { font-size: 12px; color: var(--p-text-muted-color); line-height: 1.4; margin-bottom: 6px; }
+.gr-onto-subtypes, .gr-onto-props { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.gr-onto-subtype {
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  background: var(--p-primary-color); color: #fff; opacity: 0.8;
+}
+.gr-onto-prop {
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  background: var(--p-surface-section, rgba(0,0,0,0.05)); color: var(--p-text-muted-color);
+}
+
+.gr-onto-interfaces { display: flex; flex-direction: column; gap: 8px; }
+.gr-onto-iface {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 8px;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+}
+.gr-onto-iface-from {
+  font-size: 12px; font-weight: 600;
+  background: var(--p-primary-color); color: #fff; padding: 3px 10px; border-radius: 6px;
+  white-space: nowrap;
+}
+.gr-onto-iface-to {
+  font-size: 12px; font-weight: 600;
+  background: rgba(99,102,241,0.12); color: var(--p-primary-color); padding: 3px 10px; border-radius: 6px;
+  white-space: nowrap;
+}
+.gr-onto-iface-arrow { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 80px; }
+.gr-onto-iface-rel { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 2px; font-style: italic; }
+.gr-onto-iface-line { color: var(--p-text-muted-color); font-size: 16px; }
+
+.gr-onto-chains-grid { display: flex; flex-direction: column; gap: 10px; }
+.gr-onto-chain-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gr-onto-chain-trigger {
+  font-size: 12px; font-weight: 700; padding: 6px 12px;
+  border-radius: 8px; border: 1.5px solid; white-space: nowrap;
+}
+.gr-onto-chain-arrow { font-size: 18px; color: var(--p-text-muted-color); }
+.gr-onto-chain-steps { display: flex; flex-wrap: wrap; }
+.gr-onto-chain-step {
+  font-size: 11px; padding: 4px 10px; background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color); color: var(--p-text-muted-color);
+}
+.gr-onto-chain-step:first-child { border-radius: 6px 0 0 6px; }
+.gr-onto-chain-step:last-child  { border-radius: 0 6px 6px 0; }
+
+/* ─── Переключатель вид лента/DAG ─────────────────────────────────────────── */
+.gr-tl-view-switch {
+  display: flex; border: 1px solid var(--p-content-border-color); border-radius: 8px; overflow: hidden;
+}
+.gr-tl-vs-btn {
+  display: flex; align-items: center; gap: 5px; padding: 5px 12px;
+  border: none; background: transparent; cursor: pointer; font-size: 12px; font-weight: 500;
+  color: var(--p-text-muted-color); font-family: inherit; transition: all 0.15s;
+}
+.gr-tl-vs-btn:hover { background: var(--p-surface-hover, rgba(0,0,0,0.04)); color: var(--p-text-color); }
+.gr-tl-vs-btn.active { background: var(--p-primary-color); color: #fff; }
+
+/* ─── DAG wrapper ─────────────────────────────────────────────────────────── */
+.gr-tl-dag-wrap {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 14px 18px;
+}
+.gr-tl-dag-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  font-size: 13px; flex-wrap: wrap;
+}
+
+/* ─── Карта интерфейсов ───────────────────────────────────────────────────── */
+.gr-iface-map {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;
+}
+.gr-iface-card {
+  border: 1.5px solid; border-radius: 10px; padding: 14px;
+  background: var(--p-surface-card); display: flex; flex-direction: column; gap: 8px;
+}
+.gr-iface-subjects {
+  display: flex; align-items: center; gap: 8px;
+}
+.gr-iface-subj {
+  display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700;
+  flex: 1; white-space: nowrap;
+}
+.gr-iface-line {
+  flex: 1; height: 3px; border-radius: 2px; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 40px;
+}
+.gr-iface-line-label {
+  position: absolute; font-size: 9px; font-weight: 700; color: #fff;
+  background: inherit; padding: 1px 5px; border-radius: 4px; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.gr-iface-desc { font-size: 11px; color: var(--p-text-muted-color); line-height: 1.5; }
+.gr-iface-live { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.gr-iface-evt-tag {
+  font-size: 9px; padding: 2px 7px; border-radius: 10px;
+  background: var(--p-surface-section, rgba(0,0,0,0.05));
+  color: var(--p-text-muted-color); display: flex; align-items: center; gap: 3px;
+  font-weight: 500;
+}
+.gr-iface-evt-tag--live { font-weight: 700; }
+
+/* ─── Маршрут финансирования ──────────────────────────────────────────────── */
+.gr-tl-route {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 14px 18px;
+}
+.gr-tl-route-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 13px; color: var(--p-text-color);
+  margin-bottom: 12px;
+}
+.gr-tl-route-steps {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start;
+}
+.gr-tl-route-stage {
+  display: flex; flex-direction: column; gap: 4px;
+  min-width: 140px; flex: 1;
+}
+.gr-tl-route-trl {
+  font-size: 11px; font-weight: 700; color: var(--p-primary-color);
+  padding: 2px 8px; background: rgba(99,102,241,0.1);
+  border-radius: 4px; display: inline-block; width: fit-content;
+}
+.gr-tl-route-measures {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.gr-tl-route-m {
+  font-size: 11px; color: var(--p-text-muted-color);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 4px; padding: 2px 8px;
+  line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 220px;
+}
+.gr-tl-route-more {
+  font-size: 10px; color: var(--p-text-muted-color);
+  padding: 2px 6px;
+}
+
+/* ─── Пробелы в поддержке ─────────────────────────────────────────────────── */
+.gr-tl-gaps {
+  background: rgba(245,158,11,0.05);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 10px; padding: 12px 16px;
+}
+.gr-tl-gaps-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 13px; color: #b45309;
+  margin-bottom: 8px;
+}
+.gr-tl-gaps-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.gr-tl-gap-tag {
+  font-size: 11px; padding: 3px 10px;
+  background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35);
+  border-radius: 12px; color: #92400e;
+}
+
+/* ─── Контрфактический анализ ─────────────────────────────────────────────── */
+.gr-tl-counterfactual {
+  background: rgba(139,92,246,0.05);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 10px; padding: 14px 18px;
+}
+.gr-tl-cf-header {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.gr-tl-cf-ev {
+  font-size: 12px; font-weight: 600; color: #7c3aed;
+  background: rgba(139,92,246,0.12); padding: 2px 10px; border-radius: 6px;
+}
+.gr-tl-cf-close {
+  margin-left: auto; background: none; border: none; cursor: pointer;
+  font-size: 18px; color: var(--p-text-muted-color); line-height: 1;
+  padding: 0 4px; transition: color 0.15s;
+}
+.gr-tl-cf-close:hover { color: var(--p-text-color); }
+.gr-tl-cf-body {
+  display: flex; gap: 0; align-items: stretch;
+  border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; overflow: hidden;
+}
+.gr-tl-cf-col {
+  flex: 1; padding: 12px 16px;
+  background: var(--p-surface-card);
+  display: flex; flex-direction: column; gap: 6px; font-size: 13px;
+}
+.gr-tl-cf-col:not(:last-child) { border-right: 1px solid rgba(139,92,246,0.2); }
+.gr-tl-cf-label {
+  font-size: 11px; font-weight: 700; color: var(--p-text-muted-color);
+  text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;
+}
+.gr-tl-cf-arrow {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 10px; font-size: 22px; color: rgba(139,92,246,0.4);
+  background: var(--p-surface-card); flex-shrink: 0;
+}
+
+/* ─── AI Suggestion hint ─── */
+.gr-ai-hint {
+  background: var(--p-surface-card);
+  border: 1px solid #ab47bc44;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.gr-ai-hint--loading {
+  color: var(--p-text-muted-color);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gr-ai-hint-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.gr-ai-hint-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--p-text-muted-color);
+  font-size: 16px;
+  line-height: 1;
+}
+.gr-ai-hint-body {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--p-text-color);
+}
+
+/* ─── Шапка арены ─── */
+.gr-arena-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.gr-arena-proj-sel { flex: 1; min-width: 160px; }
+.gr-arena-actions { display: flex; gap: 6px; align-items: center; }
+
+/* ─── Экран старта ─── */
+@keyframes arena-glow {
+  0%, 100% { text-shadow: 0 0 20px rgba(245,158,11,0.5); }
+  50%       { text-shadow: 0 0 40px rgba(245,158,11,0.9); }
+}
+.gr-arena-start {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; padding: 48px 24px; text-align: center;
+}
+.gr-arena-start-icon {
+  font-size: 4rem; line-height: 1;
+  animation: arena-glow 2s ease infinite;
+}
+.gr-arena-start-title {
+  font-size: 1.8rem; font-weight: 900;
+  color: var(--p-text-color); letter-spacing: -0.02em;
+}
+.gr-arena-start-sub {
+  font-size: 14px; color: var(--p-text-muted-color);
+  line-height: 1.7; max-width: 420px;
+}
+.gr-arena-start-hint {
+  font-size: 11px; color: var(--p-text-muted-color);
+  font-style: italic; max-width: 360px;
+}
+
+/* ─── Мультипликатор IRR ─── */
+@keyframes multiplier-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+  50%       { box-shadow: 0 0 20px 4px rgba(34,197,94,0.25); }
+}
+.gr-multiplier {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--p-surface-card);
+  border: 2px solid var(--p-content-border-color);
+  border-radius: 14px; padding: 14px 18px;
+  margin-bottom: 14px; flex-wrap: wrap;
+  transition: border-color 0.4s;
+}
+.gr-multiplier--max {
+  border-color: #22c55e88;
+  animation: multiplier-pulse 2s ease infinite;
+}
+.gr-multiplier-left { text-align: center; min-width: 60px; }
+.gr-multiplier-val {
+  font-size: 2.2rem; font-weight: 900; color: #22c55e;
+  line-height: 1; font-variant-numeric: tabular-nums;
+  transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.gr-multiplier-label { font-size: 9px; color: var(--p-text-muted-color); text-transform: uppercase; letter-spacing: 0.06em; }
+.gr-multiplier-center { flex: 1; min-width: 140px; }
+.gr-multiplier-track {
+  height: 8px; background: var(--p-content-border-color);
+  border-radius: 6px; overflow: hidden; margin-bottom: 6px;
+}
+.gr-multiplier-fill {
+  height: 100%; background: linear-gradient(90deg, #22c55e, #86efac);
+  border-radius: 6px;
+  transition: width 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.gr-multiplier-desc { font-size: 12px; color: var(--p-text-muted-color); }
+.gr-multiplier-right { flex: 1; min-width: 200px; }
+
+/* ─── Нет боссов ─── */
+.gr-no-bosses {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 24px; color: var(--p-text-muted-color);
+  font-size: 13px; text-align: center;
+}
+
+/* ─── Аккордеон истории ─── */
+.gr-history-details {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; overflow: hidden; margin-top: 4px;
+}
+.gr-history-summary {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; cursor: pointer;
+  font-size: 12px; font-weight: 600;
+  color: var(--p-text-muted-color);
+  list-style: none; user-select: none;
+}
+.gr-history-summary::-webkit-details-marker { display: none; }
+.gr-history-summary:hover { color: var(--p-text-color); }
+.gr-history-body { padding: 12px; }
+
+/* ─── Боссы ─── */
+.gr-bosses-section {
+  margin-bottom: 12px;
+}
+.gr-bosses-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.gr-bosses-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--p-text-color);
+}
+.gr-bosses-score {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+.gr-bosses-score--win    { background: #22c55e22; color: #22c55e; }
+.gr-bosses-score--active { background: #ef444422; color: #ef4444; }
+.gr-bosses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
 </style>

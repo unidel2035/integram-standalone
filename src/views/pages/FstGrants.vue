@@ -112,7 +112,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import { useEventStore } from '@/stores/eventStore.js'
 
+const eventStore = useEventStore()
 const showAdd   = ref(false)
 const activeFilter = ref('all')
 const search    = ref('')
@@ -175,8 +177,32 @@ function isOverdue(d) { return d < new Date().toISOString().slice(0, 10) }
 
 const newGrant = ref({ name: '', org: '', type: 'grant', amount: 0, company: 'АгроДрон', deadline: '' })
 function addGrant() {
-  grants.value.push({ id: Date.now(), ...newGrant.value, status: 'pending', usedPct: 0, report: 'pending' })
+  const grantId = `grant-${Date.now()}`
+  grants.value.push({ id: grantId, ...newGrant.value, status: 'pending', usedPct: 0, report: 'pending' })
+  // Фиксируем событие в лог лида / проекта компании
+  const leadId = newGrant.value.company.replace(/\s+/g, '_').toLowerCase()
+  eventStore.add('lead', leadId, 'GRANTS_MATCHED', {
+    grantId,
+    name:    newGrant.value.name,
+    org:     newGrant.value.org,
+    type:    newGrant.value.type,
+    amount:  newGrant.value.amount,
+    company: newGrant.value.company,
+    count:   1,
+  })
   showAdd.value = false
+}
+
+function approveGrant(grant) {
+  if (grant.status === 'approved') return
+  grant.status = 'approved'
+  const leadId = grant.company.replace(/\s+/g, '_').toLowerCase()
+  eventStore.add('project', leadId, 'MEASURE_FUNDED', {
+    grantName: grant.name,
+    org:       grant.org,
+    amount:    grant.amount,
+    type:      grant.type,
+  })
 }
 
 function exportGrants() {

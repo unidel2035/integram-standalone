@@ -132,7 +132,7 @@ const messages = ref([
 ])
 
 const isDark = ref(true)
-const platformUrl = 'https://fst.drondoc.ru'
+const platformUrl = 'https://ai2fund.ru'
 
 const tabs = [
   { id: 'portfolio', icon: '📊' },

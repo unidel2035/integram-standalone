@@ -52,7 +52,7 @@ const getBaseURL = (targetDatabase = null) => {
   if (apiBase === 'localhost') return `http://localhost/${db}/`
 
   // Используем apiBase если указан, иначе используем getIntegramServerUrl() из конфига
-  // Issue #5405: Changed to use getIntegramServerUrl() from config (ai2o.ru)
+  // Issue #5405: Changed to use getIntegramServerUrl() from config (api.ai2o.ru)
   // Note: We use ?JSON_KV parameter instead of /api/ path
   // Important: Always add trailing slash to prevent double-slash issues with axios URL joining
   const baseHost = apiBase || getIntegramServerUrl()

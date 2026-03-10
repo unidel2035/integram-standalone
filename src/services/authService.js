@@ -162,7 +162,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       // 2. Authenticate to my database with same credentials
       // Issue #3651: my is the new unified user account database
-      // Issue #5405: Migrated from dronedoc.ru to ai2o.ru (ai2o.ru)
+      // Issue #5405: Migrated from dronedoc.ru to api.ai2o.ru (api.ai2o.ru)
       try {
         const myServerUrl = getIntegramServerUrl()
         const myDatabase = getIntegramDatabase()

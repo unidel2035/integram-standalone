@@ -86,7 +86,7 @@ export function useSandboxData() {
     const interceptPatterns = [
       '/api/ai-tokens/chat',
       '/api/mcp/integram',
-      'ai2o.ru',
+      'api.ai2o.ru',
       '/fst/',
       '/api/deals',
       '/api/portfolio',

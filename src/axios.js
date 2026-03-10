@@ -5,13 +5,13 @@
  *
  * Use this client ONLY for:
  * - Traditional CRUD operations (fields, harvests, observations, etc.)
- * - Endpoints served by https://ai2o.ru/A2025
+ * - Endpoints served by https://api.ai2o.ru/A2025
  *
  * DO NOT use this client for:
  * - Monolithic backend APIs (ai-tokens, youtube, recording, etc.)
  * - For those, use @/orchestratorAxios instead
  *
- * Base URL: https://ai2o.ru/A2025 (hardcoded)
+ * Base URL: https://api.ai2o.ru/A2025 (hardcoded)
  */
 
 import axios from 'axios'
@@ -31,7 +31,7 @@ const updateLoaders = isLoading => {
 }
 
 const apiClient = axios.create({
-  baseURL: 'https://ai2o.ru/A2025',
+  baseURL: 'https://api.ai2o.ru/A2025',
   timeout: 5000000,
   headers: {
     'Content-Type': 'multipart/form-data',
@@ -80,7 +80,7 @@ apiClient.interceptors.request.use(
     // 2. If logged in to other database (e.g., a2025):
     //    - All requests → X-Authorization header
     // Extract target database from request URL
-    // baseURL is 'https://ai2o.ru/A2025' - extract 'A2025'
+    // baseURL is 'https://api.ai2o.ru/A2025' - extract 'A2025'
     const requestDb = config.baseURL?.match(/\/([^/]+)\/?$/)?.[1]?.toLowerCase() || authDb
 
     if (authDb === 'my') {

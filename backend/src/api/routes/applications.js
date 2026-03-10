@@ -11,7 +11,7 @@ import { authenticateIntegram } from '../middleware/auth.js'
 
 const router = Router()
 
-const INTEGRAM_SERVER = process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru'
+const INTEGRAM_SERVER = process.env.INTEGRAM_SERVER_URL || 'https://api.ai2o.ru'
 const INTEGRAM_DB = 'fst'
 
 /**

@@ -3,7 +3,7 @@
  * Issue #3926: Dynamic spaces data loading from Integram database
  *
  * Fetches spaces (agents) data from report "spaces" at:
- * https://ai2o.ru/my/report/spaces
+ * https://api.ai2o.ru/my/report/spaces
  *
  * Universal service that works with any Integram database
  */
@@ -69,7 +69,7 @@ class SpacesService {
       // Execute the spaces report directly by name
       // Issue #3926: Use report name "spaces" directly instead of searching for ID
       // This works because Integram API accepts both report ID and report name
-      // URL: https://ai2o.ru/my/report/spaces
+      // URL: https://api.ai2o.ru/my/report/spaces
       logger.info('[spacesService] Executing report by name:', this.reportName)
       const reportData = await integramService.executeReport(this.reportName, {})
 

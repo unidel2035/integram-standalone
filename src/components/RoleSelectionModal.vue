@@ -116,6 +116,7 @@ function confirmSelection() {
 
 function skipSelection() {
   localStorage.setItem('ventureOS_roleSkipped', 'true')
+  localStorage.setItem('ventureOS_roleSelected', 'true')  // fix: isRoleSelected() checks this key
   isVisible.value = false
   emit('skipped')
 }

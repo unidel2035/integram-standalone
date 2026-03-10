@@ -106,17 +106,17 @@ class IntegramApiClient {
     // Direct Integram API URL (not through backend proxy)
     // Load from localStorage or use default
     const savedServer = localStorage.getItem('integram_server')
-    // Issue #5xxx: Changed default from app.integram.io to ai2o.ru (ai2o.ru)
+    // Issue #5xxx: Changed default from app.integram.io to api.ai2o.ru (api.ai2o.ru)
     let initialURL = savedServer || getIntegramApiBaseUrl()
 
     // Fix: Clean up incorrectly saved server URLs that include database path
     // Remove trailing slash
     initialURL = initialURL.replace(/\/$/, '')
-    // Issue #6583: Normalize legacy интеграм.рф (punycode) to ai2o.ru
-    initialURL = initialURL.replace(/xn--80afflxcxn\.xn--p1ai/g, 'ai2o.ru')
-    // Fix double-protocol (e.g. "https://https://ai2o.ru" → "https://ai2o.ru")
+    // Issue #6583: Normalize legacy интеграм.рф (punycode) to api.ai2o.ru
+    initialURL = initialURL.replace(/xn--80afflxcxn\.xn--p1ai/g, 'api.ai2o.ru')
+    // Fix double-protocol (e.g. "https://https://api.ai2o.ru" → "https://api.ai2o.ru")
     initialURL = initialURL.replace(/^(https?:\/\/)https?:\/\//, '$1')
-    // Remove database path if accidentally included (e.g., "https://ai2o.ru/a2025" -> "https://ai2o.ru")
+    // Remove database path if accidentally included (e.g., "https://api.ai2o.ru/a2025" -> "https://api.ai2o.ru")
     const dbMatch = initialURL.match(/^(https?:\/\/[^/]+)\/([a-zA-Z0-9_]+)$/)
     if (dbMatch) {
       initialURL = dbMatch[1]
@@ -152,14 +152,14 @@ class IntegramApiClient {
   }
 
   /**
-   * Set server URL (e.g., https://app.integram.io, https://ai2o.ru, etc.)
+   * Set server URL (e.g., https://app.integram.io, https://api.ai2o.ru, etc.)
    */
   setServer(serverURL) {
     // Remove trailing slash if present
     let cleanURL = serverURL.replace(/\/$/, '')
-    // Issue #6583: Normalize legacy интеграм.рф (punycode) to ai2o.ru
-    cleanURL = cleanURL.replace(/xn--80afflxcxn\.xn--p1ai/g, 'ai2o.ru')
-    // Fix double-protocol (e.g. "https://https://ai2o.ru" → "https://ai2o.ru")
+    // Issue #6583: Normalize legacy интеграм.рф (punycode) to api.ai2o.ru
+    cleanURL = cleanURL.replace(/xn--80afflxcxn\.xn--p1ai/g, 'api.ai2o.ru')
+    // Fix double-protocol (e.g. "https://https://api.ai2o.ru" → "https://api.ai2o.ru")
     cleanURL = cleanURL.replace(/^(https?:\/\/)https?:\/\//, '$1')
 
     // Fix: Remove database path from server URL if accidentally included
@@ -227,7 +227,7 @@ class IntegramApiClient {
     // Issue #5112: Save multi-database session if databases map exists
     if (Object.keys(this.databases).length > 0) {
       // Guard: ensure baseURL is clean before saving (fix double-protocol)
-      const cleanServer = (this.baseURL || '').replace(/xn--80afflxcxn\.xn--p1ai/g, 'ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
+      const cleanServer = (this.baseURL || '').replace(/xn--80afflxcxn\.xn--p1ai/g, 'api.ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
       const sessionData = {
         version: 2,  // Multi-database format version
         server: cleanServer,
@@ -276,8 +276,8 @@ class IntegramApiClient {
         // Issue #5112: Check for multi-database format (version 2)
         if (sessionData.version === 2 && sessionData.databases) {
           // New format: multi-database session
-          // Issue #6583: Normalize legacy server URLs to ai2o.ru
-          this.baseURL = (sessionData.server || '').replace(/xn--80afflxcxn\.xn--p1ai/g, 'ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
+          // Issue #6583: Normalize legacy server URLs to api.ai2o.ru
+          this.baseURL = (sessionData.server || '').replace(/xn--80afflxcxn\.xn--p1ai/g, 'api.ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
           this.databases = sessionData.databases
           this.currentDatabase = sessionData.currentDatabase
 
@@ -352,8 +352,8 @@ class IntegramApiClient {
 
         // Issue #3756: Restore authentication server URL if available
         if (sessionData.authServer) {
-          // Issue #6583: Normalize legacy server URLs to ai2o.ru
-          const normalizedServer = sessionData.authServer.replace(/xn--80afflxcxn\.xn--p1ai/g, 'ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
+          // Issue #6583: Normalize legacy server URLs to api.ai2o.ru
+          const normalizedServer = sessionData.authServer.replace(/xn--80afflxcxn\.xn--p1ai/g, 'api.ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
           this.baseURL = normalizedServer
           localStorage.setItem('integram_server', normalizedServer)
         }
@@ -691,8 +691,8 @@ class IntegramApiClient {
           this.authDatabase = sessionData.authDatabase || sessionData.database
 
           if (sessionData.authServer) {
-            // Issue #6583: Normalize legacy server URLs to ai2o.ru; fix double-protocol
-            this.baseURL = sessionData.authServer.replace(/xn--80afflxcxn\.xn--p1ai/g, 'ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
+            // Issue #6583: Normalize legacy server URLs to api.ai2o.ru; fix double-protocol
+            this.baseURL = sessionData.authServer.replace(/xn--80afflxcxn\.xn--p1ai/g, 'api.ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
           }
 
           // Issue #6583: Populate databases map so getAuthHeaders() works for cross-db access
@@ -743,8 +743,8 @@ class IntegramApiClient {
    *
    * Different servers have different URL structures:
    * - app.integram.io: https://app.integram.io/api/{database}/{endpoint}
-   * - ai2o.ru with a2025: https://ai2o.ru/a2025/{endpoint}?JSON_KV
-   * - other databases on ai2o.ru: https://ai2o.ru/{database}/{endpoint}
+   * - api.ai2o.ru with a2025: https://api.ai2o.ru/a2025/{endpoint}?JSON_KV
+   * - other databases on api.ai2o.ru: https://api.ai2o.ru/{database}/{endpoint}
    */
   buildURL(endpoint) {
     // Issue #6583: Proxy mode — route requests through a same-origin proxy
@@ -761,11 +761,11 @@ class IntegramApiClient {
     // Remove trailing slash from baseURL to prevent double slashes
     let cleanBaseURL = this.baseURL.replace(/\/$/, '')
 
-    // Check if we're using dronedoc.ru, sakhwings.ru, or ai2o.ru server
+    // Check if we're using dronedoc.ru, sakhwings.ru, or api.ai2o.ru server
     // These servers use /{database}/{endpoint} URL format (no /api/ prefix)
     const isDronedoc = cleanBaseURL.includes('dronedoc.ru') ||
                        cleanBaseURL.includes('sakhwings.ru') ||
-                       cleanBaseURL.includes('ai2o.ru')
+                       cleanBaseURL.includes('api.ai2o.ru')
 
     if (isDronedoc) {
       // Fix: Check if baseURL already contains the database path
@@ -941,7 +941,7 @@ class IntegramApiClient {
         }
       }
 
-      // Add known ai2o.ru databases that may not appear in owned list
+      // Add known api.ai2o.ru databases that may not appear in owned list
       const knownDatabases = ['kval']
       for (const db of knownDatabases) {
         if (!databases.includes(db)) databases.push(db)
@@ -1893,7 +1893,7 @@ class IntegramApiClient {
 
   /**
    * Resolve a base requisite type ID to a concrete type ID for the current database.
-   * Issue #6583: On ai2o.ru, base types (3, 7, 11, 13...) cannot be used directly
+   * Issue #6583: On api.ai2o.ru, base types (3, 7, 11, 13...) cannot be used directly
    * in _d_req. Instead, concrete types with matching baseType must be used.
    * Falls back to the original typeId if no concrete type is found (standard databases).
    *
@@ -3354,7 +3354,7 @@ class IntegramApiClient {
     if (sessionData.userName) this.userName = sessionData.userName
     if (sessionData.userRole) this.userRole = sessionData.userRole
     if (sessionData.authDatabase) this.authDatabase = sessionData.authDatabase
-    if (sessionData.authServer) this.baseURL = sessionData.authServer.replace(/xn--80afflxcxn\.xn--p1ai/g, 'ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
+    if (sessionData.authServer) this.baseURL = sessionData.authServer.replace(/xn--80afflxcxn\.xn--p1ai/g, 'api.ai2o.ru').replace(/^(https?:\/\/)https?:\/\//, '$1')
 
     // Save to localStorage
     this.saveSession()

@@ -15,6 +15,12 @@
       </div>
     </div>
 
+    <!-- Баннер предзаполнения -->
+    <div v-if="prefilled" class="apply-prefill-banner">
+      <i class="pi pi-robot"></i>
+      Данные предзаполнены из диалога с AI-агентом Стартапер — проверьте и дополните при необходимости
+    </div>
+
     <!-- Форма -->
     <div v-if="!submitted" class="apply-form-wrap">
       <!-- Прогресс -->
@@ -29,16 +35,68 @@
       <div v-if="currentStep === 0" class="step-form">
         <h2>Информация о компании</h2>
         <div class="form-grid">
-          <div class="form-field required">
+          <div class="form-field required full">
             <label>Название компании</label>
             <input v-model="form.companyName" placeholder="ООО «МоёПредприятие»" />
           </div>
           <div class="form-field">
+            <label>Форма собственности</label>
+            <select v-model="form.legalForm">
+              <option value="">— выберите —</option>
+              <option>ООО</option><option>АО</option><option>ЗАО</option>
+              <option>ИП</option><option>ПАО</option><option>НКО</option>
+            </select>
+          </div>
+          <div class="form-field">
             <label>ИНН</label>
-            <input v-model="form.inn" placeholder="1234567890" maxlength="10" />
+            <input v-model="form.inn" placeholder="1234567890" maxlength="12" />
+          </div>
+          <div class="form-field">
+            <label>ОГРН</label>
+            <input v-model="form.ogrn" placeholder="1027700132195" maxlength="15" />
+          </div>
+          <div class="form-field">
+            <label>КПП</label>
+            <input v-model="form.kpp" placeholder="770901001" maxlength="9" />
           </div>
           <div class="form-field required">
-            <label>Сфера деятельности</label>
+            <label>Email для связи</label>
+            <input v-model="form.email" type="email" placeholder="founder@company.ru" />
+          </div>
+          <div class="form-field">
+            <label>Телефон</label>
+            <input v-model="form.phone" placeholder="+7 (999) 000-00-00" />
+          </div>
+          <div class="form-field">
+            <label>Сайт компании</label>
+            <input v-model="form.website" placeholder="https://..." />
+          </div>
+          <div class="form-field">
+            <label>Регион / Город</label>
+            <input v-model="form.city" placeholder="Москва" />
+          </div>
+          <div class="form-field full">
+            <label>Юридический адрес</label>
+            <input v-model="form.legalAddress" placeholder="123456, г. Москва, ул. Примерная, д. 1" />
+          </div>
+          <div class="form-field">
+            <label>ФИО руководителя</label>
+            <input v-model="form.ceoName" placeholder="Иванов Иван Иванович" />
+          </div>
+          <div class="form-field">
+            <label>Должность руководителя</label>
+            <input v-model="form.ceoTitle" placeholder="Генеральный директор / CEO" />
+          </div>
+          <div class="form-field">
+            <label>Год основания</label>
+            <input v-model.number="form.foundedYear" type="number" min="2000" max="2026" />
+          </div>
+          <div class="form-field">
+            <label>Кол-во сотрудников</label>
+            <input v-model.number="form.teamSize" type="number" step="1" placeholder="15" />
+          </div>
+          <div class="form-field required">
+            <label>Отрасль / Сектор</label>
             <select v-model="form.sector">
               <option value="">— выберите —</option>
               <option>Беспилотные авиационные системы (БАС)</option>
@@ -49,27 +107,17 @@
               <option>Сервисы и услуги на базе БПЛА</option>
             </select>
           </div>
-          <div class="form-field required">
-            <label>Стадия развития</label>
-            <select v-model="form.stage">
-              <option value="">— выберите —</option>
-              <option>Pre-Seed (идея / прототип)</option>
-              <option>Seed (MVP / ранние продажи)</option>
-              <option>Серия A (PMF / масштабирование)</option>
-              <option>Серия B (рост / экспансия)</option>
-            </select>
-          </div>
           <div class="form-field">
-            <label>Год основания</label>
-            <input v-model.number="form.foundedYear" type="number" min="2000" max="2026" />
-          </div>
-          <div class="form-field">
-            <label>Город / регион</label>
-            <input v-model="form.city" placeholder="Москва" />
+            <label>Резидентство / акселераторы</label>
+            <input v-model="form.residency" placeholder="Сколково, ИННОПОЛИС, Фонд НТИ..." />
           </div>
           <div class="form-field full">
-            <label>Краткое описание проекта</label>
-            <textarea v-model="form.description" rows="3" placeholder="Опишите ваш проект в 2–3 предложениях..."></textarea>
+            <label>Состав ключевой команды</label>
+            <textarea v-model="form.teamDesc" rows="2" placeholder="ФИО, роль, компетенции..."></textarea>
+          </div>
+          <div class="form-field full">
+            <label>Выручка компании за последние 3 года, млн ₽</label>
+            <input v-model="form.revenue3y" placeholder="2022: 5, 2023: 12, 2024: 28" />
           </div>
         </div>
       </div>
@@ -188,10 +236,6 @@
             <label>Текущая выручка ARR, млн ₽</label>
             <input v-model.number="form.arr" type="number" step="0.5" />
           </div>
-          <div class="form-field full">
-            <label>Выручка компании за последние 3 года, млн ₽</label>
-            <input v-model="form.revenue3y" placeholder="2022: 5, 2023: 12, 2024: 28" />
-          </div>
           <div class="form-field">
             <label>Прогноз IRR, %</label>
             <input v-model.number="form.irrForecast" type="number" step="1" placeholder="35" />
@@ -203,18 +247,6 @@
           <div class="form-field full">
             <label>Стратегия выхода (exit)</label>
             <textarea v-model="form.exitStrategy" rows="2" placeholder="IPO, M&A, стратегический покупатель, buyback..."></textarea>
-          </div>
-          <div class="form-field">
-            <label>Размер команды, чел.</label>
-            <input v-model.number="form.teamSize" type="number" step="1" />
-          </div>
-          <div class="form-field">
-            <label>CEO / Основатель</label>
-            <input v-model="form.ceoName" placeholder="ФИО, LinkedIn/hh.ru" />
-          </div>
-          <div class="form-field full">
-            <label>Состав ключевой команды</label>
-            <textarea v-model="form.teamDesc" rows="2" placeholder="ФИО, роль, компетенции..."></textarea>
           </div>
           <div class="form-field full">
             <label>Опыт работы с институтами развития</label>
@@ -247,21 +279,9 @@
               <span class="file-name">{{ form.modelFile || 'Или перетащите файл сюда' }}</span>
             </div>
           </div>
-          <div class="form-field required">
-            <label>Email для связи</label>
-            <input v-model="form.email" type="email" placeholder="founder@company.ru" />
-          </div>
-          <div class="form-field">
-            <label>Телефон</label>
-            <input v-model="form.phone" placeholder="+7 (999) 000-00-00" />
-          </div>
           <div class="form-field">
             <label>Telegram</label>
             <input v-model="form.telegram" placeholder="@username" />
-          </div>
-          <div class="form-field">
-            <label>Сайт компании</label>
-            <input v-model="form.website" placeholder="https://..." />
           </div>
           <div class="form-field full">
             <label class="checkbox-label">
@@ -300,6 +320,50 @@
       </div>
     </div>
 
+    <!-- Таблица поданных заявок -->
+    <div v-if="!submitted" class="apply-table-section">
+      <div class="ats-header">
+        <h2>Поданные заявки</h2>
+        <button class="apply-btn secondary" @click="loadApplications" :disabled="loadingApps">
+          <i :class="loadingApps ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"></i>
+        </button>
+      </div>
+      <div v-if="loadingApps" class="ats-empty">Загрузка...</div>
+      <div v-else-if="applications.length === 0" class="ats-empty">Заявок пока нет</div>
+      <div v-else class="ats-wrap">
+        <table class="ats-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Компания</th>
+              <th>ИНН</th>
+              <th>Email</th>
+              <th>TRL</th>
+              <th>TAM/SAM/SOM (РФ)</th>
+              <th>IRR %</th>
+              <th>Дата</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="app in applications" :key="app.id">
+              <td class="ats-id">FST-{{ app.id }}</td>
+              <td class="ats-name">{{ app.name }}</td>
+              <td class="ats-muted">{{ app.inn || '—' }}</td>
+              <td class="ats-muted">{{ app.email || '—' }}</td>
+              <td><span class="ats-badge">TRL {{ app.trl || '—' }}</span></td>
+              <td class="ats-muted small">{{ app.tamSamSomRf || '—' }}</td>
+              <td class="ats-irr">{{ app.irrForecast ? app.irrForecast + '%' : '—' }}</td>
+              <td class="ats-muted small">{{ app.submittedAt ? app.submittedAt.slice(0,10) : '—' }}</td>
+              <td>
+                <a :href="`https://api.ai2o.ru/fst/edit_obj/${app.id}`" target="_blank" class="ats-icon-btn" title="Открыть в базе"><i class="pi pi-external-link"></i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Успех -->
     <div v-else class="apply-success">
       <div class="success-icon">✓</div>
@@ -317,16 +381,32 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useToast } from 'primevue/usetoast'
-import { createProjectFromApplication, createApplication } from '@/services/fstApi'
+import { createProjectFromApplication, createApplication, createCompany, getApplications } from '@/services/fstApi'
+import { useStartuperStore } from '@/stores/startuperStore'
+import { useEventStore } from '@/stores/eventStore.js'
 
 const toast = useToast()
+const startuperStore = useStartuperStore()
+const eventStore = useEventStore()
+
+// ID лида для event log — привязан к ИНН или имени компании
+const applyLeadId = computed(() => `apply-${form.value.inn || form.value.companyName?.replace(/\s+/g, '_') || 'draft'}`)
 const currentStep = ref(0)
 const submitted = ref(false)
 const applicationId = ref('')
 const submitting = ref(false)
+const applications = ref([])
+const loadingApps = ref(false)
+
+async function loadApplications() {
+  loadingApps.value = true
+  try { applications.value = await getApplications() } catch (e) { console.error(e) } finally { loadingApps.value = false }
+}
+onMounted(loadApplications)
+const prefilled = ref(false)
 
 const steps = ['Компания', 'Проект', 'Рынок', 'Финансы', 'Документы']
 
@@ -339,17 +419,22 @@ const criteria = ref([
 
 const form = ref({
   // Шаг 1 — Компания
-  companyName: '', inn: '', sector: '', stage: '', foundedYear: null, city: '', description: '',
+  companyName: '', legalForm: '', inn: '', ogrn: '', kpp: '',
+  email: '', phone: '', website: '', city: '', legalAddress: '',
+  ceoName: '', ceoTitle: '', foundedYear: null, teamSize: null,
+  sector: '', residency: '', teamDesc: '', revenue3y: '',
+  // Стадия — остаётся в заявке
+  stage: '', description: '',
   // Шаг 2 — Проект
   projectGoals: '', techResult: '', commercialResult: '', trl: 5, sovereignty: 70,
   dualUse: '', rdBacklog: '', rid: '', timeline: '', projectCost: null,
   // Шаг 3 — Рынок
   potentialCustomers: '', monetizationModel: '', tamSamSomRf: '', tamSamSomAbroad: '',
   exportMarkets: '', competitors: '', competitiveAnalysis: '',
-  // Шаг 4 — Финансы и команда
-  amount: 100, equityOffered: 15, preMoney: null, arr: null, revenue3y: '',
-  irrForecast: null, runway: null, exitStrategy: '', teamSize: null, ceoName: '',
-  teamDesc: '', devInstitutions: '', govFunding: '',
+  // Шаг 4 — Финансы
+  amount: 100, equityOffered: 15, preMoney: null, arr: null,
+  irrForecast: null, runway: null, exitStrategy: '',
+  devInstitutions: '', govFunding: '',
   // Шаг 5 — Документы
   email: '', phone: '', telegram: '', website: '', agreeNda: false,
   pitchFile: '', modelFile: ''
@@ -377,8 +462,34 @@ const nextSteps = ref([
   { num: '4', title: 'Term Sheet',    desc: 'Согласование условий и закрытие сделки' }
 ])
 
+onMounted(() => {
+  const p = startuperStore.prefill
+  if (p) {
+    Object.keys(p).forEach(k => {
+      if (p[k] !== null && p[k] !== undefined && p[k] !== '') {
+        form.value[k] = p[k]
+      }
+    })
+    prefilled.value = true
+    startuperStore.clear()
+    toast.add({ severity: 'info', summary: 'Данные из Стартапер', detail: 'Форма предзаполнена данными из диалога с агентом', life: 5000 })
+  }
+})
+
 function prevStep() { if (currentStep.value > 0) currentStep.value-- }
-function nextStep() { if (currentStep.value < steps.length - 1) currentStep.value++ }
+function nextStep() {
+  if (currentStep.value < steps.length - 1) {
+    // Фиксируем переход по шагу как шаг заполнения заявки
+    if (currentStep.value === 0) {
+      eventStore.add('lead', applyLeadId.value, 'APPLY_STARTED', {
+        company: form.value.companyName,
+        inn:     form.value.inn,
+        trl:     form.value.trl,
+      })
+    }
+    currentStep.value++
+  }
+}
 
 function handleFile(e, type) {
   const file = e.target.files[0]
@@ -394,34 +505,56 @@ async function submitApplication() {
   if (!canSubmit.value || submitting.value) return
   submitting.value = true
   try {
-    // Сохраняем в Заявки (1956) с полными полями НТИ
+    // 1. Создаём Компания (7828)
+    const companyResult = await createCompany({
+      name:         form.value.companyName,
+      legalForm:    form.value.legalForm,
+      inn:          form.value.inn,
+      ogrn:         form.value.ogrn,
+      kpp:          form.value.kpp,
+      email:        form.value.email,
+      phone:        form.value.phone,
+      website:      form.value.website,
+      region:       form.value.city,
+      legalAddress: form.value.legalAddress,
+      ceoName:      form.value.ceoName,
+      ceoTitle:     form.value.ceoTitle,
+      foundedYear:  form.value.foundedYear,
+      teamSize:     form.value.teamSize,
+      sector:       form.value.sector,
+      residency:    form.value.residency,
+      teamDesc:     form.value.teamDesc,
+      revenue3y:    form.value.revenue3y,
+    })
+    const companyId = companyResult?.obj || companyResult?.id
+
+    // 2. Создаём Заявка (1956) со ссылкой на Компанию
     const appResult = await createApplication({
-      companyName: form.value.companyName,
-      inn: form.value.inn,
-      email: form.value.email,
-      description: form.value.description,
+      companyName:  form.value.companyName,
+      companyId,
+      inn:          form.value.inn,
+      email:        form.value.email,
+      description:  form.value.description,
       projectGoals: form.value.projectGoals,
-      techResult: form.value.techResult,
+      techResult:   form.value.techResult,
       commercialResult: form.value.commercialResult,
-      trl: form.value.trl,
-      dualUse: form.value.dualUse,
-      rdBacklog: form.value.rdBacklog,
-      rid: form.value.rid,
-      timeline: form.value.timeline,
-      projectCost: form.value.projectCost ? form.value.projectCost * 1_000_000 : null,
+      trl:          form.value.trl,
+      dualUse:      form.value.dualUse,
+      rdBacklog:    form.value.rdBacklog,
+      rid:          form.value.rid,
+      timeline:     form.value.timeline,
+      projectCost:  form.value.projectCost ? form.value.projectCost * 1_000_000 : null,
       potentialCustomers: form.value.potentialCustomers,
-      monetizationModel: form.value.monetizationModel,
-      tamSamSomRf: form.value.tamSamSomRf,
-      tamSamSomAbroad: form.value.tamSamSomAbroad,
-      exportMarkets: form.value.exportMarkets,
+      monetizationModel:  form.value.monetizationModel,
+      tamSamSomRf:       form.value.tamSamSomRf,
+      tamSamSomAbroad:   form.value.tamSamSomAbroad,
+      exportMarkets:     form.value.exportMarkets,
       competitiveAnalysis: form.value.competitiveAnalysis,
-      irrForecast: form.value.irrForecast,
+      irrForecast:  form.value.irrForecast,
       exitStrategy: form.value.exitStrategy,
-      teamDesc: form.value.teamDesc,
-      revenue3y: form.value.revenue3y,
       devInstitutions: form.value.devInstitutions,
-      govFunding: form.value.govFunding,
-      contacts: `${form.value.ceoName} | ${form.value.email} | ${form.value.phone} | ${form.value.telegram}`.replace(/\s*\|\s*$/,''),
+      govFunding:   form.value.govFunding,
+      contacts: `${form.value.ceoName} | ${form.value.email} | ${form.value.phone} | ${form.value.telegram}`.replace(/\s*\|\s*\|?\s*$/,''),
     })
 
     // Также создаём проект в Проекты ФСТ (1155) для пайплайна
@@ -430,6 +563,17 @@ async function submitApplication() {
     const id = appResult?.obj || appResult?.id
     applicationId.value = id ? `FST-${id}` : `FST-${Date.now().toString().slice(-6)}`
     submitted.value = true
+
+    // Финальное событие — заявка отправлена
+    eventStore.add('lead', applyLeadId.value, 'SENT_TO_IC', {
+      company:     form.value.companyName,
+      inn:         form.value.inn,
+      trl:         form.value.trl,
+      sector:      form.value.sector,
+      askRub:      form.value.amount,
+      applicationId: applicationId.value,
+      completeness: 100,
+    })
 
     toast.add({ severity: 'success', summary: 'Заявка отправлена', detail: `Номер: ${applicationId.value}`, life: 5000 })
   } catch (error) {
@@ -512,4 +656,32 @@ async function submitApplication() {
 .ns-num { width: 28px; height: 28px; border-radius: 50%; background: var(--p-primary-color); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
 .ns-title { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }
 .ns-desc  { font-size: 0.75rem; color: var(--p-text-muted-color); }
+
+.apply-prefill-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: 8px; font-size: 0.82rem;
+  background: color-mix(in srgb, var(--p-primary-color) 8%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--p-primary-color) 30%, transparent);
+  color: var(--p-text-color);
+}
+.apply-prefill-banner i { color: var(--p-primary-color); flex-shrink: 0; }
+</style>
+
+<style scoped>
+.apply-table-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 20px; }
+.ats-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.ats-header h2 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
+.ats-empty { text-align: center; padding: 24px; color: var(--p-text-muted-color); font-size: 0.85rem; }
+.ats-wrap { overflow-x: auto; }
+.ats-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 640px; }
+.ats-table th { padding: 6px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; white-space: nowrap; }
+.ats-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
+.ats-id   { font-size: 0.72rem; color: var(--p-text-muted-color); font-family: monospace; }
+.ats-name { font-weight: 600; }
+.ats-muted { color: var(--p-text-muted-color); }
+.ats-muted.small { font-size: 0.75rem; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ats-badge { background: var(--p-primary-color); color: #fff; padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+.ats-irr { font-weight: 700; color: #66bb6a; }
+.ats-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--surface-border); color: var(--p-text-muted-color); text-decoration: none; font-size: 0.78rem; transition: all 0.15s; }
+.ats-icon-btn:hover { border-color: var(--p-primary-color); color: var(--p-primary-color); }
 </style>

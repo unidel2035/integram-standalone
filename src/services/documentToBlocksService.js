@@ -196,13 +196,13 @@ export async function insertAsSimpleTable(section, quillEditor) {
  * @param {Object} section - Table section from parser
  * @param {Object} quillEditor - Quill editor instance
  * @param {Object} [integramConfig] - Integram connection config
- * @param {string} [integramConfig.serverURL='ai2o.ru'] - Server URL
+ * @param {string} [integramConfig.serverURL='api.ai2o.ru'] - Server URL
  * @param {string} [integramConfig.database='my'] - Database name
  * @param {string} [integramConfig.token] - Auth token
  * @returns {Promise<{ typeId: string|null, error: string|null }>}
  */
 export async function insertAsIntegramTable(section, quillEditor, integramConfig = {}) {
-  const { serverURL = 'ai2o.ru', database = 'my', token = '' } = integramConfig
+  const { serverURL = 'api.ai2o.ru', database = 'my', token = '' } = integramConfig
 
   try {
     const { headers = [], rows = [] } = section

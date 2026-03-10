@@ -110,7 +110,7 @@ class IntegraMCPService {
    * Authenticate with Integram API via MCP server
    *
    * @param {Object} credentials - Authentication credentials
-   * @param {string} credentials.serverURL - Integram server URL (e.g., 'https://ai2o.ru')
+   * @param {string} credentials.serverURL - Integram server URL (e.g., 'https://api.ai2o.ru')
    * @param {string} credentials.database - Database name (e.g., 'my', 'a2025')
    * @param {string} credentials.login - Username
    * @param {string} credentials.password - Password

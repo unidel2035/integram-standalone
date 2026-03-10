@@ -1,22 +1,45 @@
 <template>
   <FstPageLayout title="Юридические документы" subtitle="Генератор шаблонов: term sheet, SPA, SHA, NDA, опционные соглашения">
     <template #actions>
-      <button class="legal-btn primary" @click="showGenerator = true">Создать документ</button>
+      <button class="legal-btn primary" @click="showGenerator = true"><i class="pi pi-plus"></i> Создать документ</button>
     </template>
 
-    <!-- Библиотека документов -->
+    <!-- Библиотека документов из базы -->
     <div class="legal-section">
-      <h2>Библиотека шаблонов</h2>
-      <div class="doc-grid">
-        <div v-for="tmpl in templates" :key="tmpl.id" class="doc-card" @click="selectTemplate(tmpl)">
-          <div class="doc-icon">{{ tmpl.icon }}</div>
+      <div class="lib-header">
+        <h2>Библиотека шаблонов</h2>
+        <span v-if="loadingTemplates" class="lib-loading">Загрузка...</span>
+        <span v-else class="lib-count">{{ allTemplates.length }} шаблонов из базы</span>
+      </div>
+
+      <!-- Табы по этапам -->
+      <div class="stage-tabs">
+        <button v-for="s in stages" :key="s.id"
+          :class="['stage-tab', { active: activeStage === s.id }]"
+          @click="activeStage = s.id">
+          <span class="stage-num">{{ s.label }}</span>
+          <span class="stage-cnt">{{ templatesByStage[s.id]?.length || 0 }}</span>
+        </button>
+      </div>
+
+      <div class="doc-grid" v-if="!loadingTemplates">
+        <div v-for="tmpl in currentTemplates" :key="tmpl.id" class="doc-card">
+          <div class="doc-card-top">
+            <div class="doc-icon">{{ stageIcon(tmpl.stage) }}</div>
+            <div class="doc-num">#{{ tmpl.num }}</div>
+          </div>
           <div class="doc-name">{{ tmpl.name }}</div>
           <div class="doc-desc">{{ tmpl.desc }}</div>
-          <div class="doc-meta">
-            <span class="doc-type" :class="tmpl.type">{{ typeLabel(tmpl.type) }}</span>
-            <span class="doc-pages">{{ tmpl.pages }} стр.</span>
+          <div class="doc-footer">
+            <span class="doc-stage-badge" :class="'stage-' + tmpl.stage">Этап {{ tmpl.stage }}</span>
+            <div class="doc-btns">
+              <a v-if="tmpl.url" :href="tmpl.url" target="_blank" class="icon-btn" title="Открыть файл"><i class="pi pi-eye"></i></a>
+              <button class="icon-btn" title="Создать на основе шаблона" @click="useTemplate(tmpl)"><i class="pi pi-copy"></i></button>
+              <button class="icon-btn" title="Скачать" @click="downloadTemplate(tmpl)"><i class="pi pi-download"></i></button>
+            </div>
           </div>
         </div>
+        <div v-if="currentTemplates.length === 0" class="doc-empty">Нет шаблонов для этого этапа</div>
       </div>
     </div>
 
@@ -42,8 +65,9 @@
             <td class="doc-date">{{ doc.createdAt }}</td>
             <td><span class="doc-status" :class="doc.status">{{ docStatusLabel(doc.status) }}</span></td>
             <td class="doc-actions">
-              <button class="action-btn" @click="downloadDoc(doc)">Скачать</button>
-              <button class="action-btn" @click="signDoc(doc)">Подписать</button>
+              <button class="icon-btn" title="Просмотр" @click="downloadDoc(doc)"><i class="pi pi-eye"></i></button>
+              <button class="icon-btn" title="Скачать" @click="downloadDoc(doc)"><i class="pi pi-download"></i></button>
+              <button class="icon-btn" title="Подписать" @click="signDoc(doc)"><i class="pi pi-pen-to-square"></i></button>
             </td>
           </tr>
         </tbody>
@@ -66,7 +90,7 @@
           <div class="tsc-note">{{ c.note }}</div>
         </div>
       </div>
-      <button class="legal-btn primary" @click="generateTermSheet">Сгенерировать Term Sheet</button>
+      <button class="legal-btn primary" @click="generateTermSheet"><i class="pi pi-file-edit"></i> Сгенерировать Term Sheet</button>
     </div>
 
     <!-- Генератор Modal -->
@@ -95,8 +119,8 @@
           </select>
         </div>
         <div class="modal-actions">
-          <button class="legal-btn secondary" @click="showGenerator = false">Отмена</button>
-          <button class="legal-btn primary" @click="generateDoc">Создать документ</button>
+          <button class="legal-btn secondary" @click="showGenerator = false"><i class="pi pi-times"></i> Отмена</button>
+          <button class="legal-btn primary" @click="generateDoc"><i class="pi pi-check"></i> Создать документ</button>
         </div>
       </div>
     </div>
@@ -104,22 +128,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import { getDocumentTemplates } from '@/services/fstApi'
 
 const showGenerator = ref(false)
 const selectedTemplate = ref(null)
+const loadingTemplates = ref(true)
+const allTemplates = ref([])
+const activeStage = ref(0)
 
-const templates = ref([
-  { id: 'term_sheet', icon: '📋', name: 'Term Sheet', desc: 'Предварительное соглашение об инвестиции', type: 'investment', pages: 8 },
-  { id: 'spa',        icon: '📄', name: 'SPA (договор купли-продажи акций)', desc: 'Share Purchase Agreement по ГК РФ', type: 'investment', pages: 45 },
-  { id: 'sha',        icon: '🤝', name: 'SHA (соглашение акционеров)', desc: 'Drag-along, tag-along, антиразводнение', type: 'investment', pages: 30 },
-  { id: 'nda',        icon: '🔐', name: 'NDA (соглашение о конфиденциальности)', desc: 'По ФЗ-98 о коммерческой тайне', type: 'legal', pages: 6 },
-  { id: 'option',     icon: '📈', name: 'Опционное соглашение (ESOP)', desc: 'Опционы для команды, vesting 4 года', type: 'hr', pages: 15 },
-  { id: 'loan',       icon: '💰', name: 'Конвертируемая нота (KN)', desc: 'Прозрачный мост до следующего раунда', type: 'investment', pages: 12 }
-])
+const stages = [
+  { id: 0, label: 'Этап 0 — Преамбула' },
+  { id: 1, label: 'Этап 1 — Знакомство' },
+  { id: 2, label: 'Этап 2 — Due Diligence' },
+  { id: 3, label: 'Этап 3 — Юр. оформление' },
+]
 
-function selectTemplate(tmpl) { selectedTemplate.value = tmpl }
+onMounted(async () => {
+  try {
+    allTemplates.value = await getDocumentTemplates()
+  } catch (e) {
+    console.error('Failed to load templates:', e)
+  } finally {
+    loadingTemplates.value = false
+  }
+})
+
+const templatesByStage = computed(() => {
+  const map = {}
+  for (const t of allTemplates.value) {
+    if (!map[t.stage]) map[t.stage] = []
+    map[t.stage].push(t)
+  }
+  return map
+})
+
+const currentTemplates = computed(() => templatesByStage.value[activeStage.value] || [])
+
+function stageIcon(stage) {
+  return ['🔒', '📋', '🔍', '📝'][stage] || '📄'
+}
+
+function useTemplate(tmpl) {
+  genForm.value.templateName = tmpl.name
+  showGenerator.value = true
+}
+function downloadTemplate(tmpl) {
+  if (tmpl.url) window.open(tmpl.url, '_blank')
+  else alert('Файл шаблона не прикреплён: ' + tmpl.name)
+}
+
 function typeLabel(t) { return { investment: 'Инвест.', legal: 'Правовой', hr: 'HR' }[t] || t }
 
 const generatedDocs = ref([
@@ -176,6 +235,42 @@ function generateDoc() {
 
 .legal-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
 .legal-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
+
+.lib-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.lib-header h2 { margin: 0; font-size: 1.05rem; color: var(--p-text-color); }
+.lib-loading { font-size: 0.78rem; color: var(--p-text-muted-color); }
+.lib-count { font-size: 0.78rem; color: var(--p-text-muted-color); }
+
+.stage-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.stage-tab { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--surface-border); background: var(--surface-ground); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.78rem; transition: all 0.2s; }
+.stage-tab:hover { border-color: var(--p-primary-color); color: var(--p-text-color); }
+.stage-tab.active { background: var(--p-primary-color); border-color: var(--p-primary-color); color: #fff; }
+.stage-num { font-weight: 600; }
+.stage-cnt { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 0 6px; font-size: 0.7rem; }
+.stage-tab:not(.active) .stage-cnt { background: var(--surface-border); color: var(--p-text-muted-color); }
+
+.doc-card-top { display: flex; align-items: center; justify-content: space-between; }
+.doc-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+.doc-btns { display: flex; gap: 4px; }
+.icon-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-muted-color); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: all 0.15s; text-decoration: none; }
+.icon-btn:hover { border-color: var(--p-primary-color); color: var(--p-primary-color); background: var(--p-primary-color)11; }
+.doc-card { display: flex; flex-direction: column; gap: 5px; }
+.doc-empty { grid-column: 1/-1; text-align: center; padding: 24px; color: var(--p-text-muted-color); font-size: 0.85rem; }
+.doc-num { font-size: 0.68rem; color: var(--p-text-muted-color); font-weight: 600; }
+.doc-stage-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+.doc-stage-badge.stage-0 { background: #42a5f522; color: #42a5f5; }
+.doc-stage-badge.stage-1 { background: #66bb6a22; color: #66bb6a; }
+.doc-stage-badge.stage-2 { background: #ff980022; color: #ff9800; }
+.doc-stage-badge.stage-3 { background: var(--p-primary-color)22; color: var(--p-primary-color); }
+
+.preview-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.preview-stage { font-size: 0.72rem; color: var(--p-text-muted-color); margin-bottom: 4px; }
+.preview-header h3 { margin: 0; font-size: 1rem; color: var(--p-text-color); }
+.close-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--p-text-muted-color); padding: 2px 6px; }
+.preview-desc { font-size: 0.85rem; color: var(--p-text-muted-color); margin: 0 0 16px; line-height: 1.5; }
+.preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.modal-wide { width: 520px; }
+a.legal-btn { text-decoration: none; display: inline-flex; align-items: center; }
 
 .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
 .doc-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; cursor: pointer; transition: border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }

@@ -850,7 +850,7 @@ class IntegamDocEditorSchema {
     // Extract href from HTML anchor if present
     const hrefMatch = fileValue.match(/href="([^"]+)"/)
     if (hrefMatch) {
-      const serverUrl = this.integramService.serverURL || 'https://ai2o.ru'
+      const serverUrl = this.integramService.serverURL || 'https://api.ai2o.ru'
       const path = hrefMatch[1].startsWith('/') ? hrefMatch[1] : `/${hrefMatch[1]}`
       return `${serverUrl}${path}`
     }

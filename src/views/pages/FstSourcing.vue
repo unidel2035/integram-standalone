@@ -319,8 +319,10 @@ import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useRouter } from 'vue-router'
 import { logger } from '@/utils/logger'
+import { useEventStore } from '@/stores/eventStore.js'
 
 const router = useRouter()
+const eventStore = useEventStore()
 
 // State
 const loading = ref(false)
@@ -611,9 +613,18 @@ function addToDealflow(lead) {
   if (lead.addedToDealflow) return
 
   lead.addedToDealflow = true
+  // Фиксируем событие в event log
+  const dealId = `deal-${lead.inn || lead.company?.replace(/\s+/g, '_') || Date.now()}`
+  eventStore.add('deal', dealId, 'DEAL_SOURCED', {
+    company: lead.company,
+    inn:     lead.inn,
+    subFund: lead.sector,
+    stage:   lead.stage,
+    source:  lead.source,
+    score:   lead.score,
+  })
 
   // In production, this would make an API call to create a deal in /fst-dealflow
-  // For now, just show confirmation
   setTimeout(() => {
     if (confirm(`Добавить "${lead.company}" в воронку dealflow?`)) {
       logger.debug('Adding to dealflow:', lead)

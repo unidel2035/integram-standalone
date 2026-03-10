@@ -4,7 +4,7 @@
     <!-- Config panel — ввод ID модели -->
     <div v-if="configOpen" class="fst-fm-config">
       <div class="fst-fm-config-row">
-        <label>ID модели (ai2o.ru/fm)</label>
+        <label>ID модели (api.ai2o.ru/fm)</label>
         <input v-model="editModelId" type="text" placeholder="например: 17446" class="fst-fm-config-input" />
       </div>
       <div class="fst-fm-config-actions">
@@ -31,7 +31,7 @@
       <i class="pi pi-wallet" style="font-size:2rem;opacity:0.3"></i>
       <p>Финансовая модель не подключена</p>
       <button class="fst-fm-btn fst-fm-btn--primary" @click="openConfig">
-        <i class="pi pi-link"></i> Подключить модель из ai2o.ru/fm
+        <i class="pi pi-link"></i> Подключить модель из api.ai2o.ru/fm
       </button>
     </div>
 
@@ -73,7 +73,7 @@ import FinParser from './FinParser.vue'
 const props = defineProps({
   modelId: { type: [String, Number], default: '' },
   database: { type: String, default: 'fm' },
-  server: { type: String, default: 'ai2o.ru' }
+  server: { type: String, default: 'api.ai2o.ru' }
 })
 
 const emit = defineEmits(['update:modelId'])

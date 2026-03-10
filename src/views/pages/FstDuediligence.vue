@@ -131,6 +131,9 @@
 <script setup>
 import { ref } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import { useEventStore } from '@/stores/eventStore.js'
+
+const eventStore = useEventStore()
 
 const showNewDd  = ref(false)
 const ddActiveTab = ref('legal')
@@ -199,18 +202,37 @@ const techChecks = ref([
 const newDd = ref({ company: '', inn: '', type: 'full', priority: 'Средний' })
 
 function startDd() {
+  const ddId = `dd-${newDd.value.inn || newDd.value.company.replace(/\s+/g, '_')}-${Date.now()}`
   activeDds.value.push({
-    id: Date.now(),
-    company: newDd.value.company,
-    stage: 'pending',
-    progress: 0,
+    id:         ddId,
+    company:    newDd.value.company,
+    stage:      'pending',
+    progress:   0,
     daysRunning: 0,
-    verdict: 'pending',
+    verdict:    'pending',
     verdictText: 'DD только запущен.',
-    strengths: [],
-    risks: []
+    strengths:  [],
+    risks:      []
+  })
+  eventStore.add('deal', ddId, 'DEAL_SOURCED', {
+    company: newDd.value.company,
+    inn:     newDd.value.inn,
+    type:    newDd.value.type,
+    source:  'due_diligence',
   })
   showNewDd.value = false
+}
+
+function completeDd(dd, verdict) {
+  dd.verdict = verdict
+  dd.stage   = 'complete'
+  const ddId = String(dd.id)
+  eventStore.add('deal', ddId, 'DD_COMPLETED', {
+    company:  dd.company,
+    verdict,
+    risks:    dd.risks?.length || 0,
+    strengths: dd.strengths?.length || 0,
+  })
 }
 
 function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.value?.company) }

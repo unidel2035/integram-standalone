@@ -2,7 +2,7 @@
  * Sessions Service
  *
  * Service for managing user sessions data stored in Integram database.
- * Data source: https://ai2o.ru/my/object/4224/?F_U={USER_ID}
+ * Data source: https://api.ai2o.ru/my/object/4224/?F_U={USER_ID}
  *
  * This service provides:
  * - Fetching sessions from Integram database

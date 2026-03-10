@@ -84,7 +84,7 @@ export function useOSMMapPersistence(mapStateRef) {
     formData.append('_xsrf', xsrf)
 
     const response = await fetch(
-      `https://ai2o.ru/a2025/_m_new/952500`,
+      `https://api.ai2o.ru/a2025/_m_new/952500`,
       {
         method: 'POST',
         headers: { 'X-Authorization': token },
@@ -108,7 +108,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
       // Set object type (point)
       await fetch(
-        `https://ai2o.ru/a2025/_m_set/${objectId}?JSON&t952514=952515`,
+        `https://api.ai2o.ru/a2025/_m_set/${objectId}?JSON&t952514=952515`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -122,7 +122,7 @@ export function useOSMMapPersistence(mapStateRef) {
       pointFormData.append('_xsrf', xsrf)
 
       const pointResponse = await fetch(
-        `https://ai2o.ru/a2025/_m_new/952527?JSON&up=${objectId}`,
+        `https://api.ai2o.ru/a2025/_m_new/952527?JSON&up=${objectId}`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -136,7 +136,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
       // Set coordinates
       await fetch(
-        `https://ai2o.ru/a2025/_m_set/${pointId}?JSON&t952536=${marker.position.lat}&t952541=${marker.position.lng}`,
+        `https://api.ai2o.ru/a2025/_m_set/${pointId}?JSON&t952536=${marker.position.lat}&t952541=${marker.position.lng}`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -146,7 +146,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
       // Link to concession
       await fetch(
-        `https://ai2o.ru/a2025/_m_set/${objectId}?JSON&t952512=${rowId}`,
+        `https://api.ai2o.ru/a2025/_m_set/${objectId}?JSON&t952512=${rowId}`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -170,7 +170,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
       // Set object type (polygon)
       await fetch(
-        `https://ai2o.ru/a2025/_m_set/${objectId}?JSON&t952514=952518`,
+        `https://api.ai2o.ru/a2025/_m_set/${objectId}?JSON&t952514=952518`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -184,7 +184,7 @@ export function useOSMMapPersistence(mapStateRef) {
       polygonFormData.append('_xsrf', xsrf)
 
       const polygonResponse = await fetch(
-        `https://ai2o.ru/a2025/_m_new/952548?JSON&up=${objectId}`,
+        `https://api.ai2o.ru/a2025/_m_new/952548?JSON&up=${objectId}`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -204,7 +204,7 @@ export function useOSMMapPersistence(mapStateRef) {
         coordFormData.append('_xsrf', xsrf)
 
         const coordResponse = await fetch(
-          `https://ai2o.ru/a2025/_m_new/952559?JSON&up=${polygonId}`,
+          `https://api.ai2o.ru/a2025/_m_new/952559?JSON&up=${polygonId}`,
           {
             method: 'POST',
             headers: { 'X-Authorization': token },
@@ -218,7 +218,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
         // Set coordinates
         await fetch(
-          `https://ai2o.ru/a2025/_m_set/${coordId}?JSON&t952564=${point.lat}&t952569=${point.lng}`,
+          `https://api.ai2o.ru/a2025/_m_set/${coordId}?JSON&t952564=${point.lat}&t952569=${point.lng}`,
           {
             method: 'POST',
             headers: { 'X-Authorization': token },
@@ -229,7 +229,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
       // Link to concession
       await fetch(
-        `https://ai2o.ru/a2025/_m_set/${objectId}?JSON&t952512=${rowId}`,
+        `https://api.ai2o.ru/a2025/_m_set/${objectId}?JSON&t952512=${rowId}`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -253,7 +253,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
       // Set object type (curve)
       await fetch(
-        `https://ai2o.ru/a2025/_m_set/${objectId}?JSON&t952514=952521`,
+        `https://api.ai2o.ru/a2025/_m_set/${objectId}?JSON&t952514=952521`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -267,7 +267,7 @@ export function useOSMMapPersistence(mapStateRef) {
       curveFormData.append('_xsrf', xsrf)
 
       const curveResponse = await fetch(
-        `https://ai2o.ru/a2025/_m_new/952574?JSON&up=${objectId}`,
+        `https://api.ai2o.ru/a2025/_m_new/952574?JSON&up=${objectId}`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },
@@ -287,7 +287,7 @@ export function useOSMMapPersistence(mapStateRef) {
         coordFormData.append('_xsrf', xsrf)
 
         const coordResponse = await fetch(
-          `https://ai2o.ru/a2025/_m_new/952585?JSON&up=${curveId}`,
+          `https://api.ai2o.ru/a2025/_m_new/952585?JSON&up=${curveId}`,
           {
             method: 'POST',
             headers: { 'X-Authorization': token },
@@ -301,7 +301,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
         // Set coordinates
         await fetch(
-          `https://ai2o.ru/a2025/_m_set/${coordId}?JSON&t952590=${point.lat}&t952595=${point.lng}`,
+          `https://api.ai2o.ru/a2025/_m_set/${coordId}?JSON&t952590=${point.lat}&t952595=${point.lng}`,
           {
             method: 'POST',
             headers: { 'X-Authorization': token },
@@ -312,7 +312,7 @@ export function useOSMMapPersistence(mapStateRef) {
 
       // Link to concession
       await fetch(
-        `https://ai2o.ru/a2025/_m_set/${objectId}?JSON&t952512=${rowId}`,
+        `https://api.ai2o.ru/a2025/_m_set/${objectId}?JSON&t952512=${rowId}`,
         {
           method: 'POST',
           headers: { 'X-Authorization': token },

@@ -1,6 +1,6 @@
 <template>
     <div class="layout-footer">
-        <span class="footer-copy">&copy; 2026 ФСТ НТИ &middot; <a href="https://drondoc.ru" target="_blank" rel="noopener noreferrer">DronDoc Platform</a></span>
+        <span class="footer-copy">&copy; 2026 ФСТ НТИ &middot; <a href="https://ai2fund.ru" target="_blank" rel="noopener noreferrer">VentureOS Platform</a></span>
         <span class="footer-sep">&middot;</span>
         <nav class="footer-links">
             <router-link to="/legal/terms-of-service">Условия</router-link>

@@ -112,10 +112,10 @@ class ErrorHandlerService {
 
       // Don't clear session for:
       // 1. Requests to integram.io/xsrf (3rd party session check)
-      // 2. Requests to external APIs (app.integram.io, ai2o.ru, etc.)
+      // 2. Requests to external APIs (app.integram.io, api.ai2o.ru, etc.)
       // 3. Non-critical endpoints (let axios2.js handle this)
       const isExternalApi = url.includes('integram.io') ||
-                           url.includes('ai2o.ru') ||  // ai2o.ru (punycode)
+                           url.includes('api.ai2o.ru') ||  // api.ai2o.ru (punycode)
                            url.includes('dronedoc.ru/my') ||
                            url.includes('/xsrf')
 

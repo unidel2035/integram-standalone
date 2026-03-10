@@ -34,7 +34,7 @@ const fileChatSessions = new Map();
  * @param {string} options.branch - Git branch (optional)
  * @param {object} options.toolConfig - Tool configuration (optional)
  * @param {string} options.githubToken - GitHub personal access token for private repos (optional)
- * @param {string} options.integramServer - Integram server URL (optional, e.g., 'https://ai2o.ru')
+ * @param {string} options.integramServer - Integram server URL (optional, e.g., 'https://api.ai2o.ru')
  * @returns {Promise<object>} Workspace object
  */
 export async function createWorkspace(userId, options = {}) {

@@ -54,7 +54,7 @@ async function doLogin() {
   }
   loading.value = true
   try {
-    await auth.login(form.value.login, form.value.password, 'ai2o.ru', 'fst')
+    await auth.login(form.value.login, form.value.password, 'api.ai2o.ru', 'fst')
     const redirect = route.query.redirect || '/'
     router.push(redirect)
   } catch (e) {

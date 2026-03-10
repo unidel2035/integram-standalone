@@ -1551,9 +1551,17 @@ export class FstCommitteeEngine {
     if (useAI && !arg) {
       try {
         const kagCtx = type === 'OPENING' ? (this.session._kagContext || '') : ''
+        // OPENING — полный GR-контекст; CHALLENGE/COUNTER — укороченная версия (только барьеры + TRL)
+        const _grFull = this.session._grContext || ''
+        const grCtx = type === 'OPENING'
+          ? _grFull
+          : (type === 'CHALLENGE' || type === 'COUNTER')
+            ? (_grFull ? _grFull.split('\n').slice(0, 6).join('\n') : '')
+            : ''
         arg = await generateArgumentAI(agent, type, project, this.session.arguments, targetArgId, kagCtx, {
           speedProfile:   this.session.speedProfile,
           modelOverrides: this.session.modelOverrides,
+          grContext:      grCtx,
         })
       } catch (e) {
         console.warn('[FstCommitteeEngine] generateArgumentAI failed, fallback:', e.message)

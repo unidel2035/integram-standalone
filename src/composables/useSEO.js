@@ -17,8 +17,8 @@ const DEFAULT_SEO = {
   title: 'ДронДок - Универсальная платформа-конструктор приложений',
   description: 'Универсальная платформа-конструктор для создания приложений с ИИ-памятью, визуальным редактором и модульной архитектурой. От корпоративных систем до управления дронами.',
   keywords: 'конструктор приложений, ИИ-память, no-code, визуальный редактор, дроны, БПЛА, беспилотники, планирование полетов, компьютерное зрение, российское ПО, модульная платформа, управление дронами, навигация, тактическая карта',
-  image: 'https://ai2o.ru/meta/og.png',
-  url: 'https://ai2o.ru/',
+  image: 'https://api.ai2o.ru/meta/og.png',
+  url: 'https://api.ai2o.ru/',
   type: 'website',
   siteName: 'ДронДок',
   locale: 'ru_RU',
@@ -168,17 +168,17 @@ export function useSEO(options = {}) {
 export const SEO_PRESETS = {
   docs: {
     type: 'article',
-    image: 'https://ai2o.ru/meta/og.png',
+    image: 'https://api.ai2o.ru/meta/og.png',
   },
 
   landing: {
     type: 'website',
-    image: 'https://ai2o.ru/meta/og.png',
+    image: 'https://api.ai2o.ru/meta/og.png',
   },
 
   product: {
     type: 'product',
-    image: 'https://ai2o.ru/meta/og.png',
+    image: 'https://api.ai2o.ru/meta/og.png',
   },
 
   video: {
@@ -196,8 +196,8 @@ export function getOrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     'name': 'ДронДок',
-    'url': 'https://ai2o.ru/',
-    'logo': 'https://ai2o.ru/meta/icon.svg',
+    'url': 'https://api.ai2o.ru/',
+    'logo': 'https://api.ai2o.ru/meta/icon.svg',
     'description': 'Первая российская программная платформа-конструктор для операторов беспилотных авиационных систем',
     'sameAs': [
       // Add social media profiles here when available
@@ -244,7 +244,7 @@ export function getArticleSchema(article) {
       'name': 'ДронДок',
       'logo': {
         '@type': 'ImageObject',
-        'url': 'https://ai2o.ru/meta/icon.svg',
+        'url': 'https://api.ai2o.ru/meta/icon.svg',
       },
     },
     'datePublished': article.publishedDate,
@@ -285,7 +285,7 @@ export function getSoftwareApplicationSchema(agent) {
     'description': agent.description,
     'applicationCategory': 'BusinessApplication',
     'operatingSystem': 'Web',
-    'url': `https://ai2o.ru/spaces#${agent.id || agent.slug}`,
+    'url': `https://api.ai2o.ru/spaces#${agent.id || agent.slug}`,
   }
 
   // Add offers if price is available
@@ -346,7 +346,7 @@ export function getAgentListSchema(agents) {
         '@type': 'SoftwareApplication',
         'name': agent.name,
         'description': agent.description,
-        'url': `https://ai2o.ru/spaces#${agent.id || agent.slug}`,
+        'url': `https://api.ai2o.ru/spaces#${agent.id || agent.slug}`,
         'applicationCategory': 'BusinessApplication',
       },
     })),
@@ -361,7 +361,7 @@ export function getAgentListSchema(agents) {
  * @returns {object} SEO configuration
  */
 export function generatePageSEO(pageName, description, options = {}) {
-  const baseUrl = 'https://ai2o.ru'
+  const baseUrl = 'https://api.ai2o.ru'
   const path = options.path || window.location.pathname
 
   return {

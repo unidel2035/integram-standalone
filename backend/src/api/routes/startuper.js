@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 const router = Router()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const INTEGRAM_URL = process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru'
+const INTEGRAM_URL = process.env.INTEGRAM_SERVER_URL || 'https://api.ai2o.ru'
 const INTEGRAM_DB  = process.env.INTEGRAM_DB_FST || 'fst'
 const INTEGRAM_LOGIN = process.env.INTEGRAM_SYSTEM_USERNAME || ''
 const INTEGRAM_PASS  = process.env.INTEGRAM_SYSTEM_PASSWORD || ''
@@ -157,9 +157,100 @@ TRL: ${twin.trl || '?'}, запрос: ${twin.askRub ? (twin.askRub/1e6).toFixed
   // Обновляем аномалии
   pushSSE(sid, { type: 'ANOMALIES', anomalies: session.beacons })
   pushSSE(sid, { type: 'COMPLETENESS', twin: session.twin })
+
+  // ── Step 7: Агенты инвесткомитета (параллельно) ───────────────
+  pushSSE(sid, { type: 'STEP_START', step: 'ic_agents', message: '🏛️ Запускаю агентов инвесткомитета...' })
+
+  const IC_AGENTS = [
+    {
+      id: 'tech',
+      name: 'Технический аналитик',
+      icon: '⚙️',
+      color: '#42a5f5',
+      systemPrompt: `Ты Технический аналитик инвесткомитета ФСТ НТИ.
+Специализация: TRL/MRL, техническая готовность, патентная чистота, цепочки поставок, критические технологические зависимости.
+Правила: оценивай ТОЛЬКО технические аспекты. Используй конкретные числа из данных. Критикуй низкий TRL(<6), незащищённые ИС, зависимость от импорта. Одобряй TRL≥7, наличие прототипа, патентный портфель.
+Отвечай строго 3-4 предложения. Стиль: чёткий, конкретный, без воды.`
+    },
+    {
+      id: 'finance',
+      name: 'Финансовый аналитик',
+      icon: '💹',
+      color: '#66bb6a',
+      systemPrompt: `Ты Финансовый аналитик инвесткомитета ФСТ НТИ.
+Специализация: IRR/NPV, unit economics, burn rate, runway, структура раунда, valuation.
+Правила: будь скептичен — проверяй реалистичность прогнозов. Критикуй: IRR>50% без обоснования, runway<18 мес, слабая unit economics. Одобряй: IRR 25-40%, чёткая монетизация, разумная оценка.
+Отвечай строго 3-4 предложения. Называй конкретные числа.`
+    },
+    {
+      id: 'risk',
+      name: 'Риск-менеджер',
+      icon: '🛡️',
+      color: '#ef5350',
+      systemPrompt: `Ты Риск-менеджер инвесткомитета ФСТ НТИ.
+Специализация: реестр рисков — технические, рыночные, регуляторные (БПЛА/авиация в России), операционные, командные.
+Правила: будь пессимистом, найди реальные риски. Критикуй: отсутствие сертификации, ключевой-человек риск, отсутствие IP, концентрация клиентов. Всегда предлагай конкретные митигации.
+Отвечай строго 3-4 предложения.`
+    },
+    {
+      id: 'devil',
+      name: 'Критический аналитик',
+      icon: '🔥',
+      color: '#78909c',
+      systemPrompt: `Ты Критический аналитик (devil's advocate) инвесткомитета ФСТ НТИ.
+Специализация: оспаривание допущений, поиск системных проблем, скрытые риски.
+Правила: задавай неудобные вопросы. Найди главное слабое место проекта. Оспаривай TAM/SAM, уникальность, команду. НИКОГДА не давай безоговорочного одобрения.
+Отвечай строго 2-3 предложения. Заканчивай ключевым вопросом к фаундеру.`
+    },
+  ]
+
+  const twinSummary = JSON.stringify({
+    company: twin.company, sector: twin.sector, trl: twin.trl, stage: twin.stage,
+    teamSize: twin.teamSize, askRub: twin.askRub, marketSize: twin.marketSize,
+    projectedIRR: twin.projectedIRR, runway: twin.runway, founderName: twin.founderName,
+    competitors: twin.competitors, founderBio: twin.founderBio,
+    description: twin.description, problem: twin.problem, revenue: twin.revenue,
+    patents: patents.ownPatents?.length || 0,
+    competitorRisk: competitors.competitiveRisk,
+    scoring: scoring ? { totalScore: scoring.totalScore, dimensions: scoring.dimensions } : null
+  }, null, 2)
+
+  const icPrompt = (agent) =>
+    `Данные стартапа для анализа:\n${twinSummary}\n\nДай свою экспертную оценку с позиции роли "${agent.name}".`
+
+  // Запускаем параллельно
+  const icResults = await Promise.allSettled(
+    IC_AGENTS.map(async (ag) => {
+      try {
+        const text = await callAI(icPrompt(ag), ag.systemPrompt, 'deepseek/deepseek-chat')
+        return { ...ag, text }
+      } catch {
+        return { ...ag, text: `Анализ недоступен` }
+      }
+    })
+  )
+
+  // Публикуем результаты в поток
+  for (const r of icResults) {
+    if (r.status === 'fulfilled') {
+      const ag = r.value
+      pushSSE(sid, {
+        type: 'IC_ANALYSIS',
+        agentId: ag.id,
+        agentName: ag.name,
+        agentIcon: ag.icon,
+        agentColor: ag.color,
+        message: ag.text
+      })
+      await delay(200) // небольшая пауза между агентами для визуального эффекта
+    }
+  }
+
+  pushSSE(sid, { type: 'STEP_DONE', step: 'ic_agents', message: `✅ Агенты ИК завершили первичный анализ` })
+
   pushSSE(sid, {
     type: 'RESEARCH_DONE',
-    message: `🎯 Исследование завершено. Скоринг: ${scoring?.totalScore ?? '?'}/100`,
+    message: `🎯 Пакет готов. Скоринг: ${scoring?.totalScore ?? '?'}/100. Агенты ИК дали первичные заключения.`,
     scoring,
     research
   })

@@ -1,7 +1,7 @@
 /**
  * fstAgentsService.js — загрузка конфигурации агентов ИК из Integram FST
  *
- * Таблица 3674 "Агенты ИК" (ai2o.ru/fst):
+ * Таблица 3674 "Агенты ИК" (api.ai2o.ru/fst):
  *   3676 = Код агента (SHORT)         — tech, finance, sovereignty, risk, portfolio, devil
  *   3678 = Специализация (SHORT)
  *   3680 = Системный промпт (LONG)
@@ -23,7 +23,7 @@
 
 import { authenticate } from './fstApi.js'
 
-// Пустая строка → использует Vite proxy /fst → https://ai2o.ru/fst
+// Пустая строка → использует Vite proxy /fst → https://api.ai2o.ru/fst
 const FST_SERVER = ''
 const FST_DB     = import.meta.env.VITE_FST_DB     || 'fst-api'
 const TYPE_AGENTS = 3674

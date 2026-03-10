@@ -21,7 +21,7 @@ function buildConnectionParams(serverUrl, database, token) {
  * Create a new versioned commit for an Integram object.
  *
  * @param {object} params
- * @param {string} params.serverUrl  - Integram server (e.g. "https://ai2o.ru")
+ * @param {string} params.serverUrl  - Integram server (e.g. "https://api.ai2o.ru")
  * @param {string} params.database   - Database name (e.g. "kval")
  * @param {string} params.token      - X-Authorization token
  * @param {string} params.xsrfToken  - _xsrf token for POST requests

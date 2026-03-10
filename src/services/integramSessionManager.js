@@ -104,7 +104,7 @@ class IntegramSessionManager {
    * Issue #3784: Шаг 1 - Получить токен базы my, хранить локально
    *
    * @param {string} database - Имя базы данных (по умолчанию 'my')
-   * @param {string} serverURL - URL сервера (по умолчанию https://ai2o.ru)
+   * @param {string} serverURL - URL сервера (по умолчанию https://api.ai2o.ru)
    * @param {string} login - Логин
    * @param {string} password - Пароль
    * @returns {Promise<Object>} Результат авторизации

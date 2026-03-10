@@ -186,20 +186,111 @@ router.post('/ai-tokens/chat', async (req, res) => {
   }
 })
 
+// ── Streaming helpers ─────────────────────────────────────────────────────────
+
+async function callAnthropicStream(modelId, prompt, systemPrompt, res) {
+  const model = modelId.replace('anthropic/', '') || 'claude-sonnet-4-20250514'
+  const body = {
+    model,
+    max_tokens: 4096,
+    stream: true,
+    messages: [{ role: 'user', content: prompt }],
+  }
+  if (systemPrompt) body.system = systemPrompt
+
+  const upstream = await fetch(PROVIDERS.anthropic.url, {
+    method:  'POST',
+    headers: {
+      'Content-Type':      'application/json',
+      'x-api-key':         PROVIDERS.anthropic.key(),
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!upstream.ok) {
+    const err = await upstream.text()
+    res.write(`data: ${JSON.stringify({ error: `Anthropic ${upstream.status}: ${err}` })}\n\n`)
+    res.end()
+    return
+  }
+
+  for await (const chunk of upstream.body) {
+    const lines = Buffer.from(chunk).toString('utf8').split('\n')
+    for (const line of lines) {
+      if (!line.startsWith('data:')) continue
+      const raw = line.slice(5).trim()
+      if (raw === '[DONE]') continue
+      try {
+        const ev = JSON.parse(raw)
+        if (ev.type === 'content_block_delta' && ev.delta?.text) {
+          res.write(`data: ${JSON.stringify({ token: ev.delta.text })}\n\n`)
+        }
+      } catch {}
+    }
+  }
+  res.write('data: [DONE]\n\n')
+  res.end()
+}
+
+async function callOpenAICompatibleStream(provider, modelId, prompt, systemPrompt, res) {
+  const cfg = PROVIDERS[provider]
+  const messages = []
+  if (systemPrompt) messages.push({ role: 'system', content: systemPrompt })
+  messages.push({ role: 'user', content: prompt })
+
+  const model = provider === 'deepseek'
+    ? (modelId.replace('deepseek/', '') || 'deepseek-chat')
+    : (modelId.replace('openai/', '') || 'gpt-4o')
+
+  const upstream = await fetch(cfg.url, {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${cfg.key()}`,
+    },
+    body: JSON.stringify({ model, messages, max_tokens: 4096, stream: true }),
+  })
+
+  if (!upstream.ok) {
+    const err = await upstream.text()
+    res.write(`data: ${JSON.stringify({ error: `${provider} ${upstream.status}: ${err}` })}\n\n`)
+    res.end()
+    return
+  }
+
+  for await (const chunk of upstream.body) {
+    const lines = Buffer.from(chunk).toString('utf8').split('\n')
+    for (const line of lines) {
+      if (!line.startsWith('data:')) continue
+      const raw = line.slice(5).trim()
+      if (raw === '[DONE]') continue
+      try {
+        const ev = JSON.parse(raw)
+        const token = ev.choices?.[0]?.delta?.content
+        if (token) res.write(`data: ${JSON.stringify({ token })}\n\n`)
+      } catch {}
+    }
+  }
+  res.write('data: [DONE]\n\n')
+  res.end()
+}
+
 // ── /api/chat — алиас для useChatLogic (платформенный Chat) ─────────────────
-// Принимает { message, model, provider, systemPrompt, conversationHistory }
-// Возвращает { success: true, response: string }
+// Принимает { message, model, provider, systemPrompt, conversationHistory, stream? }
+// stream=true → SSE (text/event-stream), каждый chunk: data: {"token":"..."}
+// stream=false/omit → JSON { success: true, response: string }
 router.post('/chat', async (req, res) => {
   const {
     message, model, provider: providerHint,
-    systemPrompt, conversationHistory = []
+    systemPrompt, conversationHistory = [],
+    stream = false,
   } = req.body
 
   if (!message) {
     return res.status(400).json({ success: false, error: 'message is required' })
   }
 
-  // Формируем modelId: если есть model — используем, иначе deepseek
   const modelId = model || 'deepseek/deepseek-chat'
   const provider = providerHint || detectProvider(modelId)
   const apiKey = PROVIDERS[provider]?.key()
@@ -215,15 +306,42 @@ router.post('/chat', async (req, res) => {
   let prompt = message
   if (conversationHistory.length > 0) {
     const historyText = conversationHistory
-      .slice(-8) // последние 8 сообщений для контекста
+      .slice(-8)
       .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
       .join('\n')
     prompt = `${historyText}\nUser: ${message}`
   }
 
-  try {
-    console.log(`[AI /chat] ${provider} / ${modelId}`)
+  console.log(`[AI /chat] ${provider} / ${modelId} stream=${stream}`)
 
+  // ── Streaming mode ────────────────────────────────────────────────────────
+  if (stream) {
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders()
+    try {
+      if (provider === 'anthropic') {
+        await callAnthropicStream(modelId, prompt, systemPrompt, res)
+      } else if (provider === 'yandex') {
+        // Yandex не поддерживает streaming — отдаём одним куском
+        const result = await callYandex(prompt, systemPrompt)
+        res.write(`data: ${JSON.stringify({ token: result.response })}\n\n`)
+        res.write('data: [DONE]\n\n')
+        res.end()
+      } else {
+        await callOpenAICompatibleStream(provider, modelId, prompt, systemPrompt, res)
+      }
+    } catch (err) {
+      console.error(`[AI /chat stream] Error (${provider}):`, err.message)
+      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`)
+      res.end()
+    }
+    return
+  }
+
+  // ── Non-streaming mode ────────────────────────────────────────────────────
+  try {
     let result
     if (provider === 'anthropic') {
       result = await callAnthropic(modelId, prompt, systemPrompt)

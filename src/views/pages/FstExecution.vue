@@ -296,6 +296,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import { useEventStore } from '@/stores/eventStore.js'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import SelectButton from 'primevue/selectbutton'
@@ -304,6 +305,8 @@ import PageTutorButton from '@/components/PageTutorButton.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 
 const toast = useToast()
+const eventStore = useEventStore()
+const EXEC_COMPANY_ID = 'aviaklogik' // демо-компания исполнения
 
 // ── Page Tutor Context ────────────────────────────────────────
 function getPageContext() {
@@ -676,11 +679,23 @@ function addEvent(title, type, source) {
     date: simDate.value
   })
   if (eventFeed.value.length > 30) eventFeed.value.shift()
+  // Персистируем в EventStore → Integram
+  const typeMap = {
+    'Продукт':    'PRODUCT_LAUNCH',
+    'Финансы':    'TRANCHE_RELEASED',
+    'Команда':    'TEAM_CHANGE',
+    'Продажи':    'CONTRACT_SIGNED',
+    'Управление': 'KPI_UPDATED',
+  }
+  const evType = typeMap[type] || 'KPI_UPDATED'
+  eventStore.add('company', EXEC_COMPANY_ID, evType, { title, type, source, simDate: simDate.value })
 }
 
 // ─── Simulation tick ──────────────────────────────────────────────────────────
 let simInterval = null
 onMounted(() => {
+  // Загружаем ленту событий компании из Integram
+  eventStore.load('company', EXEC_COMPANY_ID).catch(() => {})
   simInterval = setInterval(() => {
     liveColor.value = liveColor.value === '#66bb6a' ? '#388e3c' : '#66bb6a'
     if (!running.value) return

@@ -108,7 +108,7 @@ directApiClient.interceptors.request.use(
     // Set base URL
     // Note: We use ?JSON_KV parameter instead of /api/ path
     // OLD format: dronedoc.ru/api/{db}/{endpoint} (deprecated)
-    // NEW format: ai2o.ru/{db}/{endpoint}?JSON_KV (current)
+    // NEW format: api.ai2o.ru/{db}/{endpoint}?JSON_KV (current)
     // Issue #5405: Use getIntegramServerUrl() from config instead of hardcoded dronedoc.ru
     const baseHost = apiBase === 'localhost' ? 'localhost' : (apiBase || getIntegramServerUrl())
     const protocol = apiBase === 'localhost' ? 'http' : 'https'

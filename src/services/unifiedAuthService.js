@@ -320,7 +320,7 @@ class UnifiedAuthService {
     }
 
     return {
-      baseURL: import.meta.env.VITE_INTEGRAM_API_URL || 'https://ai2o.ru',
+      baseURL: import.meta.env.VITE_INTEGRAM_API_URL || 'https://api.ai2o.ru',
       database: tokenData.database,
       token: tokenData.token,
       xsrf: tokenData.xsrf,

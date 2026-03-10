@@ -20,7 +20,7 @@
  * Key differences from axios2.js:
  * - Always uses 'my' database
  * - Uses my-specific token
- * - Base URL: https://ai2o.ru/my
+ * - Base URL: https://api.ai2o.ru/my
  * - ALL requests are POST (GET requests are auto-converted to POST)
  *
  * DO NOT use this client for:

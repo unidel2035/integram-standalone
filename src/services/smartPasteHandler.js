@@ -795,7 +795,7 @@ export async function uploadImageToFileStorage(file, integramClient, database, f
   // FILE-реквизит возвращает HTML: <a href="download/kval/ab/abc123.png">filename</a>
   const hrefMatch = String(fileValue).match(/href="([^"]+)"/)
   if (hrefMatch) {
-    const serverUrl = (integramClient.serverUrl || integramClient.serverURL || 'ai2o.ru').replace(/^https?:\/\//, '')
+    const serverUrl = (integramClient.serverUrl || integramClient.serverURL || 'api.ai2o.ru').replace(/^https?:\/\//, '')
     const protocol = serverUrl.startsWith('localhost') ? 'http://' : 'https://'
     const path = hrefMatch[1].startsWith('/') ? hrefMatch[1] : `/${database}/${hrefMatch[1]}`
     return `${protocol}${serverUrl}${path}`
@@ -803,7 +803,7 @@ export async function uploadImageToFileStorage(file, integramClient, database, f
 
   // Fallback: если не удалось получить URL из FILE-поля, возвращаем dir_admin URL
   console.warn('[SmartPaste] Не удалось получить URL из FILE-реквизита, используем dir_admin fallback')
-  const serverUrl = (integramClient.serverUrl || integramClient.serverURL || 'ai2o.ru').replace(/^https?:\/\//, '')
+  const serverUrl = (integramClient.serverUrl || integramClient.serverURL || 'api.ai2o.ru').replace(/^https?:\/\//, '')
   const protocol = serverUrl.startsWith('localhost') ? 'http://' : 'https://'
   return `${protocol}${serverUrl}/${database}/dir_admin/?download=1&file=${encodeURIComponent(fileName)}`
 }
@@ -821,8 +821,8 @@ export async function uploadImageToIntegram(file, integramClient, database, file
   try {
     const result = await integramClient.uploadFile(file, '')
 
-    // URL: https://ai2o.ru/{database}/dir_admin/?download=1&file={filename}
-    const serverUrl = (integramClient.serverUrl || integramClient.serverURL || 'ai2o.ru').replace(/^https?:\/\//, '')
+    // URL: https://api.ai2o.ru/{database}/dir_admin/?download=1&file={filename}
+    const serverUrl = (integramClient.serverUrl || integramClient.serverURL || 'api.ai2o.ru').replace(/^https?:\/\//, '')
     const protocol = serverUrl.startsWith('localhost') ? 'http://' : 'https://'
     const fileName = result.filename || file.name
 
