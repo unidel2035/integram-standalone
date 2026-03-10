@@ -163,3 +163,28 @@
 [class*="-val"]:where(.kpi-val, .gs-val, .nav-val) {
   font-size: 2rem !important;
 }
+
+/* ── Единый заголовок секции (.fst-section-title) ───────────────
+   Использовать вместо: .fst-setup-section-title, .fst-panel-title,
+   .fft-panel-title, .dg-section-title, .section-title и пр.
+   ─────────────────────────────────────────────────────────────── */
+.fst-section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 14px 0 6px;
+  border-bottom: 1px solid var(--p-content-border-color);
+  margin-bottom: 10px;
+}
+.fst-section-title i { font-size: 0.875rem; }
+.fst-section-title--plain {
+  border-bottom: none;
+  padding-bottom: 2px;
+  text-transform: none;
+  letter-spacing: 0;
+}

@@ -674,7 +674,7 @@
       <div class="fst-setup-body">
         <!-- Projects Grid -->
         <div class="fst-setup-col fst-setup-col--projects">
-          <div class="fst-setup-section-title">
+          <div class="fst-section-title">
             <i class="pi pi-th-large" style="color:#38bdf8"></i>
             Выберите проект для рассмотрения
             <button class="fst-new-project-btn" @click="newProjectDialog = true" title="Новая заявка">
@@ -730,71 +730,42 @@
 
         <!-- Right: Settings -->
         <div class="fst-setup-col fst-setup-col--settings">
-          <div class="fst-setup-section-title">
+          <div class="fst-section-title">
             <i class="pi pi-gauge" style="color:#a78bfa"></i>
             Скорость симуляции
           </div>
-          <div class="fst-speed-row">
-            <div v-for="sp in speedOptions" :key="sp.id"
-              :class="['fst-speed-btn', { active: selectedSpeed === sp.id }]"
-              @click="selectedSpeed = sp.id">
-              {{ sp.label }}
-            </div>
-          </div>
+          <SelectButton v-model="selectedSpeed" :options="speedOptions" optionLabel="label" optionValue="id" :allowEmpty="false" class="fst-speed-select" fluid>
+            <template #option="{ option }">
+              <i :class="option.icon" />
+              <span>{{ option.label }}</span>
+            </template>
+          </SelectButton>
 
-          <div class="fst-setup-section-title" style="margin-top:20px">
+          <div class="fst-section-title" style="margin-top:20px">
             <i class="pi pi-bolt" style="color:#a78bfa"></i>
             Режим агентов
           </div>
-          <div class="fst-ai-mode-row">
-            <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useAI }]" @click="useAI = !useAI">
-              <div class="fst-ai-toggle-knob"></div>
-            </div>
-            <div class="fst-ai-mode-label">
-              <span v-if="useAI">
-                <i class="pi pi-bolt" style="color:#a78bfa"></i>
-                <strong>Реальный AI</strong> — агенты думают и отвечают друг другу
-              </span>
-              <span v-else>
-                <i class="pi pi-server" style="color:#78909c"></i>
-                <strong>Шаблоны</strong> — быстрая симуляция без API-вызовов
-              </span>
+          <div class="fst-toggle-row">
+            <ToggleSwitch v-model="useAI" />
+            <div class="fst-toggle-label">
+              <i :class="useAI ? 'pi pi-bolt' : 'pi pi-server'" class="fst-toggle-icon" :style="{ color: useAI ? 'var(--p-purple-400)' : 'var(--p-text-muted-color)' }" />
+              <span><strong>{{ useAI ? 'Реальный AI' : 'Шаблоны' }}</strong> — {{ useAI ? 'агенты думают и отвечают друг другу' : 'быстрая симуляция без API-вызовов' }}</span>
             </div>
           </div>
 
-          <!-- ═══ Multi-Agent Orchestrator toggle ═══ -->
-          <div v-if="useAI" class="fst-ai-mode-row" style="margin-top:14px">
-            <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useAgentLoop }]"
-              @click="useAgentLoop = !useAgentLoop">
-              <div class="fst-ai-toggle-knob"></div>
-            </div>
-            <div class="fst-ai-mode-label">
-              <span v-if="useAgentLoop">
-                <i class="pi pi-sitemap" style="color:#ffa726"></i>
-                <strong>Multi-Agent Loop</strong> — агенты вызывают инструменты, работают параллельно, видят зал
-              </span>
-              <span v-else>
-                <i class="pi pi-comments" style="color:#64748b"></i>
-                <strong>Single-call</strong> — один LLM-вызов на аргумент (быстро)
-              </span>
+          <div v-if="useAI" class="fst-toggle-row">
+            <ToggleSwitch v-model="useAgentLoop" />
+            <div class="fst-toggle-label">
+              <i :class="useAgentLoop ? 'pi pi-sitemap' : 'pi pi-comments'" class="fst-toggle-icon" :style="{ color: useAgentLoop ? 'var(--p-orange-400)' : 'var(--p-text-muted-color)' }" />
+              <span><strong>{{ useAgentLoop ? 'Multi-Agent Loop' : 'Single-call' }}</strong> — {{ useAgentLoop ? 'агенты вызывают инструменты, работают параллельно, видят зал' : 'один LLM-вызов на аргумент (быстро)' }}</span>
             </div>
           </div>
 
-
-          <div v-if="useAI && useAgentLoop" class="fst-ai-mode-row" style="margin-top:10px">
-            <div :class="['fst-ai-toggle', { 'fst-ai-toggle--on': useOrchestrator }]"
-              @click="useOrchestrator = !useOrchestrator">
-              <div class="fst-ai-toggle-knob"></div>
-            </div>
-            <div class="fst-ai-mode-label">
-              <span v-if="useOrchestrator">
-                <i class="pi pi-server" style="color:#66bb6a"></i>
-                <strong>Server Orchestration</strong> — агенты работают на сервере, UI получает события в реальном времени
-              </span>
-              <span v-else>
-                <i class="pi pi-desktop" style="color:#64748b"></i>
-                <strong>Client-side</strong> — агенты работают в браузере (по умолчанию)
-              </span>
+          <div v-if="useAI && useAgentLoop" class="fst-toggle-row">
+            <ToggleSwitch v-model="useOrchestrator" />
+            <div class="fst-toggle-label">
+              <i :class="useOrchestrator ? 'pi pi-server' : 'pi pi-desktop'" class="fst-toggle-icon" :style="{ color: useOrchestrator ? 'var(--p-green-400)' : 'var(--p-text-muted-color)' }" />
+              <span><strong>{{ useOrchestrator ? 'Server Orchestration' : 'Client-side' }}</strong> — {{ useOrchestrator ? 'агенты работают на сервере, UI получает события в реальном времени' : 'агенты работают в браузере (по умолчанию)' }}</span>
             </div>
           </div>
 
@@ -820,7 +791,7 @@
           </div>
 
           <!-- ═══ Настройки моделей оркестратора ═══ -->
-          <div v-if="useAI" class="fst-setup-section-title" style="margin-top:20px">
+          <div v-if="useAI" class="fst-section-title" style="margin-top:20px">
             <div class="fst-policy-toggle" @click="modelPanelExpanded = !modelPanelExpanded">
               <i class="pi pi-microchip-ai" style="color:#42a5f5"></i>
               <span>Модели агентов</span>
@@ -831,13 +802,8 @@
           </div>
           <div v-if="useAI && modelPanelExpanded" class="fst-model-panel">
             <!-- Профили скорости -->
-            <div class="fst-model-profiles">
-              <div v-for="(profile, key) in SPEED_PROFILES" :key="key"
-                :class="['fst-profile-btn', { 'fst-profile-btn--active': selectedSpeedProfile === key }]"
-                @click="applySpeedProfile(key)">
-                {{ profile.label }}
-              </div>
-            </div>
+            <SelectButton :modelValue="selectedSpeedProfile" @update:modelValue="applySpeedProfile"
+              :options="speedProfileOptions" optionLabel="label" optionValue="value" :allowEmpty="false" fluid size="small" class="fst-profile-select" />
             <div class="fst-model-profile-desc">{{ SPEED_PROFILES[selectedSpeedProfile]?.description }}</div>
 
             <!-- Таблица: агент → модель -->
@@ -872,7 +838,7 @@
             </div>
           </div>
 
-          <div class="fst-setup-section-title" style="margin-top:20px">
+          <div class="fst-section-title" style="margin-top:20px">
             <div class="fst-policy-toggle" @click="policyExpanded = !policyExpanded">
               <i class="pi pi-sliders-h" style="color:#ffa726"></i>
               <span>Параметры оценки ФСТ</span>
@@ -1258,6 +1224,10 @@ const resolvedModels = computed(() =>
   buildModelMap(AGENTS.value.map(a => a.id), selectedSpeedProfile.value, agentModelOverrides.value)
 )
 
+const speedProfileOptions = computed(() =>
+  Object.entries(SPEED_PROFILES).map(([key, p]) => ({ value: key, label: p.label }))
+)
+
 const activeProfileLabel = computed(() => {
   const summary = getModelSummary(resolvedModels.value)
   return summary || SPEED_PROFILES[selectedSpeedProfile.value]?.label
@@ -1388,9 +1358,9 @@ let engine = null
 // ── Speed Options ─────────────────────────────────────────────
 
 const speedOptions = [
-  { id: 'slow',   label: '1x — Полный' },
-  { id: 'normal', label: '2.5x — Быстрый' },
-  { id: 'fast',   label: '6x — Демо' },
+  { id: 'slow',   label: '1x — Полный',   icon: 'pi pi-clock' },
+  { id: 'normal', label: '2.5x — Быстрый', icon: 'pi pi-bolt' },
+  { id: 'fast',   label: '6x — Демо',     icon: 'pi pi-forward' },
 ]
 
 // ── Computed ──────────────────────────────────────────────────
@@ -2937,17 +2907,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
 }
-.fst-setup-section-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--p-text-muted-color);
-  margin-bottom: 10px;
-}
+/* .fst-setup-section-title → replaced by global .fst-section-title in fst.css */
 .fst-setup-empty {
   color: var(--p-text-muted-color);
   font-size: 0.875rem;
@@ -3294,10 +3254,8 @@ onUnmounted(() => {
   padding: 0 4px;
   text-decoration: underline;
 }
-.fst-speed-row {
-  display: flex;
-  gap: 8px;
-}
+.fst-speed-select { width: 100%; font-size: 0.875rem; }
+.fst-speed-select .p-selectbutton-option { flex: 1; justify-content: center; gap: 5px; }
 .fst-speed-btn {
   padding: 6px 14px;
   border: 1px solid var(--surface-border);
@@ -4167,7 +4125,22 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-/* ── AI mode toggle ── */
+/* ── AI mode toggle rows (PrimeVue ToggleSwitch) ── */
+.fst-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.fst-toggle-icon { font-size: 0.95rem; flex-shrink: 0; }
+.fst-toggle-label { display: flex; align-items: center; gap: 6px; font-size: 0.8125rem; color: var(--p-text-color); flex: 1; min-width: 0; }
+.fst-toggle-label strong { font-weight: 600; }
+.fst-profile-select { width: 100%; font-size: 0.8rem; }
+.fst-profile-select .p-selectbutton-option { flex: 1; justify-content: center; font-size: 0.8rem; }
+/* legacy kept for reference, unused */
 .fst-ai-mode-row {
   display: flex;
   align-items: center;
@@ -4668,9 +4641,7 @@ onUnmounted(() => {
   .fst-setup-col--settings {
     height: 50vh;
   }
-  .fst-speed-row { gap: 6px; }
-  .fst-speed-btn { padding: 6px 10px; font-size: 0.8rem; }
-  .fst-ai-mode-label { font-size: 0.75rem; }
+  .fst-toggle-label { font-size: 0.75rem; }
   .fst-policy-toggle { font-size: 0.8rem; }
   .fst-model-panel { font-size: 0.8rem; }
   .fst-agent-model-grid { grid-template-columns: 1fr !important; }
