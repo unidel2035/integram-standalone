@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import AppMenuItem from './AppMenuItem.vue'
 import { fstMenuConfig } from '@/config/fstMenuConfig'
+import { useRoleStore } from '@/stores/roleStore'
 
 const props = defineProps({
   searchQuery: { type: String, default: '' },
@@ -9,6 +10,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['menu-loaded'])
+
+const roleStore = useRoleStore()
 
 const debouncedSearchQuery = ref('')
 let searchDebounceTimer = null
@@ -18,15 +21,18 @@ watch(() => props.searchQuery, (newQuery) => {
   searchDebounceTimer = setTimeout(() => { debouncedSearchQuery.value = newQuery || '' }, delay)
 }, { flush: 'post' })
 
-const isAdmin = ref(localStorage.getItem('is_admin') === 'true')
-window.addEventListener('admin-status-changed', (e) => {
-  isAdmin.value = e.detail === true
-})
+// Также реагируем на смену роли
+watch(() => roleStore.activeRole, () => { /* computed пересчитается автоматически */ })
+watch(() => roleStore.fullMenuMode, () => { /* computed пересчитается автоматически */ })
 
 const model = computed(() =>
   fstMenuConfig
-    .filter(s => !s.adminOnly || isAdmin.value)
-    .map(s => ({ ...s, items: (s.items || []).filter(i => !i.adminOnly || isAdmin.value) }))
+    .filter(section => roleStore.hasMenuAccess(section.roles))
+    .map(section => ({
+      ...section,
+      items: (section.items || []).filter(item => roleStore.hasMenuAccess(item.roles))
+    }))
+    .filter(section => section.items && section.items.length > 0)
 )
 
 const filteredModel = computed(() => {
@@ -40,8 +46,6 @@ const filteredModel = computed(() => {
   })).filter(section => section.items && section.items.length > 0)
 })
 
-// Emit menu-loaded for parent sidebar (smart search compatibility)
-import { onMounted } from 'vue'
 onMounted(() => { emit('menu-loaded', model.value) })
 </script>
 

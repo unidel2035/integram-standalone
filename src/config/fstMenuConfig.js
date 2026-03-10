@@ -42,82 +42,91 @@ const svgLandmark = '<svg xmlns="http://www.w3.org/2000/svg" width="1.25rem" hei
 // Lucide: shield-check (AML/KYC — комплаенс/проверка)
 const svgShieldCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="1.25rem" height="1.25rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>'
 
+// roles[] — список ролей, которым виден пункт меню.
+// Пустой массив или отсутствие поля = видят все.
+// Если у пользователя fullMenuMode=true (admin) — видит всё.
+
 export const fstMenuConfig = [
   {
     label: 'Обзор',
     icon: 'pi pi-eye',
     items: [
-      { label: 'Главная', icon: 'pi pi-home', to: '/fst-hub' },
-      { label: 'Портфель', icon: 'pi pi-briefcase', to: '/fst-portfolio' },
-      { label: 'Digital Twin', svgIcon: svgLayers, to: '/fst-twin' },
+      { label: 'Главная',      icon: 'pi pi-home',     to: '/fst-hub' },
+      { label: 'Портфель',     icon: 'pi pi-briefcase', to: '/fst-portfolio', roles: ['investor', 'director', 'analyst', 'admin'] },
+      { label: 'Digital Twin', svgIcon: svgLayers,      to: '/fst-twin',      roles: ['director', 'analyst', 'admin'] },
     ]
   },
   {
     label: 'Сделки',
     svgIcon: svgHandshake,
     items: [
-      { label: 'Стартапер', icon: 'pi pi-rocket', to: '/fst-startuper' },
-      { label: 'Дилфлоу', icon: 'pi pi-filter', to: '/fst-dealflow' },
-      { label: 'Меморандум', icon: 'pi pi-file', to: '/fst-memo' },
-      { label: 'Инвесткомитет', icon: 'pi pi-users', to: '/fst-committee' },
-      { label: 'Сделка', svgIcon: svgHandshake, to: '/fst-deal' },
-      { label: 'Совет директоров', svgIcon: svgCircleUserRound, to: '/fst-board' },
+      { label: 'Аватар Эксперта',    icon: 'pi pi-user-edit', to: '/fst-expert',    roles: ['investor', 'expert', 'director', 'admin'] },
+      { label: 'Инвесткомитет',      icon: 'pi pi-users',     to: '/fst-committee', roles: ['investor', 'expert', 'director', 'admin'] },
+      { label: 'Дилфлоу',           icon: 'pi pi-filter',    to: '/fst-dealflow',  roles: ['investor', 'director', 'analyst', 'admin'] },
+      { label: 'Меморандум',         icon: 'pi pi-file',      to: '/fst-memo',      roles: ['investor', 'director', 'admin'] },
+      { label: 'Сделка',             svgIcon: svgHandshake,   to: '/fst-deal',      roles: ['director', 'analyst', 'admin'] },
+      { label: 'Совет директоров',   svgIcon: svgCircleUserRound, to: '/fst-board', roles: ['director', 'admin'] },
+      { label: 'Стартапер',          icon: 'pi pi-rocket',    to: '/fst-startuper', roles: ['startup', 'director', 'admin'] },
     ]
   },
   {
     label: 'Финансы',
     icon: 'pi pi-wallet',
+    roles: ['investor', 'director', 'analyst', 'admin'],
     items: [
-      { label: 'LP Кабинет', icon: 'pi pi-wallet', to: '/fst-lp' },
-      { label: 'Cap Table', icon: 'pi pi-table', to: '/fst-captable' },
-      { label: 'Secondary Market', svgIcon: svgArrowRightLeft, to: '/fst-secondary' },
-      { label: 'Водопад', icon: 'pi pi-chart-bar', to: '/fst-waterfall' },
-      { label: 'Выход', svgIcon: svgDoorOpen, to: '/fst-exit' },
-      { label: 'Бенчмарк', icon: 'pi pi-chart-line', to: '/fst-benchmark' },
+      { label: 'LP Кабинет',       icon: 'pi pi-wallet',        to: '/fst-lp',         roles: ['investor', 'director', 'admin'] },
+      { label: 'Cap Table',         icon: 'pi pi-table',          to: '/fst-captable',   roles: ['director', 'analyst', 'admin'] },
+      { label: 'Secondary Market',  svgIcon: svgArrowRightLeft,   to: '/fst-secondary',  roles: ['investor', 'director', 'admin'] },
+      { label: 'Водопад',           icon: 'pi pi-chart-bar',      to: '/fst-waterfall',  roles: ['director', 'analyst', 'admin'] },
+      { label: 'Выход',             svgIcon: svgDoorOpen,         to: '/fst-exit',       roles: ['director', 'analyst', 'admin'] },
+      { label: 'Бенчмарк',         icon: 'pi pi-chart-line',     to: '/fst-benchmark',  roles: ['analyst', 'director', 'admin'] },
     ]
   },
   {
     label: 'Аналитика',
     icon: 'pi pi-chart-pie',
+    roles: ['investor', 'expert', 'director', 'analyst', 'admin'],
     items: [
-      { label: 'ESG', svgIcon: svgLeaf, to: '/fst-esg' },
-      { label: 'Суверенитет', icon: 'pi pi-shield', to: '/fst-sovereignty' },
-      { label: 'Нацпроект', icon: 'pi pi-flag', to: '/fst-natproject' },
-      { label: 'GR-панель', svgIcon: svgLandmark, to: '/fst-gov' },
-      { label: 'Agent Room', icon: 'pi pi-comments', to: '/fst-room' },
+      { label: 'ESG',          svgIcon: svgLeaf,         to: '/fst-esg',         roles: ['investor', 'director', 'analyst', 'admin'] },
+      { label: 'Суверенитет',  icon: 'pi pi-shield',     to: '/fst-sovereignty', roles: ['investor', 'expert', 'director', 'analyst', 'admin'] },
+      { label: 'Нацпроект',    icon: 'pi pi-flag',       to: '/fst-natproject',  roles: ['director', 'admin'] },
+      { label: 'GR-панель',    svgIcon: svgLandmark,     to: '/fst-gov',         roles: ['director', 'admin'] },
+      { label: 'Agent Room',   icon: 'pi pi-comments',   to: '/fst-room',        roles: ['director', 'analyst', 'admin'] },
     ]
   },
   {
     label: 'Инфраструктура',
-    icon: 'pi pi-cog',
+    icon: 'pi pi-server',
+    roles: ['investor', 'director', 'analyst', 'admin'],
     items: [
-      { label: 'ILPA-отчёты', svgIcon: svgFileChart, to: '/fst-ilpa' },
-      { label: 'AML/KYC', svgIcon: svgShieldCheck, to: '/fst-compliance' },
-      { label: 'Гранты', svgIcon: svgBanknotes, to: '/fst-grants' },
-      { label: 'Синдикация', svgIcon: svgNetwork, to: '/fst-syndication' },
-      { label: 'Due Diligence', icon: 'pi pi-search', to: '/fst-duediligence' },
-      { label: 'Юридика', svgIcon: svgScale, to: '/fst-legal' },
-      { label: 'Реестр ПП-1726', svgIcon: svgBookOpenText, to: '/fst-registry' },
+      { label: 'ILPA-отчёты',    svgIcon: svgFileChart,    to: '/fst-ilpa',         roles: ['investor', 'director', 'admin'] },
+      { label: 'AML/KYC',        svgIcon: svgShieldCheck,  to: '/fst-compliance',   roles: ['director', 'admin'] },
+      { label: 'Гранты',         svgIcon: svgBanknotes,    to: '/fst-grants',       roles: ['startup', 'director', 'admin'] },
+      { label: 'Синдикация',     svgIcon: svgNetwork,      to: '/fst-syndication',  roles: ['investor', 'director', 'admin'] },
+      { label: 'Due Diligence',  icon: 'pi pi-search',     to: '/fst-duediligence', roles: ['analyst', 'director', 'admin'] },
+      { label: 'Юридика',        svgIcon: svgScale,        to: '/fst-legal',        roles: ['director', 'admin'] },
+      { label: 'Реестр ПП-1726', svgIcon: svgBookOpenText, to: '/fst-registry',     roles: ['director', 'admin'] },
     ]
   },
   {
     label: 'Подача заявок',
     svgIcon: svgClipboardPen,
+    roles: ['startup', 'admin'],
     items: [
-      { label: 'Форма заявки', svgIcon: svgClipboardPen, to: '/fst-apply' },
+      { label: 'Форма заявки', svgIcon: svgClipboardPen, to: '/fst-apply', roles: ['startup', 'admin'] },
     ]
   },
   {
     label: 'Обучение',
     icon: 'pi pi-graduation-cap',
     items: [
-      { label: 'Центр обучения', icon: 'pi pi-graduation-cap', to: '/fst-dev-guide' },
-      { label: 'Глоссарий', icon: 'pi pi-book', to: '/fst-glossary' },
-      { label: 'Мой прогресс', icon: 'pi pi-chart-line', to: '/fst-learning-progress' },
-      { label: 'Начать тур', icon: 'pi pi-map', action: 'show-tours-menu', special: true },
-      { label: 'Мини-квизы', icon: 'pi pi-question-circle', to: '/fst-quiz' },
-      { label: 'Школа агентов', icon: 'pi pi-star', to: '/fst-school' },
-      { label: 'Claude CLI', icon: 'pi pi-code', to: '/fst-terminal' },
+      { label: 'Центр обучения', icon: 'pi pi-graduation-cap',   to: '/fst-dev-guide' },
+      { label: 'Глоссарий',     icon: 'pi pi-book',              to: '/fst-glossary' },
+      { label: 'Мой прогресс',  icon: 'pi pi-chart-line',        to: '/fst-learning-progress' },
+      { label: 'Начать тур',    icon: 'pi pi-map',               action: 'show-tours-menu', special: true },
+      { label: 'Мини-квизы',    icon: 'pi pi-question-circle',   to: '/fst-quiz' },
+      { label: 'Школа агентов', icon: 'pi pi-star',              to: '/fst-school', roles: ['director', 'analyst', 'admin'] },
+      { label: 'Claude CLI',    icon: 'pi pi-code',              to: '/fst-terminal', roles: ['director', 'admin'] },
     ]
   }
 ]

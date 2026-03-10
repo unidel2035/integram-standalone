@@ -1,4 +1,5 @@
 <template>
+  <Toast position="top-center" />
   <div class="fst-login-wrap">
     <div class="fst-login-card">
       <div class="fst-login-logo">
@@ -32,15 +33,20 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useToast } from 'primevue/usetoast'
 import { useAuthStore } from '@/stores/authStore'
+import { useRoleStore } from '@/stores/roleStore'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
+import Toast from 'primevue/toast'
 
 const router = useRouter()
 const route  = useRoute()
+const toast  = useToast()
 const auth   = useAuthStore()
+const roleStore = useRoleStore()
 
 const form = ref({ login: '', password: '' })
 const loading  = ref(false)
@@ -55,7 +61,25 @@ async function doLogin() {
   loading.value = true
   try {
     await auth.login(form.value.login, form.value.password, 'api.ai2o.ru', 'fst')
-    const redirect = route.query.redirect || '/'
+
+    // Инициализируем роли + читаем имя из базы
+    await roleStore.init()
+
+    // Приветствие — имя из поля 33 таблицы 18, fallback на логин
+    const displayName = roleStore.currentDisplayName || form.value.login
+    const isInvestor = roleStore.availableRoles.some(r => r.id === 'investor')
+    toast.add({
+      severity: 'success',
+      summary: `Здравствуйте, ${displayName}!`,
+      detail: isInvestor
+        ? 'Ваш аватар эксперта готов к работе.'
+        : 'Добро пожаловать в VentureOS.',
+      life: 5000
+    })
+
+    // Редирект: инвесторы → /fst-expert, остальные → /fst-hub
+    const redirect = route.query.redirect ||
+      (isInvestor ? '/fst-expert' : '/fst-hub')
     router.push(redirect)
   } catch (e) {
     errorMsg.value = e.message || 'Неверный логин или пароль'

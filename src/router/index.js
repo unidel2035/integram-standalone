@@ -53,6 +53,7 @@ const routes = [
       { path: 'fst-network', component: () => import('@/views/pages/FstNetwork.vue'), meta: { title: 'Сеть контактов' } },
       { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
       { path: 'fst-startuper', component: () => import('@/views/pages/FstStartuper.vue'), meta: { title: 'Стартапер' } },
+      { path: 'fst-expert', component: () => import('@/views/pages/FstExpert.vue'), meta: { title: 'Аватар Эксперта' } },
       { path: 'fst-pitch', component: () => import('@/views/pages/FstPitch.vue'), meta: { title: 'ai2fund — Инвестиционный питч' } },
       { path: 'fst-room', component: () => import('@/views/pages/FstRoom.vue'), meta: { title: 'Agent Room — живой чат агентов' } },
       { path: 'fst-soft-model', component: () => import('@/views/pages/FstSoftModel.vue'), meta: { title: 'Software Ontology Model' } },

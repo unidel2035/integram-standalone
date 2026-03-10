@@ -1,12 +1,11 @@
 /**
  * Role Store — ролевая система VentureOS
  *
- * Роли: investor | expert | director | analyst | startup | admin
- * Пользователь может иметь несколько доступных ролей и переключаться между ними.
- * Текущая роль влияет на меню и на то, какой аватар эксперта открывается по умолчанию.
+ * Единственный источник правды: Integram, таблица 18, поле 115 (Роль → type 42)
+ * Роли в Integram type 42: investor(52536), expert(52559), director(52560),
+ *                           analyst(52561), startup(52562), admin(145)
  *
- * Источник данных: Integram поле профиля пользователя (fst_roles, fst_role, expert_id).
- * Fallback: конфиг по имени пользователя.
+ * Роли читаются через бэкенд GET /api/user/me при инициализации.
  */
 
 import { defineStore } from 'pinia'
@@ -64,84 +63,46 @@ export const ROLE_PROFILES = {
   }
 }
 
-// ── Конфиг пользователей → роли + expert_id ────────────────────
-// Источник правды: Integram (поле fst_roles и expert_id в профиле пользователя).
-// Этот конфиг — fallback когда Integram недоступен или профиль не настроен.
-const USER_CONFIG = {
-  // key = имя пользователя (toLowerCase, trim)
-  gordin: {
-    roles: ['investor', 'expert', 'admin'],
-    defaultRole: 'investor',
-    expertId: 'gordin'
-  },
-  'dgordin': {
-    roles: ['investor', 'expert', 'admin'],
-    defaultRole: 'investor',
-    expertId: 'gordin'
-  },
-  'д.гордин': {
-    roles: ['investor', 'expert', 'admin'],
-    defaultRole: 'investor',
-    expertId: 'gordin'
-  },
-  medvedev: {
-    roles: ['director', 'admin'],
-    defaultRole: 'director',
-    expertId: 'medvedev'
-  },
-  babincev: {
-    roles: ['expert'],
-    defaultRole: 'expert',
-    expertId: 'babincev'
-  },
-  // Дефолт — любой незнакомый пользователь
-  _default: {
-    roles: ['analyst'],
-    defaultRole: 'analyst',
-    expertId: null
-  }
+// expert_id — маппинг логин → id аватара (платформенный конфиг, не бизнес-данные)
+const EXPERT_ID_MAP = {
+  gds: 'gordin',
+  gordin: 'gordin',
+  dgordin: 'gordin',
+  medvedev: 'medvedev',
+  babincev: 'babincev',
 }
 
-const LS_ROLE_KEY = 'fst_active_role'
+const LS_ROLE_KEY      = 'fst_active_role'
 const LS_FULL_MENU_KEY = 'fst_full_menu'
 
 export const useRoleStore = defineStore('role', () => {
   // ── State ────────────────────────────────────────────────────
-  const activeRole = ref(localStorage.getItem(LS_ROLE_KEY) || 'analyst')
-  const fullMenuMode = ref(localStorage.getItem(LS_FULL_MENU_KEY) === 'true')
-
-  // Данные из Integram профиля (загружаются при init)
-  const profileRoles = ref(null)       // string[] из Integram или null
-  const profileExpertId = ref(null)    // expert_id из Integram или null
+  const activeRole      = ref(localStorage.getItem(LS_ROLE_KEY) || 'analyst')
+  const fullMenuMode    = ref(localStorage.getItem(LS_FULL_MENU_KEY) === 'true')
+  const profileRoles    = ref([])    // роли из Integram
   const currentUserName = ref('')
+  const currentDisplayName = ref('')
 
   // ── Computed ─────────────────────────────────────────────────
-  const userConfig = computed(() => {
-    const name = currentUserName.value.toLowerCase().trim()
-    return USER_CONFIG[name] || USER_CONFIG._default
-  })
+  const availableRoles = computed(() =>
+    profileRoles.value.map(r => ROLE_PROFILES[r]).filter(Boolean)
+  )
 
-  const availableRoles = computed(() => {
-    // Integram профиль имеет приоритет
-    const roles = profileRoles.value || userConfig.value.roles
-    return roles.map(r => ROLE_PROFILES[r]).filter(Boolean)
-  })
+  const currentRole = computed(() =>
+    ROLE_PROFILES[activeRole.value] || ROLE_PROFILES.analyst
+  )
 
-  const currentRole = computed(() => ROLE_PROFILES[activeRole.value] || ROLE_PROFILES.analyst)
+  const expertId = computed(() =>
+    EXPERT_ID_MAP[currentUserName.value.toLowerCase()] || null
+  )
 
-  const expertId = computed(() => profileExpertId.value || userConfig.value.expertId || null)
-
-  const isAdmin = computed(() => {
-    const roles = profileRoles.value || userConfig.value.roles
-    return roles.includes('admin')
-  })
+  const isAdmin = computed(() => profileRoles.value.includes('admin'))
 
   const canSeeFullMenu = computed(() => isAdmin.value && fullMenuMode.value)
 
   // ── Methods ──────────────────────────────────────────────────
   function setRole(roleId) {
-    const roles = profileRoles.value || userConfig.value.roles
-    if (!roles.includes(roleId) && roleId !== 'admin') return
+    if (!availableRoles.value.find(r => r.id === roleId)) return
     activeRole.value = roleId
     localStorage.setItem(LS_ROLE_KEY, roleId)
     window.dispatchEvent(new CustomEvent('fst-role-changed', { detail: roleId }))
@@ -154,63 +115,52 @@ export const useRoleStore = defineStore('role', () => {
   }
 
   function hasMenuAccess(itemRoles) {
-    // Нет ограничений — видят все
     if (!itemRoles || itemRoles.length === 0) return true
-    // Полный доступ — видит всё
     if (canSeeFullMenu.value) return true
-    // Проверяем роль
     return itemRoles.includes(activeRole.value)
   }
 
   async function init() {
-    // 1. Читаем имя из localStorage (ставится при логине в Integram)
-    const name = (
-      localStorage.getItem('my_user') ||
-      localStorage.getItem('user') ||
-      localStorage.getItem('currentUserName') ||
-      ''
-    ).toLowerCase().trim()
+    const name   = (localStorage.getItem('user') || '').toLowerCase().trim()
+    const userId = localStorage.getItem('id')
+    const token  = localStorage.getItem('token')
 
     currentUserName.value = name
 
-    // 2. Проверяем Integram профиль на fst_roles, fst_role, expert_id
+    if (!token || !userId) {
+      // Нет сессии — дефолт analyst
+      profileRoles.value = ['analyst']
+      return
+    }
+
     try {
-      const token = localStorage.getItem('my_token') || localStorage.getItem('token')
-      const apiBase = localStorage.getItem('apiBase') || 'https://api.ai2o.ru'
-      const db = 'my'
-
-      if (token) {
-        const r = await fetch(`${apiBase}/${db}/xsrf?JSON_KV`, {
-          headers: { 'X-Authorization': token }
-        })
-        if (r.ok) {
-          const d = await r.json()
-          // Читаем fst_roles из Integram профиля
-          if (d.fst_roles) {
-            profileRoles.value = Array.isArray(d.fst_roles)
-              ? d.fst_roles
-              : d.fst_roles.split(',').map(s => s.trim())
-          }
-          if (d.expert_id) profileExpertId.value = d.expert_id
-          if (d.fst_role && !d.fst_roles) profileRoles.value = [d.fst_role]
-
-          // Обновляем имя из профиля
-          if (d.user) currentUserName.value = d.user.toLowerCase().trim()
+      const resp = await fetch('/api/user/me', {
+        headers: {
+          'X-Integram-Token':  token,
+          'X-Integram-UserId': userId
         }
+      })
+      if (resp.ok) {
+        const d = await resp.json()
+        if (d.roles?.length) profileRoles.value = d.roles
+        if (d.displayName)   currentDisplayName.value = d.displayName
       }
-    } catch { /* используем fallback конфиг */ }
+    } catch { /* если бэкенд недоступен — оставляем analyst */ }
 
-    // 3. Устанавливаем дефолтную роль если текущая не доступна
-    const roles = profileRoles.value || userConfig.value.roles
-    if (!roles.includes(activeRole.value)) {
-      const defaultRole = userConfig.value.defaultRole || roles[0] || 'analyst'
-      activeRole.value = defaultRole
-      localStorage.setItem(LS_ROLE_KEY, defaultRole)
+    // Если Integram не вернул роли — fallback
+    if (!profileRoles.value.length) profileRoles.value = ['analyst']
+
+    // Проверяем что текущая роль доступна
+    const allRoles = availableRoles.value.map(r => r.id)
+    if (!allRoles.includes(activeRole.value)) {
+      const first = allRoles[0] || 'analyst'
+      activeRole.value = first
+      localStorage.setItem(LS_ROLE_KEY, first)
     }
   }
 
   return {
-    activeRole, fullMenuMode, currentUserName,
+    activeRole, fullMenuMode, currentUserName, currentDisplayName,
     availableRoles, currentRole, expertId, isAdmin, canSeeFullMenu,
     setRole, toggleFullMenu, hasMenuAccess, init
   }

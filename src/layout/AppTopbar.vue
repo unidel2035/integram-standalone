@@ -14,9 +14,11 @@ const AgentStatusPanel = defineAsyncComponent(() => import('@/components/AgentSt
 // Issue #6934: Logo moved to sidebar, no longer needed here
 // import LogoDisplay from '@/components/LogoDisplay.vue'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import RoleSwitcher from '@/components/fst-shared/RoleSwitcher.vue'
 import { usePwaInstall } from '@/composables/usePwaInstall'
 import { useWorkspaceAgentStore } from '@/stores/workspaceAgentStore'
 import { useLearnModeStore } from '@/stores/learnModeStore'
+import { useRoleStore } from '@/stores/roleStore'
 import { useI18n } from 'vue-i18n'
 import { onMounted, onBeforeUnmount, ref, watch, computed, nextTick } from 'vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -31,6 +33,7 @@ const isMenuOpen = computed(() =>
   layoutState.overlayMenuActive || layoutState.staticMenuMobileActive
 )
 const learnModeStore = useLearnModeStore()
+const roleStore = useRoleStore()
 // Issue #7230: PWA install prompt
 const { canInstall, isInstalled, promptInstall } = usePwaInstall()
 
@@ -225,6 +228,7 @@ const paletteBtn = ref(null)
 
 onMounted(() => {
   updateFavicon()
+  roleStore.init()
   // Close config panel when clicking outside it
   const handleConfigClickOutside = (e) => {
     if (configVisible.value && configPanelRef.value && !configPanelRef.value.contains(e.target)) {
@@ -318,6 +322,8 @@ onBeforeUnmount(() => {
       >
         <i class="pi pi-desktop"/>
       </button>
+
+      <RoleSwitcher />
 
       <div class="layout-config-menu">
         <button

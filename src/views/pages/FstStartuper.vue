@@ -128,7 +128,7 @@
                   <i class="pi pi-upload"></i> Загрузить файл
                   <input type="file" accept="*" multiple @change="onFileInput" hidden />
                 </label>
-                <button class="spw-demo-btn" @click="loadDemo('sirin')">🚀 Загрузить SIRIN demo</button>
+                <button class="spw-demo-btn" @click="loadDemo('vega')">🚀 Загрузить VEGA demo</button>
               </div>
             </div>
           </div>
@@ -390,21 +390,56 @@
         <template v-else-if="activeView === 'finmodel'">
           <div class="spw-finmodel-wrap">
             <div class="spw-doc-topbar">
-              <span class="spw-doc-title"><i class="pi pi-table"></i> Финансовая модель</span>
-              <a href="https://ai2o.ru/download/fst/7ac404839/47442f27815.zip"
-                class="spw-btn spw-btn--ghost" title="Скачать пакет документов">
-                <i class="pi pi-download"></i> Пакет SIRIN
-              </a>
+              <span class="spw-doc-title"><i class="pi pi-table"></i> Финансовая модель — VentureOS</span>
+              <div class="spw-doc-actions">
+                <span style="font-size:11px;color:var(--p-text-muted-color);margin-right:8px">5-летний прогноз · Pre-Seed 60M₽</span>
+              </div>
             </div>
             <div class="spw-finmodel-body">
               <FstFinModelBlock v-if="finmodelId" :modelId="finmodelId" database="fst" />
-              <div v-else class="spw-doc-placeholder">
-                <i class="pi pi-table" style="font-size:56px;opacity:.3"></i>
-                <h3>Финансовая модель</h3>
-                <p>Модель будет создана агентом после заполнения ключевых данных<br>(выручка, затраты, раунды финансирования)</p>
-                <button class="spw-btn spw-btn--primary" @click="createFinmodel">
-                  <i class="pi pi-magic"></i> Создать финмодель с AI
-                </button>
+              <div v-else class="spw-fm-static">
+                <!-- Scenarios strip -->
+                <div class="spw-fm-scenarios">
+                  <div v-for="(sc, name) in vegaFinmodel.scenarios" :key="name"
+                    :class="['spw-fm-scenario', `spw-fm-sc--${name}`]">
+                    <div class="spw-fm-sc-label">{{ name === 'base' ? 'Базовый' : name === 'optimistic' ? 'Оптимистичный' : 'Пессимистичный' }}</div>
+                    <div class="spw-fm-sc-row"><span>IRR</span><strong>{{ sc.irr }}%</strong></div>
+                    <div class="spw-fm-sc-row"><span>MOIC</span><strong>{{ sc.moic }}x</strong></div>
+                    <div class="spw-fm-sc-row"><span>Окупаемость</span><strong>{{ sc.payback }} лет</strong></div>
+                  </div>
+                </div>
+                <!-- P&L Table -->
+                <div class="spw-fm-table-wrap">
+                  <table class="spw-fm-table">
+                    <thead>
+                      <tr>
+                        <th>Показатель</th>
+                        <th v-for="y in vegaFinmodel.years" :key="y">{{ y }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Клиентов (фондов)</td><td v-for="(v,i) in vegaFinmodel.clients" :key="i">{{ v }}</td></tr>
+                      <tr class="spw-fm-highlight"><td>ARR, млн ₽</td><td v-for="(v,i) in vegaFinmodel.arr" :key="i">{{ v }}</td></tr>
+                      <tr><td>COGS, млн ₽</td><td v-for="(v,i) in vegaFinmodel.cogs" :key="i">{{ v }}</td></tr>
+                      <tr><td>Валовая прибыль, млн ₽</td><td v-for="(v,i) in vegaFinmodel.grossProfit" :key="i">{{ v }}</td></tr>
+                      <tr><td>OpEx, млн ₽</td><td v-for="(v,i) in vegaFinmodel.opex" :key="i">{{ v }}</td></tr>
+                      <tr class="spw-fm-highlight"><td>EBITDA, млн ₽</td>
+                        <td v-for="(v,i) in vegaFinmodel.ebitda" :key="i"
+                          :style="{ color: v >= 0 ? 'var(--fst-green)' : 'var(--fst-red)', fontWeight: 700 }">{{ v }}</td>
+                      </tr>
+                      <tr><td>MRR, млн ₽</td><td v-for="(v,i) in vegaFinmodel.mrr" :key="i">{{ v }}</td></tr>
+                      <tr><td>NRR, %</td><td v-for="(v,i) in vegaFinmodel.nrr" :key="i">{{ v ?? '—' }}</td></tr>
+                      <tr><td>Команда, чел.</td><td v-for="(v,i) in vegaFinmodel.headcount" :key="i">{{ v }}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!-- Assumptions -->
+                <div class="spw-fm-assumptions">
+                  <div class="spw-fm-assump-head">Допущения модели</div>
+                  <ul>
+                    <li v-for="(a, i) in vegaFinmodel.assumptions" :key="i">{{ a }}</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -485,6 +520,7 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import FstFinModelBlock from '@/components/finmodel/FstFinModelBlock.vue'
 import { buildArtifactTree, logEvent, fetchEvents, syncCompanyTwin } from '@/services/workspaceOntologyService.js'
+import { vegaTwin, vegaTermSheet, vegaSmartContract, vegaGostDocs, vegaEvents, vegaFinmodel } from '@/data/vegaDemoData.js'
 
 const router = useRouter()
 
@@ -536,10 +572,10 @@ const ARTIFACTS_ALL = [
     items: [
       { key: 'doc-nav',      label: 'Навигатор по пакету', icon: 'pi pi-map',              type: 'doc', required: true,
         downloadUrl: 'https://ai2o.ru/download/fst/7ac404839/47442f27815.zip' },
-      { key: 'doc-teaser',   label: 'Тизер',               icon: 'pi pi-bolt',             type: 'doc', roles: ['founder','investor','expert'] },
-      { key: 'doc-exec',     label: 'Executive Summary',    icon: 'pi pi-file',             type: 'doc', required: true },
-      { key: 'doc-faq',      label: 'FAQ для инвестора',    icon: 'pi pi-question-circle',  type: 'doc' },
-      { key: 'doc-nda',      label: 'NDA',                  icon: 'pi pi-lock',             type: 'doc', required: true },
+      { key: 'doc-teaser',   label: 'Тизер',               icon: 'pi pi-bolt',             type: 'doc-gost', gostType: 'doc-teaser', roles: ['founder','investor','expert'] },
+      { key: 'doc-exec',     label: 'Executive Summary',    icon: 'pi pi-file',             type: 'doc-gost', gostType: 'doc-exec', required: true },
+      { key: 'doc-faq',      label: 'FAQ для инвестора',    icon: 'pi pi-question-circle',  type: 'doc-gost', gostType: 'doc-faq' },
+      { key: 'doc-nda',      label: 'NDA',                  icon: 'pi pi-lock',             type: 'doc-gost', gostType: 'doc-nda', required: true },
       { key: 'doc-dataroom', label: 'Data Room (полный)',   icon: 'pi pi-database',         type: 'doc' },
       { key: 'doc-letter',   label: 'Письмо инвестору',    icon: 'pi pi-envelope',         type: 'doc' },
     ],
@@ -548,7 +584,7 @@ const ARTIFACTS_ALL = [
     key: 'finance', label: 'Финансы', icon: 'pi pi-chart-line', roles: ['founder','investor'],
     items: [
       { key: 'finmodel',    label: 'Финансовая модель',  icon: 'pi pi-table',    type: 'finmodel', required: true },
-      { key: 'doc-bizplan', label: 'Бизнес-план',        icon: 'pi pi-book',     type: 'doc', required: true },
+      { key: 'doc-bizplan', label: 'Бизнес-план',        icon: 'pi pi-book',     type: 'doc-gost', gostType: 'doc-bizplan', required: true },
       { key: 'doc-nma',     label: 'Отчёт по НМА',       icon: 'pi pi-star',     type: 'doc' },
       { key: 'doc-founder', label: 'Справка основателя', icon: 'pi pi-id-card',  type: 'doc' },
     ],
@@ -647,46 +683,26 @@ const companyId = ref(null)          // Integram object ID for this company
 const artifactsFromOntology = ref(null)  // loaded from Integram; null = use static
 
 // Tech / GOST documents
-const gostDoc = ref({})
+const gostDoc = ref({ ...vegaGostDocs })
 const gostGenerating = ref(false)
 const gostLoadingStep = ref('')
 
 // Term Sheet constructor
-const termSheet = ref({
-  companyName: 'SIRIN', roundName: 'Pre-Seed', investAmount: '60 млн ₽', preMoney: '200 млн ₽',
-  shareClass: 'Привилегированные', liquidationPref: '1x не участвующая',
-  antiDilution: 'Широкая база', vestingFounder: '48 месяцев / 12 мес клифф',
-  boardSeats: '1 место фонду / 1 основателю / 1 независимый',
-  proRata: 'Да', dragAlong: '70% голосов', informationRights: 'Ежеквартальная отчётность',
-  closingConditions: 'Due diligence, аудит IP', otherTerms: '',
-})
+const termSheet = ref({ ...vegaTermSheet })
 const tsGenerating = ref(false)
 
 // Smart Contract
-const smartContract = ref(null)
+const smartContract = ref({ ...vegaSmartContract })
 const scGenerating = ref(false)
 const showScJson = ref(false)
 
-const twin = ref({
-  company: 'SIRIN', stage: 'Pre-Seed', sector: 'AI/Deep Tech',
-  trl: 7, mrl: 4, teamSize: 3, askRub: 60000000,
-  marketSize: '15 млрд ₽', projectedIRR: 28, runway: 18,
-  revenue: 0, burnRate: 800000, completeness: 35,
-  description: 'AI-платформа управления венчурным фондом',
-  founder: 'Гаврилов Денис Александрович', inn: '', website: 'ai2fund.ru',
-  contactEmail: '',
-})
+const twin = ref({ ...vegaTwin })
 
 const scoring = ref({ totalScore: 0, dimensions: {}, verdict: '' })
 const beacons = ref([])
 const research = ref({ grants: { grants: [] } })
 const chatMessages = ref([])
-const events = ref([
-  { id: 1, type: 'info',    text: 'Workspace создан',           time: 'Сегодня' },
-  { id: 2, type: 'doc',     text: 'Получен пакет документов SIRIN (18 файлов)', time: 'Сегодня' },
-  { id: 3, type: 'ip',      text: 'Патентная заявка сформирована', time: 'Сегодня' },
-  { id: 4, type: 'deal',    text: 'Term Sheet подготовлен',     time: 'Сегодня' },
-])
+const events = ref([...vegaEvents])
 
 // ═══════════════════════════════════════════
 // COMPUTED
@@ -732,13 +748,13 @@ const companyMetrics = computed(() => [
 ])
 
 const docStatus = computed(() => [
-  { key: 'exec',    label: 'ExecSummary',  icon: 'pi pi-file',    status: 'empty' },
-  { key: 'bizplan', label: 'Бизнес-план',  icon: 'pi pi-book',    status: 'empty' },
-  { key: 'finmodel',label: 'Финмодель',    icon: 'pi pi-table',   status: 'partial' },
-  { key: 'termsheet',label: 'Term Sheet',  icon: 'pi pi-file-edit',status: 'ok' },
-  { key: 'patent',  label: 'Патент',       icon: 'pi pi-award',   status: 'ok' },
-  { key: 'nda',     label: 'NDA',          icon: 'pi pi-lock',    status: 'empty' },
-  { key: 'invest',  label: 'Договор',      icon: 'pi pi-verified',status: 'empty' },
+  { key: 'exec',     label: 'ExecSummary',  icon: 'pi pi-file',     status: 'ok' },
+  { key: 'bizplan',  label: 'Бизнес-план',  icon: 'pi pi-book',     status: 'ok' },
+  { key: 'finmodel', label: 'Финмодель',    icon: 'pi pi-table',    status: 'partial' },
+  { key: 'termsheet',label: 'Term Sheet',   icon: 'pi pi-file-edit',status: 'ok' },
+  { key: 'patent',   label: 'Патент',       icon: 'pi pi-award',    status: 'ok' },
+  { key: 'nda',      label: 'NDA',          icon: 'pi pi-lock',     status: 'ok' },
+  { key: 'invest',   label: 'Договор',      icon: 'pi pi-verified', status: 'partial' },
 ])
 
 const messagesEl = ref(null)
@@ -760,9 +776,20 @@ function openView(item) {
   }
   if (item.type === 'finmodel') {
     activeView.value = 'finmodel'
+    addEvent('doc', `Открыта финансовая модель VentureOS`)
   }
   if (item.type === 'grants') {
     activeView.value = 'grants'
+  }
+  if (item.type === 'smart-contract') {
+    activeView.value = 'smart-contract'
+    addEvent('deal', `Открыт Smart Contract ${smartContract.value?.id || ''}`)
+  }
+  if (item.type === 'termsheet') {
+    addEvent('deal', `Открыт Term Sheet конструктор`)
+  }
+  if (item.type === 'doc-gost' && gostDoc.value[item.key]) {
+    addEvent('doc', `Документ открыт онтодвижком: ${item.label}`)
   }
 }
 
@@ -854,17 +881,13 @@ async function initSession() {
 }
 
 function loadDemo(name) {
-  if (name === 'sirin') {
-    twin.value = {
-      company: 'SIRIN', stage: 'Pre-Seed', sector: 'AI / FinTech',
-      trl: 7, mrl: 4, teamSize: 3, askRub: 60000000,
-      marketSize: '15 млрд ₽', projectedIRR: 28, runway: 18,
-      revenue: 0, burnRate: 800000, completeness: 35,
-      description: 'AI-платформа управления венчурным фондом. VentureOS — полный цикл: заявка → ИК → сделка → мониторинг → выход.',
-      founder: 'Гаврилов Денис Александрович', inn: '', website: 'ai2fund.ru',
-      contactEmail: 'unidel@yandex.ru',
-    }
-    addEvent('info', 'Загружены демо-данные SIRIN')
+  if (name === 'vega') {
+    Object.assign(twin.value, vegaTwin)
+    Object.assign(termSheet.value, vegaTermSheet)
+    gostDoc.value = { ...vegaGostDocs }
+    smartContract.value = { ...vegaSmartContract }
+    events.value = [...vegaEvents]
+    addEvent('info', 'Загружены демо-данные VEGA')
   }
 }
 
@@ -1266,7 +1289,7 @@ function md(text) {
 }
 
 // Persistence
-const LS_KEY = 'spw_v1'
+const LS_KEY = 'spw_v3'
 function saveLS() {
   try { localStorage.setItem(LS_KEY, JSON.stringify({ twin: twin.value, scoring: scoring.value, events: events.value.slice(0, 20) })) } catch {}
 }
@@ -1760,4 +1783,34 @@ onMounted(async () => {
   border: 1px solid var(--p-content-border-color); border-radius: 8px;
   padding: 12px 14px; overflow-x: auto; max-height: 320px; font-family: monospace; line-height: 1.5;
 }
+
+/* ── Finmodel Static ── */
+.spw-fm-static { display: flex; flex-direction: column; gap: 16px; padding: 16px; height: 100%; overflow-y: auto; }
+.spw-fm-scenarios { display: flex; gap: 12px; }
+.spw-fm-scenario {
+  flex: 1; border-radius: 8px; padding: 12px 14px;
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-ground);
+}
+.spw-fm-sc--base { border-color: var(--fst-blue); }
+.spw-fm-sc--optimistic { border-color: var(--fst-green); }
+.spw-fm-sc--pessimistic { border-color: var(--fst-brand); }
+.spw-fm-sc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--p-text-muted-color); margin-bottom: 8px; }
+.spw-fm-sc-row { display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0; }
+.spw-fm-sc-row strong { font-size: 14px; font-weight: 700; color: var(--p-text-color); }
+.spw-fm-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--p-content-border-color); }
+.spw-fm-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.spw-fm-table th {
+  background: var(--p-surface-ground); padding: 8px 10px; text-align: right; font-weight: 600;
+  border-bottom: 1px solid var(--p-content-border-color); white-space: nowrap; color: var(--p-text-muted-color);
+}
+.spw-fm-table th:first-child { text-align: left; }
+.spw-fm-table td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--p-content-border-color); }
+.spw-fm-table td:first-child { text-align: left; color: var(--p-text-muted-color); white-space: nowrap; }
+.spw-fm-table tr:last-child td { border-bottom: none; }
+.spw-fm-highlight td:first-child { color: var(--p-text-color); font-weight: 600; }
+.spw-fm-assumptions { background: var(--p-surface-ground); border-radius: 8px; padding: 12px 16px; }
+.spw-fm-assump-head { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--p-text-muted-color); margin-bottom: 8px; }
+.spw-fm-assumptions ul { margin: 0; padding-left: 16px; }
+.spw-fm-assumptions li { font-size: 12px; line-height: 1.6; color: var(--p-text-color); }
 </style>

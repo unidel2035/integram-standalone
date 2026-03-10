@@ -11,6 +11,8 @@ import grMeasuresRoutes from './src/api/routes/grMeasures.js'
 import roomRoutes       from './src/api/routes/room.js'
 import eventsRoutes     from './src/api/routes/events.js'
 import aiTokensRoutes   from './src/api/routes/ai-tokens.js'
+import expertRoutes     from './src/api/routes/expert.js'
+import userRoutes       from './src/api/routes/user.js'
 
 const app = express()
 const server = createServer(app)
@@ -182,6 +184,8 @@ app.get('/api/calc/tools',          (req, res) => res.json({ tools: ['bayesian',
 app.use('/api/platform',  platformRoutes)
 app.use('/api/fst',       portfolioRoutes)
 app.use('/api/startuper', startuperRoutes)
+app.use('/api/expert',   expertRoutes)
+app.use('/api/user',     userRoutes)
 app.use('/api/glossary',  glossaryRoutes)
 app.use('/api/fst',       grMeasuresRoutes)
 app.use('/api',           roomRoutes)
