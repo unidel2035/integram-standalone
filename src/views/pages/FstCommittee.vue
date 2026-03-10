@@ -789,10 +789,10 @@
                   style="font-size:0.8rem" />
               </div>
             </div>
-            <div style="margin-top:4px; padding-left:50px; font-size:0.78rem; color:var(--p-text-color-secondary)">
-              <span v-if="votingMode === 'formula'">Алгоритмические веса + bias + шум — быстро, предсказуемо</span>
-              <span v-else-if="votingMode === 'hybrid'">LLM stance из дебатов + формульный score — баланс</span>
-              <span v-else>Чисто LLM — stance и confidence из ответа агента, без формул</span>
+            <div class="fst-voting-desc">
+              <span v-if="votingMode === 'formula'"><i class="pi pi-calculator"/> Алгоритм · веса + bias + шум</span>
+              <span v-else-if="votingMode === 'hybrid'"><i class="pi pi-sliders-h"/> LLM stance + формульный score</span>
+              <span v-else><i class="pi pi-comments"/> Чисто LLM · stance из ответа агента</span>
             </div>
           </div>
 
@@ -2929,10 +2929,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  position: sticky;
-  bottom: 0;
-  background: var(--p-surface-card, var(--surface-card));
-  z-index: 5;
 }
 .fst-launch-btn { width: 100%; justify-content: center; }
 .fst-launch-hint { text-align: center; font-size: 0.875rem; color: var(--p-text-muted-color); }
@@ -4391,6 +4387,19 @@ onUnmounted(() => {
   color: #fff;
   border-color: transparent;
 }
+.fst-voting-desc {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.725rem;
+  color: var(--p-text-muted-color);
+  background: color-mix(in srgb, var(--p-surface-ground) 60%, transparent);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-top: 6px;
+}
+.fst-voting-desc i { font-size: 0.7rem; opacity: 0.7; }
 .fst-model-profile-desc {
   font-size: 0.8125rem;
   color: var(--p-text-muted-color);
