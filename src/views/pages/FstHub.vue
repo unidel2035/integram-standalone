@@ -91,7 +91,10 @@
               @click="go(mod.path)"
             >
               <div class="hub-mod-left">
-                <div class="hub-mod-icon"><i :class="mod.icon"></i></div>
+                <div class="hub-mod-icon">
+                  <span v-if="mod.svgIcon" v-html="mod.svgIcon" class="hub-mod-svg-icon"></span>
+                  <i v-else :class="mod.icon"></i>
+                </div>
               </div>
               <div class="hub-mod-body">
                 <div class="hub-mod-name">{{ mod.name }}</div>
@@ -189,7 +192,7 @@ const pipeline = [
 ]
 
 const modules = [
-  { id: 'startuper',      name: 'Стартапер',              phase: 'Фаза 0 — Поиск',           icon: 'pi pi-rocket',        color: '#f59e0b', path: '/fst-startuper',      status: 'live' },
+  { id: 'startuper',      name: 'Стартапер',              phase: 'Фаза 0 — Поиск',           icon: '',        svgIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em"><path d="M9.19 6.35c-2.04 2.29-3.44 5.58-3.57 5.89L2 10.69l4.05-4.05c.47-.47 1.15-.68 1.81-.55l1.33.26zM11.17 17c.31-.13 3.58-1.53 5.87-3.57l.26 1.33c.13.66-.08 1.34-.55 1.81L12.7 20.59l-1.53-3.59zm6.48-14.34C12.01-.04 6.27 4.64 5.68 5.23L7.98 9.7l-.13.13c-1.13 1.13-1.93 3.04-2.55 4.74.6 1.5 1.57 2.88 2.88 4.19 1.31 1.31 2.71 2.29 4.22 2.89 1.7-.62 3.58-1.43 4.71-2.56l.13-.13 4.47 2.3c.59-.59 5.28-6.32 1.93-11.97zm-7.48 7.38c-1.17-1.17-1.17-3.07 0-4.24 1.17-1.17 3.07-1.17 4.24 0 1.17 1.17 1.17 3.07 0 4.24-1.17 1.17-3.07 1.17-4.24 0zM3.01 18.99c-.78.78-.78 2.04 0 2.83 1.1 1.1 8.15.38 8.15.38s.71-7.05-.38-8.15c-.79-.79-2.05-.79-2.83 0l-4.94 4.94z"/></svg>',  color: '#f59e0b', path: '/fst-startuper',      status: 'live' },
   { id: 'sourcing',       name: 'AI Deal Sourcing',       phase: 'Фаза 0 — Поиск',           icon: 'pi pi-search',        color: '#667eea', path: '/fst-sourcing',       status: 'live' },
   { id: 'committee',      name: 'AI Инвесткомитет',       phase: 'Фаза 1 — Оценка',          icon: 'pi pi-users',         color: '#a78bfa', path: '/fst-committee',      status: 'live' },
   { id: 'protocol',       name: 'Протоколы ИК',           phase: 'Фаза 1 — Оценка',          icon: 'pi pi-file-check',    color: '#ffa726', path: '/fst-protocol',       status: 'live' },
@@ -502,6 +505,8 @@ const modulesByPhase = computed(() => {
   font-size: 15px;
   color: var(--mc, #38bdf8);
 }
+.hub-mod-svg-icon { display: flex; align-items: center; justify-content: center; line-height: 0; color: var(--mc, #f59e0b); }
+.hub-mod-svg-icon svg { width: 1em; height: 1em; fill: currentColor; }
 .hub-mod-body { flex: 1; min-width: 0; }
 .hub-mod-name {
   font-size: 14px;
