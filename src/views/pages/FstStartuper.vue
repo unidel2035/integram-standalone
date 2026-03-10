@@ -32,6 +32,12 @@
           </button>
         </div>
         <div class="spw-topbar-sep"></div>
+        <!-- Current user chip -->
+        <div class="spw-user-chip" :title="`Воркспейс привязан к: ${currentUserEmail}`">
+          <i class="pi pi-user"></i>
+          <span>{{ currentUserEmail || 'Аноним' }}</span>
+        </div>
+        <div class="spw-topbar-sep"></div>
         <button class="spw-btn spw-btn--ghost" @click="clearSession" title="Сбросить сессию">
           <i class="pi pi-refresh"></i>
         </button>
@@ -524,6 +530,11 @@ import { vegaTwin, vegaTermSheet, vegaSmartContract, vegaGostDocs, vegaEvents, v
 
 const router = useRouter()
 
+// ── Текущий пользователь (из auth-системы, устанавливается при логине) ─────────
+const currentUserId    = localStorage.getItem('id')   || ''
+const currentUserEmail = localStorage.getItem('user') || ''
+const OWNER_EMAIL      = 'unidel@yandex.ru'
+
 // ═══════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════
@@ -683,26 +694,32 @@ const companyId = ref(null)          // Integram object ID for this company
 const artifactsFromOntology = ref(null)  // loaded from Integram; null = use static
 
 // Tech / GOST documents
-const gostDoc = ref({ ...vegaGostDocs })
+const gostDoc = ref({})
 const gostGenerating = ref(false)
 const gostLoadingStep = ref('')
 
 // Term Sheet constructor
-const termSheet = ref({ ...vegaTermSheet })
+const termSheet = ref({})
 const tsGenerating = ref(false)
 
 // Smart Contract
-const smartContract = ref({ ...vegaSmartContract })
+const smartContract = ref(null)
 const scGenerating = ref(false)
 const showScJson = ref(false)
 
-const twin = ref({ ...vegaTwin })
+const twin = ref({
+  company: '', stage: 'Pre-Seed', sector: '', trl: 0, mrl: 0,
+  teamSize: 0, askRub: 0, marketSize: '', projectedIRR: 0,
+  runway: 0, revenue: 0, burnRate: 0, completeness: 0,
+  description: '', founder: '', inn: '', website: '',
+  contactEmail: currentUserEmail,
+})
 
 const scoring = ref({ totalScore: 0, dimensions: {}, verdict: '' })
 const beacons = ref([])
 const research = ref({ grants: { grants: [] } })
 const chatMessages = ref([])
-const events = ref([...vegaEvents])
+const events = ref([])
 
 // ═══════════════════════════════════════════
 // COMPUTED
@@ -1288,24 +1305,60 @@ function md(text) {
     .replace(/\n/g, '<br>')
 }
 
-// Persistence
-const LS_KEY = 'spw_v3'
+// Persistence — ключ изолирован по userId: каждый пользователь видит только свои данные
+const LS_KEY = `spw_v3_${currentUserId || 'anon'}`
 function saveLS() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify({ twin: twin.value, scoring: scoring.value, events: events.value.slice(0, 20) })) } catch {}
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      twin: twin.value,
+      scoring: scoring.value,
+      events: events.value.slice(0, 30),
+      companyId: companyId.value,
+      gostDoc: gostDoc.value,
+      termSheet: termSheet.value,
+      smartContract: smartContract.value,
+    }))
+  } catch {}
 }
 function loadLS() {
   try {
     const d = JSON.parse(localStorage.getItem(LS_KEY) || '{}')
-    if (d.twin) Object.assign(twin.value, d.twin)
-    if (d.scoring) scoring.value = d.scoring
-    if (d.events?.length) events.value = d.events
+    if (d.twin?.company) {
+      Object.assign(twin.value, d.twin)
+      if (d.scoring) scoring.value = d.scoring
+      if (d.events?.length) events.value = d.events
+      if (d.companyId) companyId.value = d.companyId
+      if (d.gostDoc && Object.keys(d.gostDoc).length) gostDoc.value = d.gostDoc
+      if (d.termSheet && Object.keys(d.termSheet).length) termSheet.value = d.termSheet
+      if (d.smartContract) smartContract.value = d.smartContract
+      return true
+    }
   } catch {}
+  return false
 }
 
-watch([twin, scoring], saveLS, { deep: true })
+watch([twin, scoring, gostDoc, termSheet, smartContract], saveLS, { deep: true })
 
 onMounted(async () => {
-  loadLS()
+  // ── Auth guard ──────────────────────────────────────────────────
+  if (!localStorage.getItem('token')) {
+    router.push('/login?redirect=/fst-startuper')
+    return
+  }
+
+  const hasData = loadLS()
+
+  // Автозагрузка данных VentureOS для владельца при первом заходе
+  if (!hasData && currentUserEmail === OWNER_EMAIL) {
+    Object.assign(twin.value, vegaTwin)
+    termSheet.value = { ...vegaTermSheet }
+    gostDoc.value = { ...vegaGostDocs }
+    smartContract.value = { ...vegaSmartContract }
+    events.value = [...vegaEvents]
+    addEvent('info', `Рабочее пространство VentureOS загружено для ${currentUserEmail}`)
+    saveLS()
+  }
+
   initSession()
 
   // Try loading artifact tree from Integram ontology
@@ -1348,6 +1401,14 @@ onMounted(async () => {
 .spw-topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; overflow: hidden; }
 .spw-topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .spw-topbar-sep { width: 1px; height: 20px; background: var(--p-content-border-color); }
+.spw-user-chip {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--p-text-muted-color);
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--p-surface-ground);
+  border: 1px solid var(--p-content-border-color);
+  max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 .spw-co-name { font-size: 15px; font-weight: 700; color: var(--p-text-color); white-space: nowrap; }
 
