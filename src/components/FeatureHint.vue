@@ -154,14 +154,16 @@ onMounted(() => {
   position: absolute;
   z-index: 110;
   width: 240px;
-  background: var(--p-surface-card);
+  background: var(--p-overlay-popover-background, var(--p-surface-overlay, var(--p-surface-card)));
   border: 1px solid var(--p-content-border-color);
   border-radius: 10px;
   padding: 12px 14px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Ensure no inherited opacity bleeds through */
+  isolation: isolate;
 }
 
 /* Callout arrow via ::before pseudo */
@@ -170,7 +172,7 @@ onMounted(() => {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: var(--p-surface-card);
+  background: var(--p-overlay-popover-background, var(--p-surface-overlay, var(--p-surface-card)));
   border: 1px solid var(--p-content-border-color);
   transform: rotate(45deg);
 }
