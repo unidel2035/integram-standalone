@@ -148,9 +148,78 @@ XSRF:     в теле запроса, НЕ в заголовке
 2. **Сервисы:** systemd, НЕ pm2
    - `sudo systemctl restart dronedoc-backend`
    - `sudo systemctl restart dronedoc-frontend`
-3. **Тема:** Только PrimeVue CSS переменные (`var(--p-surface-card)`), никаких хардкод цветов
-   - **Запрещено:** PrimeVue токены шкалы 0/50/100/200 (слишком светлые/тёмные, ломают тему). Используй semantic-токены: `--p-text-color`, `--p-text-muted-color`, `--p-surface-card`, `--p-content-border-color`, `--p-primary-color`
-   - **Шаблон страницы:** Все sidebar-страницы должны использовать `<FstPageLayout>` из `src/components/fst-shared/FstPageLayout.vue` (PrimeVue Toolbar + единый скелет)
+3. **Тема и цвета — строгие правила:**
+
+   **Запрещено:**
+   - Хардкод hex-цветов (`#66bb6a`, `#ef5350`, `#42a5f5` и т.д.) — ни в CSS, ни в JS, ни в inline-стилях шаблона
+   - PrimeVue токены шкалы 0/50/100/200 (слишком светлые/тёмные, ломают тему)
+   - `rgba(76,175,80,0.15)` и подобные — используй `color-mix(in srgb, var(--fst-green) 15%, transparent)`
+
+   **Разрешено — только эти переменные:**
+
+   | Назначение | Переменная |
+   |-----------|-----------|
+   | Основной текст | `var(--p-text-color)` |
+   | Вторичный текст | `var(--p-text-muted-color)` |
+   | Фон карточки | `var(--p-surface-card)` |
+   | Граница | `var(--p-content-border-color)` |
+   | Акцент платформы | `var(--p-primary-color)` |
+   | **Зелёный** (успех, норма, рост) | `var(--fst-green)` / `var(--fst-green-dark)` |
+   | **Красный** (риск, ошибка) | `var(--fst-red)` / `var(--fst-red-dark)` |
+   | **Синий** (инфо, TRL, технологии) | `var(--fst-blue)` / `var(--fst-blue-dark)` |
+   | **Фиолетовый** (AI, ИК, патенты) | `var(--fst-purple)` / `var(--fst-purple-dark)` |
+   | **Оранжевый** (предупреждение, KPI) | `var(--fst-brand)` / `var(--fst-brand-dark)` |
+   | **Циан** (события, история) | `var(--fst-cyan)` |
+
+   Все `--fst-*` переменные определены в `src/assets/fst.css`.
+
+   **Правило для JS-значений цвета** (inline `:style`, data-массивы, функции `*Color()`):
+   ```js
+   // ✅ правильно — CSS var работает и в inline-стилях
+   function riskColor(level) {
+     if (level === 'green') return 'var(--fst-green)'
+     if (level === 'yellow') return 'var(--fst-brand)'
+     return 'var(--fst-red)'
+   }
+   // ❌ неправильно
+   function riskColor(level) { return level === 'green' ? '#66bb6a' : '#ef5350' }
+   ```
+
+   **Исключение:** Chart.js `borderColor`/`backgroundColor` — там CSS vars не работают, оставить hex.
+
+   **Шаблон страницы:** Все sidebar-страницы должны использовать `<FstPageLayout>` из `src/components/fst-shared/FstPageLayout.vue` (PrimeVue Toolbar + единый скелет)
+
+4. **Единый скелет страниц — дизайн-система отступов:**
+
+   Эталон: **FstHub** и **FstCommittee** — обе используют один скелет.
+
+   **Правило layout-main-container** (`src/assets/layout/_main.scss`):
+   ```
+   padding: 6rem 2rem 0 2rem   ← ЕДИНЫЙ для всех страниц
+   ```
+   - `6rem` сверху = высота AppTopbar (~4rem) + 2rem дыхание
+   - `2rem` по бокам = отступ контента от края sidebar
+   - Страницы-исключения (full-bleed, например Committee, Terminal) сохраняют те же `2rem` по бокам, но могут менять поведение overflow/flex
+
+   **Внутренний топбар страницы** (если есть свой, как у Hub/Committee):
+   ```css
+   padding: 12px 20px;
+   border-bottom: 1px solid var(--p-content-border-color);
+   position: sticky; top: 0; z-index: 10;
+   ```
+
+   **Типы страниц:**
+   | Тип | Пример | Топбар |
+   |-----|--------|--------|
+   | **FstPageLayout** | Portfolio, Deal, Execution | `<FstPageLayout>` — единый компонент |
+   | **Custom topbar** | Hub, Committee | собственный sticky topbar, отступы как выше |
+   | **Full-bleed** | Committee, Terminal | `html.*-page` класс + overflow:hidden |
+   | **Без layout** | Landing, Login | публичные, без sidebar |
+
+   **НЕ делать:**
+   - `padding-top: 4rem` в `layout-main-container` (контент сдвигается выше AppTopbar)
+   - `padding: 0` по бокам без компенсации внутри компонента
+   - Хардкод отступов в самом компоненте вместо использования скелета
 4. **БД:** Только Integram MCP — никакого PostgreSQL/MySQL
 5. **AI:** Только через token router `/api/ai-tokens/chat` — никаких прямых API-ключей на фронте
 6. **Новый маршрут → обязательно добавить в:**

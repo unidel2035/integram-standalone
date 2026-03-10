@@ -17,6 +17,18 @@
   --fst-nav-backdrop:    color-mix(in srgb, var(--p-surface-ground) 90%, transparent);
   --fst-brand:           #ffa726;
   --fst-brand-glow:      rgba(255, 167, 38, 0.25);
+
+  /* Data / semantic colors — используй везде вместо хардкода hex */
+  --fst-green:           #66bb6a;
+  --fst-green-dark:      #388e3c;
+  --fst-red:             #ef5350;
+  --fst-red-dark:        #c62828;
+  --fst-blue:            #42a5f5;
+  --fst-blue-dark:       #1565c0;
+  --fst-purple:          #ab47bc;
+  --fst-purple-dark:     #6a1b9a;
+  --fst-cyan:            #26c6da;
+  --fst-brand-dark:      #e65100;
 }
 
 .p-dark {
@@ -30,6 +42,22 @@
   --fst-separator:       rgba(255, 255, 255, 0.10);
   --fst-dim-text:        rgba(255, 255, 255, 0.45);
   --fst-nav-backdrop:    color-mix(in srgb, var(--p-surface-ground) 88%, transparent);
+}
+
+/* ── Layout spacing tokens ── */
+:root {
+  /* layout-main-container (src/assets/layout/_main.scss) */
+  --fst-container-pad-top: 6rem;   /* clearance below fixed AppTopbar + breathing room */
+  --fst-container-pad-x:   2rem;   /* sides: content margin from sidebar edge */
+
+  /* Inner page topbar (.fst-topbar) */
+  --fst-topbar-pad-y:      12px;
+  --fst-topbar-pad-x:      20px;
+
+  /* Page body & section gaps */
+  --fst-body-pad:          20px;
+  --fst-section-gap:       24px;
+  --fst-section-label-size:0.6875rem;
 }
 
 /* ── Типографическая шкала (rem, base 16px) ── */
@@ -95,6 +123,96 @@
 .fst-meta {
   font-size: 0.8125rem;
   color: var(--p-text-muted-color);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHARED LAYOUT CLASSES
+   Используй вместо page-specific дублей:
+     .hub-topbar, .ck-topbar, .portfolio-topbar → .fst-topbar
+     .hub-section → .fst-section + .fst-section-label
+     .hub-metrics / .ck-metrics → .fst-metrics-strip + .fst-metric-item
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Page topbar (sticky, под AppTopbar) ── */
+.fst-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--fst-topbar-pad-y) var(--fst-topbar-pad-x);
+  border-bottom: 1px solid var(--p-content-border-color);
+  background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+.fst-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+.fst-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Section wrapper ── */
+.fst-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.fst-section-label {
+  font-size: var(--fst-section-label-size);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--p-text-muted-color);
+}
+
+/* ── Metrics strip (KPI-полоска) ── */
+.fst-metrics-strip {
+  display: flex;
+  padding: 20px 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.fst-metric-item {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 8px;
+  background: var(--surface-ground);
+  border-bottom: 2px solid transparent;
+}
+.fst-metric-item-icon {
+  font-size: 16px;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+.fst-metric-item-val {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--p-text-color);
+}
+.fst-metric-item-label {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  font-weight: 600;
+  text-align: center;
 }
 
 /* ── Корень страницы ── */

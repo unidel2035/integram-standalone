@@ -90,6 +90,16 @@
           </div>
         </div>
 
+        <!-- Сценарное прогнозирование — цепочка событий развития стартапа -->
+        <div class="fst-conclusion-section fst-scenario-section">
+          <div class="fst-conclusion-label">Сценарное прогнозирование (событийная онтология):</div>
+          <ScenarioEventChainPanel
+            :project="session.project"
+            :session="session"
+            :decision="session.conditionalDecision || session.decision"
+          />
+        </div>
+
         <!-- Цифровой двойник контракта — матрица сценариев -->
         <div class="fst-conclusion-section fst-scenario-section">
           <div class="fst-conclusion-label">Сценарии сделки (Цифровой двойник контракта):</div>
@@ -570,7 +580,7 @@
     <div v-else class="fst-setup">
 
       <!-- Hub-style topbar -->
-      <div class="ck-topbar">
+      <div class="ck-topbar fst-topbar">
         <div class="ck-topbar-left">
           <span class="ck-live-dot"></span>
           <span class="ck-title">AI-Инвесткомитет</span>
@@ -588,8 +598,8 @@
       </div>
 
       <!-- KPI metrics strip -->
-      <div class="ck-metrics">
-        <div v-for="m in ckMetrics" :key="m.label" class="ck-metric" :style="{ '--ck-c': m.color }">
+      <div class="ck-metrics fst-metrics-strip">
+        <div v-for="m in ckMetrics" :key="m.label" class="ck-metric fst-metric-item" :style="{ '--ck-c': m.color }">
           <i :class="m.icon" class="ck-metric-icon"></i>
           <div class="ck-metric-val">{{ m.val }}</div>
           <div class="ck-metric-label">{{ m.label }}</div>
@@ -1138,6 +1148,7 @@ import FinancialCalculator from '@/components/fst-committee/FinancialCalculator.
 import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
 import DebateTimeline from '@/components/fst-committee/DebateTimeline.vue'
 import ScenarioNodesPanel from '@/components/fst-committee/ScenarioNodesPanel.vue'
+import ScenarioEventChainPanel from '@/components/fst-committee/ScenarioEventChainPanel.vue'
 import LinksGraphViz from '@/components/links/LinksGraphViz.vue'
 import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
@@ -2948,14 +2959,9 @@ onUnmounted(() => {
 }
 
 /* ── Committee Topbar (Hub-style) ────────────────────────── */
+/* base layout: .fst-topbar (fst.css) */
 .ck-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--p-content-border-color);
-  background: var(--p-surface-section);
-  flex-shrink: 0;
+  background: var(--p-surface-section); /* override transparent default */
 }
 .ck-topbar-left {
   display: flex;
@@ -2999,24 +3005,13 @@ onUnmounted(() => {
 .ck-btn-label { white-space: nowrap; }
 
 /* ── Committee KPI Metrics ───────────────────────────────── */
+/* base: .fst-metrics-strip + .fst-metric-item (fst.css) */
 .ck-metrics {
-  display: flex;
-  padding: 20px 24px;
-  gap: 16px;
   border-bottom: 1px solid var(--p-content-border-color);
   flex-shrink: 0;
 }
 .ck-metric {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 14px 8px;
-  background: var(--surface-ground);
-  border-bottom: 2px solid transparent;
   transition: border-color .2s, background .2s;
-  min-width: 0;
   cursor: default;
 }
 .ck-metric:hover {

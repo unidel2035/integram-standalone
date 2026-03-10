@@ -1,66 +1,54 @@
 <template>
   <FstPageLayout>
-    <!-- Header -->
+    <!-- ─── Topbar left: title + status ─── -->
     <template #header>
-      <div class="fsp-header-left">
-        <div class="fsp-logo">
-          <i class="pi pi-chart-scatter" style="color:#42a5f5;font-size:20px"></i>
-          <span>ФСТ НТИ · <b>Портфельный монитор</b></span>
-          <Tag :value="`${activeCount} активных`" severity="success" style="font-size:11px" />
-          <Tag :value="`${alertCount} предупреждений`" :severity="alertCount > 0 ? 'warn' : 'secondary'" style="font-size:11px" />
-        </div>
-        <div class="fsp-updated">
-          <i class="pi pi-circle-fill" :style="{ color: liveColor, fontSize:'8px' }"></i>
-          Обновлено: {{ lastUpdate }} · Мониторинг {{ monitoringStatus }}
-        </div>
+      <div class="fsp-title-group">
+        <i class="pi pi-circle-fill fsp-live-dot" :style="{ color: liveColor }"></i>
+        <span class="fsp-fund-name">ФСТ НТИ · <b>Портфельный монитор</b></span>
+        <Tag :value="`${activeCount} активных`" severity="success" class="fsp-tag" />
+        <Tag :value="`${alertCount} предупреждений`" :severity="alertCount > 0 ? 'warn' : 'secondary'" class="fsp-tag" />
       </div>
-      <div class="fsp-header-center">
-        <div class="fsp-filters">
-          <Select v-model="filterSubfund" :options="subfundOptions" placeholder="Все субфонды" class="fsp-filter-sel" size="small" />
-          <Select v-model="filterStatus" :options="statusOptions" placeholder="Все статусы" class="fsp-filter-sel" size="small" />
-          <span class="fsp-search-wrap">
-            <i class="pi pi-search" style="font-size:12px;color:var(--p-text-muted-color)" />
-            <InputText v-model="searchQuery" placeholder="Поиск компании..." size="small" class="fsp-search" />
-          </span>
-        </div>
-      </div>
-      <div class="fsp-header-right">
-        <LearnTooltip
-          label="Обновить данные"
-          what="Загружает актуальные данные по портфелю: KPI компаний, финансовые показатели, статусы рисков"
-          when="Для получения последних данных от портфельных компаний"
-          :terms="['Портфель', 'KPI', 'Мониторинг']"
-        >
-          <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="refreshAll" :loading="refreshing" />
-        </LearnTooltip>
-        <LearnTooltip
-          label="Добавить компанию"
-          what="Добавляет новую портфельную компанию для мониторинга после закрытия сделки"
-          when="После подписания Term Sheet и получения первого транша"
-          :terms="['Портфельная компания', 'Транш', 'Постинвест-мониторинг']"
-        >
-          <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="showAddDialog = true" />
-        </LearnTooltip>
-        <LearnTooltip
-          label="Цифровой двойник фонда"
-          what="Переход к макро-симуляции всего фонда: NAV, IRR, субфонды, сценарии"
-          when="Для оценки общего состояния и прогнозирования портфеля"
-          :terms="['NAV', 'IRR', 'Цифровой двойник', 'Субфонд']"
-        >
-          <Button icon="pi pi-building" label="ЦД Фонда" size="small" severity="secondary" text @click="$router.push('/fst-fund')" />
-        </LearnTooltip>
+      <div class="fsp-updated">
+        Обновлено: {{ lastUpdate }} · Мониторинг {{ monitoringStatus }}
       </div>
     </template>
 
-    <!-- Portfolio Grid -->
+    <!-- ─── Topbar right: actions ─── -->
+    <template #actions>
+      <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="refreshAll" :loading="refreshing" />
+      <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="showAddDialog = true" />
+      <Button icon="pi pi-building" label="ЦД Фонда" size="small" severity="secondary" text @click="$router.push('/fst-fund')" />
+    </template>
+
+    <!-- ─── KPI metrics strip ─── -->
+    <div class="fsp-metrics fst-metrics-strip">
+      <div v-for="m in portfolioMetrics" :key="m.label" class="fst-metric-item">
+        <i :class="m.icon" class="fst-metric-item-icon" :style="{ color: m.color }"></i>
+        <div class="fst-metric-item-val">{{ m.val }}</div>
+        <div class="fst-metric-item-label">{{ m.label }}</div>
+      </div>
+    </div>
+
+    <!-- ─── Filters bar ─── -->
+    <div class="fsp-filter-bar">
+      <Select v-model="filterSubfund" :options="subfundOptions" placeholder="Все субфонды" class="fsp-filter-sel" size="small" />
+      <Select v-model="filterStatus" :options="statusOptions" placeholder="Все статусы" class="fsp-filter-sel" size="small" />
+      <span class="fsp-search-wrap">
+        <i class="pi pi-search" style="font-size:12px;color:var(--p-text-muted-color)" />
+        <InputText v-model="searchQuery" placeholder="Поиск компании..." size="small" class="fsp-search" />
+      </span>
+    </div>
+
+    <!-- ─── Portfolio Grid ─── -->
     <div class="fsp-body">
 
       <!-- Left: Company Cards -->
       <div class="fsp-companies">
+        <div class="fst-section-label fsp-companies-label">Портфельные компании</div>
 
         <!-- Alert banner -->
         <div v-if="criticalAlerts.length" class="fsp-alert-banner">
-          <i class="pi pi-exclamation-triangle" style="color:#ef5350;font-size:14px"></i>
+          <i class="pi pi-exclamation-triangle" style="color:var(--fst-red);font-size:14px"></i>
           <span><b>Критические риски:</b> {{ criticalAlerts.map(a => a.company).join(', ') }} — требуется внимание</span>
           <Button label="Созвать ИК" icon="pi pi-users" size="small" severity="danger" @click="callCommittee" style="margin-left:auto" />
         </div>
@@ -73,7 +61,7 @@
             <div class="fsp-card-header">
               <div class="fsp-card-name">{{ c.name }}</div>
               <div class="fsp-card-badges">
-                <Tag :value="c.subfund" style="font-size:10px;background:#1565c0;color:#fff" />
+                <Tag :value="c.subfund" style="font-size:10px;background:var(--fst-blue);color:#fff" />
                 <FeatureHint
                   v-if="cIdx === 0"
                   id="portfolio-traffic-light"
@@ -90,7 +78,7 @@
             <div class="fsp-card-metrics">
               <div class="fsp-card-metric">
                 <span class="fsp-m-label">Выручка</span>
-                <span class="fsp-m-val" :style="{ color: '#66bb6a' }">{{ c.revenue }} млн</span>
+                <span class="fsp-m-val" :style="{ color: 'var(--fst-green)' }">{{ c.revenue }} млн</span>
               </div>
               <div class="fsp-card-metric">
                 <span class="fsp-m-label">Runway</span>
@@ -98,7 +86,7 @@
               </div>
               <div class="fsp-card-metric">
                 <span class="fsp-m-label">TRL</span>
-                <span class="fsp-m-val" :style="{ color: '#42a5f5' }">{{ c.trl }}</span>
+                <span class="fsp-m-val" :style="{ color: 'var(--fst-blue)' }">{{ c.trl }}</span>
               </div>
               <div class="fsp-card-metric">
                 <span class="fsp-m-label">Сотр.</span>
@@ -169,7 +157,7 @@
         <!-- Data Sources -->
         <div class="fsp-detail-panel">
           <div class="fsp-detail-panel-title">
-            <i class="pi pi-database" style="color:#ffa726"></i> Источники данных
+            <i class="pi pi-database" style="color:var(--fst-brand)"></i> Источники данных
             <Button icon="pi pi-refresh" size="small" text @click="refreshSources" :loading="sourcesLoading" style="margin-left:auto" />
           </div>
           <div class="fsp-sources-grid">
@@ -181,7 +169,7 @@
               </div>
               <div class="fsp-source-badge">
                 <i :class="src.status === 'ok' ? 'pi pi-check-circle' : src.status === 'warn' ? 'pi pi-exclamation-circle' : 'pi pi-times-circle'"
-                  :style="{ color: src.status === 'ok' ? '#66bb6a' : src.status === 'warn' ? '#ffa726' : '#ef5350' }" />
+                  :style="{ color: src.status === 'ok' ? 'var(--fst-green)' : src.status === 'warn' ? 'var(--fst-brand)' : 'var(--fst-red)' }" />
               </div>
             </div>
           </div>
@@ -190,7 +178,7 @@
         <!-- Risk Sensors -->
         <div class="fsp-detail-panel">
           <div class="fsp-detail-panel-title">
-            <i class="pi pi-shield" style="color:#ef5350"></i> Датчики рисков
+            <i class="pi pi-shield" style="color:var(--fst-red)"></i> Датчики рисков
           </div>
           <div class="fsp-risk-sensors">
             <div v-for="sensor in selectedCompany.sensors" :key="sensor.type"
@@ -208,7 +196,7 @@
         <!-- Timeline Events (EventStore) -->
         <div class="fsp-detail-panel">
           <div class="fsp-detail-panel-title">
-            <i class="pi pi-history" style="color:#26c6da"></i> Лента событий
+            <i class="pi pi-history" style="color:var(--fst-cyan)"></i> Лента событий
             <span class="fsp-tl-count">{{ companyTimeline.length }}</span>
             <Button icon="pi pi-plus" size="small" severity="secondary" text
                     style="margin-left:auto" @click="addEventDialog = true" />
@@ -226,7 +214,7 @@
                 <div class="fsp-event-date">{{ new Date(ev.ts).toLocaleDateString('ru-RU') }}</div>
               </div>
               <Tag :value="ev.data?.originalType || ev.type.replace(/_/g,' ')"
-                   :style="{ fontSize: '9px', background: ev.color || '#42a5f5', color: '#fff', maxWidth:'90px', overflow:'hidden' }" />
+                   :style="{ fontSize: '9px', background: ev.color || 'var(--fst-blue)', color: '#fff', maxWidth:'90px', overflow:'hidden' }" />
             </div>
           </div>
 
@@ -247,7 +235,7 @@
         <!-- AI Weekly Report -->
         <div class="fsp-detail-panel">
           <div class="fsp-detail-panel-title">
-            <i class="pi pi-brain" style="color:#ab47bc"></i> AI Еженедельный отчёт
+            <i class="pi pi-brain" style="color:var(--fst-purple)"></i> AI Еженедельный отчёт
             <Button :label="aiReportLoading ? 'Генерация...' : 'Обновить'" icon="pi pi-sparkles" size="small" severity="secondary"
               @click="generateAiReport" :loading="aiReportLoading" style="margin-left:auto" />
           </div>
@@ -324,7 +312,7 @@ const grEventStore = useGrEventStore()
 // Возвращает карту { companyId → score } реактивно через eventStore.timelines
 const liveHealthScores = computed(() => {
   const scores = {}
-  for (const company of PORTFOLIO) {
+  for (const company of companies.value) {
     const id = String(company.id)
     const timeline = eventStore.getTimeline('company', id)
     scores[company.id] = companyHealthScore(timeline)
@@ -418,9 +406,9 @@ function onLinkAdded(link) {
 
 // ── Page Tutor Context ────────────────────────────────────────
 function getPageContext() {
-  const company = PORTFOLIO.find(c => c.id === selectedCompanyId.value)
+  const company = companies.value.find(c => c.id === selectedCompanyId.value)
   // Build portfolio ontology context for all companies
-  const companiesData = PORTFOLIO.map(c => ({
+  const companiesData = companies.value.map(c => ({
     entityType: 'company',
     entityId: String(c.id),
     timeline: eventStore.getTimeline('company', String(c.id)),
@@ -429,14 +417,14 @@ function getPageContext() {
   return {
     module: 'Портфель компаний',
     selectedCompany: company ? company.name : null,
-    totalCompanies: PORTFOLIO.length,
+    totalCompanies: companies.value.length,
     monitoringStatus: monitoringStatus.value,
     ontology: buildPortfolioContext(companiesData)
   }
 }
 
 // ─── Live indicator ───────────────────────────────────────────────────────────
-const liveColor = ref('#66bb6a')
+const liveColor = ref('var(--fst-green)')
 const lastUpdate = ref(new Date().toLocaleTimeString('ru-RU'))
 const monitoringStatus = ref('активен')
 let liveTimer = null
@@ -507,7 +495,7 @@ async function loadPortfolioFromDb() {
 
 onMounted(() => {
   liveTimer = setInterval(() => {
-    liveColor.value = liveColor.value === '#66bb6a' ? '#388e3c' : '#66bb6a'
+    liveColor.value = liveColor.value === 'var(--fst-green)' ? 'var(--fst-green-dark)' : 'var(--fst-green)'
     lastUpdate.value = new Date().toLocaleTimeString('ru-RU')
   }, 3000)
   loadPortfolioFromDb()
@@ -707,6 +695,17 @@ const filteredCompanies = computed(() => {
 
 const activeCount = computed(() => companies.value.filter(c => c.riskLevel !== 'dead').length)
 const alertCount = computed(() => companies.value.filter(c => c.riskLevel === 'red' || c.riskLevel === 'yellow').length)
+const totalInvested = computed(() => companies.value.reduce((s, c) => s + (c.invested || 0), 0))
+const avgHealth = computed(() => {
+  if (!companies.value.length) return 0
+  return Math.round(companies.value.reduce((s, c) => s + (liveHealthScores.value[c.id] || c.health || 50), 0) / companies.value.length)
+})
+const portfolioMetrics = computed(() => [
+  { icon: 'pi pi-building',            val: activeCount.value,              label: 'Активных компаний', color: 'var(--fst-green)'  },
+  { icon: 'pi pi-exclamation-triangle', val: alertCount.value,              label: 'Предупреждений',    color: alertCount.value > 0 ? 'var(--fst-brand)' : 'var(--p-text-muted-color)' },
+  { icon: 'pi pi-chart-bar',           val: totalInvested.value + ' млн',  label: 'Инвестировано',     color: 'var(--fst-blue)'   },
+  { icon: 'pi pi-heart',               val: avgHealth.value + '%',          label: 'Ср. health',        color: 'var(--fst-purple)' },
+])
 const criticalAlerts = computed(() => companies.value
   .filter(c => c.riskLevel === 'red')
   .map(c => ({ company: c.name }))
@@ -714,10 +713,10 @@ const criticalAlerts = computed(() => companies.value
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function riskColor(level) {
-  if (level === 'green') return '#66bb6a'
-  if (level === 'yellow') return '#ffa726'
-  if (level === 'red') return '#ef5350'
-  return '#78909c'
+  if (level === 'green') return 'var(--fst-green)'
+  if (level === 'yellow') return 'var(--fst-brand)'
+  if (level === 'red') return 'var(--fst-red)'
+  return 'var(--p-text-muted-color)'
 }
 
 function riskLabel(level) {
@@ -728,23 +727,23 @@ function riskLabel(level) {
 }
 
 function runwayColor(months) {
-  if (months >= 12) return '#66bb6a'
-  if (months >= 6) return '#ffa726'
-  return '#ef5350'
+  if (months >= 12) return 'var(--fst-green)'
+  if (months >= 6) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 }
 
 function kpiColor(kpi) {
   const pct = kpi.actual / kpi.target
-  if (pct >= 0.9) return '#66bb6a'
-  if (pct >= 0.6) return '#ffa726'
-  return '#ef5350'
+  if (pct >= 0.9) return 'var(--fst-green)'
+  if (pct >= 0.6) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 }
 
 function sensorColor(level) {
-  if (level === 'ok') return '#66bb6a'
-  if (level === 'warn') return '#ffa726'
-  if (level === 'critical') return '#ef5350'
-  return '#78909c'
+  if (level === 'ok') return 'var(--fst-green)'
+  if (level === 'warn') return 'var(--fst-brand)'
+  if (level === 'critical') return 'var(--fst-red)'
+  return 'var(--p-text-muted-color)'
 }
 
 function sensorSeverity(level) {
@@ -760,8 +759,8 @@ function alertIcon(type) {
 }
 
 function eventColor(type) {
-  const colors = { Контракт: '#42a5f5', IP: '#ab47bc', Найм: '#26c6da', Финансы: '#66bb6a', Риск: '#ef5350', PR: '#ffa726' }
-  return colors[type] || '#78909c'
+  const colors = { Контракт: 'var(--fst-blue)', IP: 'var(--fst-purple)', Найм: 'var(--fst-cyan)', Финансы: 'var(--fst-green)', Риск: 'var(--fst-red)', PR: 'var(--fst-brand)' }
+  return colors[type] || 'var(--p-text-muted-color)'
 }
 
 async function selectCompany(c) {
@@ -798,7 +797,7 @@ async function generateAiReport() {
     {
       title: 'Сильные стороны',
       icon: 'pi pi-check-circle',
-      color: '#66bb6a',
+      color: 'var(--fst-green)',
       points: [
         `TRL ${c.trl} — технологическая готовность на уровне рынка`,
         `Команда ${c.headcount} чел. соответствует стадии`,
@@ -808,7 +807,7 @@ async function generateAiReport() {
     {
       title: 'Ключевые риски',
       icon: 'pi pi-exclamation-triangle',
-      color: '#ffa726',
+      color: 'var(--fst-brand)',
       points: c.riskLevel === 'red'
         ? ['Runway критически низкий — срочный транш или реструктуризация', 'Отсутствие выручки создаёт риск дефолта', 'Необходимо экстренное заседание ИК']
         : c.riskLevel === 'yellow'
@@ -818,7 +817,7 @@ async function generateAiReport() {
     {
       title: 'Рекомендации ФСТ',
       icon: 'pi pi-lightbulb',
-      color: '#42a5f5',
+      color: 'var(--fst-blue)',
       points: c.riskLevel === 'red'
         ? ['Созвать экстренный ИК в течение 5 рабочих дней', 'Рассмотреть bridge-финансирование или реструктуризацию', 'Запросить план антикризисных мер от команды']
         : c.riskLevel === 'yellow'
@@ -828,7 +827,7 @@ async function generateAiReport() {
     {
       title: 'Прогноз',
       icon: 'pi pi-chart-line',
-      color: '#ab47bc',
+      color: 'var(--fst-purple)',
       points: [
         `Вероятность выживания 12 мес.: ${c.riskLevel === 'red' ? '35%' : c.riskLevel === 'yellow' ? '68%' : '91%'}`,
         `Целевой MOIC: ${c.riskLevel === 'red' ? '0-1x (риск списания)' : c.riskLevel === 'yellow' ? '2-3x (при стабилизации)' : '4-6x (позитивный сценарий)'}`,
@@ -841,62 +840,53 @@ async function generateAiReport() {
 </script>
 
 <style scoped>
-.fsp-root {
-  background: var(--surface-ground);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  font-family: var(--p-font-family);
-}
-
-/* Header */
-.fsp-header {
+/* ─── Topbar ─── */
+.fsp-title-group {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: transparent;
-  border-bottom: 1px solid var(--p-content-border-color);
-  flex-shrink: 0;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.fsp-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 8px;
   font-size: 14px;
   color: var(--p-text-color);
 }
+.fsp-live-dot { font-size: 8px; }
+.fsp-fund-name { font-size: 14px; }
+.fsp-tag { font-size: 11px !important; }
 .fsp-updated {
   font-size: 10px;
   color: var(--p-text-muted-color);
   margin-top: 2px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
-.fsp-filters {
+
+/* ─── Metrics strip ─── */
+.fsp-metrics {
+  margin: -20px -20px 0;           /* flush to FstPageLayout body edges */
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+
+/* ─── Filters bar ─── */
+.fsp-filter-bar {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 12px 0;
+  flex-wrap: wrap;
 }
 .fsp-filter-sel { width: 130px; }
 .fsp-search-wrap { position: relative; display: flex; align-items: center; }
 .fsp-search-wrap i { position: absolute; left: 8px; }
 .fsp-search { padding-left: 26px !important; width: 180px; }
-.fsp-header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
-/* Body */
+/* ─── Section label ─── */
+.fsp-companies-label { margin-bottom: 10px; }
+
+/* ─── Body ─── */
 .fsp-body {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 0;
-  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -940,9 +930,9 @@ async function generateAiReport() {
 }
 .fsp-card:hover { border-color: var(--p-primary-color); }
 .fsp-card.selected { border-color: var(--p-primary-color); box-shadow: 0 0 0 2px rgba(var(--p-primary-rgb), 0.2); }
-.fsp-card.risk-red { border-left: 3px solid #ef5350; }
-.fsp-card.risk-yellow { border-left: 3px solid #ffa726; }
-.fsp-card.risk-green { border-left: 3px solid #66bb6a; }
+.fsp-card.risk-red    { border-left: 3px solid var(--fst-red);   }
+.fsp-card.risk-yellow { border-left: 3px solid var(--fst-brand); }
+.fsp-card.risk-green  { border-left: 3px solid var(--fst-green); }
 
 .fsp-card-header {
   display: flex;
@@ -1002,8 +992,8 @@ async function generateAiReport() {
   padding: 2px 4px;
   border-radius: 3px;
 }
-.fsp-card-alert.warn { background: rgba(255,167,38,0.12); color: #ffa726; }
-.fsp-card-alert.danger { background: rgba(239,83,80,0.12); color: #ef5350; }
+.fsp-card-alert.warn   { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
+.fsp-card-alert.danger { background: color-mix(in srgb, var(--fst-red)   12%, transparent); color: var(--fst-red);   }
 
 /* Detail panel */
 .fsp-detail {
@@ -1192,8 +1182,8 @@ async function generateAiReport() {
   flex-wrap: wrap;
 }
 .fsp-gr-label { color: var(--p-text-muted-color); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-.fsp-gr-funded { color: #22c55e; font-weight: 700; }
-.fsp-gr-applied { color: #f59e0b; font-weight: 700; }
+.fsp-gr-funded  { color: var(--fst-green); font-weight: 700; }
+.fsp-gr-applied { color: var(--fst-brand); font-weight: 700; }
 .fsp-gr-next { color: var(--p-primary-color); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fsp-gr-empty { color: var(--p-text-muted-color); font-style: italic; }
 </style>

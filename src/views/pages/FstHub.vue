@@ -5,8 +5,8 @@
     <SandboxBanner @open-scenarios="showScenarios = true" />
 
     <!-- ══════════════════════════════════════════════ TOP BAR -->
-    <div class="hub-topbar">
-      <div class="hub-topbar-left">
+    <div class="hub-topbar fst-topbar">
+      <div class="hub-topbar-left fst-topbar-left">
         <span class="hub-live-dot"></span>
         <span class="hub-fund-name">ФСТ НТИ</span>
         <span class="hub-sep">·</span>
@@ -36,8 +36,8 @@
     </div>
 
     <!-- ══════════════════════════════════════════ METRICS -->
-    <div class="hub-metrics">
-      <div v-for="m in metrics" :key="m.label" class="hub-metric">
+    <div class="hub-metrics fst-metrics-strip">
+      <div v-for="m in metrics" :key="m.label" class="hub-metric fst-metric-item">
         <i :class="m.icon" class="hub-metric-icon"></i>
         <div class="hub-metric-val" :class="{ 'hub-skeleton': statsLoading }">{{ m.val }}</div>
         <div class="hub-metric-label">{{ m.label }}</div>
@@ -250,17 +250,8 @@ const modulesByPhase = computed(() => {
 }
 
 /* ═══════════════════════════════════════════════ TOP BAR */
-.hub-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--p-content-border-color);
-  background: transparent;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
+/* base layout: .fst-topbar (fst.css) */
+.hub-topbar {}
 .hub-topbar-left {
   display: flex;
   align-items: center;
@@ -280,7 +271,7 @@ const modulesByPhase = computed(() => {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
-.hub-fund-name { font-weight: 600; color: var(--p-text-color); font-size: 14px; }
+.hub-fund-name { /* base: .fst-topbar-left */ }
 .hub-sep { color: var(--p-text-muted-color); }
 .hub-date { color: var(--p-text-muted-color); }
 
@@ -326,42 +317,13 @@ const modulesByPhase = computed(() => {
 }
 
 /* ═══════════════════════════════════════════════ METRICS */
-.hub-metrics {
-  display: flex;
-  padding: 20px 24px;
-  gap: 16px;
-}
-.hub-metric {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 14px 8px;
-  background: var(--surface-ground);
-  border-bottom: 2px solid transparent;
-}
-.hub-metric-icon {
-  font-size: 16px;
-  margin-bottom: 8px;
-  opacity: 0.7;
-}
-.hub-metric-val {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--p-text-color);
-  line-height: 1;
-}
-.hub-metric-label {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-  margin-top: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
+/* base: .fst-metrics-strip + .fst-metric-item (fst.css) */
+.hub-metrics {}
+.hub-metric {}
+/* base: .fst-metric-item-icon/val/label (fst.css) */
+.hub-metric-icon {}
+.hub-metric-val {}
+.hub-metric-label {}
 .hub-skeleton {
   color: transparent !important;
   background: var(--p-content-border-color);

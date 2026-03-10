@@ -3,7 +3,7 @@
     flex-direction: column;
     min-height: 100vh;
     justify-content: space-between;
-    padding: 6rem 2rem 0 2rem;
+    padding: var(--fst-container-pad-top) var(--fst-container-pad-x) 0 var(--fst-container-pad-x);
     transition: margin-left var(--layout-section-transition-duration);
     pointer-events: none; /* Allow drag-and-drop to pass through */
 }
@@ -88,7 +88,7 @@ html.committee-page .layout-wrapper {
 }
 
 html.committee-page .layout-main-container {
-    padding: 4rem 0 0 0;
+    padding: var(--fst-container-pad-top) var(--fst-container-pad-x) 0 var(--fst-container-pad-x);
     min-height: unset;
     height: unset;
     flex: 1 1 0;

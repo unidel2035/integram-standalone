@@ -1,20 +1,23 @@
 <template>
   <FstPageLayout title="Воронка входящих заявок" subtitle="Deal Flow — управление потоком заявок от первичного контакта до ИК">
     <template #actions>
-      <button class="df-btn primary" @click="showNewDeal = true">+ Новая заявка</button>
-      <button class="df-btn secondary" @click="exportCsv">Экспорт CSV</button>
+      <Button icon="pi pi-plus" label="Новая заявка" size="small" severity="success" @click="showNewDeal = true" />
+      <Button icon="pi pi-download" label="CSV" size="small" severity="secondary" @click="exportCsv" />
     </template>
 
-    <!-- Статистика воронки -->
-    <div class="df-stats">
-      <div v-for="s in funnelStats" :key="s.stage" class="df-stat-card" :style="{ borderColor: s.color }">
-        <div class="df-stat-num" :style="{ color: s.color }">{{ s.count }}</div>
-        <div class="df-stat-label">{{ s.stage }}</div>
-        <div class="df-stat-amount">{{ s.totalMln }} млн ₽</div>
+    <!-- ─── Metrics strip ─── -->
+    <div class="df-metrics fst-metrics-strip">
+      <div v-for="m in pipelineMetrics" :key="m.label" class="fst-metric-item">
+        <i :class="m.icon" class="fst-metric-item-icon" :style="{ color: m.color }"></i>
+        <div class="fst-metric-item-val">{{ m.val }}</div>
+        <div class="fst-metric-item-label">{{ m.label }}</div>
       </div>
     </div>
 
-    <!-- Kanban воронка -->
+    <!-- ─── Section label ─── -->
+    <div class="fst-section-label" style="padding: 0 24px">ВОРОНКА СДЕЛОК</div>
+
+    <!-- ─── Kanban воронка ─── -->
     <FeatureHint
       id="dealflow-kanban"
       title="Kanban-воронка сделок"
@@ -134,15 +137,16 @@
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
+import Button from 'primevue/button'
 
 const columns = [
-  { id: 'new',       label: 'Новые',            color: '#90a4ae' },
-  { id: 'screening', label: 'Скрининг',          color: '#42a5f5' },
-  { id: 'analysis',  label: 'Анализ',            color: '#ffa726' },
-  { id: 'ic_prep',   label: 'Подготовка ИК',     color: '#ab47bc' },
-  { id: 'ic',        label: 'На ИК',             color: '#26c6da' },
-  { id: 'approved',  label: 'Одобрено',          color: '#66bb6a' },
-  { id: 'rejected',  label: 'Отклонено',         color: '#ef5350' }
+  { id: 'new',       label: 'Новые',            color: 'var(--p-text-muted-color)' },
+  { id: 'screening', label: 'Скрининг',          color: 'var(--fst-blue)' },
+  { id: 'analysis',  label: 'Анализ',            color: 'var(--fst-brand)' },
+  { id: 'ic_prep',   label: 'Подготовка ИК',     color: 'var(--fst-purple)' },
+  { id: 'ic',        label: 'На ИК',             color: 'var(--fst-cyan)' },
+  { id: 'approved',  label: 'Одобрено',          color: 'var(--fst-green)' },
+  { id: 'rejected',  label: 'Отклонено',         color: 'var(--fst-red)' }
 ]
 
 const deals = ref([
@@ -158,6 +162,16 @@ const deals = ref([
 const selectedDeal = ref(null)
 const showNewDeal = ref(false)
 const newDeal = ref({ company: '', subfund: 'БАС', askMln: 100, trl: 5, sovereignty: 6, description: '', source: '', contact: '' })
+
+const pipelineMetrics = computed(() => {
+  const active = deals.value.filter(d => d.stage !== 'rejected')
+  return [
+    { icon: 'pi pi-inbox',     val: active.length,                                         label: 'В воронке', color: 'var(--fst-blue)'   },
+    { icon: 'pi pi-users',     val: dealsInStage('ic').length,                             label: 'На ИК',     color: 'var(--fst-purple)' },
+    { icon: 'pi pi-check',     val: dealsInStage('approved').length,                       label: 'Одобрено',  color: 'var(--fst-green)'  },
+    { icon: 'pi pi-chart-bar', val: active.reduce((s, d) => s + (d.askMln || 0), 0) + ' млн', label: 'Объём', color: 'var(--fst-brand)'  },
+  ]
+})
 
 const funnelStats = computed(() => {
   return columns.slice(0, 5).map(col => {
@@ -175,12 +189,12 @@ function dealsInStage(stage) {
   return deals.value.filter(d => d.stage === stage)
 }
 function subfundColor(s) {
-  return { БАС: '#1565c0', РОБО: '#1b5e20', МЭ: '#4a148c' }[s] || '#607d8b'
+  return { БАС: 'var(--fst-blue)', РОБО: 'var(--fst-green)', МЭ: 'var(--fst-purple)' }[s] || 'var(--p-text-muted-color)'
 }
 function scoreColor(s) {
-  if (s >= 75) return '#66bb6a'
-  if (s >= 50) return '#ffa726'
-  return '#ef5350'
+  if (s >= 75) return 'var(--fst-green)'
+  if (s >= 50) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 }
 function moveToNext(deal) {
   const order = ['new', 'screening', 'analysis', 'ic_prep', 'ic', 'approved']
@@ -212,22 +226,12 @@ function exportCsv() {
 </script>
 
 <style scoped>
-.df-root { padding: 0 24px 24px; max-width: 1400px; margin: 0 auto; }
-.df-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); gap: 12px; }
-.df-title { font-size: 1rem; font-weight: 600; color: var(--p-text-color); margin: 0; }
-.df-subtitle { color: var(--p-text-muted-color); font-size: 0.8rem; margin: 2px 0 0; }
-.df-actions { display: flex; gap: 8px; }
 .df-btn { padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: opacity .15s; }
 .df-btn:hover { opacity: .85; }
-.df-btn.primary { background: var(--p-primary-color); color: #fff; }
-.df-btn.secondary { background: var(--surface-ground); color: var(--p-text-color); border: 1px solid var(--surface-border); }
-.df-btn.danger { background: #ef5350; color: #fff; }
-.df-btn.success { background: #66bb6a; color: #fff; }
-.df-stats { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-.df-stat-card { flex: 1; min-width: 100px; background: var(--surface-card); border: 2px solid; border-radius: 10px; padding: 12px; text-align: center; }
-.df-stat-num { font-size: 1.8rem; font-weight: 800; }
-.df-stat-label { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 2px; }
-.df-stat-amount { font-size: 0.8rem; color: var(--p-text-color); margin-top: 4px; }
+.df-btn.primary  { background: var(--p-primary-color);  color: #fff; }
+.df-btn.secondary{ background: var(--p-surface-card);   color: var(--p-text-color); border: 1px solid var(--p-content-border-color); }
+.df-btn.danger   { background: var(--fst-red);          color: #fff; }
+.df-btn.success  { background: var(--fst-green);        color: #fff; }
 .df-kanban { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px; }
 .df-column { min-width: 200px; flex: 1; background: var(--surface-ground); border-radius: 10px; display: flex; flex-direction: column; }
 .df-col-header { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
@@ -260,12 +264,8 @@ function exportCsv() {
 .df-form-row input, .df-form-row select, .df-form-row textarea { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 8px; color: var(--p-text-color); font-size: 0.85rem; outline: none; }
 .df-form-row input:focus, .df-form-row select:focus, .df-form-row textarea:focus { border-color: var(--p-primary-color); }
 
-/* — Unified page title — */
-.df-header h2 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); line-height: 1.3; }
-
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {
-  .df-stats { flex-wrap: wrap; gap: 8px; }
   .df-card-score { flex-wrap: wrap; gap: 8px; }
 }
 </style>

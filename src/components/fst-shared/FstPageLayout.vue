@@ -50,7 +50,7 @@ defineProps({
   border: none !important;
   border-bottom: 1px solid var(--p-content-border-color) !important;
   border-radius: 0 !important;
-  padding: 10px 20px !important;
+  padding: var(--fst-topbar-pad-y) var(--fst-topbar-pad-x) !important;
   flex-shrink: 0;
 }
 
@@ -97,7 +97,7 @@ defineProps({
 
 .fst-page-body {
   flex: 1;
-  padding: 20px;
+  padding: var(--fst-body-pad);
 }
 
 @media (max-width: 768px) {

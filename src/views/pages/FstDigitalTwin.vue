@@ -1,44 +1,57 @@
 <template>
   <FstPageLayout>
-    <!-- Header -->
+    <!-- ─── Topbar left: title + status ─── -->
     <template #header>
-      <div class="fdt-header">
-      <div class="fdt-header-left">
-        <div class="fdt-logo">
-          <i class="pi pi-building" style="color:#42a5f5;font-size:20px"></i>
-          <span>ЦД · <b>{{ company.name }}</b></span>
-          <Tag :value="company.stage" severity="info" style="font-size:11px" />
-          <Tag :value="company.subFund" :style="{ background: '#42a5f5', color:'#fff', fontSize:'11px' }" />
-        </div>
-        <div class="fdt-updated">
-          <i class="pi pi-circle-fill" :style="{ color: liveColor, fontSize:'8px' }"></i>
-          Обновлено: {{ lastUpdate }} · Тик {{ tick }}
-        </div>
+      <div class="fdt-title-group fst-topbar-left">
+        <i class="pi pi-circle-fill fdt-live-dot" :style="{ color: liveColor }"></i>
+        <span>ЦД · <b>{{ company.name }}</b></span>
+        <Tag :value="company.stage" severity="info" class="fsp-tag" />
+        <Tag :value="company.subFund" :style="{ background: 'var(--fst-blue)', color:'#fff', fontSize:'11px' }" />
       </div>
-      <div class="fdt-header-center">
-        <div class="fdt-health-badge" :style="{ background: healthGradient }">
-          <span class="fdt-health-score">{{ healthScore }}</span>
-          <span class="fdt-health-label">Здоровье</span>
-        </div>
-      </div>
-      <div class="fdt-header-right">
-        <Button :icon="running ? 'pi pi-pause' : 'pi pi-play'"
-          :label="running ? 'Пауза' : 'Live'"
-          :severity="running ? 'warn' : 'success'"
-          size="small" @click="toggleRun" />
-        <Button icon="pi pi-refresh" severity="secondary" size="small" @click="resetSim" title="Сброс" />
-        <SelectButton v-model="speed" :options="speedOpts" optionLabel="l" optionValue="v"
-          :allowEmpty="false" size="small" />
-      </div>
-      </div><!-- /fdt-header -->
+      <div class="fdt-updated">Обновлено: {{ lastUpdate }} · Тик {{ tick }}</div>
     </template>
+
+    <!-- ─── Topbar right: actions ─── -->
+    <template #actions>
+      <Button :icon="running ? 'pi pi-pause' : 'pi pi-play'"
+        :label="running ? 'Пауза' : 'Live'"
+        :severity="running ? 'warn' : 'success'"
+        size="small" @click="toggleRun" />
+      <Button icon="pi pi-refresh" severity="secondary" size="small" @click="resetSim" title="Сброс" />
+      <SelectButton v-model="speed" :options="speedOpts" optionLabel="l" optionValue="v"
+        :allowEmpty="false" size="small" />
+    </template>
+
+    <!-- ─── KPI metrics strip ─── -->
+    <div class="fdt-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-heart fst-metric-item-icon" :style="{ color: healthScore >= 75 ? 'var(--fst-green)' : healthScore >= 50 ? 'var(--fst-brand)' : 'var(--fst-red)' }"></i>
+        <div class="fst-metric-item-val">{{ healthScore }}</div>
+        <div class="fst-metric-item-label">Здоровье</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-microchip fst-metric-item-icon" style="color:var(--fst-blue)"></i>
+        <div class="fst-metric-item-val">{{ sim.trl }}/9</div>
+        <div class="fst-metric-item-label">TRL</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-wallet fst-metric-item-icon" :style="{ color: runwayColor }"></i>
+        <div class="fst-metric-item-val">{{ runway }}</div>
+        <div class="fst-metric-item-label">Runway, мес.</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-clock fst-metric-item-icon" style="color:var(--fst-purple)"></i>
+        <div class="fst-metric-item-val">{{ tick }}</div>
+        <div class="fst-metric-item-label">Тик симуляции</div>
+      </div>
+    </div>
 
     <!-- Main Grid -->
     <div class="fdt-main">
 
       <!-- Col 1: Vitals -->
       <div class="fdt-col fdt-col-vitals">
-        <div class="fdt-panel-title"><i class="pi pi-chart-line" style="color:#42a5f5"></i> Жизненные показатели</div>
+        <div class="fdt-panel-title"><i class="pi pi-chart-line" style="color:var(--fst-blue)"></i> Жизненные показатели</div>
 
         <div class="fdt-vitals-grid">
           <div class="fdt-vital" v-for="v in vitals" :key="v.key">
@@ -70,7 +83,7 @@
             <span class="fdt-trl-label">TRL</span>
             <div class="fdt-trl-dots">
               <div v-for="i in 9" :key="i" class="fdt-trl-dot"
-                :style="{ background: i <= sim.trl ? '#42a5f5' : 'transparent', borderColor: '#42a5f5' }"></div>
+                :style="{ background: i <= sim.trl ? 'var(--fst-blue)' : 'transparent', borderColor: 'var(--fst-blue)' }"></div>
             </div>
             <span class="fdt-trl-val">{{ sim.trl }}/9</span>
           </div>
@@ -78,7 +91,7 @@
             <span class="fdt-trl-label">MRL</span>
             <div class="fdt-trl-dots">
               <div v-for="i in 10" :key="i" class="fdt-trl-dot"
-                :style="{ background: i <= sim.mrl ? '#ffa726' : 'transparent', borderColor: '#ffa726' }"></div>
+                :style="{ background: i <= sim.mrl ? 'var(--fst-brand)' : 'transparent', borderColor: 'var(--fst-brand)' }"></div>
             </div>
             <span class="fdt-trl-val">{{ sim.mrl }}/10</span>
           </div>
@@ -86,7 +99,7 @@
             <span class="fdt-trl-label">Суверен.</span>
             <div class="fdt-trl-dots">
               <div v-for="i in 9" :key="i" class="fdt-trl-dot"
-                :style="{ background: i <= sim.sovereignty ? '#ef5350' : 'transparent', borderColor: '#ef5350' }"></div>
+                :style="{ background: i <= sim.sovereignty ? 'var(--fst-red)' : 'transparent', borderColor: 'var(--fst-red)' }"></div>
             </div>
             <span class="fdt-trl-val">{{ sim.sovereignty }}/9</span>
           </div>
@@ -95,7 +108,7 @@
 
       <!-- Col 2: Risk Sensors -->
       <div class="fdt-col fdt-col-sensors">
-        <div class="fdt-panel-title"><i class="pi pi-shield" style="color:#ffa726"></i> Датчики рисков</div>
+        <div class="fdt-panel-title"><i class="pi pi-shield" style="color:var(--fst-brand)"></i> Датчики рисков</div>
 
         <div class="fdt-sensors-chips">
           <div v-for="s in sensors" :key="s.id" class="fdt-sensor-chip"
@@ -109,7 +122,7 @@
 
         <!-- Event feed -->
         <div class="fdt-panel-title" style="margin-top:12px">
-          <i class="pi pi-list" style="color:#66bb6a"></i> События
+          <i class="pi pi-list" style="color:var(--fst-green)"></i> События
         </div>
         <div class="fdt-events-feed">
           <TransitionGroup name="fdt-event" tag="div">
@@ -124,7 +137,7 @@
 
       <!-- Col 3: Smart Contract + AI -->
       <div class="fdt-col fdt-col-contract">
-        <div class="fdt-panel-title"><i class="pi pi-file-check" style="color:#7e57c2"></i> Смарт-контракт</div>
+        <div class="fdt-panel-title"><i class="pi pi-file-check" style="color:var(--fst-purple)"></i> Смарт-контракт</div>
 
         <div class="fdt-contract-card">
           <div class="fdt-contract-meta">
@@ -138,12 +151,12 @@
           <div class="fdt-tranches">
             <div class="fdt-tranches-title">Транши</div>
             <div v-for="t in tranches" :key="t.id" class="fdt-tranche-row">
-              <div class="fdt-tranche-dot" :style="{ background: t.released ? '#4caf50' : t.active ? '#ffa726' : '#444' }"></div>
+              <div class="fdt-tranche-dot" :style="{ background: t.released ? 'var(--fst-green)' : t.active ? 'var(--fst-brand)' : 'var(--p-content-border-color)' }"></div>
               <div class="fdt-tranche-info">
                 <div class="fdt-tranche-label">{{ t.label }}</div>
                 <div class="fdt-tranche-cond">{{ t.condition }}</div>
               </div>
-              <div class="fdt-tranche-amount" :style="{ color: t.released ? '#4caf50' : t.active ? '#ffa726' : '#78909c' }">
+              <div class="fdt-tranche-amount" :style="{ color: t.released ? 'var(--fst-green)' : t.active ? 'var(--fst-brand)' : 'var(--p-text-muted-color)' }">
                 {{ fmtM(t.amount) }}
               </div>
               <Tag v-if="t.released" value="Выплачен" severity="success" style="font-size:10px" />
@@ -155,7 +168,7 @@
 
         <!-- KPI Triggers -->
         <div class="fdt-panel-title" style="margin-top:12px">
-          <i class="pi pi-bolt" style="color:#ffa726"></i> KPI-триггеры
+          <i class="pi pi-bolt" style="color:var(--fst-brand)"></i> KPI-триггеры
         </div>
         <div class="fdt-kpi-list">
           <div v-for="kpi in kpiTriggers" :key="kpi.id" class="fdt-kpi-row">
@@ -163,9 +176,9 @@
             <div class="fdt-kpi-bar-wrap">
               <div class="fdt-kpi-bar-bg">
                 <div class="fdt-kpi-bar-fill"
-                  :style="{ width: Math.min(100, kpi.progress) + '%', background: kpi.progress >= 100 ? '#4caf50' : '#42a5f5' }"></div>
+                  :style="{ width: Math.min(100, kpi.progress) + '%', background: kpi.progress >= 100 ? 'var(--fst-green)' : 'var(--fst-blue)' }"></div>
               </div>
-              <span class="fdt-kpi-pct" :style="{ color: kpi.progress >= 100 ? '#4caf50' : '#aaa' }">
+              <span class="fdt-kpi-pct" :style="{ color: kpi.progress >= 100 ? 'var(--fst-green)' : 'var(--p-text-muted-color)' }">
                 {{ kpi.progress.toFixed(0) }}%
               </span>
             </div>
@@ -175,22 +188,22 @@
 
         <!-- AI Analysis -->
         <div class="fdt-panel-title" style="margin-top:12px">
-          <i class="pi pi-microchip-ai" style="color:#42a5f5"></i> AI-анализ
+          <i class="pi pi-microchip-ai" style="color:var(--fst-blue)"></i> AI-анализ
         </div>
         <div class="fdt-ai-card">
           <div class="fdt-ai-score-row">
             <span>Вероятность выживания:</span>
-            <b :style="{ color: sim.survivalProb >= 0.7 ? '#4caf50' : sim.survivalProb >= 0.5 ? '#ffa726' : '#ef5350' }">
+            <b :style="{ color: sim.survivalProb >= 0.7 ? 'var(--fst-green)' : sim.survivalProb >= 0.5 ? 'var(--fst-brand)' : 'var(--fst-red)' }">
               {{ (sim.survivalProb * 100).toFixed(0) }}%
             </b>
           </div>
           <div class="fdt-ai-score-row">
             <span>Прогноз выхода:</span>
-            <b style="color:#7e57c2">{{ sim.exitYear }}</b>
+            <b style="color:var(--fst-purple)">{{ sim.exitYear }}</b>
           </div>
           <div class="fdt-ai-score-row">
             <span>Ожидаемый multiple:</span>
-            <b style="color:#4caf50">{{ sim.exitMultiple.toFixed(1) }}x</b>
+            <b style="color:var(--fst-green)">{{ sim.exitMultiple.toFixed(1) }}x</b>
           </div>
           <div class="fdt-ai-verdict" :style="{ background: verdictBg }">
             <i class="pi pi-flag"></i> {{ sim.verdict }}
@@ -204,7 +217,7 @@
     <Transition name="fdt-ob-fade">
       <div v-if="ontologyBlocks.length" class="fdt-ob-panel">
         <div class="fdt-ob-header">
-          <i class="pi pi-share-alt" style="color:#42a5f5;font-size:13px"></i>
+          <i class="pi pi-share-alt" style="color:var(--p-primary-color);font-size:13px"></i>
           <span class="fdt-ob-title">Живые блоки <span class="fdt-ob-subtitle">— из событийной онтологии</span></span>
           <span class="fdt-ob-count">{{ ontologyBlocks.length }}</span>
         </div>
@@ -298,7 +311,7 @@
       <div class="fdt-tl-stages">
         <div v-for="st in stages" :key="st.id"
           :class="['fdt-tl-stage', { 'active': sim.stage === st.id, 'done': stageOrder.indexOf(sim.stage) > stageOrder.indexOf(st.id) }]">
-          <div class="fdt-tl-stage-dot" :style="{ background: sim.stage === st.id ? st.color : stageOrder.indexOf(sim.stage) > stageOrder.indexOf(st.id) ? '#4caf50' : '#333' }"></div>
+          <div class="fdt-tl-stage-dot" :style="{ background: sim.stage === st.id ? st.color : stageOrder.indexOf(sim.stage) > stageOrder.indexOf(st.id) ? 'var(--fst-green)' : 'var(--p-content-border-color)' }"></div>
           <div class="fdt-tl-stage-label">{{ st.label }}</div>
         </div>
       </div>
@@ -332,12 +345,12 @@ const company = {
 }
 
 const stages = [
-  { id: 'preseed', label: 'Pre-seed', color: '#78909c' },
-  { id: 'seed', label: 'Seed', color: '#42a5f5' },
-  { id: 'round_a', label: 'Раунд A', color: '#7e57c2' },
-  { id: 'round_b', label: 'Раунд B', color: '#ffa726' },
-  { id: 'growth', label: 'Growth', color: '#66bb6a' },
-  { id: 'exit', label: 'Exit/IPO', color: '#4caf50' },
+  { id: 'preseed', label: 'Pre-seed', color: 'var(--p-text-muted-color)' },
+  { id: 'seed', label: 'Seed', color: 'var(--fst-blue)'   },
+  { id: 'round_a', label: 'Раунд A', color: 'var(--fst-purple)' },
+  { id: 'round_b', label: 'Раунд B', color: 'var(--fst-brand)'  },
+  { id: 'growth', label: 'Growth', color: 'var(--fst-green)'  },
+  { id: 'exit', label: 'Exit/IPO', color: 'var(--fst-cyan)'   },
 ]
 const stageOrder = stages.map(s => s.id)
 
@@ -366,7 +379,7 @@ const burnHistory = ref([9, 9, 8.5, 8.5])
 
 let timer = null
 const lastUpdate = ref(new Date().toLocaleTimeString('ru-RU'))
-const liveColor = ref('#4caf50')
+const liveColor = ref('var(--fst-green)')
 // Дедупликация: не генерировать один и тот же uiBlock дважды
 const emittedBlocks = new Set()
 
@@ -399,10 +412,10 @@ const sensors = ref([
 ])
 
 const eventFeed = ref([
-  { id: 1, icon: 'pi pi-check-circle', color: '#4caf50', time: '09:15', text: 'Транш 1 (60 млн) выплачен, SPV зарегистрирован' },
-  { id: 2, icon: 'pi pi-users', color: '#42a5f5', time: '10:30', text: 'Найм: принят Senior UAV Engineer' },
-  { id: 3, icon: 'pi pi-file', color: '#7e57c2', time: '11:00', text: 'LOI подписан с ГТЛК (Гос. транспортная лизинговая компания)' },
-  { id: 4, icon: 'pi pi-exclamation-triangle', color: '#ffa726', time: '11:30', text: 'Росавиация: мониторинг проекта приказа 114-П' },
+  { id: 1, icon: 'pi pi-check-circle',       color: 'var(--fst-green)',  time: '09:15', text: 'Транш 1 (60 млн) выплачен, SPV зарегистрирован' },
+  { id: 2, icon: 'pi pi-users',              color: 'var(--fst-blue)',   time: '10:30', text: 'Найм: принят Senior UAV Engineer' },
+  { id: 3, icon: 'pi pi-file',              color: 'var(--fst-purple)', time: '11:00', text: 'LOI подписан с ГТЛК (Гос. транспортная лизинговая компания)' },
+  { id: 4, icon: 'pi pi-exclamation-triangle', color: 'var(--fst-brand)', time: '11:30', text: 'Росавиация: мониторинг проекта приказа 114-П' },
 ])
 
 // ── Computed ──────────────────────────────────────────────────
@@ -414,7 +427,7 @@ const runway = computed(() => {
 
 const runwayColor = computed(() => {
   const r = runway.value
-  return r >= 12 ? '#4caf50' : r >= 6 ? '#ffa726' : '#ef5350'
+  return r >= 12 ? 'var(--fst-green)' : r >= 6 ? 'var(--fst-brand)' : 'var(--fst-red)'
 })
 
 const healthScore = computed(() => {
@@ -430,14 +443,18 @@ const healthScore = computed(() => {
 
 const healthGradient = computed(() => {
   const h = healthScore.value
-  if (h >= 75) return 'linear-gradient(135deg, #1b5e20, #2e7d32)'
-  if (h >= 50) return 'linear-gradient(135deg, #e65100, #f57c00)'
-  return 'linear-gradient(135deg, #b71c1c, #c62828)'
+  if (h >= 75) return 'linear-gradient(135deg, var(--fst-green-dark), var(--fst-green))'
+  if (h >= 50) return 'linear-gradient(135deg, var(--fst-brand-dark), var(--fst-brand))'
+  return 'linear-gradient(135deg, var(--fst-red-dark), var(--fst-red))'
 })
 
 const verdictBg = computed(() => {
   const h = healthScore.value
-  return h >= 75 ? 'rgba(76,175,80,0.15)' : h >= 50 ? 'rgba(255,167,38,0.15)' : 'rgba(239,83,80,0.15)'
+  return h >= 75
+    ? 'color-mix(in srgb, var(--fst-green) 15%, transparent)'
+    : h >= 50
+    ? 'color-mix(in srgb, var(--fst-brand) 15%, transparent)'
+    : 'color-mix(in srgb, var(--fst-red) 15%, transparent)'
 })
 
 // ── Ontology UI Blocks ────────────────────────────────────────
@@ -457,12 +474,12 @@ const ontologyBlocks = computed(() => {
 })
 
 const vitals = computed(() => [
-  { key: 'rev', label: 'Выручка/мес', value: fmtM(sim.value.revenue), delta: 3.2, unit: '%', color: '#4caf50' },
-  { key: 'burn', label: 'Burn Rate/мес', value: fmtM(sim.value.burnRate), delta: -2.1, unit: '%', color: '#ef5350' },
-  { key: 'head', label: 'Команда', value: sim.value.headcount + ' чел.', delta: 2, unit: ' чел', color: '#42a5f5' },
-  { key: 'val', label: 'Оценка', value: fmtM(sim.value.valuation), delta: 8.3, unit: '%', color: '#7e57c2' },
-  { key: 'patents', label: 'Патентов', value: sim.value.patents.toString(), delta: 0, unit: '', color: '#ffa726' },
-  { key: 'loi', label: 'LOI / Контрактов', value: '2 / 1', delta: 1, unit: '', color: '#66bb6a' },
+  { key: 'rev',     label: 'Выручка/мес',    value: fmtM(sim.value.revenue),              delta: 3.2,  unit: '%',    color: 'var(--fst-green)'  },
+  { key: 'burn',    label: 'Burn Rate/мес',  value: fmtM(sim.value.burnRate),             delta: -2.1, unit: '%',    color: 'var(--fst-red)'    },
+  { key: 'head',    label: 'Команда',        value: sim.value.headcount + ' чел.',        delta: 2,    unit: ' чел', color: 'var(--fst-blue)'   },
+  { key: 'val',     label: 'Оценка',         value: fmtM(sim.value.valuation),            delta: 8.3,  unit: '%',    color: 'var(--fst-purple)' },
+  { key: 'patents', label: 'Патентов',       value: sim.value.patents.toString(),         delta: 0,    unit: '',     color: 'var(--fst-brand)'  },
+  { key: 'loi',     label: 'LOI / Контрактов', value: '2 / 1',                           delta: 1,    unit: '',     color: 'var(--fst-green)'  },
 ])
 
 // ── Chart ─────────────────────────────────────────────────────
@@ -498,7 +515,7 @@ function initChart() {
 function step() {
   tick.value++
   lastUpdate.value = new Date().toLocaleTimeString('ru-RU')
-  liveColor.value = '#4caf50'
+  liveColor.value = 'var(--fst-green)'
 
   // Revenue growth ~3% per tick
   sim.value.revenue = Math.round(sim.value.revenue * (1 + 0.03 * (0.5 + Math.random())))
@@ -516,7 +533,7 @@ function step() {
       uiBlock: {
         id: 'trl-current',
         type: 'achievement',
-        color: '#42a5f5',
+        color: 'var(--fst-blue)',
         level: sim.value.trl,
         maxLevel: 9,
         emoji: sim.value.trl >= 8 ? '🚀' : sim.value.trl >= 6 ? '⚡' : '🔬',
@@ -547,12 +564,12 @@ function step() {
     tranches.value[1].released = true
     tranches.value[1].active = false
     tranches.value[2].active = true
-    addEvent({ icon: 'pi pi-check-circle', color: '#4caf50', text: 'Транш 2 (70 млн): TRL 7 достигнут — выплата!' })
+    addEvent({ icon: 'pi pi-check-circle', color: 'var(--fst-green)', text: 'Транш 2 (70 млн): TRL 7 достигнут — выплата!' })
     eventStore.add('company', DT_COMPANY_ID, 'TRANCHE_RELEASED', {
       uiBlock: {
         id: 'tranche-2-released',
         type: 'milestone',
-        color: '#4caf50',
+        color: 'var(--fst-green)',
         stamp: '✓ ВЫПЛАЧЕНО',
         amount: '70 млн ₽',
         title: 'Транш 2 разблокирован',
@@ -574,13 +591,13 @@ function step() {
   // Stage progression
   if (sim.value.trl >= 7 && sim.value.mrl >= 6 && sim.value.stage === 'seed') {
     sim.value.stage = 'round_a'
-    addEvent({ icon: 'pi pi-arrow-up-right', color: '#7e57c2', text: 'Переход: Seed → Раунд A!' })
+    addEvent({ icon: 'pi pi-arrow-up-right', color: 'var(--fst-purple)', text: 'Переход: Seed → Раунд A!' })
     eventStore.add('company', DT_COMPANY_ID, 'ROUND_OPENED', {
       round: 'A', trl: sim.value.trl,
       uiBlock: {
         id: 'round-a-opened',
         type: 'milestone',
-        color: '#7e57c2',
+        color: 'var(--fst-purple)',
         stamp: '★ РАУНД A',
         amount: '300 млн ₽',
         title: 'Открыт Раунд A',
@@ -603,7 +620,7 @@ function step() {
     uiBlock: {
       id: 'live-kpi',
       type: 'ticker',
-      color: '#42a5f5',
+      color: 'var(--fst-blue)',
       stage: sim.value.stage === 'seed' ? 'Seed' : 'Раунд A',
       tick: tick.value,
       metrics: [
@@ -619,7 +636,7 @@ function step() {
 
   // Здоровье — HP-полоса, обновляется каждые 3 тика
   if (tick.value % 3 === 0) {
-    const hColor = h >= 75 ? '#4caf50' : h >= 55 ? '#ffa726' : '#ef5350'
+    const hColor = h >= 75 ? 'var(--fst-green)' : h >= 55 ? 'var(--fst-brand)' : 'var(--fst-red)'
     eventStore.add('company', DT_COMPANY_ID, 'HEALTH_SNAPSHOT', {
       uiBlock: {
         id: 'live-health',
@@ -642,7 +659,7 @@ function step() {
       uiBlock: {
         id: 'risk-current',
         type: 'alert',
-        color: h < 30 ? '#ef5350' : '#ffa726',
+        color: h < 30 ? 'var(--fst-red)' : 'var(--fst-brand)',
         critical: h < 30,
         title: h < 30 ? '🚨 Критический риск' : '⚠️ Повышенный риск',
         body: `Здоровье: ${h}/100 · Runway: ${runway.value} мес.`,
@@ -658,7 +675,7 @@ function step() {
       uiBlock: {
         id: 'runway-critical',
         type: 'alert',
-        color: '#ef5350',
+        color: 'var(--fst-red)',
         critical: true,
         title: `🔴 Runway: ${runway.value} мес.`,
         body: 'Денег осталось меньше 6 месяцев. Нужен бридж или раунд A.',
@@ -700,15 +717,15 @@ function step() {
   // Random events
   if (Math.random() < 0.05) {
     const evts = [
-      { icon: 'pi pi-star', color: '#ffa726', text: 'Победа в конкурсе Минпромторг "БПЛА 2025"' },
-      { icon: 'pi pi-handshake', color: '#42a5f5', text: 'Новый партнёр: Ростех — пилот БПЛА-доставки' },
-      { icon: 'pi pi-exclamation-triangle', color: '#ef5350', text: 'Уволился ключевой разработчик — требует внимания' },
-      { icon: 'pi pi-file-check', color: '#7e57c2', text: 'Новый патент зарегистрирован (навигация в GPS-denied)' },
+      { icon: 'pi pi-star',              color: 'var(--fst-brand)',  text: 'Победа в конкурсе Минпромторг "БПЛА 2025"' },
+      { icon: 'pi pi-handshake',         color: 'var(--fst-blue)',   text: 'Новый партнёр: Ростех — пилот БПЛА-доставки' },
+      { icon: 'pi pi-exclamation-triangle', color: 'var(--fst-red)', text: 'Уволился ключевой разработчик — требует внимания' },
+      { icon: 'pi pi-file-check',        color: 'var(--fst-purple)', text: 'Новый патент зарегистрирован (навигация в GPS-denied)' },
     ]
     addEvent(evts[Math.floor(Math.random() * evts.length)])
   }
 
-  setTimeout(() => { liveColor.value = '#78909c' }, 300)
+  setTimeout(() => { liveColor.value = 'var(--p-text-muted-color)' }, 300)
 }
 
 let eventId = 10
@@ -757,7 +774,7 @@ function resetSim() {
 }
 
 function statusColor(s) {
-  return s === 'OK' ? '#4caf50' : s === 'WARN' ? '#ffa726' : '#ef5350'
+  return s === 'OK' ? 'var(--fst-green)' : s === 'WARN' ? 'var(--fst-brand)' : 'var(--fst-red)'
 }
 
 function fmtM(v) {
@@ -790,42 +807,17 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 }
 
 /* Header */
-.fdt-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-.fdt-header-left { flex: 1; min-width: 0; }
-.fdt-header-center { display: flex; justify-content: center; flex-shrink: 0; }
-.fdt-header-right { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-
-.fdt-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-}
+/* ─── Topbar: base via .fst-topbar-left (fst.css) ─── */
+.fdt-title-group { display: flex; align-items: center; gap: 8px; }
+.fdt-live-dot { font-size: 8px; }
 .fdt-updated {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--p-text-muted-color);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
-.fdt-health-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 6px 20px;
-  border-radius: 8px;
-  min-width: 80px;
-}
-.fdt-health-score { font-size: 24px; font-weight: 700; color: #fff }
-.fdt-health-label { font-size: 10px; color: rgba(255,255,255,0.7); text-transform: uppercase }
+/* ─── Metrics strip: base via .fst-metrics-strip + .fst-metric-item (fst.css) ─── */
+.fdt-metrics { border-bottom: 1px solid var(--p-content-border-color); }
 
 /* Main grid */
 .fdt-main {
@@ -869,8 +861,8 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fdt-vital-label { font-size: 10px; color: var(--p-text-muted-color) }
 .fdt-vital-value { font-size: 15px; font-weight: 700; margin: 2px 0 }
 .fdt-vital-delta { font-size: 11px; display: flex; align-items: center; gap: 3px }
-.fdt-vital-delta.pos { color: #4caf50 }
-.fdt-vital-delta.neg { color: #ef5350 }
+.fdt-vital-delta.pos { color: var(--fst-green) }
+.fdt-vital-delta.neg { color: var(--fst-red) }
 
 .fdt-spark-section { margin-bottom: 12px }
 .fdt-spark-label { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 4px }
@@ -898,25 +890,25 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fdt-sensor-chip {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 3px 7px 3px 5px;
-  background: color-mix(in srgb, var(--sc, #4caf50) 8%, var(--p-surface-card));
-  border: 1px solid color-mix(in srgb, var(--sc, #4caf50) 25%, transparent);
+  background: color-mix(in srgb, var(--sc, var(--fst-green)) 8%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--sc, var(--fst-green)) 25%, transparent);
   border-radius: 20px;
   font-size: 0.68rem; cursor: default;
   transition: background 0.3s, border-color 0.3s;
 }
 .fdt-sensor-chip-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--sc, #4caf50); flex-shrink: 0;
+  background: var(--sc, var(--fst-green)); flex-shrink: 0;
 }
 .fdt-sensor-chip-icon {
-  font-size: 0.65rem; color: var(--sc, #4caf50);
+  font-size: 0.65rem; color: var(--sc, var(--fst-green));
 }
 .fdt-sensor-chip-name {
   color: var(--p-text-color); font-weight: 500;
   max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .fdt-sensor-chip-status {
-  color: var(--sc, #4caf50); font-weight: 700; font-size: 0.6rem;
+  color: var(--sc, var(--fst-green)); font-weight: 700; font-size: 0.6rem;
 }
 
 .fdt-events-feed { display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow-y: auto }
@@ -995,8 +987,8 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   background: var(--p-content-border-color);
   z-index: 0;
 }
-.fdt-tl-stage.done::before { background: #4caf50 }
-.fdt-tl-stage.active::before { background: linear-gradient(90deg, #4caf50, #42a5f5) }
+.fdt-tl-stage.done::before { background: var(--fst-green) }
+.fdt-tl-stage.active::before { background: linear-gradient(90deg, var(--fst-green), var(--fst-blue)) }
 .fdt-tl-stage-dot {
   width: 18px;
   height: 18px;
@@ -1005,15 +997,14 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   border: 2px solid var(--p-content-border-color);
   transition: all 0.3s;
 }
-.fdt-tl-stage.active .fdt-tl-stage-dot { border-color: #42a5f5; box-shadow: 0 0 6px #42a5f5 }
+.fdt-tl-stage.active .fdt-tl-stage-dot { border-color: var(--fst-blue); box-shadow: 0 0 6px var(--fst-blue) }
 .fdt-tl-stage-label { font-size: 10px; color: var(--p-text-muted-color) }
-.fdt-tl-stage.active .fdt-tl-stage-label { color: #42a5f5; font-weight: 600 }
+.fdt-tl-stage.active .fdt-tl-stage-label { color: var(--fst-blue); font-weight: 600 }
 
 /* ── Ontology Blocks Panel ── */
 .fdt-ob-panel {
-  margin: 0 0 0 0;
   padding: 12px 16px 14px;
-  background: color-mix(in srgb, #42a5f5 4%, var(--p-surface-card));
+  background: var(--p-surface-card);
   border-top: 1px solid var(--p-content-border-color);
   border-bottom: 1px solid var(--p-content-border-color);
 }
@@ -1028,12 +1019,14 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 }
 .fdt-ob-count {
   margin-left: auto;
-  background: #42a5f522; color: #42a5f5;
+  background: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
+  color: var(--p-primary-color);
   border-radius: 10px; padding: 1px 8px; font-size: 0.7rem; font-weight: 700;
 }
 .fdt-ob-list {
   display: flex; flex-wrap: wrap; gap: 8px;
 }
+
 /* ── Ontology Scene Cards ── */
 .fdt-ob-scene {
   border-radius: 10px;
@@ -1041,45 +1034,44 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   flex: 1 1 220px; min-width: 200px; max-width: 380px;
 }
 
-/* TICKER — живой Bloomberg-тикер */
+/* TICKER */
 .fdt-ob-scene--ticker {
-  background: #0a0a14;
-  border: 1px solid #42a5f544;
+  background: var(--p-surface-card);
+  border: 1px solid color-mix(in srgb, var(--p-primary-color) 30%, transparent);
   padding: 8px 10px;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
 }
 .fdt-ticker-head {
   display: flex; align-items: center; gap: 6px; margin-bottom: 7px;
 }
 .fdt-ticker-dot {
-  color: #42a5f5; font-size: 0.5rem;
+  color: var(--p-primary-color); font-size: 0.5rem;
   animation: ob-dot-blink 1s step-start infinite;
 }
 .fdt-ticker-live {
-  background: #ef5350; color: #fff;
+  background: var(--fst-red); color: #fff;
   font-size: 0.55rem; font-weight: 900;
   padding: 1px 5px; border-radius: 3px; letter-spacing: 1px;
 }
 .fdt-ticker-stage {
-  color: #42a5f5; font-size: 0.65rem; font-weight: 700;
+  color: var(--p-primary-color); font-size: 0.65rem; font-weight: 700;
 }
 .fdt-ticker-tick {
-  margin-left: auto; color: #555; font-size: 0.6rem;
+  margin-left: auto; color: var(--p-text-muted-color); font-size: 0.6rem;
 }
 .fdt-ticker-metrics {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
 }
 .fdt-ticker-metric {
   display: flex; flex-direction: column; align-items: center; gap: 1px;
-  background: #ffffff08; border-radius: 4px; padding: 4px 2px;
+  background: var(--fst-glass-xs); border-radius: 4px; padding: 4px 2px;
 }
-.fdt-tm-val { font-size: 0.72rem; font-weight: 700; color: #e0e0e0; }
-.fdt-tm-lbl { font-size: 0.52rem; color: #666; }
+.fdt-tm-val { font-size: 0.72rem; font-weight: 700; color: var(--p-text-color); }
+.fdt-tm-lbl { font-size: 0.52rem; color: var(--p-text-muted-color); }
 .fdt-tm-arrow { font-size: 0.55rem; }
-.fdt-tm-arrow.up { color: #4caf50; }
-.fdt-tm-arrow.dn { color: #ef5350; }
+.fdt-tm-arrow.up { color: var(--fst-green); }
+.fdt-tm-arrow.dn { color: var(--fst-red); }
 
-/* HEALTH — игровая HP-полоса */
+/* HEALTH */
 .fdt-ob-scene--health {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
@@ -1089,7 +1081,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;
 }
 .fdt-hs-label { font-size: 0.72rem; font-weight: 700; color: var(--p-text-color); }
-.fdt-hs-num { font-size: 1.1rem; font-weight: 900; font-family: monospace; }
+.fdt-hs-num { font-size: 1.1rem; font-weight: 900; }
 .fdt-hs-max { font-size: 0.6rem; color: var(--p-text-muted-color); font-weight: 400; }
 .fdt-hp-track {
   position: relative; height: 12px;
@@ -1098,21 +1090,21 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fdt-hp-fill {
   height: 100%; border-radius: 6px;
   transition: width 0.5s ease, background 0.5s ease;
-  box-shadow: 0 0 6px var(--sc, #4caf50);
+  box-shadow: 0 0 6px var(--sc, var(--fst-green));
 }
 .fdt-hp-segments {
   position: absolute; inset: 0; display: flex;
 }
 .fdt-hp-seg {
-  flex: 1; border-right: 1px solid rgba(0,0,0,0.3);
+  flex: 1; border-right: 1px solid var(--fst-border-subtle);
 }
 .fdt-hp-seg:last-child { border: none; }
 .fdt-hs-sub { font-size: 0.62rem; color: var(--p-text-muted-color); }
 
-/* ACHIEVEMENT — level-up бейдж */
+/* ACHIEVEMENT */
 .fdt-ob-scene--achievement {
-  background: linear-gradient(135deg, #0a1628, #1a2a48);
-  border: 1px solid #42a5f566;
+  background: color-mix(in srgb, var(--p-primary-color) 6%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--p-primary-color) 30%, transparent);
   padding: 10px 12px;
 }
 .fdt-ach-scene {
@@ -1121,50 +1113,50 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fdt-ach-emoji { font-size: 2rem; line-height: 1; }
 .fdt-ach-badge {
   display: flex; align-items: baseline; gap: 2px;
-  background: linear-gradient(135deg, #42a5f5, #7c4dff);
+  background: var(--p-primary-color);
   border-radius: 8px; padding: 4px 10px; flex-shrink: 0;
 }
-.fdt-ach-lvl { font-size: 1.5rem; font-weight: 900; color: #fff; font-family: monospace; }
-.fdt-ach-max { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+.fdt-ach-lvl { font-size: 1.5rem; font-weight: 900; color: #fff; }
+.fdt-ach-max { font-size: 0.7rem; color: rgba(255,255,255,0.65); }
 .fdt-ach-text { flex: 1; min-width: 0; }
-.fdt-ach-title { font-size: 0.78rem; font-weight: 700; color: #e3f2fd; margin-bottom: 3px; }
-.fdt-ach-body { font-size: 0.62rem; color: #90caf9; line-height: 1.4; }
+.fdt-ach-title { font-size: 0.78rem; font-weight: 700; color: var(--p-text-color); margin-bottom: 3px; }
+.fdt-ach-body { font-size: 0.62rem; color: var(--p-text-muted-color); line-height: 1.4; }
 
-/* MILESTONE — газетный штамп */
+/* MILESTONE */
 .fdt-ob-scene--milestone {
   background: var(--p-surface-card);
-  border: 1px solid var(--sc, #4caf50);
+  border: 1px solid var(--sc, var(--fst-green));
   padding: 10px 12px;
 }
 .fdt-ms-scene { display: flex; align-items: center; gap: 10px; }
 .fdt-ms-stamp {
   flex-shrink: 0;
-  border: 2px solid var(--sc, #4caf50); border-radius: 6px;
+  border: 2px solid var(--sc, var(--fst-green)); border-radius: 6px;
   padding: 4px 8px; font-size: 0.6rem; font-weight: 900;
   letter-spacing: 1px; text-transform: uppercase; text-align: center;
-  transform: rotate(-8deg); white-space: nowrap;
-  opacity: 0.9;
+  transform: rotate(-8deg); white-space: nowrap; opacity: 0.9;
+  color: var(--sc, var(--fst-green));
 }
 .fdt-ms-main { flex: 1; min-width: 0; }
-.fdt-ms-amount { font-size: 1.1rem; font-weight: 900; font-family: monospace; line-height: 1; }
+.fdt-ms-amount { font-size: 1.1rem; font-weight: 900; line-height: 1; }
 .fdt-ms-title { font-size: 0.72rem; font-weight: 700; color: var(--p-text-color); margin: 2px 0 1px; }
 .fdt-ms-body { font-size: 0.62rem; color: var(--p-text-muted-color); }
 
-/* ALERT — сирена-баннер */
+/* ALERT */
 .fdt-ob-scene--alert {
-  border: 2px solid var(--sc, #ffa726);
+  border: 2px solid var(--sc, var(--fst-brand));
   flex: 1 1 100%; max-width: 100%;
 }
 .fdt-alert-scene {
-  background: color-mix(in srgb, var(--sc, #ffa726) 10%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--sc, var(--fst-brand)) 10%, var(--p-surface-card));
   padding: 10px 14px;
   display: flex; align-items: center; gap: 12px;
   flex-wrap: wrap;
 }
 .fdt-alert-critical { animation: alert-flash 1.5s ease-in-out infinite; }
 @keyframes alert-flash {
-  0%, 100% { background: color-mix(in srgb, #ef5350 10%, var(--p-surface-card)); }
-  50%       { background: color-mix(in srgb, #ef5350 18%, var(--p-surface-card)); }
+  0%, 100% { background: color-mix(in srgb, var(--fst-red) 10%, var(--p-surface-card)); }
+  50%       { background: color-mix(in srgb, var(--fst-red) 18%, var(--p-surface-card)); }
 }
 .fdt-alert-title { font-size: 0.85rem; font-weight: 900; color: var(--p-text-color); }
 .fdt-alert-body { flex: 1; font-size: 0.68rem; color: var(--p-text-muted-color); }
