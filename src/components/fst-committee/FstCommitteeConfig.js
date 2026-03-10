@@ -307,7 +307,7 @@ export const SUBFUNDS = {
     name: 'Субфонд БАС',
     shortName: 'БАС',
     color: '#42a5f5',
-    icon: 'pi pi-send',
+    icon: 'pi pi-compass',
     budget: 3_200_000_000,
     deployedRatio: 0.31,
     description: 'Беспилотные авиационные системы',

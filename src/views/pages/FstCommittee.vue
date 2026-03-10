@@ -3080,6 +3080,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 5px;
+  cursor: default;
+  user-select: none;
 }
 .fst-subfund-budget {
   font-size: 0.8125rem;
