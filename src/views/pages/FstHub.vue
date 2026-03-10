@@ -120,9 +120,11 @@ import SandboxBanner from '@/components/SandboxBanner.vue'
 import PracticeScenariosDialog from '@/components/PracticeScenariosDialog.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
 import FeatureHint from '@/components/FeatureHint.vue'
+import { useEventStore } from '@/stores/eventStore.js'
 
 const router = useRouter()
 const sandboxStore = useSandboxStore()
+const eventStore = useEventStore()
 const now = ref(new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }))
 const showScenarios = ref(false)
 
@@ -132,15 +134,29 @@ function go(path) { router.push(path) }
 const { isOpen: helpOpen, pageHelp, toggleHelp } = usePageHelp('fst')
 
 const { stats, statsLoading, loadStats } = useFstData()
-onMounted(() => { loadStats() })
+onMounted(() => {
+  loadStats()
+  // Фоновая загрузка всех лент для агрегации метрик
+  eventStore.load('session', '_all').catch(() => {})
+  eventStore.load('deal', '_all').catch(() => {})
+})
+
+// Агрегированные метрики из eventStore (дополняют данные из Integram)
+const evSessionCount = computed(() => eventStore.getIds('session').length)
+const evDealsCount   = computed(() => eventStore.getIds('deal').filter(id => {
+  const s = eventStore.getState('deal', id)
+  return s.phase === 'post-close'
+}).length)
 
 const metrics = computed(() => {
   const s = stats.value
+  const sessionCount = Math.max(s?.committeeCount ?? 0, evSessionCount.value)
+  const dealsCount   = Math.max(s?.dealsCount ?? 0, evDealsCount.value)
   return [
-    { icon: 'pi pi-users',        color: '#a78bfa', val: statsLoading.value ? '...' : `${s?.committeeCount ?? 0}`,  label: 'Заседаний ИК' },
-    { icon: 'pi pi-sitemap',      color: '#38bdf8', val: statsLoading.value ? '...' : `${s?.subfundCount ?? 3}`,    label: 'Субфонда' },
+    { icon: 'pi pi-users',        color: '#a78bfa', val: statsLoading.value ? '...' : `${sessionCount}`,   label: 'Заседаний ИК' },
+    { icon: 'pi pi-sitemap',      color: '#38bdf8', val: statsLoading.value ? '...' : `${s?.subfundCount ?? 3}`, label: 'Субфонда' },
     { icon: 'pi pi-briefcase',    color: '#34d399', val: statsLoading.value ? '...' : `${s?.portfolioCount ?? 0}`, label: 'Компаний в портфеле' },
-    { icon: 'pi pi-check-circle', color: '#fb923c', val: statsLoading.value ? '...' : `${s?.dealsCount ?? 9}`,     label: 'Закрытых сделок' },
+    { icon: 'pi pi-check-circle', color: '#fb923c', val: statsLoading.value ? '...' : `${dealsCount}`,     label: 'Закрытых сделок' },
     { icon: 'pi pi-chart-line',   color: '#f87171', val: statsLoading.value ? '...' : `${s?.avgIRR ? (s.avgIRR * 100).toFixed(0) + '%' : '—'}`, label: 'Средний IRR' },
   ]
 })
@@ -173,6 +189,8 @@ const modules = [
   { id: 'secondary',      name: 'Secondary Market',       phase: 'Фаза 6 — Ликвидность',    icon: 'pi pi-refresh',       color: '#26c6da', path: '/fst-secondary',      status: 'live' },
   { id: 'fund',           name: 'Цифровой двойник фонда', phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-building',      color: '#38bdf8', path: '/fst-fund',           status: 'live' },
   { id: 'pitch',          name: 'Инвестиционный питч',    phase: 'Фаза 0 — Поиск',           icon: 'pi pi-star',          color: '#f59e0b', path: '/fst-pitch',          status: 'live' },
+  { id: 'room',           name: 'Agent Room',             phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-comments',      color: '#10b981', path: '/fst-room',           status: 'live' },
+  { id: 'soft-model',     name: 'Software Ontology',      phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-sitemap',       color: '#a855f7', path: '/fst-soft-model',     status: 'live' },
 ]
 
 const phaseNames = {

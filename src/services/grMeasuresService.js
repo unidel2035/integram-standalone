@@ -6,6 +6,49 @@
  */
 
 import { GR_MEASURES, matchMeasuresForProject as _matchLocal } from '@/config/grMeasuresData.js'
+import { EVENT_CHAINS } from '@/config/grOntology.js'
+import { createOntologyGraph } from './grOntologyGraph.js'
+
+// Singleton граф — строится один раз при первом вызове
+let _graph = null
+function graph() {
+  if (!_graph) _graph = createOntologyGraph(GR_MEASURES, EVENT_CHAINS)
+  return _graph
+}
+
+// ─── Логический вывод (новый основной метод) ──────────────────────────────────
+
+/**
+ * Логический вывод применимых мер по профилю проекта
+ * Возвращает структуру с цепочками, шагами и пробелами — не просто массив
+ *
+ * @param {object} project { trl, sector, triggers?, hasCertification?, hasInfra? }
+ * @returns {{ chains, allMeasures, gaps }}
+ */
+export function inferMeasures(project) {
+  return graph().infer(project)
+}
+
+/**
+ * Найти пробелы — шаги цепочек без мер для данного профиля
+ */
+export function findGaps(project) {
+  return graph().findGaps(project)
+}
+
+/**
+ * Следующие меры после данной (навигация по графу)
+ */
+export function getNextSteps(measureId) {
+  return graph().nextSteps(measureId)
+}
+
+/**
+ * Маршрут финансирования от текущего TRL к целевому
+ */
+export function buildRoute(project, targetTrl = 9) {
+  return graph().buildRoute(project, targetTrl)
+}
 
 // ─── Основные методы ──────────────────────────────────────────────────────────
 

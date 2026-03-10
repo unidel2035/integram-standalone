@@ -26,6 +26,9 @@ import glossaryRoutes from './api/routes/glossary.js'
 import platformRoutes from './api/routes/platform.js'
 import startuperRouter from './api/routes/startuper.js'
 import grMeasuresRouter from './api/routes/grMeasures.js'
+import roomRouter from './api/routes/room.js'
+import eventsRouter from './api/routes/events.js'
+import aiTokensRouter from './api/routes/ai-tokens.js'
 import { authenticateApiToken, validateWebhookSecret } from './api/middleware/auth.js'
 import { startAgentSchoolTrainer } from './schedulers/agentSchoolTrainer.js'
 
@@ -106,6 +109,15 @@ app.use('/api/startuper', startuperRouter)
 
 // GR — government support measures parser + matcher
 app.use('/api/fst', grMeasuresRouter)
+
+// Agent Room — живой чат для агентов и сессий Claude (SSE + POST)
+app.use('/api', roomRouter)
+
+// Event Log — event sourcing лог всех сущностей платформы
+app.use('/api', eventsRouter)
+
+// AI gateway — POST /api/ai-tokens/chat (роутит к Anthropic/DeepSeek/OpenAI/Yandex)
+app.use('/api', aiTokensRouter)
 
 // 404 handler
 app.use((req, res) => {

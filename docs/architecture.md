@@ -2,6 +2,8 @@
 
 > Документация архитектуры Фонда
 
+> **Новый документ:** [Событийная онтология VentureOS](./ontology-architecture.md) — подробная архитектура Event Store, Event Registry, Cross-Entity графа и Software Ontology (мета-уровень).
+
 ---
 
 ## 1. Общая структура

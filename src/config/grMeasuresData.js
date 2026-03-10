@@ -1,6 +1,13 @@
 /**
  * GR Measures Data — актуальная база мер государственной поддержки инноваций (2025-2026)
  * Источники: fasie.ru, sk.ru, frp.ru, rfriti.ru, minpromtorg.gov.ru, nti.ru, corpmsp.ru, veb.ru, fpi.gov.ru, asi.ru
+ *
+ * Онтологические поля (для grOntologyGraph.js):
+ *   triggers    — триггеры из EVENT_CHAINS: market_failure | tech_gap | regulatory_barrier | infrastructure_gap
+ *   chain_id    — ID цепочки (совпадает с основным триггером)
+ *   chain_step  — шаг: Диагностика | Концепция | Пилот | НПА | Мера
+ *   next        — ID мер, к которым естественно переходить после этой
+ *   beneficiary — типы бенефициаров: МСП | Стартап | НИИ | Университет | Крупная компания
  */
 
 export const GR_MEASURES = [
@@ -20,6 +27,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://fasie.ru/programs/programm-umnik/',
     description: 'Поддержка молодых учёных для коммерциализации научных результатов',
+    // ontology
+    triggers: ['market_failure', 'tech_gap'],
+    chain_id: 'market_failure',
+    chain_step: 'Пилот',
+    next: ['fasie-start1'],
+    beneficiary: ['Стартап'],
   },
   {
     id: 'fasie-start1',
@@ -36,6 +49,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://fasie.ru/programs/programm-start/',
     description: 'Поддержка малых инновационных предприятий на ранней стадии. Возможность перехода в СТАРТ-2.',
+    // ontology
+    triggers: ['market_failure'],
+    chain_id: 'market_failure',
+    chain_step: 'Пилот',
+    next: ['fasie-start2', 'sk-grant-rd'],
+    beneficiary: ['Стартап', 'МСП'],
   },
   {
     id: 'fasie-start2',
@@ -52,6 +71,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://fasie.ru/programs/programm-start/',
     description: 'Масштабирование проекта после прохождения СТАРТ-1 или аналогичной программы.',
+    // ontology
+    triggers: ['market_failure'],
+    chain_id: 'market_failure',
+    chain_step: 'Мера',
+    next: ['frp-proekty', 'sk-status', 'fasie-razvitie'],
+    beneficiary: ['МСП'],
   },
   {
     id: 'fasie-razvitie',
@@ -68,6 +93,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://fasie.ru/programs/programm-razvitie/',
     description: 'Поддержка развития инновационных компаний с подтверждёнными продажами.',
+    // ontology
+    triggers: ['market_failure', 'tech_gap'],
+    chain_id: 'market_failure',
+    chain_step: 'Мера',
+    next: ['frp-proekty', 'veb-tech'],
+    beneficiary: ['МСП', 'Крупная компания'],
   },
 
   // ─── Фонд Сколково (sk.ru) ────────────────────────────────────────────────────
@@ -86,6 +117,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://sk.ru/foundation/grant/',
     description: 'Грант на проведение НИОКР до 50% бюджета R&D. Не требует возврата.',
+    // ontology
+    triggers: ['market_failure', 'tech_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Пилот',
+    next: ['sk-status', 'frp-niokr'],
+    beneficiary: ['Стартап', 'МСП'],
   },
   {
     id: 'sk-status',
@@ -102,6 +139,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://sk.ru/participate/',
     description: 'Налоговые льготы на 10 лет. Основной инструмент снижения налоговой нагрузки для R&D-компаний.',
+    // ontology
+    triggers: ['regulatory_barrier'],
+    chain_id: 'regulatory_barrier',
+    chain_step: 'НПА',
+    next: ['minprom-719', 'napo-cert'],
+    beneficiary: ['Стартап', 'МСП'],
   },
   {
     id: 'sk-accelerator',
@@ -118,6 +161,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://startupvillage.ru/',
     description: 'Акселерация с доступом к пилотам с крупными корпорациями.',
+    // ontology
+    triggers: ['market_failure'],
+    chain_id: 'market_failure',
+    chain_step: 'Пилот',
+    next: ['sk-grant-rd', 'fasie-start1'],
+    beneficiary: ['Стартап'],
   },
 
   // ─── ФРП (frp.ru) ─────────────────────────────────────────────────────────────
@@ -136,6 +185,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://frp.ru/programm/proekty-razvitiya',
     description: 'Льготный займ для технологической модернизации и организации нового производства.',
+    // ontology
+    triggers: ['tech_gap', 'infrastructure_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Мера',
+    next: ['veb-tech', 'minprom-spik'],
+    beneficiary: ['МСП', 'Крупная компания'],
   },
   {
     id: 'frp-niokr',
@@ -152,6 +207,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://frp.ru/programm/niokr',
     description: 'Займ для финансирования НИОКР с последующей коммерциализацией.',
+    // ontology
+    triggers: ['tech_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Концепция',
+    next: ['frp-proekty', 'rfriti-ai', 'minprom-niokr'],
+    beneficiary: ['МСП', 'НИИ'],
   },
 
   // ─── РФРИТ (rfriti.ru) ────────────────────────────────────────────────────────
@@ -170,6 +231,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://rfriti.ru/measures/',
     description: 'Крупнейший грант для разработчиков ПО. Не возвращается при выполнении KPI.',
+    // ontology
+    triggers: ['tech_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Мера',
+    next: ['rfriti-ai'],
+    beneficiary: ['МСП'],
   },
   {
     id: 'rfriti-ai',
@@ -186,6 +253,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://rfriti.ru/measures/',
     description: 'Поддержка внедрения AI в производственные процессы.',
+    // ontology
+    triggers: ['tech_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Мера',
+    next: ['minprom-niokr', 'frp-proekty'],
+    beneficiary: ['МСП', 'Крупная компания'],
   },
 
   // ─── Минпромторг ──────────────────────────────────────────────────────────────
@@ -204,6 +277,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://minpromtorg.gov.ru/',
     description: 'Критический статус для участия в госзакупках по 44-ФЗ и 223-ФЗ.',
+    // ontology
+    triggers: ['regulatory_barrier'],
+    chain_id: 'regulatory_barrier',
+    chain_step: 'НПА',
+    next: ['minprom-bas', 'minprom-spik', 'napo-cert'],
+    beneficiary: ['МСП', 'Крупная компания'],
   },
   {
     id: 'minprom-niokr',
@@ -220,6 +299,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://minpromtorg.gov.ru/activities/support/',
     description: 'Крупнейший инструмент Минпромторга для финансирования ОКР.',
+    // ontology
+    triggers: ['tech_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Концепция',
+    next: ['frp-proekty', 'minprom-bas', 'rfriti-ai'],
+    beneficiary: ['МСП', 'НИИ'],
   },
   {
     id: 'minprom-bas',
@@ -236,6 +321,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://bas.gov.ru/',
     description: 'Ключевой инструмент Нацпроекта БАС. Охватывает производителей аппаратов и систем управления.',
+    // ontology
+    triggers: ['infrastructure_gap', 'regulatory_barrier'],
+    chain_id: 'infrastructure_gap',
+    chain_step: 'Мера',
+    next: ['napo-cert', 'veb-tech', 'minprom-spik'],
+    beneficiary: ['МСП', 'Крупная компания'],
   },
 
   // ─── НТИ ──────────────────────────────────────────────────────────────────────
@@ -254,6 +345,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://nti.ru/activities/roadmaps/aeronet/',
     description: 'Приоритетный инструмент для проектов в сфере беспилотных авиационных систем.',
+    // ontology
+    triggers: ['tech_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Пилот',
+    next: ['frp-niokr', 'nti-technet', 'sk-grant-rd'],
+    beneficiary: ['Стартап', 'МСП'],
   },
   {
     id: 'nti-technet',
@@ -270,6 +367,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://nti.ru/activities/roadmaps/',
     description: 'Поддержка технологических проектов в рамках дорожных карт НТИ.',
+    // ontology
+    triggers: ['tech_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Пилот',
+    next: ['rfriti-ai', 'frp-niokr'],
+    beneficiary: ['Стартап', 'МСП'],
   },
 
   // ─── МСП / ВЭБ.РФ ────────────────────────────────────────────────────────────
@@ -288,6 +391,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://corpmsp.ru/patsientam/msp/kredit/',
     description: 'Базовый инструмент льготного кредитования для любого МСП. Доступен через 60+ банков-партнёров.',
+    // ontology
+    triggers: ['market_failure', 'infrastructure_gap'],
+    chain_id: 'market_failure',
+    chain_step: 'Мера',
+    next: ['corpmsp-garantiya', 'frp-proekty'],
+    beneficiary: ['МСП'],
   },
   {
     id: 'corpmsp-garantiya',
@@ -304,6 +413,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://corpmsp.ru/patsientam/msp/garantiya/',
     description: 'Позволяет получить кредит без полного залога. Критически важен для стартапов без активов.',
+    // ontology
+    triggers: ['market_failure'],
+    chain_id: 'market_failure',
+    chain_step: 'Мера',
+    next: ['frp-proekty', 'corpmsp-kredit'],
+    beneficiary: ['МСП'],
   },
   {
     id: 'veb-tech',
@@ -320,6 +435,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://veb.ru/projects/',
     description: 'Проектное финансирование крупных инициатив для масштабирования после Раунда B.',
+    // ontology
+    triggers: ['infrastructure_gap'],
+    chain_id: 'infrastructure_gap',
+    chain_step: 'Мера',
+    next: ['minprom-spik'],
+    beneficiary: ['Крупная компания'],
   },
 
   // ─── Специализированные ───────────────────────────────────────────────────────
@@ -338,6 +459,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://favt.ru/',
     description: 'Обязательный статус для коммерческой эксплуатации БПЛА.',
+    // ontology
+    triggers: ['regulatory_barrier'],
+    chain_id: 'regulatory_barrier',
+    chain_step: 'НПА',
+    next: ['minprom-719', 'minprom-bas'],
+    beneficiary: ['Стартап', 'МСП'],
   },
   {
     id: 'fpi-techdir',
@@ -354,6 +481,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://fpi.gov.ru/',
     description: 'Финансирование прорывных технологий оборонного и двойного назначения.',
+    // ontology
+    triggers: ['tech_gap'],
+    chain_id: 'tech_gap',
+    chain_step: 'Мера',
+    next: ['minprom-bas', 'veb-tech'],
+    beneficiary: ['НИИ', 'Крупная компания'],
   },
   {
     id: 'asi-natproject',
@@ -370,6 +503,12 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://asi.ru/',
     description: 'Включение в орбиту нацпроектов открывает доступ к субсидиям и госзаказу.',
+    // ontology
+    triggers: ['market_failure', 'tech_gap'],
+    chain_id: 'market_failure',
+    chain_step: 'НПА',
+    next: ['minprom-bas', 'minprom-niokr', 'veb-tech'],
+    beneficiary: ['МСП', 'Крупная компания'],
   },
   {
     id: 'minprom-spik',
@@ -386,11 +525,18 @@ export const GR_MEASURES = [
     status: 'active',
     url: 'https://minpromtorg.gov.ru/activities/spik/',
     description: 'Механизм долгосрочной защиты инвесторов с гарантией неизменности условий.',
+    // ontology
+    triggers: ['regulatory_barrier', 'infrastructure_gap'],
+    chain_id: 'regulatory_barrier',
+    chain_step: 'Мера',
+    next: [],
+    beneficiary: ['Крупная компания'],
   },
 ]
 
 /**
- * Подобрать меры под профиль стартапа
+ * Подобрать меры под профиль стартапа (legacy — оставлено для совместимости)
+ * Новый метод: grMeasuresService.inferMeasures(project)
  */
 export function matchMeasuresForProject(project) {
   const { trl = 4, subFundName = 'БАС', stageName = 'Посевная' } = project

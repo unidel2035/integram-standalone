@@ -54,6 +54,8 @@ const routes = [
       { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
       { path: 'fst-startuper', component: () => import('@/views/pages/FstStartuper.vue'), meta: { title: 'Стартапер' } },
       { path: 'fst-pitch', component: () => import('@/views/pages/FstPitch.vue'), meta: { title: 'ai2fund — Инвестиционный питч' } },
+      { path: 'fst-room', component: () => import('@/views/pages/FstRoom.vue'), meta: { title: 'Agent Room — живой чат агентов' } },
+      { path: 'fst-soft-model', component: () => import('@/views/pages/FstSoftModel.vue'), meta: { title: 'Software Ontology Model' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },
