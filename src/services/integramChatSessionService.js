@@ -438,16 +438,14 @@ class IntegramChatSessionService {
       let sessionIntegramId = this.sessionsCache.get(data.sessionId)
 
       if (!sessionIntegramId) {
-        console.warn('[IntegramChatSession] Session not found in cache for transaction:', data.sessionId)
-        console.warn('[IntegramChatSession] Available sessions in cache:', Array.from(this.sessionsCache.keys()))
-        // Try to reload cache from storage
+        // Try to reload cache from storage (session may have been created in another context)
         this.loadCacheFromStorage()
         sessionIntegramId = this.sessionsCache.get(data.sessionId)
         if (!sessionIntegramId) {
-          console.error('[IntegramChatSession] Session still not found after cache reload')
+          // Expected when Integram session creation failed silently
+          console.debug('[IntegramChatSession] Session not in cache, skipping transaction save:', data.sessionId)
           return { success: false, error: 'Session not found in cache' }
         }
-        console.log('[IntegramChatSession] Found session after reload:', sessionIntegramId)
       }
 
       // Используем ISO формат для DATETIME типа таблицы
@@ -572,7 +570,7 @@ class IntegramChatSessionService {
       const integramId = this.sessionsCache.get(sessionId)
 
       if (!integramId) {
-        console.warn('[IntegramChatSession] Session not found in cache:', sessionId)
+        console.debug('[IntegramChatSession] Session not in cache, skipping messages update:', sessionId)
         return { success: false, error: 'Session not found in cache' }
       }
 

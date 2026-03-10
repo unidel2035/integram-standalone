@@ -19,6 +19,8 @@ FST_API_PORT=$PORT \
   INTEGRAM_SERVER_URL=https://api.ai2o.ru \
   INTEGRAM_SYSTEM_USERNAME=unidel@yandex.ru \
   INTEGRAM_SYSTEM_PASSWORD=Denver2035 \
+  POLZA_API_KEY=ak_0xCOU-hEsCsImB6r-dg7GChm2LFPQOUL9ROwExY8WBo \
+  DEEPSEEK_API_KEY=sk-639222a023b54f02a262da413909ab29 \
   nohup $NODE "$DIR/api.mjs" >> "$LOGFILE" 2>&1 &
 echo $! > "$PIDFILE"
 echo "[$(date '+%H:%M:%S')] Started PID $(cat $PIDFILE)"

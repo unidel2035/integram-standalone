@@ -475,7 +475,7 @@ export async function getCommitteeSessions() {
       try {
         protocol = JSON.parse(rawProto)
       } catch (e) {
-        console.warn(`Failed to parse protocol for decision ${obj.id}:`, e)
+        // rawProto may contain plain text (not JSON) — silently ignore
       }
     }
 

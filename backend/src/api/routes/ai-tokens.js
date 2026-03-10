@@ -36,6 +36,11 @@ const PROVIDERS = {
     url:     'https://llm.api.cloud.yandex.net/foundationModels/v1/completion',
     models:  ['yandex'],
   },
+  polza: {
+    key:     () => process.env.POLZA_API_KEY,
+    url:     'https://api.polza.ai/api/v1/chat/completions',
+    models:  ['qwen', 'gemini', 'google/'],
+  },
 }
 
 function detectProvider(modelId = '') {
@@ -91,7 +96,9 @@ async function callOpenAICompatible(provider, modelId, prompt, systemPrompt) {
 
   const model = provider === 'deepseek'
     ? (modelId.replace('deepseek/', '') || 'deepseek-chat')
-    : (modelId.replace('openai/', '') || 'gpt-4o')
+    : provider === 'polza'
+      ? (modelId || 'qwen/qwen-turbo')  // polza accepts model IDs as-is
+      : (modelId.replace('openai/', '') || 'gpt-4o')
 
   const res = await fetch(cfg.url, {
     method:  'POST',
@@ -224,7 +231,7 @@ async function callAnthropicStream(modelId, prompt, systemPrompt, res) {
       try {
         const ev = JSON.parse(raw)
         if (ev.type === 'content_block_delta' && ev.delta?.text) {
-          res.write(`data: ${JSON.stringify({ token: ev.delta.text })}\n\n`)
+          res.write(`data: ${JSON.stringify({ chunk: ev.delta.text })}\n\n`)
         }
       } catch {}
     }
@@ -241,7 +248,9 @@ async function callOpenAICompatibleStream(provider, modelId, prompt, systemPromp
 
   const model = provider === 'deepseek'
     ? (modelId.replace('deepseek/', '') || 'deepseek-chat')
-    : (modelId.replace('openai/', '') || 'gpt-4o')
+    : provider === 'polza'
+      ? (modelId || 'qwen/qwen-turbo')  // polza accepts model IDs as-is
+      : (modelId.replace('openai/', '') || 'gpt-4o')
 
   const upstream = await fetch(cfg.url, {
     method:  'POST',
@@ -267,8 +276,8 @@ async function callOpenAICompatibleStream(provider, modelId, prompt, systemPromp
       if (raw === '[DONE]') continue
       try {
         const ev = JSON.parse(raw)
-        const token = ev.choices?.[0]?.delta?.content
-        if (token) res.write(`data: ${JSON.stringify({ token })}\n\n`)
+        const chunk = ev.choices?.[0]?.delta?.content
+        if (chunk) res.write(`data: ${JSON.stringify({ chunk })}\n\n`)
       } catch {}
     }
   }
@@ -292,7 +301,8 @@ router.post('/chat', async (req, res) => {
   }
 
   const modelId = model || 'deepseek/deepseek-chat'
-  const provider = providerHint || detectProvider(modelId)
+  // if providerHint is unknown (e.g. "polza"), fall back to auto-detect
+  const provider = (providerHint && PROVIDERS[providerHint]) ? providerHint : detectProvider(modelId)
   const apiKey = PROVIDERS[provider]?.key()
 
   if (!apiKey) {

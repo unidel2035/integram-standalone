@@ -56,9 +56,12 @@ app.get('/api/deployment-info', (req, res) => {
   }
 })
 
-// ── Orchestrator status ──────────────────────────────────────────
+// ── Orchestrator status / execute ────────────────────────────────
 app.get('/api/orchestrator/status', (req, res) => {
-  res.json({ status: 'ok', version: '1.0', services: {} })
+  res.json({ success: true, data: { status: { orchestrator: { initialized: false, status: 'stub' }, registry: { totalAgents: 0, byType: {}, byStatus: {} }, agents: [] } } })
+})
+app.post('/api/orchestrator/execute', (req, res) => {
+  res.json({ success: true, matches: [], answer: null, sources: [], executionTime: 0 })
 })
 
 // ── Profile ──────────────────────────────────────────────────────

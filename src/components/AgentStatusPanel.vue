@@ -55,7 +55,7 @@ const loadAgentStatus = async () => {
       })
     } else {
       error.value = result.error || 'Failed to load agent status'
-      logger.warn('[AgentStatusPanel] Failed to load status:', error.value)
+      logger.debug('[AgentStatusPanel] Failed to load status:', error.value)
     }
   } catch (err) {
     error.value = err.message
