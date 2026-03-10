@@ -589,8 +589,8 @@
 
       <!-- KPI metrics strip -->
       <div class="ck-metrics">
-        <div v-for="m in ckMetrics" :key="m.label" class="ck-metric" :style="{ borderBottomColor: m.color }">
-          <i :class="m.icon" class="ck-metric-icon" :style="{ color: m.color }"></i>
+        <div v-for="m in ckMetrics" :key="m.label" class="ck-metric" :style="{ '--ck-c': m.color }">
+          <i :class="m.icon" class="ck-metric-icon"></i>
           <div class="ck-metric-val">{{ m.val }}</div>
           <div class="ck-metric-label">{{ m.label }}</div>
         </div>
@@ -3001,8 +3001,8 @@ onUnmounted(() => {
 /* ── Committee KPI Metrics ───────────────────────────────── */
 .ck-metrics {
   display: flex;
-  padding: 0 20px;
-  gap: 12px;
+  padding: 20px 24px;
+  gap: 16px;
   border-bottom: 1px solid var(--p-content-border-color);
   flex-shrink: 0;
 }
@@ -3013,28 +3013,36 @@ onUnmounted(() => {
   align-items: center;
   text-align: center;
   padding: 14px 8px;
+  background: var(--surface-ground);
   border-bottom: 2px solid transparent;
-  transition: border-color .2s;
+  transition: border-color .2s, background .2s;
   min-width: 0;
+  cursor: default;
+}
+.ck-metric:hover {
+  border-bottom-color: var(--ck-c, var(--p-primary-color));
+  background: color-mix(in srgb, var(--ck-c, var(--p-primary-color)) 6%, var(--surface-ground));
 }
 .ck-metric-icon {
-  font-size: 15px;
-  margin-bottom: 6px;
-  opacity: 0.75;
+  font-size: 16px;
+  margin-bottom: 8px;
+  opacity: 0.7;
+  color: var(--ck-c, var(--p-text-muted-color));
 }
 .ck-metric-val {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--p-text-color);
   line-height: 1;
 }
 .ck-metric-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--p-text-muted-color);
-  margin-top: 5px;
+  margin-top: 6px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
+  max-width: 100%;
 }
 
 /* ── Setup Screen ─────────────────────────────────────────── */
@@ -3549,11 +3557,13 @@ onUnmounted(() => {
 }
 .fst-rp-section:last-of-type { border-bottom: none; }
 .fst-rp-label {
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.03em;
   color: var(--p-text-muted-color);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
 /* ── Speed segmented ── */
@@ -4497,18 +4507,37 @@ onUnmounted(() => {
 .fst-acc-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 0;
+  gap: 10px;
+  padding: 8px 12px;
+  margin: 0 -12px;
   cursor: pointer;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
   border-bottom: 1px solid var(--p-content-border-color);
+  transition: all .15s;
 }
-.fst-acc-row:hover .fst-acc-label { color: var(--p-text-color); }
-.fst-acc-icon { font-size: 0.875rem; flex-shrink: 0; }
+.fst-acc-row:hover {
+  background: color-mix(in srgb, var(--p-primary-color) 8%, var(--p-surface-card));
+  border-left-color: var(--p-primary-color);
+}
+.fst-acc-row:hover .fst-acc-label { color: var(--p-primary-color); }
+.fst-acc-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
 .fst-acc-label {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--p-text-color);
   white-space: nowrap;
+  transition: color .15s;
 }
 .fst-acc-summary {
   flex: 1;
