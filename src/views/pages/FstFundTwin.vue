@@ -4,7 +4,7 @@
     <template #header>
       <div class="fft-header-left">
         <div class="fft-logo">
-          <i class="pi pi-building-columns" style="color:#ffa726;font-size:20px"></i>
+          <i class="pi pi-building-columns" style="color:#ffa726;font-size:15px"></i>
           <span>Цифровой Двойник · <b>ФСТ НТИ</b></span>
           <Tag value="NAV Live" severity="warn" style="font-size:11px" />
         </div>
@@ -132,24 +132,12 @@
           </div>
         </div>
 
-        <!-- Sankey-like flow -->
-        <div class="fft-panel-title" style="margin-top:12px">
+        <!-- Sankey-like flow (collapsible) -->
+        <div class="fft-panel-title fft-panel-title--toggle" style="margin-top:12px" @click="showFlows = !showFlows">
           <i class="pi pi-arrow-right-arrow-left" style="color:#7e57c2"></i> Инвест. потоки
+          <i :class="showFlows ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" style="margin-left:auto;font-size:10px;opacity:0.5" />
         </div>
-        <canvas ref="flowChart" height="120"></canvas>
-
-        <!-- Portfolio health matrix -->
-        <div class="fft-panel-title" style="margin-top:12px">
-          <i class="pi pi-th-large" style="color:#66bb6a"></i> Матрица здоровья портфеля
-        </div>
-        <div class="fft-health-matrix">
-          <div v-for="c in companies" :key="c.id" class="fft-hm-cell"
-            :title="c.name + ': ' + c.health"
-            :style="{ background: healthColor(c.health), opacity: 0.85 + c.health/1000 }">
-            <span class="fft-hm-name">{{ c.nameShort }}</span>
-            <span class="fft-hm-val">{{ c.health }}</span>
-          </div>
-        </div>
+        <canvas v-show="showFlows" ref="flowChart" height="100"></canvas>
       </div>
 
       <!-- Col 3: Selected company detail + Events + AI -->
@@ -167,8 +155,12 @@
               <div class="fft-cd-val" :style="{ color: m.c }">{{ m.v }}</div>
             </div>
           </div>
-          <div class="fft-cd-risks">
-            <div class="fft-panel-title"><i class="pi pi-shield"></i> Риски</div>
+          <!-- Risks (collapsible) -->
+          <div class="fft-panel-title fft-panel-title--toggle" style="margin-top:8px" @click="showRisks = !showRisks">
+            <i class="pi pi-shield"></i> Риски
+            <i :class="showRisks ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" style="margin-left:auto;font-size:10px;opacity:0.5" />
+          </div>
+          <div v-show="showRisks" class="fft-cd-risks">
             <div v-for="r in selectedCompany.risks" :key="r.type" class="fft-cd-risk-row">
               <div class="fft-cd-risk-dot" :style="{ background: riskColor(r.level) }"></div>
               <span>{{ r.label }}</span>
@@ -182,11 +174,11 @@
           <div>Выберите компанию из портфеля</div>
         </div>
 
-        <!-- Events -->
+        <!-- Events (compact: last 5 only) -->
         <div class="fft-panel-title" style="margin-top:12px"><i class="pi pi-list" style="color:#66bb6a"></i> Фонд-события</div>
         <div class="fft-events">
           <TransitionGroup name="fft-evt" tag="div">
-            <div v-for="e in fundEvents" :key="e.id" class="fft-evt-row">
+            <div v-for="e in fundEvents.slice(0, 5)" :key="e.id" class="fft-evt-row">
               <i :class="e.icon" :style="{ color: e.color, fontSize:'11px' }"></i>
               <span class="fft-evt-time">{{ e.time }}</span>
               <span class="fft-evt-text">{{ e.text }}</span>
@@ -194,16 +186,16 @@
           </TransitionGroup>
         </div>
 
-        <!-- AI Forecast -->
-        <div class="fft-panel-title" style="margin-top:12px"><i class="pi pi-microchip-ai" style="color:#42a5f5"></i> AI-прогноз фонда</div>
-        <div class="fft-ai-forecast">
-          <div class="fft-af-row"><span>NAV 2026:</span><b style="color:#4caf50">{{ fmtM(nav * 1.18) }}</b></div>
-          <div class="fft-af-row"><span>NAV 2027:</span><b style="color:#66bb6a">{{ fmtM(nav * 1.42) }}</b></div>
-          <div class="fft-af-row"><span>IRR (прогноз):</span><b style="color:#7e57c2">{{ forecastIRR }}%</b></div>
-          <div class="fft-af-row"><span>DPI к 2028:</span><b style="color:#ffa726">{{ forecastDPI }}x</b></div>
-          <div class="fft-af-verdict" :style="{ color: fundGradeColor }">
-            <i class="pi pi-flag"></i> {{ aiVerdict }}
+        <!-- AI Forecast (compact inline) -->
+        <div class="fft-ai-forecast-compact">
+          <div class="fft-af-title"><i class="pi pi-microchip-ai" style="color:#42a5f5;font-size:11px"></i> AI-прогноз</div>
+          <div class="fft-afc-grid">
+            <div class="fft-afc-item"><span>NAV 2026</span><b style="color:#4caf50">{{ fmtM(nav * 1.18) }}</b></div>
+            <div class="fft-afc-item"><span>NAV 2027</span><b style="color:#66bb6a">{{ fmtM(nav * 1.42) }}</b></div>
+            <div class="fft-afc-item"><span>IRR</span><b style="color:#7e57c2">{{ forecastIRR }}%</b></div>
+            <div class="fft-afc-item"><span>DPI</span><b style="color:#ffa726">{{ forecastDPI }}x</b></div>
           </div>
+          <div class="fft-af-verdict" :style="{ color: fundGradeColor }">{{ aiVerdict }}</div>
         </div>
       </div>
     </div>
@@ -222,6 +214,10 @@ import { useEventStore } from '@/stores/eventStore.js'
 const $router = useRouter()
 const eventStore = useEventStore()
 const FUND_ID = 'fst-nti'
+
+// ── UI toggles ────────────────────────────────────────────────
+const showFlows = ref(false)
+const showRisks = ref(false)
 
 // ── Temporal Replay (#187) ────────────────────────────────────
 const replayEnabled = ref(false)
@@ -515,13 +511,13 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fft-header-left { min-width: 180px }
 .fft-header-center { flex: 1 }
 .fft-header-right { display: flex; gap: 6px; align-items: center }
-.fft-logo { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600 }
-.fft-updated { font-size: 11px; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 4px; margin-top: 3px }
+.fft-logo { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600 }
+.fft-updated { font-size: 10px; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 4px; margin-top: 2px }
 
-.fft-kpi-bar { display: flex; gap: 20px; justify-content: center }
+.fft-kpi-bar { display: flex; gap: 16px; justify-content: center }
 .fft-top-kpi { display: flex; flex-direction: column; align-items: center }
-.fft-top-kpi-val { font-size: 16px; font-weight: 700 }
-.fft-top-kpi-label { font-size: 10px; color: var(--p-text-muted-color); text-transform: uppercase }
+.fft-top-kpi-val { font-size: 14px; font-weight: 700 }
+.fft-top-kpi-label { font-size: 9px; color: var(--p-text-muted-color); text-transform: uppercase }
 
 .fft-main { display: grid; grid-template-columns: 260px 1fr 280px; flex: 1; overflow: hidden }
 .fft-col { padding: 12px; overflow-y: auto; border-right: 1px solid var(--p-content-border-color) }
@@ -566,10 +562,17 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 
 /* Subfunds */
 .fft-subfunds { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px }
-.fft-subfund { background: var(--surface-card); border-radius: 8px; padding: 8px; }
-.fft-sf-header { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 4px }
-.fft-sf-budget { font-size: 12px; font-weight: 600 }
-.fft-sf-companies { font-size: 10px; color: var(--p-text-muted-color); margin-top: 4px }
+.fft-subfund {
+  background: var(--p-surface-card);
+  border-radius: 10px; padding: 10px 12px;
+  border: 1px solid var(--p-content-border-color);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s;
+}
+.fft-subfund:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.14); }
+.fft-sf-header { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; margin-bottom: 5px }
+.fft-sf-budget { font-size: 13px; font-weight: 700; color: var(--p-text-color); }
+.fft-sf-companies { font-size: 10px; color: var(--p-text-muted-color); margin-top: 5px }
 
 /* Health matrix */
 .fft-health-matrix { display: flex; flex-wrap: wrap; gap: 4px }
@@ -598,10 +601,17 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fft-evt-enter-active { transition: all 0.3s }
 .fft-evt-enter-from { opacity: 0; transform: translateY(-8px) }
 
-/* AI Forecast */
-.fft-ai-forecast { background: var(--p-surface-section); border-radius: 8px; padding: 10px }
-.fft-af-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px }
-.fft-af-verdict { font-size: 11px; margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: color-mix(in srgb, var(--p-primary-color) 10%, transparent); display: flex; align-items: center; gap: 5px; line-height: 1.4 }
+/* AI Forecast compact */
+.fft-ai-forecast-compact { margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: var(--p-surface-section); }
+.fft-af-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--p-text-muted-color); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+.fft-afc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; margin-bottom: 6px; }
+.fft-afc-item { display: flex; flex-direction: column; }
+.fft-afc-item span { font-size: 10px; color: var(--p-text-muted-color); }
+.fft-afc-item b { font-size: 13px; }
+.fft-af-verdict { font-size: 11px; padding: 5px 8px; border-radius: 6px; background: color-mix(in srgb, var(--p-primary-color) 10%, transparent); line-height: 1.4; }
+/* Panel title toggle */
+.fft-panel-title--toggle { cursor: pointer; user-select: none; }
+.fft-panel-title--toggle:hover { color: var(--p-text-color); }
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {
@@ -614,10 +624,6 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   .fft-sidebar, .fft-detail { max-height: 40vh; overflow-y: auto; border: none; border-bottom: 1px solid var(--surface-border); }
   .fft-col { border-right: none; border-bottom: 1px solid var(--surface-border); }
   .fft-col:last-child { border-bottom: none; }
-  /* Health matrix: larger cells on mobile */
-  .fft-health-matrix { gap: 6px; }
-  .fft-hm-cell { min-width: 56px; padding: 6px 10px; }
-  .fft-hm-val { font-size: 16px; }
   /* Header buttons: icon-only */
   .fft-header-right .p-button .p-button-label { display: none; }
   .fft-header-right .p-button .p-button-icon { margin-right: 0; }
