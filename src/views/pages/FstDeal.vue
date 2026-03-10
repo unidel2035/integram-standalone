@@ -2,84 +2,61 @@
   <FstPageLayout
     title="Управление сделкой"
     subtitle="SPV, транши, Term Sheet и финансовая модель"
+    :live="false"
+    icon="pi pi-file-edit"
   >
-    <!-- Header -->
-    <template #header>
-      <div class="fst-deal-header-left">
-        <div class="fst-deal-logo">
-          <i class="pi pi-file-edit" style="color:var(--fst-brand);font-size:20px"></i>
-          <span>ФСТ НТИ · <b>Доведение сделки</b></span>
-          <Tag :value="dealStatus" :severity="dealStatusSeverity" style="font-size:11px" />
-        </div>
-        <div class="fst-deal-sub">Смарт-контракт · SPV · Транши · Term Sheet</div>
-      </div>
-      <div class="fst-deal-header-right">
-        <LearnTooltip
-          label="Сохранить сделку"
-          what="Сохраняет все параметры сделки: условия инвестиции, структуру SPV, транши и KPI"
-          when="После заполнения или изменения параметров сделки"
-          :terms="['SPV', 'Транши', 'KPI', 'Term Sheet']"
-          hotkey="Ctrl+S"
-        >
-          <Button label="Сохранить" icon="pi pi-save" size="small" severity="success" @click="saveDeal" :loading="saving" />
-        </LearnTooltip>
-        <LearnTooltip
-          label="Генерация Term Sheet"
-          what="Генерирует юридический документ Term Sheet на основе заполненных параметров сделки"
-          when="Когда все ключевые условия сделки согласованы и готовы к оформлению"
-          :terms="['Term Sheet', 'Юридическая документация', 'Условия сделки']"
-        >
-          <Button label="Term Sheet" icon="pi pi-file-pdf" size="small" severity="secondary" @click="generateTermSheet" :loading="generatingTS" />
-        </LearnTooltip>
-        <LearnTooltip
-          label="Вернуться в ФСТ"
-          what="Переход на главную страницу хаба ФСТ НТИ"
-          when="Для навигации к обзору всех модулей фонда"
-          :terms="['ФСТ НТИ', 'Хаб модулей']"
-        >
-          <Button icon="pi pi-home" label="ФСТ" severity="secondary" size="small" text @click="$router.push('/fst')" />
-        </LearnTooltip>
-        <LearnTooltip
-          label="Вернуться в Инвесткомитет"
-          what="Переход к странице инвесткомитета для оценки заявок"
-          when="Для запуска новой сессии оценки проектов"
-          :terms="['Инвесткомитет', 'AI-агенты']"
-        >
-          <Button icon="pi pi-arrow-left" label="ИК" severity="secondary" size="small" text @click="$router.push('/fst-committee')" />
-        </LearnTooltip>
-        <Button icon="pi pi-question-circle" severity="secondary" size="small" text @click="toggleHelp" title="Помощь по странице" />
-      </div>
+    <template #actions>
+      <Tag :value="dealStatus" :severity="dealStatusSeverity" />
+      <LearnTooltip
+        label="Сохранить сделку"
+        what="Сохраняет все параметры сделки: условия инвестиции, структуру SPV, транши и KPI"
+        when="После заполнения или изменения параметров сделки"
+        :terms="['SPV', 'Транши', 'KPI', 'Term Sheet']"
+        hotkey="Ctrl+S"
+      >
+        <Button label="Сохранить" icon="pi pi-save" size="small" severity="success" @click="saveDeal" :loading="saving" />
+      </LearnTooltip>
+      <LearnTooltip
+        label="Генерация Term Sheet"
+        what="Генерирует юридический документ Term Sheet на основе заполненных параметров сделки"
+        when="Когда все ключевые условия сделки согласованы и готовы к оформлению"
+        :terms="['Term Sheet', 'Юридическая документация', 'Условия сделки']"
+      >
+        <Button label="Term Sheet" icon="pi pi-file-pdf" size="small" severity="secondary" @click="generateTermSheet" :loading="generatingTS" />
+      </LearnTooltip>
+      <Button icon="pi pi-arrow-left" label="ИК" severity="secondary" size="small" text @click="$router.push('/fst-committee')" />
+      <Button icon="pi pi-question-circle" severity="secondary" size="small" text @click="toggleHelp" />
     </template>
 
     <!-- ─── Metrics strip ─── -->
     <div class="fst-deal-metrics fst-metrics-strip">
       <div class="fst-metric-item">
-        <i class="pi pi-dollar fst-metric-item-icon" style="color:var(--fst-green)"></i>
+        <i class="pi pi-dollar fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ deal.totalAmount }} млн</div>
         <div class="fst-metric-item-label">Сумма</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-percentage fst-metric-item-icon" style="color:var(--fst-blue)"></i>
+        <i class="pi pi-percentage fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ deal.type === 'equity' ? deal.equityShare + '%' : deal.type === 'cln' ? deal.clnRate + '%' : '—' }}</div>
         <div class="fst-metric-item-label">{{ deal.type === 'equity' ? 'Доля' : deal.type === 'cln' ? 'Ставка CLN' : 'Тип' }}</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-building fst-metric-item-icon" style="color:var(--fst-purple)"></i>
+        <i class="pi pi-building fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ deal.type === 'equity' ? deal.preMoney + ' млн' : '—' }}</div>
         <div class="fst-metric-item-label">Пре-мани</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-calendar fst-metric-item-icon" :style="{ color: remainingColor }"></i>
+        <i class="pi pi-calendar fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ deal.tranches.length }}</div>
         <div class="fst-metric-item-label">Транши</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-clock fst-metric-item-icon" style="color:var(--fst-cyan)"></i>
+        <i class="pi pi-clock fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ deal.termMonths }} мес</div>
         <div class="fst-metric-item-label">Горизонт</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-chart-line fst-metric-item-icon" style="color:var(--fst-brand)"></i>
+        <i class="pi pi-chart-line fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ aiMetrics[0].value }}</div>
         <div class="fst-metric-item-label">IRR прогноз</div>
       </div>
@@ -235,24 +212,24 @@
             <div class="fst-form-row">
               <div class="fst-form-group">
                 <label>Сумма (млн ₽)</label>
-                <InputNumber v-model="tr.amount" :min="1" :max="200" suffix=" млн ₽" class="fst-input" style="font-size:13px" />
+                <InputNumber v-model="tr.amount" :min="1" :max="200" suffix=" млн ₽" class="fst-input" />
               </div>
               <div class="fst-form-group">
                 <label>Дата / Условие</label>
-                <Select v-model="tr.triggerType" :options="triggerTypes" optionLabel="l" optionValue="v" class="fst-input" style="font-size:13px" />
+                <Select v-model="tr.triggerType" :options="triggerTypes" optionLabel="l" optionValue="v" class="fst-input" />
               </div>
             </div>
             <div class="fst-form-group" v-if="tr.triggerType === 'kpi'">
               <label>KPI-триггер</label>
-              <InputText v-model="tr.kpiDesc" placeholder="TRL ≥ 7, Выручка ≥ 50 млн ₽" class="fst-input" style="font-size:13px" />
+              <InputText v-model="tr.kpiDesc" placeholder="TRL ≥ 7, Выручка ≥ 50 млн ₽" class="fst-input" />
             </div>
             <div class="fst-form-group" v-if="tr.triggerType === 'date'">
               <label>Дата выплаты</label>
-              <DatePicker v-model="tr.date" dateFormat="dd.mm.yy" class="fst-input" style="font-size:13px" />
+              <DatePicker v-model="tr.date" dateFormat="dd.mm.yy" class="fst-input" />
             </div>
             <div class="fst-tranche-progress">
               <span style="font-size:11px;color:var(--p-text-muted-color)">Статус исполнения:</span>
-              <Select v-model="tr.status" :options="trancheStatuses" size="small" class="fst-input" style="font-size:12px;width:140px" />
+              <Select v-model="tr.status" :options="trancheStatuses" size="small" class="fst-input" style="width:140px" />
             </div>
           </div>
 
@@ -827,56 +804,22 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.fst-deal-root {
-  background: var(--p-surface-ground);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  font-family: var(--p-font-family);
-  overflow-x: hidden;
-}
-
-/* Header */
-.fst-deal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: transparent;
-  border-bottom: 1px solid var(--p-content-border-color);
-  flex-shrink: 0;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.fst-deal-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  color: var(--p-text-color);
-}
-.fst-deal-sub {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-  margin-top: 2px;
-}
-.fst-deal-header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* Metrics flush to body edges */
+.fst-deal-metrics {
+  margin: -20px -20px 0;
 }
 
 /* Ontology bar */
 .fst-deal-ont-bar {
-  padding: 0 12px 12px;
+  padding: 0 0 12px;
 }
 
 /* Main Grid */
 .fst-deal-main {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-  padding: 12px;
+  gap: 16px;
+  padding-top: 16px;
   flex: 1;
   overflow: auto;
 }
@@ -885,20 +828,22 @@ onMounted(async () => {
 .fst-deal-panel {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 8px;
-  padding: 14px;
-  margin-bottom: 12px;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
 }
 .fst-deal-panel:last-child { margin-bottom: 0; }
 .fst-deal-panel-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--p-text-color);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  font-size: var(--fst-section-label-size);
+  font-weight: 700;
+  color: var(--p-text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 
@@ -1091,7 +1036,7 @@ onMounted(async () => {
   justify-content: center;
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 8px;
+  border-radius: 14px;
 }
 
 /* Responsive */
@@ -1128,10 +1073,10 @@ onMounted(async () => {
 
 /* FinModel Section */
 .fst-deal-finmodel-section {
-  margin: 0 12px 16px;
+  margin: 0 0 16px;
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 8px;
+  border-radius: 14px;
   overflow: hidden;
   max-width: 100%;
   box-sizing: border-box;
