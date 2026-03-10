@@ -1,11 +1,18 @@
 <template>
   <FstPageLayout title="Аудит суверенности 9D" subtitle="Комплексная оценка технологической независимости по 9 измерениям">
     <template #actions>
-      <select v-model="selectedCo" class="sv-select">
-          <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
-        </select>
-        <button class="sv-btn primary" @click="generateReport">Сформировать отчёт</button>
+      <Select v-model="selectedCo" :options="companies" optionLabel="name" optionValue="id" size="small" />
+      <Button icon="pi pi-print" label="Сформировать отчёт" size="small" @click="generateReport" />
     </template>
+
+    <!-- Метрики -->
+    <div class="fst-metrics-strip">
+      <div v-for="m in svMetrics" :key="m.label" class="fst-metric-item">
+        <i :class="m.icon" class="fst-metric-item-icon" :style="{ color: m.color }"></i>
+        <div class="fst-metric-item-val">{{ m.val }}</div>
+        <div class="fst-metric-item-label">{{ m.label }}</div>
+      </div>
+    </div>
 
     <!-- Радарный итог -->
     <div class="sv-summary-bar">
@@ -107,6 +114,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
 
 const selectedCo = ref('agrodr')
 const companies = ref([
@@ -269,6 +278,17 @@ const roadmapSteps = ref([
   { phase: 'Q1 2027', title: 'Шифрование ГОСТ + offline-режим связи',      dims: ['D3', 'D4'], scoreGain: 4, deadline: 'Март 2027' }
 ])
 
+const criticalCount = computed(() => dimensions.value.filter(d => d.score <= 3).length)
+
+const svMetrics = computed(() => [
+  { icon: 'pi pi-star',    color: totalScore.value >= 70 ? 'var(--fst-green)' : totalScore.value >= 50 ? 'var(--fst-brand)' : 'var(--fst-red)', val: totalScore.value + '/100', label: 'Общий балл' },
+  { icon: 'pi pi-shield',  color: 'var(--p-primary-color)', val: verdict.value, label: 'Вердикт' },
+  { icon: 'pi pi-exclamation-triangle', color: criticalCount.value > 0 ? 'var(--fst-red)' : 'var(--fst-green)', val: criticalCount.value, label: 'Критич. измерений' },
+  { icon: 'pi pi-building', color: 'var(--fst-blue)',   val: companies.value.length, label: 'Компаний' },
+  { icon: 'pi pi-map',      color: 'var(--fst-cyan)',   val: roadmapSteps.value.length, label: 'Шагов roadmap' },
+  { icon: 'pi pi-book',     color: 'var(--fst-purple)', val: regulatoryReqs.value.length, label: 'НПА требований' }
+])
+
 function recalc() {}
 function generateReport() { window.print() }
 </script>
@@ -279,33 +299,30 @@ function generateReport() { window.print() }
 .sv-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .sv-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .sv-actions { display: flex; gap: 8px; align-items: center; }
-.sv-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.sv-btn.primary { background: var(--p-primary-color); color: #fff; }
-.sv-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
 .sv-summary-bar { display: flex; align-items: center; gap: 20px; background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 16px 20px; flex-wrap: wrap; }
 .sv-total-score { text-align: center; min-width: 90px; }
 .ts-val { font-size: 2.5rem; font-weight: 900; }
 .ts-lbl { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .ts-verdict { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-top: 4px; display: inline-block; }
-.score-high .ts-val { color: #66bb6a; }
-.score-high .ts-verdict { background: #66bb6a22; color: #66bb6a; }
-.score-mid  .ts-val { color: #ff9800; }
-.score-mid  .ts-verdict { background: #ff980022; color: #ff9800; }
-.score-low  .ts-val { color: #ef5350; }
-.score-low  .ts-verdict { background: #ef535022; color: #ef5350; }
+.score-high .ts-val { color: var(--fst-green); }
+.score-high .ts-verdict { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.score-mid  .ts-val { color: var(--fst-brand); }
+.score-mid  .ts-verdict { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
+.score-low  .ts-val { color: var(--fst-red); }
+.score-low  .ts-verdict { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 
 .sv-dims-overview { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
 .dim-chip { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .dim-chip-score { font-size: 0.78rem; font-weight: 700; padding: 3px 6px; border-radius: 4px; }
-.dim-chip-score.score-high { background: #66bb6a22; color: #66bb6a; }
-.dim-chip-score.score-mid  { background: #ff980022; color: #ff9800; }
-.dim-chip-score.score-low  { background: #ef535022; color: #ef5350; }
+.dim-chip-score.score-high { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.dim-chip-score.score-mid  { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
+.dim-chip-score.score-low  { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 .dim-chip-name { font-size: 0.65rem; color: var(--p-text-muted-color); }
 
 .sv-dims-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
 .dim-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-.dim-card.critical { border-color: #ef5350; }
+.dim-card.critical { border-color: var(--fst-red); }
 .dim-header { display: flex; align-items: flex-start; gap: 10px; }
 .dim-num { font-size: 1rem; font-weight: 900; color: var(--p-primary-color); min-width: 28px; }
 .dim-info { flex: 1; }
@@ -314,15 +331,15 @@ function generateReport() { window.print() }
 .dim-score-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 80px; }
 .dim-slider { width: 70px; accent-color: var(--p-primary-color); }
 .dim-score { font-size: 0.85rem; font-weight: 700; }
-.dim-score.score-high { color: #66bb6a; }
-.dim-score.score-mid  { color: #ff9800; }
-.dim-score.score-low  { color: #ef5350; }
+.dim-score.score-high { color: var(--fst-green); }
+.dim-score.score-mid  { color: var(--fst-brand); }
+.dim-score.score-low  { color: var(--fst-red); }
 
 .dim-criteria { display: flex; flex-direction: column; gap: 5px; }
 .criterion { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--p-text-color); }
 .criterion input { accent-color: var(--p-primary-color); }
 .crit-weight { margin-left: auto; font-size: 0.68rem; color: var(--p-text-muted-color); white-space: nowrap; }
-.dim-risk-alert { background: #ef535018; border: 1px solid #ef535044; border-radius: 6px; padding: 6px 10px; font-size: 0.75rem; color: #ef5350; }
+.dim-risk-alert { background: color-mix(in srgb, var(--fst-red) 8%, transparent); border: 1px solid color-mix(in srgb, var(--fst-red) 25%, transparent); border-radius: 6px; padding: 6px 10px; font-size: 0.75rem; color: var(--fst-red); }
 .dim-recommendation { background: var(--surface-ground); border-radius: 6px; padding: 8px 10px; }
 .dr-title { font-size: 0.68rem; color: var(--p-text-muted-color); font-weight: 700; margin-bottom: 2px; }
 .dr-text  { font-size: 0.75rem; color: var(--p-text-color); }
@@ -333,10 +350,10 @@ function generateReport() { window.print() }
 .sv-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.75rem; }
 .sv-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
 .npa-code { font-weight: 600; color: var(--p-primary-color); }
-.num { text-align: right; } .green { color: #66bb6a; } .red { color: #ef5350; }
+.num { text-align: right; } .green { color: var(--fst-green); } .red { color: var(--fst-red); }
 .req-status { padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; }
-.req-status.pass { background: #66bb6a22; color: #66bb6a; }
-.req-status.fail { background: #ef535022; color: #ef5350; }
+.req-status.pass { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.req-status.fail { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 
 .rm-steps { display: flex; flex-direction: column; gap: 8px; }
 .rm-step { display: flex; align-items: center; gap: 14px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 12px; }
@@ -344,7 +361,7 @@ function generateReport() { window.print() }
 .rm-content { flex: 1; }
 .rm-title { font-weight: 600; font-size: 0.85rem; color: var(--p-text-color); }
 .rm-dims { font-size: 0.72rem; color: var(--p-text-muted-color); }
-.rm-impact { font-size: 0.72rem; color: #66bb6a; margin-top: 2px; }
+.rm-impact { font-size: 0.72rem; color: var(--fst-green); margin-top: 2px; }
 .rm-deadline { font-size: 0.72rem; color: var(--p-text-muted-color); white-space: nowrap; }
 
 /* ── Mobile adaptive ── */
