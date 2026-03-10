@@ -1,49 +1,42 @@
 <template>
-  <FstPageLayout title="🔄 Secondary Market" subtitle="Вторичные сделки: продажа доли фонда другим инвесторам">
+  <FstPageLayout title="Secondary Market" subtitle="Вторичные сделки: продажа доли фонда другим инвесторам">
     <template #actions>
-      <select v-model="selectedCompany" class="sec-select">
-          <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
-        </select>
-        <button class="sec-btn secondary" @click="showNetworkDialog = true">
-          <i class="pi pi-share-alt"></i> Сеть покупателей
-        </button>
-        <button class="sec-btn primary" @click="openSellDialog">
-          <i class="pi pi-dollar"></i> Продать долю
-        </button>
+      <Select v-model="selectedCompany" :options="companies" optionLabel="name" optionValue="id" size="small" />
+      <Button icon="pi pi-share-alt" label="Сеть покупателей" size="small" severity="secondary" @click="showNetworkDialog = true" />
+      <Button icon="pi pi-dollar" label="Продать долю" size="small" severity="success" @click="openSellDialog" />
     </template>
 
-    <!-- Сводка текущей позиции -->
-    <div class="sec-position">
-      <h2>Позиция ФСТ НТИ в {{ currentCompanyName }}</h2>
-      <div class="sec-pos-cards">
-        <div class="sec-pos-card">
-          <div class="sec-pos-icon"><i class="pi pi-percentage"></i></div>
-          <div class="sec-pos-data">
-            <div class="sec-pos-val">{{ fstPosition.fdPct }}%</div>
-            <div class="sec-pos-lbl">Доля FD</div>
-          </div>
-        </div>
-        <div class="sec-pos-card">
-          <div class="sec-pos-icon"><i class="pi pi-wallet"></i></div>
-          <div class="sec-pos-data">
-            <div class="sec-pos-val">{{ fstPosition.invested }} млн ₽</div>
-            <div class="sec-pos-lbl">Инвестировано</div>
-          </div>
-        </div>
-        <div class="sec-pos-card">
-          <div class="sec-pos-icon"><i class="pi pi-chart-line"></i></div>
-          <div class="sec-pos-data">
-            <div class="sec-pos-val">{{ fstPosition.currentValue }} млн ₽</div>
-            <div class="sec-pos-lbl">Текущая стоимость</div>
-          </div>
-        </div>
-        <div class="sec-pos-card">
-          <div class="sec-pos-icon"><i class="pi pi-arrows-h"></i></div>
-          <div class="sec-pos-data">
-            <div class="sec-pos-val">{{ fstPosition.multiple }}x</div>
-            <div class="sec-pos-lbl">Money Multiple</div>
-          </div>
-        </div>
+    <!-- ─── Metrics strip ─── -->
+    <div class="sec-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-percentage fst-metric-item-icon" style="color:var(--fst-blue)"></i>
+        <div class="fst-metric-item-val">{{ fstPosition.fdPct }}%</div>
+        <div class="fst-metric-item-label">Доля FD · {{ currentCompanyName }}</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-wallet fst-metric-item-icon" style="color:var(--fst-brand)"></i>
+        <div class="fst-metric-item-val">{{ fstPosition.invested }} млн</div>
+        <div class="fst-metric-item-label">Инвестировано</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-chart-line fst-metric-item-icon" style="color:var(--fst-green)"></i>
+        <div class="fst-metric-item-val">{{ fstPosition.currentValue }} млн</div>
+        <div class="fst-metric-item-label">Текущая стоимость</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-arrows-h fst-metric-item-icon" :style="{ color: fstPosition.multiple >= 1.5 ? 'var(--fst-green)' : fstPosition.multiple >= 1.2 ? 'var(--fst-brand)' : 'var(--fst-red)' }"></i>
+        <div class="fst-metric-item-val">{{ fstPosition.multiple }}x</div>
+        <div class="fst-metric-item-label">Money Multiple</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-list fst-metric-item-icon" :style="{ color: offers.length > 0 ? 'var(--fst-cyan)' : 'var(--p-text-muted-color)' }"></i>
+        <div class="fst-metric-item-val">{{ offers.length }}</div>
+        <div class="fst-metric-item-label">Предложений</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-users fst-metric-item-icon" style="color:var(--fst-purple)"></i>
+        <div class="fst-metric-item-val">{{ networkBuyersCount }}</div>
+        <div class="fst-metric-item-label">Покупателей</div>
       </div>
     </div>
 
@@ -72,7 +65,7 @@
       <div v-if="filteredOffers.length === 0" class="sec-empty">
         <i class="pi pi-inbox"></i>
         <p>Нет активных предложений</p>
-        <button class="sec-btn primary" @click="openSellDialog">Создать предложение</button>
+        <Button icon="pi pi-plus" label="Создать предложение" size="small" severity="success" @click="openSellDialog" />
       </div>
 
       <div v-else class="sec-offers-grid">
@@ -103,12 +96,8 @@
             </div>
           </div>
           <div class="sec-offer-actions">
-            <button class="sec-btn-sm secondary" @click="viewOfferDetails(offer)">
-              <i class="pi pi-eye"></i> Детали
-            </button>
-            <button class="sec-btn-sm primary" @click="viewBuyers(offer)">
-              <i class="pi pi-users"></i> Покупатели ({{ offer.interestedBuyers }})
-            </button>
+            <Button icon="pi pi-eye" label="Детали" size="small" severity="secondary" text @click="viewOfferDetails(offer)" />
+            <Button icon="pi pi-users" :label="`Покупатели (${offer.interestedBuyers})`" size="small" severity="info" text @click="viewBuyers(offer)" />
           </div>
         </div>
       </div>
@@ -240,8 +229,8 @@
             </div>
           </div>
           <div class="sec-buyer-actions">
-            <button class="sec-btn-sm secondary" @click="viewBuyerProfile(buyer)">Профиль</button>
-            <button class="sec-btn-sm primary" @click="sendOffer(buyer)">Отправить предложение</button>
+            <Button label="Профиль" size="small" severity="secondary" text @click="viewBuyerProfile(buyer)" />
+            <Button label="Отправить предложение" size="small" severity="success" text @click="sendOffer(buyer)" />
           </div>
         </div>
       </div>
@@ -320,10 +309,8 @@
         </div>
 
         <div class="modal-footer">
-          <button class="sec-btn secondary" @click="showSellDialog = false">Отмена</button>
-          <button class="sec-btn primary" @click="createSellOffer">
-            <i class="pi pi-check"></i> Создать предложение
-          </button>
+          <Button label="Отмена" size="small" severity="secondary" @click="showSellDialog = false" />
+          <Button icon="pi pi-check" label="Создать предложение" size="small" severity="success" @click="createSellOffer" />
         </div>
       </div>
     </div>
@@ -340,7 +327,7 @@
           <ul class="network-list">
             <li v-for="b in buyers.slice(0, 5)" :key="b.id">{{ b.name }} — {{ b.type }}</li>
           </ul>
-          <button class="sec-btn primary" @click="activeTab = 'network'; showNetworkDialog = false">Смотреть всех</button>
+          <Button icon="pi pi-users" label="Смотреть всех" size="small" severity="info" @click="activeTab = 'network'; showNetworkDialog = false" />
         </div>
       </div>
     </div>
@@ -351,6 +338,8 @@
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useRouter } from 'vue-router'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
 
 const router = useRouter()
 
@@ -500,12 +489,12 @@ const averageMultiple = computed(() => {
 
 // Buyers network
 const buyers = ref([
-  { id: 1, name: 'Ростех', type: 'Госкорпорация', fundSize: 500, portfolioCount: 120, focusAreas: ['БПЛА', 'Оборона'], color: '#3b82f6', initials: 'РТ' },
-  { id: 2, name: 'Роскосмос', type: 'Госкорпорация', fundSize: 350, portfolioCount: 80, focusAreas: ['Космос', 'БПЛА'], color: '#8b5cf6', initials: 'РК' },
-  { id: 3, name: 'ВЭБ.РФ', type: 'Корпорация', fundSize: 280, portfolioCount: 95, focusAreas: ['Инфраструктура', 'Агротех'], color: '#10b981', initials: 'ВЭБ' },
-  { id: 4, name: 'Сколково Ventures', type: 'Венчурный фонд', fundSize: 15, portfolioCount: 45, focusAreas: ['БПЛА', 'ИИ', 'Робототехника'], color: '#f59e0b', initials: 'СВ' },
-  { id: 5, name: 'RVC', type: 'Венчурный фонд', fundSize: 12, portfolioCount: 60, focusAreas: ['DeepTech', 'БПЛА'], color: '#ef4444', initials: 'РВК' },
-  { id: 6, name: 'Газпромбанк Invest', type: 'Стратег. инвестор', fundSize: 40, portfolioCount: 30, focusAreas: ['Энергетика', 'Индустрия'], color: '#06b6d4', initials: 'ГПБ' }
+  { id: 1, name: 'Ростех', type: 'Госкорпорация', fundSize: 500, portfolioCount: 120, focusAreas: ['БПЛА', 'Оборона'], color: 'var(--fst-blue)', initials: 'РТ' },
+  { id: 2, name: 'Роскосмос', type: 'Госкорпорация', fundSize: 350, portfolioCount: 80, focusAreas: ['Космос', 'БПЛА'], color: 'var(--fst-purple)', initials: 'РК' },
+  { id: 3, name: 'ВЭБ.РФ', type: 'Корпорация', fundSize: 280, portfolioCount: 95, focusAreas: ['Инфраструктура', 'Агротех'], color: 'var(--fst-green)', initials: 'ВЭБ' },
+  { id: 4, name: 'Сколково Ventures', type: 'Венчурный фонд', fundSize: 15, portfolioCount: 45, focusAreas: ['БПЛА', 'ИИ', 'Робототехника'], color: 'var(--fst-brand)', initials: 'СВ' },
+  { id: 5, name: 'RVC', type: 'Венчурный фонд', fundSize: 12, portfolioCount: 60, focusAreas: ['DeepTech', 'БПЛА'], color: 'var(--fst-red)', initials: 'РВК' },
+  { id: 6, name: 'Газпромбанк Invest', type: 'Стратег. инвестор', fundSize: 40, portfolioCount: 30, focusAreas: ['Энергетика', 'Индустрия'], color: 'var(--fst-cyan)', initials: 'ГПБ' }
 ])
 
 const networkBuyersCount = computed(() => buyers.value.length)
@@ -671,10 +660,10 @@ function sendOffer(buyer) {
 .sec-offer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .sec-offer-header h3 { margin: 0; font-size: 1rem; color: var(--p-text-color); }
 .sec-offer-badge { padding: 3px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
-.sec-offer-badge.status-active { background: #10b98122; color: #10b981; }
-.sec-offer-badge.status-pending { background: #f59e0b22; color: #f59e0b; }
-.sec-offer-badge.status-negotiation { background: #3b82f622; color: #3b82f6; }
-.sec-offer-badge.status-closed { background: #6b728022; color: #6b7280; }
+.sec-offer-badge.status-active { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.sec-offer-badge.status-pending { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
+.sec-offer-badge.status-negotiation { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
+.sec-offer-badge.status-closed { background: color-mix(in srgb, var(--p-text-muted-color) 12%, transparent); color: var(--p-text-muted-color); }
 .sec-offer-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .sec-offer-body { display: flex; flex-direction: column; gap: 8px; }
 .sec-offer-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
@@ -711,14 +700,14 @@ function sendOffer(buyer) {
 .sec-table td { padding: 12px 12px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
 .sec-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .sec-table .bold { font-weight: 700; }
-.sec-table .green { color: #10b981; }
-.sec-table .yellow { color: #f59e0b; }
-.sec-table .red { color: #ef4444; }
+.sec-table .green { color: var(--fst-green); }
+.sec-table .yellow { color: var(--fst-brand); }
+.sec-table .red { color: var(--fst-red); }
 
 .sec-badge { padding: 3px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: 600; }
-.sec-badge.status-completed { background: #10b98122; color: #10b981; }
-.sec-badge.status-pending { background: #f59e0b22; color: #f59e0b; }
-.sec-badge.status-cancelled { background: #ef444422; color: #ef4444; }
+.sec-badge.status-completed { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.sec-badge.status-pending { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
+.sec-badge.status-cancelled { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 
 .sec-history-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
 .sec-sum-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
