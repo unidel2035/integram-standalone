@@ -675,24 +675,25 @@
         <!-- Projects Table -->
         <div class="fst-setup-col fst-setup-col--projects">
           <div class="fst-project-table-header">
-            <div class="fst-section-title" style="padding-top:0; margin-bottom:0; border:none; flex:1">
-              <i class="pi pi-table" style="color:var(--p-primary-color)"></i>
-              Выберите проект
-              <span v-if="selectedProjectId" class="fst-selected-badge">
-                <i class="pi pi-check-circle"></i> Выбран
-              </span>
+            <div class="fst-proj-header-left">
+              <span class="fst-proj-header-label">Проект</span>
+              <Transition name="fade">
+                <span v-if="selectedProjectId" class="fst-selected-badge">
+                  <i class="pi pi-check-circle"></i> Выбран
+                </span>
+              </Transition>
             </div>
-            <IconField>
+            <IconField class="fst-proj-search-field">
               <InputIcon class="pi pi-search" />
-              <InputText v-model="projectFilter" placeholder="Поиск..." size="small" class="fst-project-search" />
+              <InputText v-model="projectFilter" placeholder="Поиск по названию, субфонду..." size="small" />
             </IconField>
-            <div class="fst-view-toggle">
-              <Button :icon="projectView === 'table' ? 'pi pi-table' : 'pi pi-th-large'"
+            <div class="fst-proj-header-actions">
+              <Button :icon="projectView === 'table' ? 'pi pi-th-large' : 'pi pi-list'"
                 size="small" text rounded
-                :title="projectView === 'table' ? 'Переключить на плитки' : 'Переключить на таблицу'"
+                :title="projectView === 'table' ? 'Плитки' : 'Таблица'"
                 @click="projectView = projectView === 'table' ? 'grid' : 'table'" />
+              <Button icon="pi pi-plus" size="small" text rounded title="Новая заявка" @click="newProjectDialog = true" />
             </div>
-            <Button icon="pi pi-plus" size="small" text rounded title="Новая заявка" @click="newProjectDialog = true" />
           </div>
 
           <DataTable
@@ -762,31 +763,28 @@
             <div
               v-for="p in filteredProjects" :key="p.id"
               :class="['fst-pcard2', { 'fst-pcard2--selected': p.id === selectedProjectId }]"
+              :style="{ '--card-accent': SUBFUNDS[p.subFund]?.color || '#667eea' }"
               @click="selectedProjectId = p.id"
             >
-              <div class="fst-pcard2-top">
-                <span class="fst-pcard2-subfund" :style="{ background: SUBFUNDS[p.subFund]?.color || '#667eea' }">
-                  {{ SUBFUNDS[p.subFund]?.shortName || p.subFund?.toUpperCase().slice(0,3) }}
-                </span>
-                <span class="fst-pcard2-stage">{{ p.stage }}</span>
-                <Button icon="pi pi-eye" text rounded size="small" class="fst-pcard2-eye"
-                  @click.stop="openProjectModal(p)" title="Детали" />
-              </div>
-              <div class="fst-pcard2-title">{{ p.title }}</div>
-              <div class="fst-pcard2-company">{{ p.company }}</div>
-              <div class="fst-pcard2-metrics">
-                <span class="fst-pcard2-metric">
-                  <span class="fst-pcard2-mlabel">TRL</span>
-                  <span class="fst-tbl-metric" :class="trlClass(p.trl)">{{ p.trl }}</span>
-                </span>
-                <span class="fst-pcard2-metric">
-                  <span class="fst-pcard2-mlabel">IRR</span>
-                  <span class="fst-tbl-metric" :class="irrClass(p.projectedIRR)">{{ (p.projectedIRR * 100).toFixed(0) }}%</span>
-                </span>
-                <span class="fst-pcard2-metric">
-                  <span class="fst-pcard2-mlabel">₽</span>
-                  <span class="fst-pcard2-amount">{{ p.requestedAmount ? (p.requestedAmount / 1e6).toFixed(0) + ' млн' : '—' }}</span>
-                </span>
+              <div class="fst-pcard2-body">
+                <div class="fst-pcard2-top">
+                  <span class="fst-pcard2-stage">{{ p.stage }}</span>
+                  <Button icon="pi pi-arrow-right" text rounded size="small" class="fst-pcard2-eye"
+                    @click.stop="openProjectModal(p)" title="Детали" />
+                </div>
+                <div class="fst-pcard2-title">{{ p.title }}</div>
+                <div v-if="p.company && p.company !== p.title" class="fst-pcard2-company">{{ p.company }}</div>
+                <div class="fst-pcard2-metrics">
+                  <span class="fst-pcard2-chip" :class="trlClass(p.trl)">
+                    TRL&nbsp;<strong>{{ p.trl }}</strong>
+                  </span>
+                  <span class="fst-pcard2-chip" :class="irrClass(p.projectedIRR)">
+                    IRR&nbsp;<strong>{{ (p.projectedIRR * 100).toFixed(0) }}%</strong>
+                  </span>
+                  <span v-if="p.requestedAmount" class="fst-pcard2-amount">
+                    {{ (p.requestedAmount / 1e6).toFixed(0) }} млн
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -3111,15 +3109,43 @@ onUnmounted(() => {
   text-transform: none;
   letter-spacing: 0;
 }
-/* ── Project DataTable ── */
+/* ── Project header ── */
 .fst-project-table-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 24px 10px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--p-content-border-color);
+  min-height: 48px;
 }
-.fst-project-search { width: 180px; font-size: 0.8125rem; }
+.fst-proj-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.fst-proj-header-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--p-text-muted-color);
+}
+.fst-proj-search-field {
+  flex: 1;
+}
+.fst-proj-search-field :deep(input) {
+  width: 100%;
+  font-size: 0.8125rem;
+}
+.fst-proj-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Project DataTable ── */
 .fst-project-table { flex: 1; }
 .fst-project-table .p-datatable-thead th {
   font-size: 0.6875rem !important;
@@ -3153,77 +3179,75 @@ onUnmounted(() => {
 .fst-tbl-title { font-size: 0.8125rem; font-weight: 600; color: var(--p-text-color); line-height: 1.3; }
 .fst-tbl-company { font-size: 0.7rem; color: var(--p-text-muted-color); margin-top: 1px; }
 .fst-tbl-amount { font-size: 0.8125rem; font-weight: 600; color: var(--p-text-color); white-space: nowrap; }
-.fst-tbl-metric {
-  font-size: 0.8125rem;
-  font-weight: 700;
-}
+.fst-tbl-metric { font-size: 0.8125rem; font-weight: 700; }
 .fst-tbl-metric.metric--good { color: var(--p-green-400); }
 .fst-tbl-metric.metric--warn { color: var(--p-orange-400); }
 .fst-tbl-metric.metric--bad  { color: var(--p-red-400); }
 .fst-tbl-detail-btn { opacity: 0; transition: opacity 0.15s; }
 .fst-project-table .p-datatable-tbody tr:hover .fst-tbl-detail-btn { opacity: 1; }
-.fst-view-toggle { display: flex; }
 
 /* ── Grid tile view ─────────────────────────────────────────── */
 .fst-project-grid-view {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px;
+  padding: 14px 16px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
   align-content: start;
 }
 .fst-pcard2 {
   position: relative;
   background: var(--p-content-background);
-  border: 1.5px solid var(--p-content-border-color);
-  border-radius: 12px;
-  padding: 14px;
+  border: 1px solid var(--p-content-border-color);
+  border-left: 3px solid var(--card-accent, var(--p-primary-color));
+  border-radius: 10px;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  overflow: hidden;
 }
 .fst-pcard2:hover {
-  border-color: color-mix(in srgb, var(--p-primary-color) 50%, transparent);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 3px 14px rgba(0,0,0,0.14);
   transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--card-accent, var(--p-primary-color)) 60%, var(--p-content-border-color));
+  border-left-color: var(--card-accent, var(--p-primary-color));
 }
 .fst-pcard2--selected {
-  border-color: var(--p-primary-color) !important;
-  background: color-mix(in srgb, var(--p-primary-color) 8%, var(--p-content-background)) !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--p-primary-color) 25%, transparent) !important;
+  border-color: var(--card-accent, var(--p-primary-color)) !important;
+  border-left-color: var(--card-accent, var(--p-primary-color)) !important;
+  background: color-mix(in srgb, var(--card-accent, var(--p-primary-color)) 7%, var(--p-content-background)) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--card-accent, var(--p-primary-color)) 30%, transparent) !important;
+}
+.fst-pcard2-body {
+  padding: 12px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 .fst-pcard2-top {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-.fst-pcard2-subfund {
-  font-size: 0.625rem;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
-  color: #fff;
-  white-space: nowrap;
+  margin-bottom: 2px;
 }
 .fst-pcard2-stage {
-  font-size: 0.625rem;
+  font-size: 0.6rem;
+  font-weight: 600;
   color: var(--p-text-muted-color);
   background: var(--p-surface-ground);
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
+  letter-spacing: 0.03em;
 }
 .fst-pcard2-eye {
   margin-left: auto;
   opacity: 0;
   transition: opacity 0.15s;
+  flex-shrink: 0;
 }
-.fst-pcard2:hover .fst-pcard2-eye { opacity: 1; }
-.fst-pcard2--selected .fst-pcard2-eye { opacity: 1; }
+.fst-pcard2:hover .fst-pcard2-eye { opacity: 0.7; }
+.fst-pcard2--selected .fst-pcard2-eye { opacity: 0.7; }
 .fst-pcard2-title {
   font-size: 0.8125rem;
   font-weight: 600;
@@ -3237,34 +3261,42 @@ onUnmounted(() => {
 .fst-pcard2-company {
   font-size: 0.6875rem;
   color: var(--p-text-muted-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .fst-pcard2-metrics {
   display: flex;
-  gap: 10px;
-  margin-top: 4px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
   padding-top: 8px;
   border-top: 1px solid var(--p-content-border-color);
 }
-.fst-pcard2-metric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  flex: 1;
-}
-.fst-pcard2-mlabel {
-  font-size: 0.5625rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--p-text-muted-color);
-}
-.fst-pcard2-amount {
-  font-size: 0.75rem;
+.fst-pcard2-chip {
+  font-size: 0.6875rem;
   font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--p-surface-ground);
+  color: var(--p-text-muted-color);
+  white-space: nowrap;
+}
+.fst-pcard2-chip.metric--good strong { color: var(--p-green-400); }
+.fst-pcard2-chip.metric--warn strong { color: var(--p-orange-400); }
+.fst-pcard2-chip.metric--bad  strong { color: var(--p-red-400); }
+.fst-pcard2-chip strong { font-weight: 700; }
+.fst-pcard2-amount {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: var(--p-text-color);
   white-space: nowrap;
 }
+
+/* fade transition for selected badge */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
 /* ── Project Detail Modal ─────────────────────────────────── */
 .fst-pmodal { display: flex; flex-direction: column; gap: 16px; }
