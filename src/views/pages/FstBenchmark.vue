@@ -1,14 +1,18 @@
 <template>
   <FstPageLayout title="Бенчмаркинг портфеля" subtitle="Сравнение с отраслевыми мультипликаторами и пирами">
     <template #actions>
-      <select v-model="sector" class="bm-select">
-          <option value="bas">БАС / БПЛА</option>
-          <option value="robo">Робототехника</option>
-          <option value="medtech">MedTech</option>
-          <option value="agritech">AgriTech</option>
-        </select>
-        <button class="bm-btn secondary" @click="exportBenchmark">Экспорт</button>
+      <Select v-model="sector" :options="sectorOptions" optionLabel="label" optionValue="value" size="small" />
+      <Button icon="pi pi-download" label="Экспорт" size="small" severity="secondary" @click="exportBenchmark" />
     </template>
+
+    <!-- Метрики -->
+    <div class="fst-metrics-strip">
+      <div v-for="m in bmMetrics" :key="m.label" class="fst-metric-item">
+        <i :class="m.icon" class="fst-metric-item-icon" :style="{ color: m.color }"></i>
+        <div class="fst-metric-item-val">{{ m.val }}</div>
+        <div class="fst-metric-item-label">{{ m.label }}</div>
+      </div>
+    </div>
 
     <!-- Мультипликаторы рынка -->
     <div class="bm-section">
@@ -236,9 +240,27 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
 
 const sector = ref('bas')
 const sectorLabel = computed(() => ({ bas: 'БАС / БПЛА', robo: 'Робототехника', medtech: 'MedTech', agritech: 'AgriTech' })[sector.value])
+
+const sectorOptions = [
+  { label: 'БАС / БПЛА', value: 'bas' },
+  { label: 'Робототехника', value: 'robo' },
+  { label: 'MedTech', value: 'medtech' },
+  { label: 'AgriTech', value: 'agritech' }
+]
+
+const bmMetrics = computed(() => [
+  { icon: 'pi pi-building', color: 'var(--fst-blue)', val: portfolioCompanies.value.length, label: 'Компаний' },
+  { icon: 'pi pi-chart-line', color: 'var(--fst-purple)', val: publicPeers.value.length, label: 'Публичных пиров' },
+  { icon: 'pi pi-percentage', color: 'var(--fst-brand)', val: '8.2x', label: 'EV/Rev медиана' },
+  { icon: 'pi pi-trending-up', color: 'var(--fst-green)', val: '78%', label: 'ARR Growth порт.' },
+  { icon: 'pi pi-star', color: 'var(--fst-cyan)', val: '42', label: 'Rule of 40 порт.' },
+  { icon: 'pi pi-wallet', color: 'var(--fst-red)', val: '22.7%', label: 'Net IRR фонда' }
+])
 
 const radarCanvas = ref(null)
 const trendCanvas = ref(null)
@@ -555,25 +577,25 @@ function initTrendChart() {
 .mult-lbl { font-size: 0.68rem; color: var(--p-text-muted-color); }
 .mult-range { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .range-bar { flex: 1; height: 6px; background: var(--surface-border); border-radius: 3px; position: relative; }
-.range-fill { position: absolute; height: 100%; background: var(--p-primary-100, #c7d2fe); border-radius: 3px; }
+.range-fill { position: absolute; height: 100%; background: color-mix(in srgb, var(--p-primary-color) 25%, transparent); border-radius: 3px; }
 .range-dot { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--p-primary-color); top: -2px; transform: translateX(-50%); }
 .range-low, .range-high { font-size: 0.68rem; color: var(--p-text-muted-color); white-space: nowrap; }
 .mult-portfolio { font-size: 0.78rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; text-align: center; }
-.pm-above { background: #66bb6a22; color: #66bb6a; }
-.pm-below { background: #ef535022; color: #ef5350; }
+.pm-above { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.pm-below { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 
 .bm-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 .bm-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; font-weight: 600; }
 .bm-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
 .peer-header td { background: var(--surface-ground); color: var(--p-text-muted-color); font-size: 0.72rem; font-style: italic; padding: 6px 10px; }
 .peer-median { background: var(--surface-ground); }
-.portfolio-row { background: rgba(99, 102, 241, 0.03); }
+.portfolio-row { background: color-mix(in srgb, var(--p-primary-color) 3%, transparent); }
 .peer-name { font-weight: 600; }
 .peer-name.fst { color: var(--p-primary-color); }
 .peer-type { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .bold { font-weight: 700; }
-.green { color: #66bb6a; } .red { color: #ef5350; } .orange { color: #ff9800; } .gray { color: var(--p-text-muted-color); }
+.green { color: var(--fst-green); } .red { color: var(--fst-red); } .orange { color: var(--fst-brand); } .gray { color: var(--p-text-muted-color); }
 
 .fund-bench-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 768px) {
@@ -591,10 +613,10 @@ function initTrendChart() {
 .fb-bar-track { flex: 1; height: 8px; background: var(--surface-border); border-radius: 4px; overflow: hidden; }
 .fb-bar { height: 100%; border-radius: 4px; transition: width 0.4s; }
 .fb-bar.fst   { background: var(--p-primary-color); }
-.fb-bar.bench { background: #42a5f5; }
+.fb-bar.bench { background: var(--fst-blue); }
 .fb-bar-val { font-size: 0.72rem; font-weight: 700; width: 40px; text-align: right; }
 .fb-bar-val.fst   { color: var(--p-primary-color); }
-.fb-bar-val.bench { color: #42a5f5; }
+.fb-bar-val.bench { color: var(--fst-blue); }
 
 .scatter-wrap { position: relative; height: 280px; border: 1px solid var(--surface-border); border-radius: 8px; background: var(--surface-ground); overflow: hidden; }
 .scatter-area { position: relative; width: 100%; height: 100%; }
@@ -602,8 +624,8 @@ function initTrendChart() {
 .scatter-axis-x { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; color: var(--p-text-muted-color); }
 .scatter-dot { position: absolute; width: 12px; height: 12px; border-radius: 50%; transform: translate(-50%, 50%); cursor: pointer; }
 .scatter-dot.fst    { background: var(--p-primary-color); width: 16px; height: 16px; }
-.scatter-dot.bench  { background: #42a5f5; }
-.scatter-dot.market { background: #ff9800; }
+.scatter-dot.bench  { background: var(--fst-blue); }
+.scatter-dot.market { background: var(--fst-brand); }
 .scatter-label { position: absolute; left: 14px; top: -4px; font-size: 0.65rem; white-space: nowrap; color: var(--p-text-color); background: var(--surface-card); padding: 1px 4px; border-radius: 3px; }
 .quad { position: absolute; font-size: 0.65rem; color: var(--p-text-muted-color); opacity: 0.6; }
 .q1 { right: 8px; top: 8px; }
@@ -616,9 +638,9 @@ function initTrendChart() {
 .radar-legend { display: flex; gap: 20px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--p-text-color); }
 .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
-.legend-dot.portfolio { background: rgba(99,102,241,1); }
-.legend-dot.median { background: rgba(66,165,245,1); }
-.legend-dot.top-quartile { background: rgba(251,146,60,0.7); }
+.legend-dot.portfolio { background: var(--p-primary-color); }
+.legend-dot.median { background: var(--fst-blue); }
+.legend-dot.top-quartile { background: var(--fst-brand); }
 
 .chart-wrap { background: var(--surface-ground); border-radius: 8px; padding: 16px; display: flex; justify-content: center; overflow-x: auto; }
 .chart-wrap canvas { max-width: 100%; }
@@ -634,13 +656,13 @@ function initTrendChart() {
 .val-range { font-weight: 600; color: var(--p-primary-color); }
 .val-bar-wrap { margin-top: 8px; }
 .val-bar-track { position: relative; height: 10px; background: var(--surface-border); border-radius: 5px; margin-bottom: 6px; }
-.val-bar-range { position: absolute; height: 100%; background: rgba(99,102,241,0.2); border-radius: 5px; }
+.val-bar-range { position: absolute; height: 100%; background: color-mix(in srgb, var(--p-primary-color) 20%, transparent); border-radius: 5px; }
 .val-bar-current { position: absolute; width: 3px; height: 100%; background: var(--p-primary-color); top: 0; transform: translateX(-50%); }
 .val-bar-labels { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--p-text-muted-color); }
 .val-status { margin-top: 8px; padding: 4px 8px; border-radius: 4px; text-align: center; font-size: 0.72rem; font-weight: 600; }
-.val-status.undervalued { background: #66bb6a22; color: #66bb6a; }
-.val-status.fair { background: #42a5f522; color: #42a5f5; }
-.val-status.overvalued { background: #ef535022; color: #ef5350; }
+.val-status.undervalued { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.val-status.fair { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
+.val-status.overvalued { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 
 .sources-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
 .source-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; text-align: center; }
@@ -653,7 +675,7 @@ function initTrendChart() {
 .norm-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 16px; }
 .norm-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .norm-code { font-weight: 700; font-size: 0.95rem; color: var(--p-primary-color); }
-.norm-type { font-size: 0.68rem; color: var(--p-text-muted-color); background: rgba(99,102,241,0.1); padding: 2px 8px; border-radius: 10px; }
+.norm-type { font-size: 0.68rem; color: var(--p-text-muted-color); background: color-mix(in srgb, var(--p-primary-color) 10%, transparent); padding: 2px 8px; border-radius: 10px; }
 .norm-title { font-weight: 600; font-size: 0.85rem; color: var(--p-text-color); margin-bottom: 6px; }
 .norm-purpose { font-size: 0.78rem; color: var(--p-text-muted-color); line-height: 1.4; margin-bottom: 10px; }
 .norm-link { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--p-primary-color); text-decoration: none; }
