@@ -1,12 +1,18 @@
 <template>
   <FstPageLayout title="ESG-скоринг портфеля" subtitle="Оценка экологического, социального и управленческого факторов по TCFD/GRI">
     <template #actions>
-      <select v-model="view" class="esg-select">
-          <option value="portfolio">Портфель целиком</option>
-          <option value="company">По компании</option>
-        </select>
-        <button class="esg-btn primary" @click="exportEsg">Отчёт TCFD</button>
+      <Select v-model="view" :options="viewOptions" optionLabel="label" optionValue="value" size="small" />
+      <Button icon="pi pi-download" label="Отчёт TCFD" size="small" @click="exportEsg" />
     </template>
+
+    <!-- Метрики -->
+    <div class="fst-metrics-strip">
+      <div v-for="m in esgMetrics" :key="m.label" class="fst-metric-item">
+        <i :class="m.icon" class="fst-metric-item-icon" :style="{ color: m.color }"></i>
+        <div class="fst-metric-item-val">{{ m.val }}</div>
+        <div class="fst-metric-item-label">{{ m.label }}</div>
+      </div>
+    </div>
 
     <!-- Общий ESG-рейтинг портфеля -->
     <div class="esg-portfolio-score">
@@ -127,8 +133,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
 
 const view = ref('portfolio')
+
+const viewOptions = [
+  { label: 'Портфель целиком', value: 'portfolio' },
+  { label: 'По компании', value: 'company' }
+]
 
 const companies = ref([
   { name: 'АгроДрон',       e: 82, s: 74, g: 78, trend: +4, updated: '2026-01-15' },
@@ -144,6 +157,15 @@ function portfolioScore(cat) {
   return Math.round(companies.value.reduce((s, c) => s + c[key], 0) / companies.value.length)
 }
 const overallScore = computed(() => Math.round((portfolioScore('E') + portfolioScore('S') + portfolioScore('G')) / 3))
+
+const esgMetrics = computed(() => [
+  { icon: 'pi pi-building',   color: 'var(--p-primary-color)', val: companies.value.length, label: 'Компаний' },
+  { icon: 'pi pi-star',       color: 'var(--fst-brand)',       val: overallScore.value,    label: 'Общий ESG' },
+  { icon: 'pi pi-globe',      color: 'var(--fst-green)',       val: portfolioScore('E'),   label: 'E — Экология' },
+  { icon: 'pi pi-users',      color: 'var(--fst-blue)',        val: portfolioScore('S'),   label: 'S — Социум' },
+  { icon: 'pi pi-sitemap',    color: 'var(--fst-purple)',      val: portfolioScore('G'),   label: 'G — Управление' },
+  { icon: 'pi pi-shield',     color: 'var(--fst-cyan)',        val: grade(overallScore.value), label: 'Рейтинг TCFD' }
+])
 
 function grade(score) {
   if (score >= 85) return 'AAA'
@@ -200,21 +222,18 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 .esg-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .esg-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .esg-actions { display: flex; gap: 8px; align-items: center; }
-.esg-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.esg-btn.primary { background: var(--p-primary-color); color: #fff; }
-.esg-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
 .esg-portfolio-score { display: flex; align-items: center; gap: 16px; background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px; flex-wrap: wrap; }
 .esg-cat-block { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 80px; border-right: 1px solid var(--surface-border); padding-right: 16px; }
 .esg-cat-block:last-of-type { border-right: none; }
 .esg-cat-letter { font-size: 2rem; font-weight: 900; }
-.cat-e { color: #66bb6a; } .cat-s { color: #42a5f5; } .cat-g { color: #ab47bc; }
+.cat-e { color: var(--fst-green); } .cat-s { color: var(--fst-blue); } .cat-g { color: var(--fst-purple); }
 .esg-cat-score { font-size: 1.6rem; font-weight: 700; color: var(--p-text-color); }
 .esg-cat-grade { font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
 .esg-cat-name { font-size: 0.72rem; color: var(--p-text-muted-color); }
-.grade-a { background: #66bb6a22; color: #66bb6a; }
-.grade-b { background: #ff980022; color: #ff9800; }
-.grade-c { background: #ef535022; color: #ef5350; }
+.grade-a { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.grade-b { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
+.grade-c { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 
 .esg-overall { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-left: 16px; }
 .ov-val { font-size: 2.5rem; font-weight: 900; color: var(--p-primary-color); }
@@ -223,7 +242,7 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 
 .esg-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; }
 .esg-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
-.e-color { color: #66bb6a; } .s-color { color: #42a5f5; } .g-color { color: #ab47bc; }
+.e-color { color: var(--fst-green); } .s-color { color: var(--fst-blue); } .g-color { color: var(--fst-purple); }
 
 .esg-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
 .esg-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; }
@@ -234,7 +253,7 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 .score-chip { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700; }
 .grade-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
 .trend { text-align: right; font-size: 0.82rem; }
-.trend.up { color: #66bb6a; } .trend.down { color: #ef5350; }
+.trend.up { color: var(--fst-green); } .trend.down { color: var(--fst-red); }
 .date-col { font-size: 0.72rem; color: var(--p-text-muted-color); }
 
 .esg-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
@@ -245,20 +264,20 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 .mi-value { font-size: 0.82rem; font-weight: 600; color: var(--p-text-color); }
 .mi-bar-wrap { flex: 1; height: 8px; background: var(--surface-border); border-radius: 4px; overflow: hidden; }
 .mi-bar { height: 100%; border-radius: 4px; transition: width 0.4s; }
-.bar-good { background: #66bb6a; } .bar-mid { background: #ff9800; } .bar-bad { background: #ef5350; }
+.bar-good { background: var(--fst-green); } .bar-mid { background: var(--fst-brand); } .bar-bad { background: var(--fst-red); }
 .mi-pct { font-size: 0.72rem; color: var(--p-text-muted-color); min-width: 35px; text-align: right; }
 
 .tcfd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .tcfd-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
 .tcfd-cat { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; width: fit-content; }
-.tcfd-cat.risk        { background: #ef535022; color: #ef5350; }
-.tcfd-cat.opportunity { background: #66bb6a22; color: #66bb6a; }
+.tcfd-cat.risk        { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
+.tcfd-cat.opportunity { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
 .tcfd-category { font-weight: 700; font-size: 0.85rem; color: var(--p-text-color); }
 .tcfd-desc { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .tcfd-impact { font-size: 0.72rem; }
-.tcfd-impact.high   { color: #ef5350; }
-.tcfd-impact.medium { color: #ff9800; }
-.tcfd-impact.low    { color: #66bb6a; }
+.tcfd-impact.high   { color: var(--fst-red); }
+.tcfd-impact.medium { color: var(--fst-brand); }
+.tcfd-impact.low    { color: var(--fst-green); }
 .tcfd-horizon { font-size: 0.68rem; color: var(--p-text-muted-color); }
 
 /* ── Mobile adaptive ── */
