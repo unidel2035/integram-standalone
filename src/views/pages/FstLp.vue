@@ -1,18 +1,16 @@
 <template>
   <FstPageLayout title="LP Dashboard" subtitle="Отчётность для партнёров с ограниченной ответственностью">
     <template #actions>
-      <button class="lp-btn secondary" @click="exportReport">Экспорт ILPA</button>
-        <button class="lp-btn primary" @click="showCapCall = true">Кэпитал-колл</button>
+      <Button icon="pi pi-download" label="Экспорт ILPA" size="small" severity="secondary" @click="exportReport" />
+      <Button icon="pi pi-send" label="Кэпитал-колл" size="small" severity="success" @click="showCapCall = true" />
     </template>
 
-    <!-- Сводная панель LP -->
-    <div class="lp-summary-grid">
-      <div class="lp-kpi" v-for="kpi in kpiCards" :key="kpi.label">
-        <div class="lp-kpi-val" :class="kpi.color">{{ kpi.value }}</div>
-        <div class="lp-kpi-label">{{ kpi.label }}</div>
-        <div class="lp-kpi-delta" :class="kpi.delta >= 0 ? 'up' : 'down'">
-          {{ kpi.delta >= 0 ? '+' : '' }}{{ kpi.delta }}% к прошлому кварталу
-        </div>
+    <!-- ─── Metrics strip ─── -->
+    <div class="lp-metrics fst-metrics-strip">
+      <div class="fst-metric-item" v-for="kpi in kpiCards" :key="kpi.label">
+        <i :class="kpi.icon" class="fst-metric-item-icon" :style="{ color: kpiColor(kpi.color) }"></i>
+        <div class="fst-metric-item-val">{{ kpi.value }}</div>
+        <div class="fst-metric-item-label">{{ kpi.label }}</div>
       </div>
     </div>
 
@@ -150,8 +148,8 @@
           <textarea v-model="capCall.notice" rows="2" placeholder="Текст уведомления..."></textarea>
         </div>
         <div class="modal-actions">
-          <button class="lp-btn secondary" @click="showCapCall = false">Отмена</button>
-          <button class="lp-btn primary" @click="sendCapCall">Отправить уведомление</button>
+          <Button label="Отмена" size="small" severity="secondary" @click="showCapCall = false" />
+          <Button icon="pi pi-send" label="Отправить уведомление" size="small" severity="success" @click="sendCapCall" />
         </div>
       </div>
     </div>
@@ -161,6 +159,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
 
 const activeTab = ref('portfolio')
 const showCapCall = ref(false)
@@ -173,13 +172,23 @@ const tabs = [
 ]
 
 const kpiCards = ref([
-  { label: 'Общий NAV, млн ₽', value: '2 840', color: 'blue',  delta: +8.4 },
-  { label: 'TVPI',              value: '1.34x', color: 'green', delta: +5.2 },
-  { label: 'Net IRR',           value: '22.7%', color: 'green', delta: +1.8 },
-  { label: 'DPI',               value: '0.18x', color: 'gray',  delta: +12.0 },
-  { label: 'Взносы, млн ₽',    value: '2 120', color: 'blue',  delta: 0 },
-  { label: 'Портфельных ко.',   value: '8',     color: 'gray',  delta: +14.3 }
+  { label: 'Общий NAV, млн ₽', value: '2 840', color: 'blue',   delta: +8.4,  icon: 'pi pi-chart-line' },
+  { label: 'TVPI',              value: '1.34x', color: 'green',  delta: +5.2,  icon: 'pi pi-arrow-up-right' },
+  { label: 'Net IRR',           value: '22.7%', color: 'green',  delta: +1.8,  icon: 'pi pi-percentage' },
+  { label: 'DPI',               value: '0.18x', color: 'cyan',   delta: +12.0, icon: 'pi pi-money-bill' },
+  { label: 'Взносы, млн ₽',    value: '2 120', color: 'blue',   delta: 0,     icon: 'pi pi-dollar' },
+  { label: 'Портфельных ко.',   value: '8',     color: 'purple', delta: +14.3, icon: 'pi pi-building' }
 ])
+
+function kpiColor(c) {
+  const map = {
+    blue: 'var(--fst-blue)', green: 'var(--fst-green)',
+    cyan: 'var(--fst-cyan)', purple: 'var(--fst-purple)',
+    red: 'var(--fst-red)', brand: 'var(--fst-brand)',
+    gray: 'var(--p-text-muted-color)'
+  }
+  return map[c] || 'var(--p-text-muted-color)'
+}
 
 const portfolio = ref([
   { name: 'АгроДрон',       subfund: 'БАС',  entryDate: '2024-03', invested: 180, nav: 265, moic: 1.47, status: 'active' },
@@ -307,12 +316,12 @@ function sendCapCall() {
 }
 .lp-kpi-val { font-size: 2rem; font-weight: 700; }
 .lp-kpi-val.blue  { color: var(--p-primary-color); }
-.lp-kpi-val.green { color: #66bb6a; }
+.lp-kpi-val.green { color: var(--fst-green); }
 .lp-kpi-val.gray  { color: var(--p-text-color); }
 .lp-kpi-label { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 2px; }
 .lp-kpi-delta { font-size: 0.72rem; margin-top: 4px; }
-.lp-kpi-delta.up   { color: #66bb6a; }
-.lp-kpi-delta.down { color: #ef5350; }
+.lp-kpi-delta.up   { color: var(--fst-green); }
+.lp-kpi-delta.down { color: var(--fst-red); }
 
 .lp-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .lp-tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
@@ -327,16 +336,16 @@ function sendCapCall() {
 .lp-table tr:last-child td { border: none; }
 .co-name { font-weight: 600; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
-.green { color: #66bb6a; } .red { color: #ef5350; }
+.green { color: var(--fst-green); } .red { color: var(--fst-red); }
 
 .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
-.badge.бас  { background: #1565c022; color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
-.badge.робо { background: #7b1fa222; color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.badge.мэ   { background: #1b5e2022; color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
+.badge.бас  { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
+.badge.робо { background: color-mix(in srgb, var(--fst-purple) 12%, transparent); color: var(--fst-purple); }
+.badge.мэ   { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
 
 .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; }
-.status-pill.active { background: #66bb6a22; color: #66bb6a; }
-.status-pill.watch  { background: #ff980022; color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
+.status-pill.active { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.status-pill.watch  { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
 .status-pill.exit   { background: var(--surface-ground); color: var(--p-text-muted-color); }
 
 .cf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
@@ -344,8 +353,8 @@ function sendCapCall() {
 .cf-title { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); margin-bottom: 4px; }
 .cf-row { display: flex; gap: 12px; font-size: 0.83rem; color: var(--p-text-color); }
 .cf-amount { font-weight: 600; min-width: 80px; }
-.cf-amount.contrib { color: #66bb6a; }
-.cf-amount.distrib { color: #42a5f5; }
+.cf-amount.contrib { color: var(--fst-green); }
+.cf-amount.distrib { color: var(--fst-blue); }
 .cf-note { color: var(--p-text-muted-color); font-size: 0.78rem; }
 .cf-total { margin-top: 8px; font-weight: 700; color: var(--p-text-color); font-size: 0.9rem; border-top: 1px solid var(--surface-border); padding-top: 6px; }
 .cf-summary { display: flex; gap: 24px; flex-wrap: wrap; padding: 16px; background: var(--surface-ground); border-radius: 8px; }
@@ -364,14 +373,14 @@ function sendCapCall() {
 .esg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
 .esg-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; text-align: center; }
 .esg-score { font-size: 2rem; font-weight: 900; margin-bottom: 4px; }
-.esg-a { color: #66bb6a; } .esg-b { color: #42a5f5; } .esg-c { color: #ff9800; }
+.esg-a { color: var(--fst-green); } .esg-b { color: var(--fst-blue); } .esg-c { color: var(--fst-brand); }
 .esg-label  { font-weight: 700; font-size: 0.85rem; color: var(--p-text-color); }
 .esg-detail { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 4px; }
 .esg-compliance h3 { font-size: 0.95rem; margin: 0 0 10px; }
 .compliance-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--surface-border); font-size: 0.83rem; }
 .compliance-icon { font-size: 0.9rem; font-weight: 700; width: 20px; text-align: center; border-radius: 50%; padding: 2px; }
-.compliance-icon.ok   { color: #66bb6a; }
-.compliance-icon.warn { color: #ff9800; }
+.compliance-icon.ok   { color: var(--fst-green); }
+.compliance-icon.warn { color: var(--fst-brand); }
 .compliance-date { margin-left: auto; color: var(--p-text-muted-color); font-size: 0.75rem; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
