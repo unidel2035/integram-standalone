@@ -1,30 +1,42 @@
 <template>
   <FstPageLayout title="Cap Table" subtitle="Реестр прав и конвертационные сценарии">
     <template #actions>
-        <select v-model="selectedCompany" class="ct-select">
-          <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
-        </select>
-        <button class="ct-btn secondary" @click="exportCsv">Экспорт CSV</button>
-        <button class="ct-btn primary" @click="showAddRound = true">+ Раунд</button>
+      <Select v-model="selectedCompany" :options="companies" optionLabel="name" optionValue="id" size="small" />
+      <Button icon="pi pi-download" label="Экспорт CSV" size="small" severity="secondary" @click="exportCsv" />
+      <Button icon="pi pi-plus" label="Раунд" size="small" severity="success" @click="showAddRound = true" />
     </template>
 
-    <!-- Общая сводка -->
-    <div class="ct-summary">
-      <div class="ct-sum-card">
-        <div class="ct-sum-val">{{ totalShares.toLocaleString('ru') }}</div>
-        <div class="ct-sum-lbl">Всего акций (FD)</div>
+    <!-- ─── Metrics strip ─── -->
+    <div class="ct-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-copy fst-metric-item-icon" style="color:var(--fst-blue)"></i>
+        <div class="fst-metric-item-val">{{ (totalShares / 1000000).toFixed(2) }}M</div>
+        <div class="fst-metric-item-label">Акций FD</div>
       </div>
-      <div class="ct-sum-card">
-        <div class="ct-sum-val">{{ currentValuation }} млн ₽</div>
-        <div class="ct-sum-lbl">Текущая оценка</div>
+      <div class="fst-metric-item">
+        <i class="pi pi-chart-line fst-metric-item-icon" style="color:var(--fst-green)"></i>
+        <div class="fst-metric-item-val">{{ currentValuation }} млн</div>
+        <div class="fst-metric-item-label">Оценка</div>
       </div>
-      <div class="ct-sum-card">
-        <div class="ct-sum-val">{{ pricePerShare }} ₽</div>
-        <div class="ct-sum-lbl">Цена акции (FD)</div>
+      <div class="fst-metric-item">
+        <i class="pi pi-dollar fst-metric-item-icon" style="color:var(--fst-cyan)"></i>
+        <div class="fst-metric-item-val">{{ pricePerShare }} ₽</div>
+        <div class="fst-metric-item-label">Цена акции</div>
       </div>
-      <div class="ct-sum-card">
-        <div class="ct-sum-val">{{ optionPool }}%</div>
-        <div class="ct-sum-lbl">Option Pool</div>
+      <div class="fst-metric-item">
+        <i class="pi pi-percentage fst-metric-item-icon" style="color:var(--fst-brand)"></i>
+        <div class="fst-metric-item-val">{{ optionPool }}%</div>
+        <div class="fst-metric-item-label">Option Pool</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-users fst-metric-item-icon" style="color:var(--fst-purple)"></i>
+        <div class="fst-metric-item-val">{{ currentCaptable.length }}</div>
+        <div class="fst-metric-item-label">Акционеров</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-wallet fst-metric-item-icon" style="color:var(--fst-green)"></i>
+        <div class="fst-metric-item-val">{{ totalInvested }} млн</div>
+        <div class="fst-metric-item-label">Вложено</div>
       </div>
     </div>
 
@@ -185,8 +197,8 @@
           <input v-model.number="newEntry.preMoney" type="number" step="50" />
         </div>
         <div class="modal-actions">
-          <button class="ct-btn secondary" @click="showAddRound = false">Отмена</button>
-          <button class="ct-btn primary" @click="addRound">Добавить</button>
+          <Button label="Отмена" size="small" severity="secondary" @click="showAddRound = false" />
+          <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="addRound" />
         </div>
       </div>
     </div>
@@ -196,6 +208,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
 
 const activeTab = ref('captable')
 const showAddRound = ref(false)
@@ -344,15 +358,15 @@ function exportCsv() {
 .sh-name { font-weight: 600; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .bold { font-weight: 700; }
-.green { color: #66bb6a; } .red { color: #ef5350; } .warn { color: #ff9800; } .gray { color: var(--p-text-muted-color); }
+.green { color: var(--fst-green); } .red { color: var(--fst-red); } .warn { color: var(--fst-brand); } .gray { color: var(--p-text-muted-color); }
 
 .type-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
-.type-badge.founder { background: #1565c022; color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
+.type-badge.founder { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
 .type-badge.fst     { background: var(--p-primary-color); color: #fff; }
-.type-badge.vc      { background: #7b1fa222; color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.type-badge.corp    { background: #1b5e2022; color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
-.type-badge.esop    { background: #e65100 22; color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
-.type-badge.debt    { background: #37474f22; color: #546e7a; }
+.type-badge.vc      { background: color-mix(in srgb, var(--fst-purple) 12%, transparent); color: var(--fst-purple); }
+.type-badge.corp    { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.type-badge.esop    { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
+.type-badge.debt    { background: color-mix(in srgb, var(--p-text-muted-color) 12%, transparent); color: var(--p-text-muted-color); }
 
 .round-badge { font-size: 0.75rem; color: var(--p-text-muted-color); }
 
