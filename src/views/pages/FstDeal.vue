@@ -120,30 +120,30 @@
           <div class="fst-form-row">
             <div class="fst-form-group">
               <label>Общая сумма (млн ₽)</label>
-              <InputNumber v-model="deal.totalAmount" :min="1" :max="500" :step="5" suffix=" млн ₽" class="fst-input" />
+              <InputNumber v-model="deal.totalAmount" :min="1" :max="500" :step="5" suffix=" млн ₽" :showButtons="false" fluid class="fst-input" />
             </div>
             <div class="fst-form-group" v-if="deal.type === 'equity'">
               <label>Доля (% капитала)</label>
-              <InputNumber v-model="deal.equityShare" :min="1" :max="49" suffix="%" class="fst-input" />
+              <InputNumber v-model="deal.equityShare" :min="1" :max="49" suffix="%" :showButtons="false" fluid class="fst-input" />
             </div>
             <div class="fst-form-group" v-if="deal.type === 'cln'">
               <label>Ставка CLN (%)</label>
-              <InputNumber v-model="deal.clnRate" :min="0" :max="30" suffix="%" class="fst-input" />
+              <InputNumber v-model="deal.clnRate" :min="0" :max="30" suffix="%" :showButtons="false" fluid class="fst-input" />
             </div>
           </div>
           <div class="fst-form-row" v-if="deal.type === 'equity'">
             <div class="fst-form-group">
               <label>Пре-мани оценка (млн ₽)</label>
-              <InputNumber v-model="deal.preMoney" :min="10" :max="5000" :step="50" suffix=" млн ₽" class="fst-input" />
+              <InputNumber v-model="deal.preMoney" :min="10" :max="5000" :step="50" suffix=" млн ₽" :showButtons="false" fluid class="fst-input" />
             </div>
             <div class="fst-form-group">
               <label>Конверт. в Серию А (x)</label>
-              <InputNumber v-model="deal.conversionMultiple" :min="1" :max="5" :step="0.5" suffix="x" class="fst-input" />
+              <InputNumber v-model="deal.conversionMultiple" :min="1" :max="5" :step="0.5" suffix="x" :showButtons="false" fluid class="fst-input" />
             </div>
           </div>
           <div class="fst-form-group">
             <label>Срок действия соглашения (мес.)</label>
-            <InputNumber v-model="deal.termMonths" :min="12" :max="84" :step="6" class="fst-input" />
+            <InputNumber v-model="deal.termMonths" :min="12" :max="84" :step="6" :showButtons="false" fluid class="fst-input" />
           </div>
         </div>
 
@@ -212,7 +212,7 @@
             <div class="fst-form-row">
               <div class="fst-form-group">
                 <label>Сумма (млн ₽)</label>
-                <InputNumber v-model="tr.amount" :min="1" :max="200" suffix=" млн ₽" class="fst-input" />
+                <InputNumber v-model="tr.amount" :min="1" :max="200" suffix=" млн ₽" :showButtons="false" fluid class="fst-input" />
               </div>
               <div class="fst-form-group">
                 <label>Дата / Условие</label>
@@ -255,15 +255,15 @@
               <div class="fst-kpi-card-years">
                 <div class="fst-kpi-year">
                   <span class="fst-kpi-year-lbl">2025</span>
-                  <InputNumber v-model="kpi.target2025" :min="0" class="fst-input" />
+                  <InputNumber v-model="kpi.target2025" :min="0" :showButtons="false" fluid />
                 </div>
                 <div class="fst-kpi-year">
                   <span class="fst-kpi-year-lbl">2026</span>
-                  <InputNumber v-model="kpi.target2026" :min="0" class="fst-input" />
+                  <InputNumber v-model="kpi.target2026" :min="0" :showButtons="false" fluid />
                 </div>
                 <div class="fst-kpi-year">
                   <span class="fst-kpi-year-lbl">2027</span>
-                  <InputNumber v-model="kpi.target2027" :min="0" class="fst-input" />
+                  <InputNumber v-model="kpi.target2027" :min="0" :showButtons="false" fluid />
                 </div>
               </div>
             </div>
@@ -851,6 +851,7 @@ onMounted(async () => {
 .fst-form-group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 4px;
   flex: 1;
 }
@@ -922,7 +923,7 @@ onMounted(async () => {
   gap: 6px;
 }
 .fst-kpi-name { flex: 1; min-width: 0; }
-.fst-kpi-unit { width: 90px; flex-shrink: 0; }
+.fst-kpi-unit { width: 130px; flex-shrink: 0; }
 .fst-kpi-card-years {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

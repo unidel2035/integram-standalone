@@ -38,21 +38,24 @@
       </div>
     </div>
 
+    <!-- Content -->
+    <div class="wf-content">
+
     <!-- Параметры выхода -->
     <div class="wf-inputs-card">
-      <h3>Параметры выхода</h3>
+      <div class="wf-section-title">Параметры выхода</div>
       <div class="wf-inputs-grid">
         <div class="wf-field">
           <label>Выручка от продажи, млн ₽</label>
-          <InputNumber v-model="params.exitProceeds" :step="50" :min="0" fluid @input="calc" />
+          <InputNumber v-model="params.exitProceeds" :step="50" :min="0" :showButtons="false" fluid @input="calc" />
         </div>
         <div class="wf-field">
           <label>Hurdle Rate (preferred return), %</label>
-          <InputNumber v-model="params.hurdleRate" :step="0.5" :min="0" :max="100" suffix="%" fluid @input="calc" />
+          <InputNumber v-model="params.hurdleRate" :step="0.5" :min="0" :max="100" suffix="%" :showButtons="false" fluid @input="calc" />
         </div>
         <div class="wf-field">
           <label>Carried Interest, %</label>
-          <InputNumber v-model="params.carry" :step="1" :min="0" :max="50" suffix="%" fluid @input="calc" />
+          <InputNumber v-model="params.carry" :step="1" :min="0" :max="50" suffix="%" :showButtons="false" fluid @input="calc" />
         </div>
         <div class="wf-field">
           <label>Дата закрытия фонда</label>
@@ -64,7 +67,7 @@
         </div>
         <div class="wf-field">
           <label>Общий объём фонда, млн ₽</label>
-          <InputNumber v-model="params.fundSize" :step="100" :min="0" fluid @input="calc" />
+          <InputNumber v-model="params.fundSize" :step="100" :min="0" :showButtons="false" fluid @input="calc" />
         </div>
       </div>
     </div>
@@ -72,7 +75,7 @@
     <!-- Стек инвесторов -->
     <div class="wf-stack-card">
       <div class="wf-stack-header">
-        <h3>Стек инвесторов</h3>
+        <div class="wf-section-title" style="margin:0">Стек инвесторов</div>
         <Button icon="pi pi-plus" label="Инвестор" size="small" severity="success" @click="showAddInvestor = true" />
       </div>
       <table class="wf-table">
@@ -101,7 +104,7 @@
 
     <!-- Водопад распределения -->
     <div class="wf-result-card">
-      <h3>Распределение выхода — {{ params.exitProceeds }} млн ₽</h3>
+      <div class="wf-section-title">Распределение выхода — {{ params.exitProceeds }} млн ₽</div>
 
       <!-- Трамплин шагов -->
       <div class="wf-steps">
@@ -120,7 +123,7 @@
       </div>
 
       <!-- Итоговая таблица по инвесторам -->
-      <h4>Итог по инвесторам</h4>
+      <div class="wf-subsection-title">Итог по инвесторам</div>
       <table class="wf-table result-table">
         <thead>
           <tr>
@@ -158,7 +161,7 @@
 
     <!-- IRR по сценариям -->
     <div class="wf-irr-card">
-      <h3>IRR-анализ по сценариям</h3>
+      <div class="wf-section-title">IRR-анализ по сценариям</div>
       <div class="irr-scenarios">
         <div v-for="s in irrScenarios" :key="s.label" class="irr-sc">
           <div class="irr-exit">{{ s.exitMult }}x</div>
@@ -171,21 +174,23 @@
       </div>
     </div>
 
+    </div><!-- /wf-content -->
+
     <!-- Add Investor Dialog -->
     <Dialog v-model:visible="showAddInvestor" header="Добавить инвестора" modal :style="{ width: '420px' }">
       <div class="modal-form">
         <label>Название</label>
         <InputText v-model="newInv.name" fluid />
         <label>Взносы, млн ₽</label>
-        <InputNumber v-model="newInv.capital" :step="10" :min="0" fluid />
+        <InputNumber v-model="newInv.capital" :step="10" :min="0" :showButtons="false" fluid />
         <label>Тип ликв. предпочтения</label>
         <Select v-model="newInv.prefType" :options="prefTypeOptions" optionLabel="label" optionValue="value" fluid />
         <label>Множитель (1x, 2x...)</label>
-        <InputNumber v-model="newInv.mult" :step="0.25" :min="0.5" :max="10" fluid />
-        <label class="checkbox-label">
-          <input type="checkbox" v-model="newInv.participating" />
-          Участие в upside после ликв. преф.
-        </label>
+        <InputNumber v-model="newInv.mult" :step="0.25" :min="0.5" :max="10" :showButtons="false" fluid />
+        <div class="checkbox-label">
+          <Checkbox v-model="newInv.participating" :binary="true" inputId="inv-participating" />
+          <label for="inv-participating">Участие в upside после ликв. преф.</label>
+        </div>
       </div>
       <template #footer>
         <Button label="Отмена" size="small" severity="secondary" @click="showAddInvestor = false" />
@@ -203,6 +208,7 @@ import Dialog from 'primevue/dialog'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import Checkbox from 'primevue/checkbox'
 
 const showAddInvestor = ref(false)
 
@@ -335,20 +341,24 @@ function exportWaterfall() {
 </script>
 
 <style scoped>
-.wf-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
-.wf-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.wf-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
-.wf-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.wf-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.wf-btn.primary  { background: var(--p-primary-color); color: white; }
-.wf-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-content-border-color); }
-.wf-btn.small { padding: 5px 10px; font-size: 0.78rem; }
+/* Metrics strip — flush to FstPageLayout body edges */
+.wf-metrics {
+  margin: -20px -20px 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+
+.wf-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+}
 
 .wf-inputs-card, .wf-stack-card, .wf-result-card, .wf-irr-card {
-  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 20px;
 }
-h3 { margin: 0 0 14px; font-size: 1rem; color: var(--p-text-color); }
-h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
+.wf-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
+.wf-subsection-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin: 16px 0 10px; }
 
 .wf-inputs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 .wf-field { display: flex; flex-direction: column; gap: 4px; }
@@ -368,8 +378,6 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
 .pref-badge.non_part { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: color-mix(in srgb, var(--fst-blue) 70%, var(--p-text-color)); }
 .pref-badge.part     { background: color-mix(in srgb, var(--fst-purple) 12%, transparent); color: color-mix(in srgb, var(--fst-purple) 70%, var(--p-text-color)); }
 .pref-badge.capped   { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color)); }
-.del-btn { background: none; border: none; color: var(--p-text-muted-color); cursor: pointer; font-size: 0.9rem; padding: 2px 6px; }
-.del-btn:hover { color: var(--fst-red); }
 
 .wf-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
 .wf-step { display: grid; grid-template-columns: 30px 1fr auto 150px; align-items: center; gap: 12px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px 16px; }

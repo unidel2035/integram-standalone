@@ -6,13 +6,15 @@
     </template>
 
     <!-- Метрики -->
-    <div class="fst-metrics-strip">
+    <div class="esg-strip fst-metrics-strip">
       <div v-for="m in esgMetrics" :key="m.label" class="fst-metric-item">
         <i :class="m.icon" class="fst-metric-item-icon" :style="{ color: m.color }"></i>
         <div class="fst-metric-item-val">{{ m.val }}</div>
         <div class="fst-metric-item-label">{{ m.label }}</div>
       </div>
     </div>
+
+    <div class="esg-content">
 
     <!-- Общий ESG-рейтинг портфеля -->
     <div class="esg-portfolio-score">
@@ -31,7 +33,7 @@
 
     <!-- Матрица компаний -->
     <div class="esg-section">
-      <h2>Матрица портфеля</h2>
+      <div class="esg-section-title">Матрица портфеля</div>
       <table class="esg-table">
         <thead>
           <tr>
@@ -64,7 +66,7 @@
     <div class="esg-metrics-grid">
       <!-- Экология -->
       <div class="esg-section">
-        <h2 class="e-color">E — Экологические метрики</h2>
+        <div class="esg-section-title e-color">E — Экологические метрики</div>
         <div class="metric-list">
           <div v-for="m in eMetrics" :key="m.label" class="metric-item">
             <div class="mi-info">
@@ -81,7 +83,7 @@
 
       <!-- Социум -->
       <div class="esg-section">
-        <h2 class="s-color">S — Социальные метрики</h2>
+        <div class="esg-section-title s-color">S — Социальные метрики</div>
         <div class="metric-list">
           <div v-for="m in sMetrics" :key="m.label" class="metric-item">
             <div class="mi-info">
@@ -98,7 +100,7 @@
 
       <!-- Управление -->
       <div class="esg-section">
-        <h2 class="g-color">G — Управленческие метрики</h2>
+        <div class="esg-section-title g-color">G — Управленческие метрики</div>
         <div class="metric-list">
           <div v-for="m in gMetrics" :key="m.label" class="metric-item">
             <div class="mi-info">
@@ -116,7 +118,7 @@
 
     <!-- Климатические риски (TCFD) -->
     <div class="esg-section">
-      <h2>Климатические риски и возможности (TCFD)</h2>
+      <div class="esg-section-title">Климатические риски и возможности (TCFD)</div>
       <div class="tcfd-grid">
         <div v-for="t in tcfdItems" :key="t.category" class="tcfd-card">
           <div class="tcfd-cat" :class="t.type">{{ t.type === 'risk' ? 'Риск' : 'Возможность' }}</div>
@@ -127,6 +129,8 @@
         </div>
       </div>
     </div>
+
+    </div><!-- /esg-content -->
   </FstPageLayout>
 </template>
 
@@ -217,13 +221,10 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 </script>
 
 <style scoped>
-.esg-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
-.esg-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.esg-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
-.esg-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.esg-actions { display: flex; gap: 8px; align-items: center; }
+.esg-strip { margin: -20px -20px 0; border-bottom: 1px solid var(--p-content-border-color); }
+.esg-content { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; }
 
-.esg-portfolio-score { display: flex; align-items: center; gap: 16px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; flex-wrap: wrap; }
+.esg-portfolio-score { display: flex; align-items: center; gap: 16px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; flex-wrap: wrap; }
 .esg-cat-block { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 80px; border-right: 1px solid var(--p-content-border-color); padding-right: 16px; }
 .esg-cat-block:last-of-type { border-right: none; }
 .esg-cat-letter { font-size: 2rem; font-weight: 900; }
@@ -240,8 +241,8 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 .ov-lbl { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .ov-grade { font-size: 0.85rem; font-weight: 700; padding: 3px 10px; border-radius: 5px; }
 
-.esg-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; }
-.esg-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
+.esg-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 18px; }
+.esg-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
 .e-color { color: var(--fst-green); } .s-color { color: var(--fst-blue); } .g-color { color: var(--fst-purple); }
 
 .esg-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }

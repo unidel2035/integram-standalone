@@ -6,7 +6,7 @@
     </template>
 
     <!-- Метрики -->
-    <div class="fst-metrics-strip">
+    <div class="bm-metrics fst-metrics-strip">
       <div v-for="m in bmMetrics" :key="m.label" class="fst-metric-item">
         <i :class="m.icon" class="fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ m.val }}</div>
@@ -14,9 +14,11 @@
       </div>
     </div>
 
+    <div class="bm-content">
+
     <!-- Мультипликаторы рынка -->
     <div class="bm-section">
-      <h2>Отраслевые мультипликаторы — {{ sectorLabel }}</h2>
+      <div class="bm-section-title">Отраслевые мультипликаторы — {{ sectorLabel }}</div>
       <div class="mult-grid">
         <div v-for="m in marketMultiples" :key="m.label" class="mult-card">
           <div class="mult-name">{{ m.label }}</div>
@@ -41,7 +43,7 @@
 
     <!-- Сравнение с пирами -->
     <div class="bm-section">
-      <h2>Портфель vs Публичные аналоги</h2>
+      <div class="bm-section-title">Портфель vs Публичные аналоги</div>
       <table class="bm-table">
         <thead>
           <tr>
@@ -94,7 +96,7 @@
 
     <!-- Фондовый бенчмарк -->
     <div class="bm-section">
-      <h2>Фонд vs Венчурные бенчмарки</h2>
+      <div class="bm-section-title">Фонд vs Венчурные бенчмарки</div>
       <div class="fund-bench-grid">
         <div v-for="b in fundBenchmarks" :key="b.name" class="fund-bench-card">
           <div class="fb-name">{{ b.name }}</div>
@@ -125,7 +127,7 @@
 
     <!-- Radar chart: компания vs сектор -->
     <div class="bm-section">
-      <h2>Radar Chart: Портфель vs Медиана vs Топ-квартиль</h2>
+      <div class="bm-section-title">Radar Chart: Портфель vs Медиана vs Топ-квартиль</div>
       <div class="radar-wrap">
         <canvas ref="radarCanvas" width="600" height="400"></canvas>
       </div>
@@ -138,7 +140,7 @@
 
     <!-- Исторический тренд мультипликаторов -->
     <div class="bm-section">
-      <h2>Исторический тренд мультипликаторов (2020-2026)</h2>
+      <div class="bm-section-title">Исторический тренд мультипликаторов (2020-2026)</div>
       <div class="chart-wrap">
         <canvas ref="trendCanvas" width="800" height="300"></canvas>
       </div>
@@ -146,7 +148,7 @@
 
     <!-- Справедливая оценка диапазон -->
     <div class="bm-section">
-      <h2>Справедливая оценка диапазон</h2>
+      <div class="bm-section-title">Справедливая оценка диапазон</div>
       <div class="valuation-grid">
         <div v-for="comp in portfolioCompanies" :key="comp.name" class="valuation-card">
           <div class="val-company">{{ comp.name }}</div>
@@ -180,7 +182,7 @@
 
     <!-- Позиционирование на карте -->
     <div class="bm-section">
-      <h2>Позиционирование по Risk/Return</h2>
+      <div class="bm-section-title">Позиционирование по Risk/Return</div>
       <div class="scatter-wrap">
         <div class="scatter-area">
           <div class="scatter-axis-y">IRR, %</div>
@@ -206,7 +208,7 @@
 
     <!-- Источники данных -->
     <div class="bm-section">
-      <h2>Источники данных</h2>
+      <div class="bm-section-title">Источники данных</div>
       <div class="sources-grid">
         <div v-for="src in dataSources" :key="src.name" class="source-card">
           <div class="src-icon"><i :class="src.icon"></i></div>
@@ -219,7 +221,7 @@
 
     <!-- Нормативная база -->
     <div class="bm-section">
-      <h2>Нормативная база</h2>
+      <div class="bm-section-title">Нормативная база</div>
       <div class="norms-list">
         <div v-for="norm in normativeBase" :key="norm.code" class="norm-card">
           <div class="norm-header">
@@ -234,6 +236,8 @@
         </div>
       </div>
     </div>
+
+    </div><!-- /bm-content -->
   </FstPageLayout>
 </template>
 
@@ -557,17 +561,11 @@ function initTrendChart() {
 </script>
 
 <style scoped>
-.bm-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
-.bm-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.bm-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
-.bm-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.bm-actions { display: flex; gap: 8px; align-items: center; }
-.bm-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; }
-.bm-btn.secondary { background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-content-border-color); }
-.bm-select { padding: 7px 10px; border-radius: 7px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.bm-metrics { margin: -20px -20px 0; border-bottom: 1px solid var(--p-content-border-color); }
+.bm-content { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; }
 
-.bm-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; }
-.bm-section h2 { margin: 0 0 16px; font-size: 1.05rem; color: var(--p-text-color); }
+.bm-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; }
+.bm-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 16px; }
 
 .mult-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
 .mult-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px; }

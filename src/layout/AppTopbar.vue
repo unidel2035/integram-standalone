@@ -368,6 +368,7 @@ onBeforeUnmount(() => {
     </div>
     <ProfileMenu ref="profileOverlay" />
     <AgentStatusPanel
+      v-if="agentPanelVisible"
       v-model:visible="agentPanelVisible"
       @close="agentPanelVisible = false"
     />

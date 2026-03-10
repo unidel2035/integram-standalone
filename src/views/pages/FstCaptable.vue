@@ -42,7 +42,7 @@
 
     <!-- Tabs -->
     <div class="ct-tabs">
-      <button v-for="t in tabs" :key="t.id" :class="['ct-tab', { active: activeTab === t.id }]" @click="activeTab = t.id">{{ t.label }}</button>
+      <SelectButton v-model="activeTab" :options="tabs" optionLabel="label" optionValue="id" :allowEmpty="false" />
     </div>
 
     <!-- Cap Table -->
@@ -93,19 +93,19 @@
 
     <!-- Dilution Scenarios -->
     <div v-if="activeTab === 'dilution'" class="ct-section">
-      <h2>Анализ разводнения</h2>
+      <div class="ct-section-title">Анализ разводнения</div>
       <div class="dilution-controls">
         <div class="ctrl-group">
           <label>Размер нового раунда, млн ₽</label>
-          <input v-model.number="newRound.amount" type="number" min="0" step="10" @input="calcDilution" />
+          <InputNumber v-model="newRound.amount" :min="0" :step="10" suffix=" млн ₽" :showButtons="false" fluid @input="calcDilution" />
         </div>
         <div class="ctrl-group">
           <label>Pre-money оценка, млн ₽</label>
-          <input v-model.number="newRound.preMoney" type="number" min="0" step="50" @input="calcDilution" />
+          <InputNumber v-model="newRound.preMoney" :min="0" :step="50" suffix=" млн ₽" :showButtons="false" fluid @input="calcDilution" />
         </div>
         <div class="ctrl-group">
           <label>Расширение option pool, %</label>
-          <input v-model.number="newRound.poolExpansion" type="number" min="0" max="20" step="0.5" @input="calcDilution" />
+          <InputNumber v-model="newRound.poolExpansion" :min="0" :max="20" :step="0.5" suffix="%" :showButtons="false" fluid @input="calcDilution" />
         </div>
       </div>
       <div class="dilution-result">
@@ -148,11 +148,11 @@
 
     <!-- Liquidation Preference -->
     <div v-if="activeTab === 'liquidity'" class="ct-section">
-      <h2>Ликвидационная очерёдность</h2>
+      <div class="ct-section-title">Ликвидационная очерёдность</div>
       <div class="lp-controls">
         <div class="ctrl-group">
           <label>Выручка от продажи, млн ₽</label>
-          <input v-model.number="exitAmount" type="number" min="0" step="100" @input="calcLiqPref" />
+          <InputNumber v-model="exitAmount" :min="0" :step="100" suffix=" млн ₽" :showButtons="false" fluid @input="calcLiqPref" />
         </div>
       </div>
       <div class="liq-waterfall">
@@ -180,21 +180,15 @@
         <h3>Добавить раунд</h3>
         <div class="modal-form">
           <label>Инвестор</label>
-          <input v-model="newEntry.name" placeholder="Название инвестора" />
+          <InputText v-model="newEntry.name" placeholder="Название инвестора" fluid />
           <label>Тип</label>
-          <select v-model="newEntry.type">
-            <option>Венчурный фонд</option>
-            <option>ФСТ НТИ</option>
-            <option>Основатель</option>
-            <option>Бизнес-ангел</option>
-            <option>Корпорат</option>
-          </select>
+          <Select v-model="newEntry.type" :options="entryTypes" fluid />
           <label>Раунд</label>
-          <input v-model="newEntry.round" placeholder="Seed / A / B..." />
+          <InputText v-model="newEntry.round" placeholder="Seed / A / B..." fluid />
           <label>Инвестировано, млн ₽</label>
-          <input v-model.number="newEntry.invested" type="number" step="5" />
+          <InputNumber v-model="newEntry.invested" :step="5" suffix=" млн ₽" :showButtons="false" fluid />
           <label>Pre-money оценка, млн ₽</label>
-          <input v-model.number="newEntry.preMoney" type="number" step="50" />
+          <InputNumber v-model="newEntry.preMoney" :step="50" suffix=" млн ₽" :showButtons="false" fluid />
         </div>
         <div class="modal-actions">
           <Button label="Отмена" size="small" severity="secondary" @click="showAddRound = false" />
@@ -210,6 +204,9 @@ import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
+import SelectButton from 'primevue/selectbutton'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
 
 const activeTab = ref('captable')
 const showAddRound = ref(false)
@@ -308,6 +305,7 @@ const fstMultiple = computed(() => {
 })
 function calcLiqPref() {}
 
+const entryTypes = ['Венчурный фонд', 'ФСТ НТИ', 'Основатель', 'Бизнес-ангел', 'Корпорат']
 const newEntry = ref({ name: '', type: 'Венчурный фонд', round: 'B', invested: 100, preMoney: 1500 })
 function addRound() {
   alert(`Добавлен инвестор ${newEntry.value.name} с вложением ${newEntry.value.invested} млн ₽`)
@@ -328,27 +326,16 @@ function exportCsv() {
 </script>
 
 <style scoped>
-.ct-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
-.ct-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.ct-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
-.ct-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.ct-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.ct-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.ct-btn.primary  { background: var(--p-primary-color); color: white; }
-.ct-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-content-border-color); }
-.ct-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+/* Metrics strip — flush to FstPageLayout body edges */
+.ct-metrics {
+  margin: -20px -20px 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
 
-.ct-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-.ct-sum-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 14px; }
-.ct-sum-val { font-size: 1.4rem; font-weight: 700; color: var(--p-primary-color); }
-.ct-sum-lbl { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 2px; }
-
-.ct-tabs { display: flex; gap: 4px; }
-.ct-tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
-.ct-tab.active { background: var(--p-primary-color); color: white; border-color: var(--p-primary-color); }
+.ct-tabs { padding: 12px 0 4px; }
 
 .ct-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; overflow-x: auto; }
-.ct-section h2 { margin: 0 0 16px; font-size: 1.05rem; color: var(--p-text-color); }
+.ct-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 16px; }
 
 .ct-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; min-width: 700px; }
 .ct-table th { padding: 8px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.75rem; font-weight: 600; }
@@ -376,7 +363,6 @@ function exportCsv() {
 .dilution-controls, .lp-controls { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
 .ctrl-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
 .ctrl-group label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.ctrl-group input { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 6px; padding: 6px 10px; color: var(--p-text-color); font-size: 0.85rem; }
 
 .dilution-result { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px; background: var(--p-surface-ground); border-radius: 8px; margin-bottom: 16px; }
 .dil-stat { display: flex; flex-direction: column; gap: 2px; }
@@ -400,7 +386,6 @@ function exportCsv() {
 .modal-box h3 { margin: 0 0 16px; font-size: 1.05rem; }
 .modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .modal-form label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.modal-form input, .modal-form select { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 /* ── Mobile adaptive ── */
@@ -409,8 +394,7 @@ function exportCsv() {
   .ct-table dil-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .ct-summary { flex-wrap: wrap; gap: 8px; }
   .liq-summary { flex-wrap: wrap; gap: 8px; }
-  .ct-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
-  .ct-tabs > * { flex-shrink: 0; font-size: 0.8rem; }
+
   .ct-summary { grid-template-columns: 1fr !important; }
 }
 </style>

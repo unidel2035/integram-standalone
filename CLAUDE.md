@@ -189,7 +189,78 @@ XSRF:     в теле запроса, НЕ в заголовке
 
    **Шаблон страницы:** Все sidebar-страницы должны использовать `<FstPageLayout>` из `src/components/fst-shared/FstPageLayout.vue` (PrimeVue Toolbar + единый скелет)
 
-4. **Единый скелет страниц — дизайн-система отступов:**
+4. **PrimeVue компоненты — обязательно:**
+
+   **Запрещено использовать нативные HTML элементы форм:**
+   - `<input>` → `<InputText>` / `<InputNumber>`
+   - `<select>` → `<Select>`
+   - `<button>` для переключателей/табов → `<SelectButton>`
+   - `<textarea>` → `<Textarea>`
+
+   **InputNumber в узких колонках — всегда:**
+   ```vue
+   <InputNumber v-model="val" :showButtons="false" fluid />
+   ```
+   Без `showButtons="false"` спиннеры +/− ломают layout в flex/grid колонках.
+
+   **Переключатели разделов (вкладки) — SelectButton:**
+   ```vue
+   <SelectButton v-model="activeTab" :options="tabs" optionLabel="label" optionValue="id" :allowEmpty="false" />
+   ```
+   Эталон: FstDeal (Equity/CLN/Грант), FstCaptable (Cap Table/Разводнение/Ликв. преф.)
+
+   **Метрики-полоска в FstPageLayout-страницах — flush:**
+   ```css
+   .page-metrics {
+     margin: -20px -20px 0;                              /* flush к краям body */
+     border-bottom: 1px solid var(--p-content-border-color);
+   }
+   ```
+   Эталон: FstPortfolio (`.fsp-metrics`), FstCaptable (`.ct-metrics`)
+
+   **Форм-строки с несколькими полями — min-width: 0:**
+   ```css
+   .fst-form-group { min-width: 0; }   /* предотвращает overflow в flex */
+   ```
+
+   **Секции-карточки внутри FstPageLayout — обязательный wrapper с gap:**
+
+   `fst-page-body` **не добавляет gap между дочерними элементами автоматически.**
+   Каждая страница с несколькими карточками/секциями оборачивает их в контейнер:
+   ```vue
+   <!-- После metrics strip — все карточки в одном wrapper -->
+   <div class="page-content">
+     <div class="page-card">...</div>
+     <div class="page-card">...</div>
+   </div>
+   ```
+   ```css
+   .page-content {
+     display: flex;
+     flex-direction: column;
+     gap: 16px;
+     padding-top: 16px;   /* отступ от metrics strip */
+   }
+   .page-card {
+     background: var(--p-surface-card);
+     border: 1px solid var(--p-content-border-color);
+     border-radius: 12px;
+     padding: 20px;
+   }
+   ```
+   Эталон: FstWaterfall (`.wf-content`), FstCaptable (`.ct-section`)
+
+   **Заголовки секций внутри карточек — НЕ `<h2>`/`<h3>`/`<h4>`:**
+   ```css
+   .page-section-title {
+     font-size: 11px; font-weight: 700;
+     text-transform: uppercase; letter-spacing: 0.07em;
+     color: var(--p-text-muted-color);
+     margin-bottom: 14px;
+   }
+   ```
+
+5. **Единый скелет страниц — дизайн-система отступов:**
 
    Эталон: **FstHub** и **FstCommittee** — обе используют один скелет.
 
@@ -220,9 +291,9 @@ XSRF:     в теле запроса, НЕ в заголовке
    - `padding-top: 4rem` в `layout-main-container` (контент сдвигается выше AppTopbar)
    - `padding: 0` по бокам без компенсации внутри компонента
    - Хардкод отступов в самом компоненте вместо использования скелета
-4. **БД:** Только Integram MCP — никакого PostgreSQL/MySQL
-5. **AI:** Только через token router `/api/ai-tokens/chat` — никаких прямых API-ключей на фронте
-6. **Новый маршрут → обязательно добавить в:**
+6. **БД:** Только Integram MCP — никакого PostgreSQL/MySQL
+7. **AI:** Только через token router `/api/ai-tokens/chat` — никаких прямых API-ключей на фронте
+8. **Новый маршрут → обязательно добавить в:**
    - `src/router/index.js`
    - `src/config/routeDescriptions.js`
    - `src/views/pages/Spaces.vue`
