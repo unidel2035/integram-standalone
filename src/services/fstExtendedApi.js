@@ -66,7 +66,7 @@ export const SUBFUNDS_METADATA = {
     shortName: 'БАС',
     color: '#42a5f5',
     icon: 'pi pi-compass',
-    svgIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="vertical-align:middle"><path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg>',
+    svgIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="vertical-align:middle"><path d="M7 3H3v4h1V5h2V4h1V3zm14 0h-4v1h1v1h2v2h1V3zM3 17v4h4v-1H5v-2H4v-1H3zm14 4h4v-4h-1v1h-2v2h-1v1zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM4.5 4.5l4 4 1.1-1.1-4-4L4.5 4.5zm10 10 4 4 1.1-1.1-4-4-1.1 1.1zm5-10-1.1 1.1-4 4 1.1 1.1 4-4L19.5 4.5zm-10 10-1.1 1.1-4 4 1.1 1.1 4-4-1.1-1.1z"/></svg>',
     budget: 3_200_000_000,
     deployedRatio: 0.31,
     description: 'Беспилотные авиационные системы',
