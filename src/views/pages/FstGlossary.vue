@@ -1,5 +1,8 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Глоссарий"
+    subtitle="Глоссарий — термины венчурного инвестирования и технологий"
+  >
     <!-- Header -->
     <template #header>
       <div class="header-content">

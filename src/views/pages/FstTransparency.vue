@@ -1,15 +1,18 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Публичная витрина"
+    subtitle="Открытые данные фонда для инвесторов и стейкхолдеров"
+  >
     <!-- Header -->
     <template #header>
       <div class="fst-tr-header-left">
         <div class="fst-tr-logo">
-          <i class="pi pi-shield" style="color:#42a5f5;font-size:20px"></i>
+          <i class="pi pi-shield" style="color:var(--fst-blue);font-size:20px"></i>
           <span>ФСТ НТИ · <b>Публичная витрина</b></span>
           <Tag value="Santiago Principles®" severity="success" style="font-size:11px" />
         </div>
         <div class="fst-tr-updated">
-          <i class="pi pi-circle-fill" :style="{ color: '#66bb6a', fontSize:'8px' }"></i>
+          <i class="pi pi-circle-fill" :style="{ color: 'var(--fst-green)', fontSize:'8px' }"></i>
           Обновлено: {{ lastUpdate }}
         </div>
       </div>
@@ -42,7 +45,7 @@
       <!-- Fund Overview -->
       <div class="fst-tr-panel">
         <div class="fst-tr-panel-title">
-          <i class="pi pi-building-columns" style="color:#42a5f5"></i> Обзор фонда
+          <i class="pi pi-building-columns" style="color:var(--fst-blue)"></i> Обзор фонда
         </div>
         <div class="fst-tr-overview-grid">
           <div v-for="item in fundOverview" :key="item.label" class="fst-tr-overview-item">
@@ -55,7 +58,7 @@
       <!-- Strategy -->
       <div class="fst-tr-panel">
         <div class="fst-tr-panel-title">
-          <i class="pi pi-compass" style="color:#66bb6a"></i> Инвестиционная стратегия
+          <i class="pi pi-compass" style="color:var(--fst-green)"></i> Инвестиционная стратегия
         </div>
         <div class="fst-tr-strategy">
           <div v-for="s in strategy" :key="s.name" class="fst-tr-strategy-item">
@@ -71,7 +74,7 @@
       <!-- Santiago Principles Compliance -->
       <div class="fst-tr-panel">
         <div class="fst-tr-panel-title">
-          <i class="pi pi-verified" style="color:#ffa726"></i> Santiago Principles® Compliance
+          <i class="pi pi-verified" style="color:var(--fst-brand)"></i> Santiago Principles® Compliance
         </div>
         <div class="fst-tr-principles">
           <div v-for="p in santiagoPrinciples" :key="p.code" class="fst-tr-principle">
@@ -91,7 +94,7 @@
       <!-- ESG & Compliance -->
       <div class="fst-tr-panel">
         <div class="fst-tr-panel-title">
-          <i class="pi pi-shield" style="color:#ab47bc"></i> ESG и соответствие регулированию
+          <i class="pi pi-shield" style="color:var(--fst-purple)"></i> ESG и соответствие регулированию
         </div>
         <div class="fst-tr-esg-grid">
           <div v-for="item in esgCompliance" :key="item.title" class="fst-tr-esg-item">
@@ -109,7 +112,7 @@
       <!-- Governance Structure -->
       <div class="fst-tr-panel">
         <div class="fst-tr-panel-title">
-          <i class="pi pi-sitemap" style="color:#26c6da"></i> Структура управления
+          <i class="pi pi-sitemap" style="color:var(--fst-cyan)"></i> Структура управления
         </div>
         <div class="fst-tr-governance">
           <div v-for="g in governance" :key="g.role" class="fst-tr-gov-item">
@@ -123,7 +126,7 @@
       <!-- Team -->
       <div class="fst-tr-panel">
         <div class="fst-tr-panel-title">
-          <i class="pi pi-users" style="color:#ef5350"></i> Команда
+          <i class="pi pi-users" style="color:var(--fst-red)"></i> Команда
         </div>
         <div class="fst-tr-team-grid">
           <div v-for="m in team" :key="m.name" class="fst-tr-team-member">
@@ -140,7 +143,7 @@
       <!-- Regulatory Status -->
       <div class="fst-tr-panel">
         <div class="fst-tr-panel-title">
-          <i class="pi pi-file-check" style="color:#7e57c2"></i> Регуляторный статус
+          <i class="pi pi-file-check" style="color:var(--fst-purple)"></i> Регуляторный статус
         </div>
         <div class="fst-tr-regulatory">
           <div v-for="r in regulatoryStatus" :key="r.title" class="fst-tr-reg-item">
@@ -159,7 +162,7 @@
       <!-- Contact & Data Room Access -->
       <div class="fst-tr-panel">
         <div class="fst-tr-panel-title">
-          <i class="pi pi-envelope" style="color:#ffa726"></i> Контакты для инвесторов
+          <i class="pi pi-envelope" style="color:var(--fst-brand)"></i> Контакты для инвесторов
         </div>
         <div class="fst-tr-contact">
           <p>Для получения доступа к защищённому Investor Data Room и детальной информации о фонде, пожалуйста, свяжитесь с нами:</p>
@@ -189,7 +192,7 @@
         <p style="margin-bottom:16px">Защищённый раздел для потенциальных LP. Доступ предоставляется после подписания NDA.</p>
         <div class="fst-tr-dataroom-sections">
           <div v-for="sec in dataRoomSections" :key="sec.title" class="fst-tr-dr-section">
-            <i :class="sec.icon" style="font-size:18px;color:#42a5f5;margin-right:10px"></i>
+            <i :class="sec.icon" style="font-size:18px;color:var(--fst-blue);margin-right:10px"></i>
             <div>
               <div style="font-weight:600;margin-bottom:4px">{{ sec.title }}</div>
               <div style="font-size:12px;color:var(--p-text-muted-color)">{{ sec.desc }}</div>
@@ -241,19 +244,19 @@ const strategy = ref([
   {
     name: 'Беспилотные авиационные системы (БАС)',
     icon: 'pi pi-send',
-    color: '#42a5f5',
+    color: 'var(--fst-blue)',
     desc: 'Инвестиции в разработку гражданских и двойного назначения БПЛА, навигационных систем, ПО и сенсоров. Фокус на TRL 4–7, суверенность компонентов >70%.'
   },
   {
     name: 'Робототехника (РОБО)',
     icon: 'pi pi-cog',
-    color: '#66bb6a',
+    color: 'var(--fst-green)',
     desc: 'Промышленные роботы, коботы, автономные системы для агросектора и логистики. Акцент на локализацию приводов, контроллеров и vision-систем.'
   },
   {
     name: 'Микроэлектроника (МЭ)',
     icon: 'pi pi-microchip',
-    color: '#ffa726',
+    color: 'var(--fst-brand)',
     desc: 'Отечественные полупроводники, сенсоры, FPGA, аналоговая электроника. Поддержка переноса на российские фабрики (процессы ≥65нм–180нм).'
   },
 ])
@@ -274,25 +277,25 @@ const santiagoPrinciples = ref([
 const esgCompliance = ref([
   {
     icon: 'pi pi-globe',
-    color: '#66bb6a',
+    color: 'var(--fst-green)',
     title: 'ESG Policy',
     desc: 'Критерии социальной и экологической ответственности при оценке портфельных компаний. Carbon neutrality target 2030.'
   },
   {
     icon: 'pi pi-shield',
-    color: '#ef5350',
+    color: 'var(--fst-red)',
     title: 'AML/KYC процедуры',
     desc: 'Полная проверка бенефициаров и источников финансирования согласно 115-ФЗ и рекомендациям FATF.'
   },
   {
     icon: 'pi pi-verified',
-    color: '#42a5f5',
+    color: 'var(--fst-blue)',
     title: 'Compliance',
     desc: 'Соблюдение требований Банка России, ФНС, ФСБУ 4/2023 (учёт инвестиций), МСФО 13 (справедливая стоимость).'
   },
   {
     icon: 'pi pi-book',
-    color: '#ffa726',
+    color: 'var(--fst-brand)',
     title: 'Кодекс поведения',
     desc: 'Этический кодекс сотрудников, политика нулевой толерантности к коррупции и конфликтам интересов.'
   },
@@ -347,28 +350,28 @@ const team = ref([
 const regulatoryStatus = ref([
   {
     icon: 'pi pi-building',
-    color: '#42a5f5',
+    color: 'var(--fst-blue)',
     title: 'Лицензия УК',
     desc: 'Лицензия Банка России на осуществление деятельности по управлению инвестиционными фондами, паевыми инвестиционными фондами и негосударственными пенсионными фондами',
     status: '✅ № 1234-ЦБ (бессрочная)'
   },
   {
     icon: 'pi pi-shield',
-    color: '#66bb6a',
+    color: 'var(--fst-green)',
     title: 'Регистрация фонда',
     desc: 'Закрытый паевой инвестиционный фонд особо рисковых (венчурных) инвестиций',
     status: '✅ Зарегистрирован в Банке России'
   },
   {
     icon: 'pi pi-file-check',
-    color: '#ffa726',
+    color: 'var(--fst-brand)',
     title: 'Аудит',
     desc: 'Независимый аудит финансовой отчётности по МСФО и РСБУ',
     status: '✅ Аудитор: Deloitte & Touche'
   },
   {
     icon: 'pi pi-verified',
-    color: '#ab47bc',
+    color: 'var(--fst-purple)',
     title: 'Раскрытие информации',
     desc: 'Соблюдение Указания ЦБ РФ № 5790-У о раскрытии информации УК',
     status: '✅ Публикуется ежеквартально'
@@ -487,7 +490,7 @@ function statusLabel(status) {
 
 /* Hero */
 .fst-tr-hero {
-  background: linear-gradient(135deg, rgba(66,165,245,0.08) 0%, rgba(102,187,106,0.08) 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--fst-blue) 8%, transparent) 0%, color-mix(in srgb, var(--fst-green) 8%, transparent) 100%);
   border-bottom: 1px solid var(--surface-border);
   padding: 40px 24px;
 }
@@ -647,16 +650,16 @@ function statusLabel(status) {
   border-radius: 12px;
 }
 .fst-tr-status-ok {
-  background: rgba(102,187,106,0.15);
-  color: #66bb6a;
+  background: color-mix(in srgb, var(--fst-green) 15%, transparent);
+  color: var(--fst-green);
 }
 .fst-tr-status-partial {
-  background: rgba(255,167,38,0.15);
-  color: #ffa726;
+  background: color-mix(in srgb, var(--fst-brand) 15%, transparent);
+  color: var(--fst-brand);
 }
 .fst-tr-status-pending {
-  background: rgba(239,83,80,0.15);
-  color: #ef5350;
+  background: color-mix(in srgb, var(--fst-red) 15%, transparent);
+  color: var(--fst-red);
 }
 .fst-tr-pr-title {
   font-size: 13px;

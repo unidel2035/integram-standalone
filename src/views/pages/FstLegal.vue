@@ -1,7 +1,7 @@
 <template>
   <FstPageLayout title="Юридические документы" subtitle="Генератор шаблонов: term sheet, SPA, SHA, NDA, опционные соглашения">
     <template #actions>
-      <button class="legal-btn primary" @click="showGenerator = true"><i class="pi pi-plus"></i> Создать документ</button>
+      <Button icon="pi pi-plus" label="Создать документ" @click="showGenerator = true" />
     </template>
 
     <!-- Библиотека документов из базы -->
@@ -14,12 +14,11 @@
 
       <!-- Табы по этапам -->
       <div class="stage-tabs">
-        <button v-for="s in stages" :key="s.id"
-          :class="['stage-tab', { active: activeStage === s.id }]"
-          @click="activeStage = s.id">
-          <span class="stage-num">{{ s.label }}</span>
-          <span class="stage-cnt">{{ templatesByStage[s.id]?.length || 0 }}</span>
-        </button>
+        <Button v-for="s in stages" :key="s.id"
+          :label="`${s.label} (${templatesByStage[s.id]?.length || 0})`"
+          :severity="activeStage === s.id ? undefined : 'secondary'"
+          size="small"
+          @click="activeStage = s.id" />
       </div>
 
       <div class="doc-grid" v-if="!loadingTemplates">
@@ -34,8 +33,8 @@
             <span class="doc-stage-badge" :class="'stage-' + tmpl.stage">Этап {{ tmpl.stage }}</span>
             <div class="doc-btns">
               <a v-if="tmpl.url" :href="tmpl.url" target="_blank" class="icon-btn" title="Открыть файл"><i class="pi pi-eye"></i></a>
-              <button class="icon-btn" title="Создать на основе шаблона" @click="useTemplate(tmpl)"><i class="pi pi-copy"></i></button>
-              <button class="icon-btn" title="Скачать" @click="downloadTemplate(tmpl)"><i class="pi pi-download"></i></button>
+              <Button icon="pi pi-copy" severity="secondary" text size="small" v-tooltip="'Создать на основе шаблона'" @click="useTemplate(tmpl)" />
+              <Button icon="pi pi-download" severity="secondary" text size="small" v-tooltip="'Скачать'" @click="downloadTemplate(tmpl)" />
             </div>
           </div>
         </div>
@@ -65,9 +64,9 @@
             <td class="doc-date">{{ doc.createdAt }}</td>
             <td><span class="doc-status" :class="doc.status">{{ docStatusLabel(doc.status) }}</span></td>
             <td class="doc-actions">
-              <button class="icon-btn" title="Просмотр" @click="downloadDoc(doc)"><i class="pi pi-eye"></i></button>
-              <button class="icon-btn" title="Скачать" @click="downloadDoc(doc)"><i class="pi pi-download"></i></button>
-              <button class="icon-btn" title="Подписать" @click="signDoc(doc)"><i class="pi pi-pen-to-square"></i></button>
+              <Button icon="pi pi-eye" severity="secondary" text size="small" v-tooltip="'Просмотр'" @click="downloadDoc(doc)" />
+              <Button icon="pi pi-download" severity="secondary" text size="small" v-tooltip="'Скачать'" @click="downloadDoc(doc)" />
+              <Button icon="pi pi-pen-to-square" severity="secondary" text size="small" v-tooltip="'Подписать'" @click="signDoc(doc)" />
             </td>
           </tr>
         </tbody>
@@ -81,49 +80,37 @@
         <div v-for="c in termSheetConditions" :key="c.term" class="ts-cond">
           <div class="tsc-term">{{ c.term }}</div>
           <div class="tsc-input">
-            <input v-if="c.type === 'text'" v-model="c.value" />
-            <select v-else-if="c.type === 'select'" v-model="c.value">
-              <option v-for="opt in c.options" :key="opt">{{ opt }}</option>
-            </select>
-            <input v-else v-model.number="c.value" type="number" :step="c.step" />
+            <InputText v-if="c.type === 'text'" v-model="c.value" fluid />
+            <Select v-else-if="c.type === 'select'" v-model="c.value" :options="c.options" fluid />
+            <InputText v-else v-model.number="c.value" type="number" :step="c.step" fluid />
           </div>
           <div class="tsc-note">{{ c.note }}</div>
         </div>
       </div>
-      <button class="legal-btn primary" @click="generateTermSheet"><i class="pi pi-file-edit"></i> Сгенерировать Term Sheet</button>
+      <Button icon="pi pi-file-edit" label="Сгенерировать Term Sheet" @click="generateTermSheet" />
     </div>
 
     <!-- Генератор Modal -->
-    <div v-if="showGenerator" class="modal-overlay" @click.self="showGenerator = false">
-      <div class="modal-box">
-        <h3>Создать юридический документ</h3>
-        <div class="modal-form">
-          <label>Тип документа</label>
-          <select v-model="genForm.templateId">
-            <option v-for="t in templates" :key="t.id" :value="t.id">{{ t.name }}</option>
-          </select>
-          <label>Портфельная компания</label>
-          <select v-model="genForm.company">
-            <option>АгроДрон</option><option>RoboFarm</option><option>МедТех БПЛА</option>
-            <option>DroneLogistics</option><option>CyberPilot</option><option>Другая</option>
-          </select>
-          <label>ИНН контрагента</label>
-          <input v-model="genForm.inn" placeholder="1234567890" />
-          <label>Дата документа</label>
-          <input v-model="genForm.date" type="date" />
-          <label>Юрисдикция</label>
-          <select v-model="genForm.jurisdiction">
-            <option>Российская Федерация</option>
-            <option>Республика Беларусь</option>
-            <option>Республика Казахстан</option>
-          </select>
-        </div>
-        <div class="modal-actions">
-          <button class="legal-btn secondary" @click="showGenerator = false"><i class="pi pi-times"></i> Отмена</button>
-          <button class="legal-btn primary" @click="generateDoc"><i class="pi pi-check"></i> Создать документ</button>
-        </div>
+    <Dialog v-model:visible="showGenerator" header="Создать юридический документ" :style="{ width: '380px' }" modal>
+      <div class="modal-form">
+        <label>Тип документа</label>
+        <Select v-model="genForm.templateId" :options="allTemplates" optionLabel="name" optionValue="id" fluid />
+        <label>Портфельная компания</label>
+        <Select v-model="genForm.company" :options="companyOptions" fluid />
+        <label>ИНН контрагента</label>
+        <InputText v-model="genForm.inn" placeholder="1234567890" fluid />
+        <label>Дата документа</label>
+        <InputText v-model="genForm.date" type="date" fluid />
+        <label>Юрисдикция</label>
+        <Select v-model="genForm.jurisdiction" :options="jurisdictionOptions" fluid />
       </div>
-    </div>
+      <template #footer>
+        <div class="modal-actions">
+          <Button icon="pi pi-times" label="Отмена" severity="secondary" @click="showGenerator = false" />
+          <Button icon="pi pi-check" label="Создать документ" @click="generateDoc" />
+        </div>
+      </template>
+    </Dialog>
   </FstPageLayout>
 </template>
 
@@ -131,10 +118,17 @@
 import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { getDocumentTemplates } from '@/services/fstApi'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import Dialog from 'primevue/dialog'
 
 const showGenerator = ref(false)
 const selectedTemplate = ref(null)
 const loadingTemplates = ref(true)
+
+const companyOptions = ['АгроДрон', 'RoboFarm', 'МедТех БПЛА', 'DroneLogistics', 'CyberPilot', 'Другая']
+const jurisdictionOptions = ['Российская Федерация', 'Республика Беларусь', 'Республика Казахстан']
 const allTemplates = ref([])
 const activeStage = ref(0)
 
@@ -225,15 +219,7 @@ function generateDoc() {
 </script>
 
 <style scoped>
-.legal-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
-.legal-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.legal-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
-.legal-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.legal-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.legal-btn.primary  { background: var(--p-primary-color); color: #fff; }
-.legal-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
-
-.legal-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
+.legal-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; overflow-x: auto; }
 .legal-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
 
 .lib-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -242,26 +228,20 @@ function generateDoc() {
 .lib-count { font-size: 0.78rem; color: var(--p-text-muted-color); }
 
 .stage-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-.stage-tab { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--surface-border); background: var(--surface-ground); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.78rem; transition: all 0.2s; }
-.stage-tab:hover { border-color: var(--p-primary-color); color: var(--p-text-color); }
-.stage-tab.active { background: var(--p-primary-color); border-color: var(--p-primary-color); color: #fff; }
-.stage-num { font-weight: 600; }
-.stage-cnt { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 0 6px; font-size: 0.7rem; }
-.stage-tab:not(.active) .stage-cnt { background: var(--surface-border); color: var(--p-text-muted-color); }
 
 .doc-card-top { display: flex; align-items: center; justify-content: space-between; }
 .doc-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
 .doc-btns { display: flex; gap: 4px; }
-.icon-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-muted-color); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: all 0.15s; text-decoration: none; }
-.icon-btn:hover { border-color: var(--p-primary-color); color: var(--p-primary-color); background: var(--p-primary-color)11; }
+.icon-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: all 0.15s; text-decoration: none; }
+.icon-btn:hover { border-color: var(--p-primary-color); color: var(--p-primary-color); }
 .doc-card { display: flex; flex-direction: column; gap: 5px; }
 .doc-empty { grid-column: 1/-1; text-align: center; padding: 24px; color: var(--p-text-muted-color); font-size: 0.85rem; }
 .doc-num { font-size: 0.68rem; color: var(--p-text-muted-color); font-weight: 600; }
 .doc-stage-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
-.doc-stage-badge.stage-0 { background: #42a5f522; color: #42a5f5; }
-.doc-stage-badge.stage-1 { background: #66bb6a22; color: #66bb6a; }
-.doc-stage-badge.stage-2 { background: #ff980022; color: #ff9800; }
-.doc-stage-badge.stage-3 { background: var(--p-primary-color)22; color: var(--p-primary-color); }
+.doc-stage-badge.stage-0 { background: color-mix(in srgb, var(--fst-blue) 13%, transparent); color: var(--fst-blue); }
+.doc-stage-badge.stage-1 { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
+.doc-stage-badge.stage-2 { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
+.doc-stage-badge.stage-3 { background: color-mix(in srgb, var(--p-primary-color) 13%, transparent); color: var(--p-primary-color); }
 
 .preview-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
 .preview-stage { font-size: 0.72rem; color: var(--p-text-muted-color); margin-bottom: 4px; }
@@ -273,44 +253,38 @@ function generateDoc() {
 a.legal-btn { text-decoration: none; display: inline-flex; align-items: center; }
 
 .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.doc-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; cursor: pointer; transition: border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }
+.doc-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; cursor: pointer; transition: border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }
 .doc-card:hover { border-color: var(--p-primary-color); }
 .doc-icon { font-size: 1.8rem; }
 .doc-name { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
 .doc-desc { font-size: 0.72rem; color: var(--p-text-muted-color); flex: 1; }
 .doc-meta { display: flex; align-items: center; justify-content: space-between; }
 .doc-type { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
-.doc-type.investment { background: var(--p-primary-color); color: #fff; }
-.doc-type.legal { background: #42a5f522; color: #42a5f5; }
-.doc-type.hr { background: #66bb6a22; color: #66bb6a; }
+.doc-type.investment { background: var(--p-primary-color); color: white; }
+.doc-type.legal { background: color-mix(in srgb, var(--fst-blue) 13%, transparent); color: var(--fst-blue); }
+.doc-type.hr { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
 .doc-pages { font-size: 0.68rem; color: var(--p-text-muted-color); }
 
 .legal-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 600px; }
-.legal-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; }
-.legal-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
+.legal-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.72rem; }
+.legal-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
 .doc-title { font-weight: 600; }
 .doc-co { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .doc-type-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
 .doc-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .doc-status { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
-.doc-status.signed { background: #66bb6a22; color: #66bb6a; }
-.doc-status.draft  { background: var(--surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--surface-border); }
-.doc-status.review { background: #ff980022; color: #ff9800; }
+.doc-status.signed { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
+.doc-status.draft  { background: var(--p-surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); }
+.doc-status.review { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
 .doc-actions { display: flex; gap: 6px; }
-.action-btn { padding: 3px 10px; border-radius: 5px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); cursor: pointer; font-size: 0.72rem; }
 
 .ts-conditions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.ts-cond { display: grid; grid-template-columns: 220px 1fr; gap: 10px; align-items: center; padding: 8px; background: var(--surface-ground); border-radius: 6px; }
+.ts-cond { display: grid; grid-template-columns: 220px 1fr; gap: 10px; align-items: center; padding: 8px; background: var(--p-surface-ground); border-radius: 6px; }
 .tsc-term  { font-size: 0.82rem; font-weight: 600; color: var(--p-text-color); }
-.tsc-input input, .tsc-input select { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 6px; padding: 5px 10px; color: var(--p-text-color); font-size: 0.82rem; width: 100%; }
 .tsc-note  { font-size: 0.68rem; color: var(--p-text-muted-color); grid-column: 1 / -1; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-box { background: var(--surface-card); border-radius: 12px; padding: 24px; width: 380px; max-width: 95vw; }
-.modal-box h3 { margin: 0 0 16px; }
 .modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .modal-form label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.modal-form input, .modal-form select { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 /* ── Mobile adaptive ── */

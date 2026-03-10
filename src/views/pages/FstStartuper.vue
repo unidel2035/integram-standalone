@@ -231,6 +231,161 @@
           </div>
         </template>
 
+        <!-- GOST Tech Doc -->
+        <template v-else-if="activeItem?.type === 'doc-gost'">
+          <div class="spw-gost-wrap">
+            <div class="spw-doc-topbar">
+              <span class="spw-doc-title"><i :class="activeItem.icon"></i> {{ activeItem.label }}</span>
+              <div class="spw-doc-actions">
+                <button class="spw-btn spw-btn--primary" :disabled="gostGenerating" @click="generateGostDoc(activeItem)">
+                  <i :class="gostGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-sparkles'"></i>
+                  {{ gostGenerating ? 'Генерирую...' : gostDoc[activeItem.key] ? 'Перегенерировать' : 'Сгенерировать с AI' }}
+                </button>
+                <button v-if="gostDoc[activeItem.key]" class="spw-btn spw-btn--ghost" @click="copyGostDoc(activeItem.key)" title="Скопировать">
+                  <i class="pi pi-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="spw-gost-body">
+              <div v-if="!gostDoc[activeItem.key] && !gostGenerating" class="spw-doc-placeholder">
+                <i :class="activeItem.icon" style="font-size:48px;opacity:.3"></i>
+                <h3>{{ activeItem.label }}</h3>
+                <p>{{ gostDescription(activeItem.gostType) }}</p>
+                <button class="spw-btn spw-btn--primary" @click="generateGostDoc(activeItem)">
+                  <i class="pi pi-sparkles"></i> Сгенерировать с AI
+                </button>
+              </div>
+              <div v-else-if="gostGenerating" class="spw-gost-loading">
+                <i class="pi pi-spin pi-spinner" style="font-size:28px;color:var(--p-primary-color)"></i>
+                <div style="font-size:14px;font-weight:600">AI пишет документ по ГОСТ...</div>
+                <div style="font-size:11px;color:var(--p-text-muted-color)">{{ gostLoadingStep }}</div>
+              </div>
+              <pre v-else class="spw-gost-pre">{{ gostDoc[activeItem.key] }}</pre>
+            </div>
+          </div>
+        </template>
+
+        <!-- Term Sheet Constructor -->
+        <template v-else-if="activeItem?.type === 'termsheet'">
+          <div class="spw-ts-wrap">
+            <div class="spw-doc-topbar">
+              <span class="spw-doc-title"><i class="pi pi-file-edit"></i> Term Sheet — Конструктор</span>
+              <div class="spw-doc-actions">
+                <button class="spw-btn spw-btn--primary" :disabled="tsGenerating" @click="generateTermSheet">
+                  <i :class="tsGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-sparkles'"></i>
+                  {{ tsGenerating ? 'Заполняю...' : 'AI заполнить' }}
+                </button>
+                <a href="https://ai2fund.ru/term_sheet.pdf" target="_blank" class="spw-btn spw-btn--outline">
+                  <i class="pi pi-external-link"></i> Эталон PDF
+                </a>
+              </div>
+            </div>
+            <div class="spw-ts-body">
+              <div class="spw-ts-form">
+                <div v-for="section in TS_SECTIONS" :key="section.key" class="spw-ts-section">
+                  <div class="spw-ts-sec-head">{{ section.label }}</div>
+                  <div v-for="field in section.fields" :key="field.key" class="spw-ts-field">
+                    <label>{{ field.label }}</label>
+                    <select v-if="field.type === 'select'" v-model="termSheet[field.key]" class="spw-field-input">
+                      <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
+                    </select>
+                    <input v-else v-model="termSheet[field.key]" :placeholder="field.placeholder" class="spw-field-input" />
+                  </div>
+                </div>
+              </div>
+              <div class="spw-ts-preview">
+                <div class="spw-ts-preview-head">Предпросмотр Term Sheet</div>
+                <div class="spw-ts-preview-content" v-html="renderTermSheet()"></div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Smart Contract -->
+        <template v-else-if="activeView === 'smart-contract'">
+          <div class="spw-sc-wrap">
+            <div class="spw-doc-topbar">
+              <span class="spw-doc-title"><i class="pi pi-verified"></i> Smart Contract сделки</span>
+              <div class="spw-doc-actions">
+                <button class="spw-btn spw-btn--primary" :disabled="scGenerating" @click="generateSmartContract">
+                  <i :class="scGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-sparkles'"></i>
+                  {{ scGenerating ? 'Формирую...' : smartContract ? 'Обновить' : 'Сформировать контракт' }}
+                </button>
+                <button v-if="smartContract" class="spw-btn spw-btn--outline" @click="sendToIC">
+                  <i class="pi pi-send"></i> В ИК на подпись
+                </button>
+              </div>
+            </div>
+            <div class="spw-sc-body">
+              <div v-if="!smartContract && !scGenerating" class="spw-doc-placeholder">
+                <i class="pi pi-verified" style="font-size:56px;color:var(--fst-purple);opacity:.4"></i>
+                <h3>Smart Contract сделки</h3>
+                <p>Смарт-контракт аккумулирует параметры Term Sheet, решение ИК и транши сделки.<br>
+                   Формируется автоматически по результатам работы агентов и инвесткомитета.</p>
+                <button class="spw-btn spw-btn--primary" @click="generateSmartContract">
+                  <i class="pi pi-sparkles"></i> Сформировать контракт
+                </button>
+              </div>
+              <div v-else-if="scGenerating" class="spw-gost-loading">
+                <i class="pi pi-spin pi-spinner" style="font-size:28px;color:var(--p-primary-color)"></i>
+                <div style="font-size:14px;font-weight:600">AI формирует смарт-контракт сделки...</div>
+                <div style="font-size:11px;color:var(--p-text-muted-color)">Синтез данных Term Sheet + решение агентов + ИК...</div>
+              </div>
+              <div v-else-if="smartContract" class="spw-sc-content">
+                <!-- Header -->
+                <div class="spw-sc-header-card">
+                  <div :class="['spw-sc-status', smartContract.status === 'APPROVED' ? 'sc-approved' : 'sc-pending']">
+                    <i :class="smartContract.status === 'APPROVED' ? 'pi pi-check-circle' : 'pi pi-clock'"></i>
+                    {{ smartContract.status === 'APPROVED' ? 'Одобрено ИК' : 'Ожидает ИК' }}
+                  </div>
+                  <div class="spw-sc-id">{{ smartContract.id }}</div>
+                  <div class="spw-sc-ts">{{ smartContract.timestamp }}</div>
+                </div>
+                <!-- Parties -->
+                <div class="spw-sc-section">
+                  <div class="spw-sc-sec-title"><i class="pi pi-users"></i> Стороны сделки</div>
+                  <div v-for="p in (smartContract.parties || [])" :key="p.role" class="spw-sc-party">
+                    <span class="spw-sc-party-role">{{ p.role }}</span>
+                    <span class="spw-sc-party-name">{{ p.name }}</span>
+                  </div>
+                </div>
+                <!-- Terms -->
+                <div class="spw-sc-section">
+                  <div class="spw-sc-sec-title"><i class="pi pi-list"></i> Условия сделки</div>
+                  <div class="spw-sc-terms-grid">
+                    <div v-for="t in (smartContract.terms || [])" :key="t.key" class="spw-sc-term">
+                      <span class="spw-sc-term-label">{{ t.label }}</span>
+                      <span class="spw-sc-term-value">{{ t.value }}</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Milestones -->
+                <div class="spw-sc-section">
+                  <div class="spw-sc-sec-title"><i class="pi pi-flag"></i> Вехи и триггеры выплат</div>
+                  <div v-for="(m, i) in (smartContract.milestones || [])" :key="i" class="spw-sc-milestone">
+                    <span class="spw-sc-ms-num">{{ i + 1 }}</span>
+                    <div class="spw-sc-ms-body">
+                      <div class="spw-sc-ms-title">{{ m.title }}</div>
+                      <div class="spw-sc-ms-cond">{{ m.condition }}</div>
+                    </div>
+                    <span class="spw-sc-ms-amount">{{ m.amount }}</span>
+                  </div>
+                </div>
+                <!-- IC Decision -->
+                <div v-if="smartContract.icDecision" class="spw-sc-section">
+                  <div class="spw-sc-sec-title"><i class="pi pi-comments"></i> Решение инвесткомитета</div>
+                  <div class="spw-sc-ic-decision" v-html="md(smartContract.icDecision)"></div>
+                </div>
+                <!-- JSON export -->
+                <div class="spw-sc-json-toggle" @click="showScJson = !showScJson">
+                  <i class="pi pi-code"></i> {{ showScJson ? 'Скрыть JSON' : 'Показать JSON' }}
+                </div>
+                <pre v-if="showScJson" class="spw-sc-json">{{ JSON.stringify(smartContract, null, 2) }}</pre>
+              </div>
+            </div>
+          </div>
+        </template>
+
         <!-- FinModel -->
         <template v-else-if="activeView === 'finmodel'">
           <div class="spw-finmodel-wrap">
@@ -329,6 +484,7 @@
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import FstFinModelBlock from '@/components/finmodel/FstFinModelBlock.vue'
+import { buildArtifactTree, logEvent, fetchEvents, syncCompanyTwin } from '@/services/workspaceOntologyService.js'
 
 const router = useRouter()
 
@@ -343,20 +499,21 @@ const ROLES = [
 ]
 
 const AGENTS = {
-  navigator: { id: 'navigator', name: 'Навигатор', icon: '🤖', color: '#6366f1', role: 'Ведёт через платформу' },
-  analyst:   { id: 'analyst',   name: 'Аналитик',  icon: '🔍', color: '#8b5cf6', role: 'Анализирует проект' },
-  scorer:    { id: 'scorer',    name: 'Скорер',    icon: '📊', color: '#f59e0b', role: 'Оценивает по 8 критериям' },
-  grants:    { id: 'grants',    name: 'Грантовед', icon: '💰', color: '#10b981', role: 'Ищет гранты и субсидии' },
-  finance:   { id: 'finance',   name: 'Финансист', icon: '💹', color: '#059669', role: 'Финмодель и оценка' },
-  legal:     { id: 'legal',     name: 'Юрист',     icon: '⚖️', color: '#64748b', role: 'Договора и IP' },
-  risk:      { id: 'risk',      name: 'Риск',      icon: '🛡️', color: '#ef4444', role: 'Управление рисками' },
-  critic:    { id: 'critic',    name: 'Критик',    icon: '🔥', color: '#475569', role: 'Стресс-тест идей' },
+  navigator:   { id: 'navigator',   name: 'Навигатор',     icon: '🤖', color: '#6366f1', role: 'Ведёт через платформу' },
+  analyst:     { id: 'analyst',     name: 'Аналитик',      icon: '🔍', color: '#8b5cf6', role: 'Анализирует проект' },
+  scorer:      { id: 'scorer',      name: 'Скорер',        icon: '📊', color: '#f59e0b', role: 'Оценивает по 8 критериям' },
+  grants:      { id: 'grants',      name: 'Грантовед',     icon: '💰', color: '#10b981', role: 'Ищет гранты и субсидии' },
+  finance:     { id: 'finance',     name: 'Финансист',     icon: '💹', color: '#059669', role: 'Финмодель и оценка' },
+  legal:       { id: 'legal',       name: 'Юрист',         icon: '⚖️', color: '#64748b', role: 'Договора и IP' },
+  risk:        { id: 'risk',        name: 'Риск',          icon: '🛡️', color: '#ef4444', role: 'Управление рисками' },
+  critic:      { id: 'critic',      name: 'Критик',        icon: '🔥', color: '#475569', role: 'Стресс-тест идей' },
+  techwriter:  { id: 'techwriter',  name: 'Тех. писатель', icon: '📋', color: '#0ea5e9', role: 'ГОСТ документация, ТЗ, TRL' },
 }
 
 const ROLE_AGENTS = {
-  founder:  ['navigator', 'analyst', 'scorer', 'grants', 'finance', 'legal', 'risk', 'critic'],
+  founder:  ['navigator', 'analyst', 'scorer', 'grants', 'finance', 'legal', 'risk', 'critic', 'techwriter'],
   investor: ['analyst', 'finance', 'risk'],
-  expert:   ['analyst', 'scorer', 'critic', 'risk'],
+  expert:   ['analyst', 'scorer', 'critic', 'risk', 'techwriter'],
 }
 
 const SCORE_LABELS = {
@@ -400,13 +557,22 @@ const ARTIFACTS_ALL = [
     key: 'deal', label: 'Сделка', icon: 'pi pi-handshake', roles: ['founder','investor'],
     items: [
       { key: 'doc-termsheet',  label: 'Term Sheet (фонд)', icon: 'pi pi-file-edit',  type: 'doc', required: true },
-      { key: 'doc-ts-own',     label: 'Term Sheet (наш)',  icon: 'pi pi-file-edit',  type: 'doc',
-        url: 'https://ai2fund.ru/term_sheet.pdf' },
+      { key: 'doc-ts-own',     label: 'Term Sheet (конструктор)', icon: 'pi pi-file-edit',  type: 'termsheet' },
       { key: 'doc-invest',     label: 'Договор инвестирования', icon: 'pi pi-verified',  type: 'doc', required: true },
       { key: 'doc-corp',       label: 'Корпоративный договор',  icon: 'pi pi-users',     type: 'doc', required: true },
       { key: 'doc-protocol',   label: 'Протокол собрания',      icon: 'pi pi-list',      type: 'doc' },
       { key: 'doc-application',label: 'Заявление о вступлении', icon: 'pi pi-user-plus', type: 'doc', required: true },
       { key: 'doc-spouse',     label: 'Согласие супруга',       icon: 'pi pi-heart',     type: 'doc' },
+      { key: 'smart-contract', label: 'Smart Contract сделки',  icon: 'pi pi-verified',  type: 'smart-contract' },
+    ],
+  },
+  {
+    key: 'tech', label: 'Тех. документация', icon: 'pi pi-cog', roles: ['founder', 'expert'],
+    items: [
+      { key: 'doc-tz',      label: 'ТЗ (ГОСТ 34.602)',    icon: 'pi pi-file-edit',  type: 'doc-gost', gostType: 'tz',      required: true },
+      { key: 'doc-techdoc', label: 'Описание ПО (ГОСТ)',   icon: 'pi pi-book',       type: 'doc-gost', gostType: 'techdoc' },
+      { key: 'doc-trl',     label: 'TRL-паспорт',          icon: 'pi pi-chart-bar',  type: 'doc-gost', gostType: 'trl' },
+      { key: 'doc-sysarch', label: 'Архитектура системы',  icon: 'pi pi-sitemap',    type: 'doc-gost', gostType: 'arch' },
     ],
   },
   {
@@ -426,6 +592,43 @@ const ARTIFACTS_ALL = [
   },
 ]
 
+const TS_SECTIONS = [
+  {
+    key: 'basic', label: 'Основные условия',
+    fields: [
+      { key: 'companyName',  label: 'Компания',          placeholder: 'SIRIN' },
+      { key: 'roundName',    label: 'Раунд',             type: 'select', options: ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Конвертируемый займ'] },
+      { key: 'investAmount', label: 'Сумма инвестиций',  placeholder: '60 млн ₽' },
+      { key: 'preMoney',     label: 'Pre-money оценка',  placeholder: '200 млн ₽' },
+    ],
+  },
+  {
+    key: 'structure', label: 'Структура сделки',
+    fields: [
+      { key: 'shareClass',      label: 'Класс акций',              type: 'select', options: ['Привилегированные', 'Обыкновенные', 'Конвертируемый займ'] },
+      { key: 'liquidationPref', label: 'Ликвидационная преф.',     placeholder: '1x не участвующая' },
+      { key: 'antiDilution',    label: 'Анти-dilution',            type: 'select', options: ['Широкая база', 'Узкая база', 'Ratchet', 'Нет'] },
+    ],
+  },
+  {
+    key: 'governance', label: 'Управление',
+    fields: [
+      { key: 'boardSeats',    label: 'Совет директоров', placeholder: '1 фонд / 1 основатель / 1 независимый' },
+      { key: 'vestingFounder',label: 'Вестинг основателя', placeholder: '48 мес / 12 мес клифф' },
+      { key: 'proRata',       label: 'Pro-rata права',   type: 'select', options: ['Да', 'Нет', 'Ограниченные'] },
+      { key: 'dragAlong',     label: 'Drag-along',       placeholder: '70% голосов' },
+    ],
+  },
+  {
+    key: 'rights', label: 'Права и обязательства',
+    fields: [
+      { key: 'informationRights', label: 'Права на информацию', placeholder: 'Ежеквартальная отчётность' },
+      { key: 'closingConditions', label: 'Условия закрытия',    placeholder: 'Due diligence, аудит...' },
+      { key: 'otherTerms',        label: 'Прочие условия',      placeholder: 'Дополнительные условия...' },
+    ],
+  },
+]
+
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
@@ -440,6 +643,29 @@ const inputText = ref('')
 const finmodelId = ref(null)
 const docAiResponse = ref('')
 const docValues = ref({})
+const companyId = ref(null)          // Integram object ID for this company
+const artifactsFromOntology = ref(null)  // loaded from Integram; null = use static
+
+// Tech / GOST documents
+const gostDoc = ref({})
+const gostGenerating = ref(false)
+const gostLoadingStep = ref('')
+
+// Term Sheet constructor
+const termSheet = ref({
+  companyName: 'SIRIN', roundName: 'Pre-Seed', investAmount: '60 млн ₽', preMoney: '200 млн ₽',
+  shareClass: 'Привилегированные', liquidationPref: '1x не участвующая',
+  antiDilution: 'Широкая база', vestingFounder: '48 месяцев / 12 мес клифф',
+  boardSeats: '1 место фонду / 1 основателю / 1 независимый',
+  proRata: 'Да', dragAlong: '70% голосов', informationRights: 'Ежеквартальная отчётность',
+  closingConditions: 'Due diligence, аудит IP', otherTerms: '',
+})
+const tsGenerating = ref(false)
+
+// Smart Contract
+const smartContract = ref(null)
+const scGenerating = ref(false)
+const showScJson = ref(false)
 
 const twin = ref({
   company: 'SIRIN', stage: 'Pre-Seed', sector: 'AI/Deep Tech',
@@ -466,14 +692,15 @@ const events = ref([
 // COMPUTED
 // ═══════════════════════════════════════════
 
-const visibleArtifacts = computed(() =>
-  ARTIFACTS_ALL
+const visibleArtifacts = computed(() => {
+  const source = artifactsFromOntology.value || ARTIFACTS_ALL
+  return source
     .filter(s => s.roles.includes(role.value))
     .map(s => ({
       ...s,
       items: s.items.filter(i => !i.roles || i.roles.includes(role.value)),
     }))
-)
+})
 
 const roleAgents = computed(() =>
   ROLE_AGENTS[role.value].map(id => AGENTS[id])
@@ -669,6 +896,294 @@ async function runResearch() {
   } catch {}
 }
 
+// ── GOST Tech Docs ──────────────────────────────────────────────────────────────
+
+function gostDescription(type) {
+  const DESCS = {
+    tz:      'Техническое задание по ГОСТ 34.602-2020 — базовый документ разработки системы',
+    techdoc: 'Описание программного обеспечения по ГОСТ 19.402 — функциональность, интерфейсы, API',
+    trl:     'TRL-паспорт технологии — уровень готовности TRL 1-9 с доказательной базой и дорожной картой',
+    arch:    'Архитектура системы — компоненты, интеграции, технический стек, масштабируемость',
+  }
+  return DESCS[type] || 'Технический документ по ГОСТ'
+}
+
+const GOST_PROMPTS = {
+  tz: (tw) => `Создай Техническое задание по ГОСТ 34.602 для системы "${tw.company}".
+Описание: ${tw.description}
+Отрасль: ${tw.sector}, TRL: ${tw.trl}, Стадия: ${tw.stage}
+
+Структура ТЗ (ГОСТ 34.602):
+1. Общие сведения (наименование, шифр, исполнитель, заказчик, плановые сроки, порядок оформления)
+2. Назначение и цели создания (назначение системы, цели создания и развития)
+3. Характеристика объектов автоматизации (описание бизнес-процессов, условия эксплуатации)
+4. Требования к системе:
+   4.1 Требования к структуре и функционированию
+   4.2 Требования к надёжности
+   4.3 Требования к безопасности
+   4.4 Требования к эргономике и технической эстетике
+   4.5 Требования к защите информации от несанкционированного доступа
+   4.6 Требования к патентной чистоте
+5. Требования к функциям (задачам) подсистем
+6. Требования к видам обеспечения (программное, информационное, техническое, организационное)
+7. Состав и содержание работ по созданию системы (этапы, сроки, исполнители)
+8. Порядок контроля и приёмки системы (виды, состав, методы испытаний)
+9. Требования к документированию
+
+Пиши профессионально, конкретно, с реальными данными для ${tw.company}. Используй заголовки ## и ###, списки.`,
+
+  techdoc: (tw) => `Напиши описание программного обеспечения по ГОСТ 19.402 для "${tw.company}".
+Описание: ${tw.description}
+TRL: ${tw.trl}, Отрасль: ${tw.sector}
+
+Разделы по ГОСТ 19.402:
+## 1. Общие сведения
+(наименование, обозначение, назначение, функциональные возможности)
+
+## 2. Функциональное назначение
+(перечень реализованных функций, ограничения применения)
+
+## 3. Описание алгоритмов и функционирования
+(основные алгоритмы, логика работы, AI-компоненты)
+
+## 4. Используемые технические средства
+(серверная инфраструктура, требования к оборудованию)
+
+## 5. Вызов и загрузка
+(способы запуска, процедура установки, настройка)
+
+## 6. Входные данные
+(форматы, источники, валидация)
+
+## 7. Выходные данные
+(форматы ответов, отчёты, уведомления)
+
+## 8. Интерфейсы и API
+(REST API, WebSocket, интеграции)
+
+Пиши конкретно для ${tw.company}. Используй таблицы для API-методов где уместно.`,
+
+  trl: (tw) => `Сформируй TRL-паспорт для технологии "${tw.company}".
+Описание: ${tw.description}
+Текущий TRL: ${tw.trl || 5}, Отрасль: ${tw.sector}
+
+Структура TRL-паспорта:
+## Описание технологии
+## Текущий уровень TRL ${tw.trl || 5}/9 и обоснование
+(что конкретно сделано, какие испытания пройдены, артефакты)
+
+## Доказательная база текущего TRL
+(прототипы, испытания, патенты, публикации, контракты)
+
+## Ключевые риски и ограничения
+
+## Требования для достижения TRL ${Math.min((tw.trl || 5) + 1, 9)}
+(что нужно сделать, какие ресурсы, сроки)
+
+## Дорожная карта TRL (таблица)
+| TRL | Описание | Статус | Срок |
+|-----|----------|--------|------|
+(заполни для TRL 1-9, текущий отметь как "✓ Достигнут")
+
+## Применимые стандарты и ГОСТы`,
+
+  arch: (tw) => `Опиши архитектуру системы "${tw.company}".
+Описание: ${tw.description}
+TRL: ${tw.trl}, Отрасль: ${tw.sector}
+
+## Обзор архитектуры
+(тип архитектуры: монолит / микросервисы / serverless, обоснование)
+
+## Компоненты системы
+(перечень модулей с описанием ответственности)
+
+## Технический стек
+(frontend, backend, база данных, AI-модели, инфраструктура)
+
+## Интеграции и внешние API
+(что подключено, протоколы, форматы)
+
+## Безопасность и защита данных
+(аутентификация, авторизация, шифрование, соответствие требованиям)
+
+## Масштабируемость и отказоустойчивость
+(горизонтальное масштабирование, резервирование)
+
+## CI/CD и DevOps
+(сборка, тестирование, деплой, мониторинг)
+
+Используй таблицы для компонентов и стека.`,
+}
+
+async function generateGostDoc(item) {
+  gostGenerating.value = true
+  gostLoadingStep.value = 'Анализирую данные проекта...'
+
+  const STEPS = [
+    'Анализирую данные проекта...',
+    'Структурирую по ГОСТ...',
+    'AI генерирует разделы...',
+    'Форматирую документ...',
+  ]
+  let stepIdx = 0
+  const stepTimer = setInterval(() => {
+    if (stepIdx < STEPS.length - 1) gostLoadingStep.value = STEPS[++stepIdx]
+  }, 2000)
+
+  try {
+    const promptFn = GOST_PROMPTS[item.gostType]
+    const prompt = promptFn ? promptFn(twin.value) : `Напиши технический документ "${item.label}" для "${twin.value.company}": ${twin.value.description}`
+
+    const res = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'anthropic/claude-sonnet-4-20250514',
+        prompt,
+        systemPrompt: 'Ты — технический писатель. Пиши по-русски, профессионально, с конкретными данными. Используй markdown: ## заголовки, таблицы, списки. Минимум воды, максимум конкретики.',
+        application: 'GostDocGenerator',
+      }),
+    })
+    const { response } = await res.json()
+    gostDoc.value = { ...gostDoc.value, [item.key]: response }
+    addEvent('doc', `Сгенерирован: ${item.label}`)
+    // Mark as filled
+    for (const sec of ARTIFACTS_ALL) {
+      const itm = sec.items?.find(i => i.key === item.key)
+      if (itm) { itm.filled = true; break }
+    }
+  } catch (e) {
+    gostDoc.value = { ...gostDoc.value, [item.key]: `# ${item.label}\n\nОшибка генерации: ${e.message}` }
+  } finally {
+    clearInterval(stepTimer)
+    gostGenerating.value = false
+    gostLoadingStep.value = ''
+  }
+}
+
+function copyGostDoc(key) {
+  const text = gostDoc.value[key] || ''
+  navigator.clipboard?.writeText(text)
+}
+
+// ── Term Sheet Constructor ───────────────────────────────────────────────────────
+
+async function generateTermSheet() {
+  tsGenerating.value = true
+  try {
+    const prompt = `Заполни Term Sheet для инвестиционной сделки с компанией "${twin.value.company}".
+Данные: стадия ${twin.value.stage}, отрасль ${twin.value.sector}, TRL ${twin.value.trl}, инвестиции ${(twin.value.askRub/1e6).toFixed(0)} млн ₽.
+Описание: ${twin.value.description}
+
+Верни ТОЛЬКО JSON (без markdown):
+{"companyName":"...","roundName":"...","investAmount":"...","preMoney":"...","shareClass":"...","liquidationPref":"...","antiDilution":"...","vestingFounder":"...","boardSeats":"...","proRata":"...","dragAlong":"...","informationRights":"...","closingConditions":"...","otherTerms":"..."}`
+
+    const res = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'deepseek/deepseek-chat',
+        prompt,
+        systemPrompt: 'Ты — венчурный юрист. Отвечай только JSON без markdown.',
+        application: 'TermSheetConstructor',
+      }),
+    })
+    const { response } = await res.json()
+    const m = response.match(/\{[\s\S]*\}/)
+    if (m) {
+      Object.assign(termSheet.value, JSON.parse(m[0]))
+      addEvent('deal', 'Term Sheet заполнен AI')
+    }
+  } catch (e) {
+    console.error('[TermSheet.generate]', e)
+  } finally {
+    tsGenerating.value = false
+  }
+}
+
+function renderTermSheet() {
+  const ts = termSheet.value
+  if (!ts.investAmount) return '<p style="color:var(--p-text-muted-color);text-align:center;padding:32px">Заполните форму или нажмите «AI заполнить»</p>'
+  const row = (label, val) => val ? `<tr><td class="tsp-l">${label}</td><td class="tsp-v">${val}</td></tr>` : ''
+  return `
+<div class="ts-preview-doc">
+  <div class="ts-preview-title">TERM SHEET</div>
+  <div class="ts-preview-sub">${ts.companyName || '___'} · Раунд ${ts.roundName || '___'} · ${new Date().toLocaleDateString('ru')}</div>
+  <table class="ts-preview-table">
+    ${row('Сумма инвестиций', ts.investAmount)}
+    ${row('Pre-money оценка', ts.preMoney)}
+    ${row('Класс акций', ts.shareClass)}
+    ${row('Ликвидационная преф.', ts.liquidationPref)}
+    ${row('Анти-dilution', ts.antiDilution)}
+    ${row('Вестинг основателя', ts.vestingFounder)}
+    ${row('Совет директоров', ts.boardSeats)}
+    ${row('Pro-rata права', ts.proRata)}
+    ${row('Drag-along', ts.dragAlong)}
+    ${row('Права на информацию', ts.informationRights)}
+    ${row('Условия закрытия', ts.closingConditions)}
+    ${row('Прочие условия', ts.otherTerms)}
+  </table>
+  <div class="ts-preview-footer">Конфиденциально · Не является офертой · Для обсуждения</div>
+</div>`
+}
+
+// ── Smart Contract ───────────────────────────────────────────────────────────────
+
+async function generateSmartContract() {
+  scGenerating.value = true
+  showScJson.value = false
+  try {
+    const ts = termSheet.value
+    const prompt = `Сформируй смарт-контракт инвестиционной сделки в JSON.
+
+Данные сделки:
+- Компания: ${twin.value.company}
+- Основатель: ${twin.value.founder}
+- Раунд: ${ts.roundName || twin.value.stage}
+- Инвестиции: ${ts.investAmount || (twin.value.askRub/1e6).toFixed(0) + ' млн ₽'}
+- Pre-money оценка: ${ts.preMoney || 'не определена'}
+- Класс акций: ${ts.shareClass || 'Привилегированные'}
+- Ликвидационная преф.: ${ts.liquidationPref || '1x'}
+- Вестинг: ${ts.vestingFounder || '48 мес'}
+- TRL: ${twin.value.trl}
+- Описание: ${twin.value.description}
+- AI-оценка проекта: ${scoring.value.totalScore || 'не сформирована'}/100
+
+Верни ТОЛЬКО JSON смарт-контракта:
+{
+  "id": "SC-2025-001",
+  "timestamp": "ISO-дата",
+  "status": "PENDING_IC",
+  "parties": [{"role":"Инвестор","name":"ФСТ НТИ"},{"role":"Эмитент","name":"..."},{"role":"Основатель","name":"..."}],
+  "terms": [{"key":"round","label":"Раунд","value":"..."},{"key":"amount","label":"Сумма","value":"..."},{"key":"preMoney","label":"Pre-money","value":"..."},{"key":"equity","label":"Доля фонда","value":"...%"},{"key":"shareClass","label":"Класс акций","value":"..."},{"key":"liquidation","label":"Ликвидационная преф.","value":"..."},{"key":"vesting","label":"Вестинг","value":"..."},{"key":"board","label":"Совет директоров","value":"..."}],
+  "milestones": [{"title":"Транш 1 — Закрытие сделки","condition":"Подписание всех документов, прохождение KYC","amount":"..."},{"title":"Транш 2 — Достижение KPI","condition":"Выполнение ключевых метрик Q2 2025","amount":"..."},{"title":"Транш 3 — TRL-апгрейд","condition":"Подтверждение TRL ${(twin.value.trl||5)+1} независимой экспертизой","amount":"..."}],
+  "conditions": ["Due diligence завершён без критичных замечаний","Аудит IP подтверждён","Основатели подписали vesting-соглашение"],
+  "icDecision": null
+}`
+
+    const res = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'anthropic/claude-sonnet-4-20250514',
+        prompt,
+        systemPrompt: 'Ты — юрист венчурного фонда ФСТ НТИ. Формируй структурированные смарт-контракты. Отвечай только JSON без markdown.',
+        application: 'SmartContractGenerator',
+      }),
+    })
+    const { response } = await res.json()
+    const m = response.match(/\{[\s\S]*\}/)
+    if (m) {
+      smartContract.value = JSON.parse(m[0])
+      addEvent('deal', `Smart Contract сформирован: ${smartContract.value.id}`)
+    }
+  } catch (e) {
+    console.error('[SmartContract.generate]', e)
+  } finally {
+    scGenerating.value = false
+  }
+}
+
 async function createFinmodel() {
   openView({ key: 'agent', type: 'chat' })
   inputText.value = `Создай финансовую модель для компании ${twin.value.company}:
@@ -735,8 +1250,9 @@ function autoResize() {
     if (inputEl.value) { inputEl.value.style.height = 'auto'; inputEl.value.style.height = inputEl.value.scrollHeight + 'px' }
   })
 }
-function addEvent(type, text) {
+function addEvent(type, text, data = {}) {
   events.value.unshift({ id: Date.now(), type, text, time: new Date().toLocaleTimeString('ru') })
+  logEvent({ type, entityType: 'company', entityId: companyId.value || '', text, data })
 }
 function scoreColor(s) { return s >= 8 ? 'var(--p-green-500)' : s >= 6 ? 'var(--p-orange-400)' : 'var(--p-red-400)' }
 function scoreClass(s) { return s >= 70 ? 'good' : s >= 50 ? 'mid' : 'low' }
@@ -765,9 +1281,27 @@ function loadLS() {
 
 watch([twin, scoring], saveLS, { deep: true })
 
-onMounted(() => {
+onMounted(async () => {
   loadLS()
   initSession()
+
+  // Try loading artifact tree from Integram ontology
+  const tree = await buildArtifactTree()
+  if (tree) artifactsFromOntology.value = tree
+
+  // Load past events for this company from EventLog
+  if (companyId.value) {
+    const past = await fetchEvents(companyId.value, 20)
+    if (past.length) {
+      const mapped = past.map(e => ({
+        id: e.id,
+        type: e.type,
+        text: e.text || `${e.entityType}:${e.type}`,
+        time: e.ts ? new Date(e.ts).toLocaleTimeString('ru') : '',
+      }))
+      events.value = [...mapped, ...events.value].slice(0, 50)
+    }
+  }
 })
 </script>
 
@@ -1100,4 +1634,130 @@ onMounted(() => {
 /* Transitions */
 .fade-enter-active, .fade-leave-active { transition: opacity .2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* ══ GOST Tech Docs ══ */
+.spw-gost-wrap { display: flex; flex-direction: column; height: 100%; }
+.spw-gost-body { flex: 1; overflow-y: auto; }
+.spw-gost-loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; height: 240px; color: var(--p-text-muted-color);
+}
+.spw-gost-pre {
+  white-space: pre-wrap; word-break: break-word; font-family: inherit;
+  font-size: 13px; line-height: 1.75; margin: 0;
+  padding: 24px 28px; color: var(--p-text-color);
+  max-width: 820px;
+}
+
+/* ══ Term Sheet Constructor ══ */
+.spw-ts-wrap { display: flex; flex-direction: column; height: 100%; }
+.spw-ts-body { flex: 1; display: grid; grid-template-columns: 340px 1fr; overflow: hidden; }
+.spw-ts-form {
+  overflow-y: auto; padding: 16px 14px;
+  border-right: 1px solid var(--p-content-border-color);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.spw-ts-section { display: flex; flex-direction: column; gap: 10px; }
+.spw-ts-sec-head {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--p-text-muted-color);
+  padding-bottom: 4px; border-bottom: 1px solid var(--p-content-border-color);
+}
+.spw-ts-field { display: flex; flex-direction: column; gap: 3px; }
+.spw-ts-field label { font-size: 11px; color: var(--p-text-muted-color); }
+.spw-ts-preview { overflow-y: auto; padding: 20px; background: var(--p-surface-ground); }
+.spw-ts-preview-head {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--p-text-muted-color); margin-bottom: 14px;
+}
+
+/* Term Sheet preview doc (v-html injected) */
+:deep(.ts-preview-doc) {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 24px;
+}
+:deep(.ts-preview-title) {
+  font-size: 18px; font-weight: 800; letter-spacing: .5px; text-align: center;
+  color: var(--p-text-color); margin-bottom: 4px;
+}
+:deep(.ts-preview-sub) {
+  font-size: 12px; color: var(--p-text-muted-color); text-align: center; margin-bottom: 20px;
+}
+:deep(.ts-preview-table) { width: 100%; border-collapse: collapse; font-size: 13px; }
+:deep(.tsp-l) {
+  padding: 7px 10px; color: var(--p-text-muted-color); width: 46%;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+:deep(.tsp-v) {
+  padding: 7px 10px; font-weight: 600; color: var(--p-text-color);
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+:deep(.ts-preview-footer) {
+  font-size: 10px; color: var(--p-text-muted-color); text-align: center;
+  margin-top: 20px; font-style: italic;
+}
+
+/* ══ Smart Contract ══ */
+.spw-sc-wrap { display: flex; flex-direction: column; height: 100%; }
+.spw-sc-body { flex: 1; overflow-y: auto; }
+.spw-sc-content { padding: 16px; display: flex; flex-direction: column; gap: 12px; max-width: 860px; }
+.spw-sc-header-card {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 12px 16px;
+}
+.spw-sc-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+}
+.sc-approved { background: color-mix(in srgb, var(--fst-green) 15%, transparent); color: var(--fst-green); }
+.sc-pending  { background: color-mix(in srgb, var(--fst-brand) 15%, transparent); color: var(--fst-brand); }
+.spw-sc-id { font-size: 13px; font-weight: 600; color: var(--p-text-color); font-family: monospace; }
+.spw-sc-ts { font-size: 11px; color: var(--p-text-muted-color); margin-left: auto; }
+.spw-sc-section {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 12px 16px;
+}
+.spw-sc-sec-title {
+  font-size: 11px; font-weight: 700; color: var(--p-text-muted-color);
+  text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.spw-sc-party {
+  display: flex; gap: 12px; padding: 7px 0;
+  border-bottom: 1px solid var(--p-content-border-color); font-size: 13px;
+}
+.spw-sc-party:last-child { border-bottom: none; }
+.spw-sc-party-role { color: var(--p-text-muted-color); width: 100px; flex-shrink: 0; }
+.spw-sc-party-name { font-weight: 600; }
+.spw-sc-terms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.spw-sc-term { background: var(--p-surface-ground); border-radius: 6px; padding: 8px 10px; }
+.spw-sc-term-label { display: block; font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 2px; }
+.spw-sc-term-value { font-size: 13px; font-weight: 600; color: var(--p-text-color); }
+.spw-sc-milestone {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--p-content-border-color);
+}
+.spw-sc-milestone:last-child { border-bottom: none; }
+.spw-sc-ms-num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--p-primary-color);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+}
+.spw-sc-ms-body { flex: 1; }
+.spw-sc-ms-title { font-size: 13px; font-weight: 600; color: var(--p-text-color); }
+.spw-sc-ms-cond { font-size: 12px; color: var(--p-text-muted-color); margin-top: 2px; }
+.spw-sc-ms-amount { font-size: 13px; font-weight: 700; color: var(--fst-green); flex-shrink: 0; }
+.spw-sc-ic-decision { font-size: 13px; line-height: 1.6; color: var(--p-text-color); }
+.spw-sc-json-toggle {
+  font-size: 12px; color: var(--p-text-muted-color); cursor: pointer;
+  display: flex; align-items: center; gap: 5px; padding: 4px 0;
+}
+.spw-sc-json-toggle:hover { color: var(--p-text-color); }
+.spw-sc-json {
+  font-size: 11px; background: var(--p-surface-ground);
+  border: 1px solid var(--p-content-border-color); border-radius: 8px;
+  padding: 12px 14px; overflow-x: auto; max-height: 320px; font-family: monospace; line-height: 1.5;
+}
 </style>

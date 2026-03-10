@@ -1,5 +1,8 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Корпоративное управление"
+    subtitle="ESG-политики, комплаенс и управленческие стандарты"
+  >
     <template #header>
       <div style="display:flex;align-items:center;gap:10px;flex:1">
         <i class="pi pi-building" style="color:var(--fst-blue);font-size:20px"></i>
@@ -1842,7 +1845,7 @@ onMounted(async () => {
   background: transparent; cursor: pointer; font-size: 13px;
   color: var(--p-text-muted-color); font-family: inherit; transition: all 0.15s;
 }
-.gr-tab:hover { background: var(--p-surface-hover, rgba(0,0,0,0.04)); color: var(--p-text-color); }
+.gr-tab:hover { background: var(--p-surface-hover, var(--fst-glass-xs)); color: var(--p-text-color); }
 .gr-tab--active { background: var(--p-primary-color); color: white; border-color: var(--p-primary-color); }
 
 .gr-content { display: flex; flex-direction: column; gap: 20px; }
@@ -1863,7 +1866,7 @@ onMounted(async () => {
 .gr-select { flex: 1; min-width: 260px; font-size: 13px; }
 
 .gr-project-card {
-  background: var(--p-surface-hover, rgba(0,0,0,0.02));
+  background: var(--p-surface-hover, var(--fst-glass-xs));
   border: 1px solid var(--p-content-border-color); border-radius: 8px;
   padding: 12px; margin-bottom: 12px;
 }
@@ -1963,7 +1966,7 @@ onMounted(async () => {
 .gr-onto-ev-name { flex: 1; }
 .gr-onto-actor {
   font-size: 10px; color: var(--p-text-muted-color);
-  background: var(--p-surface-hover, rgba(0,0,0,0.04)); border-radius: 4px; padding: 1px 6px;
+  background: var(--p-surface-hover, var(--fst-glass-xs)); border-radius: 4px; padding: 1px 6px;
 }
 .gr-onto-event--detect  { color: var(--fst-red); }
 .gr-onto-event--analyze { color: var(--fst-brand); }
@@ -2026,8 +2029,8 @@ onMounted(async () => {
 .gr-onto-grid { display: flex; flex-direction: column; gap: 14px; }
 .gr-onto-step-wrap { margin-bottom: 2px; }
 .gr-onto-event { cursor: pointer; border-radius: 6px; padding: 4px 8px; transition: background 0.15s; }
-.gr-onto-event:hover { background: rgba(99,102,241,0.06); }
-.gr-onto-event.is-active { background: rgba(99,102,241,0.1); outline: 1px solid var(--p-primary-color); }
+.gr-onto-event:hover { background: color-mix(in srgb, var(--p-primary-color) 06%, transparent); }
+.gr-onto-event.is-active { background: color-mix(in srgb, var(--p-primary-color) 1%, transparent); outline: 1px solid var(--p-primary-color); }
 .gr-onto-event.has-measures::before { content: '●'; color: var(--p-primary-color); font-size: 8px; margin-right: 4px; }
 .gr-onto-event.is-gap::before { content: '○'; color: var(--fst-red); font-size: 8px; margin-right: 4px; }
 .gr-onto-mbadge {
@@ -2042,9 +2045,9 @@ onMounted(async () => {
 .gr-onto-mnode {
   display: flex; align-items: center; gap: 8px; padding: 7px 10px;
   border: 1px solid var(--p-primary-color); border-radius: 6px;
-  background: rgba(99,102,241,0.04); cursor: pointer; transition: background 0.15s;
+  background: color-mix(in srgb, var(--p-primary-color) 04%, transparent); cursor: pointer; transition: background 0.15s;
 }
-.gr-onto-mnode:hover { background: rgba(99,102,241,0.12); }
+.gr-onto-mnode:hover { background: color-mix(in srgb, var(--p-primary-color) 12%, transparent); }
 .gr-om-type { font-size: 10px; color: var(--p-primary-color); font-weight: 600; flex-shrink: 0; min-width: 70px; }
 .gr-om-name { flex: 1; font-size: 12px; font-weight: 500; }
 .gr-om-amt { font-size: 11px; color: var(--p-text-muted-color); flex-shrink: 0; }
@@ -2098,8 +2101,8 @@ onMounted(async () => {
   border: 1px solid var(--p-content-border-color); border-radius: 6px;
   padding: 10px; cursor: pointer; transition: all 0.15s; background: var(--p-surface-card);
 }
-.gr-ref-card:hover { border-color: var(--p-primary-color); background: rgba(99,102,241,0.04); }
-.gr-ref-card--sel { border-color: var(--p-primary-color); background: rgba(99,102,241,0.08); }
+.gr-ref-card:hover { border-color: var(--p-primary-color); background: color-mix(in srgb, var(--p-primary-color) 04%, transparent); }
+.gr-ref-card--sel { border-color: var(--p-primary-color); background: color-mix(in srgb, var(--p-primary-color) 08%, transparent); }
 .gr-ref-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
 .gr-ref-type { font-size: 10px; color: var(--p-primary-color); font-weight: 600; }
 .gr-ref-trl { font-size: 10px; color: var(--p-text-muted-color); }
@@ -2108,7 +2111,7 @@ onMounted(async () => {
 .gr-ref-amount { font-size: 11px; color: var(--p-text-color); }
 /* Modal */
 .regmodal-context {
-  background: var(--p-surface-hover, rgba(0,0,0,0.03));
+  background: var(--p-surface-hover, var(--fst-glass-xs));
   border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px 14px;
 }
 .regmodal-npa { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; margin-bottom: 5px; }
@@ -2144,7 +2147,7 @@ onMounted(async () => {
   cursor: pointer;
   transition: box-shadow 0.15s;
 }
-.gr-map-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.gr-map-card:hover { box-shadow: 0 2px 12px var(--fst-glass-lg); }
 .gr-map-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .gr-map-card-name { font-weight: 600; font-size: 13px; flex: 1; }
 .gr-map-phase-badge {
@@ -2236,7 +2239,7 @@ onMounted(async () => {
 }
 .gr-onto-prop {
   font-size: 10px; padding: 2px 6px; border-radius: 4px;
-  background: var(--p-surface-section, rgba(0,0,0,0.05)); color: var(--p-text-muted-color);
+  background: var(--p-surface-section, var(--fst-glass-sm)); color: var(--p-text-muted-color);
 }
 
 .gr-onto-interfaces { display: flex; flex-direction: column; gap: 8px; }
@@ -2252,7 +2255,7 @@ onMounted(async () => {
 }
 .gr-onto-iface-to {
   font-size: 12px; font-weight: 600;
-  background: rgba(99,102,241,0.12); color: var(--p-primary-color); padding: 3px 10px; border-radius: 6px;
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent); color: var(--p-primary-color); padding: 3px 10px; border-radius: 6px;
   white-space: nowrap;
 }
 .gr-onto-iface-arrow { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 80px; }
@@ -2283,7 +2286,7 @@ onMounted(async () => {
   border: none; background: transparent; cursor: pointer; font-size: 12px; font-weight: 500;
   color: var(--p-text-muted-color); font-family: inherit; transition: all 0.15s;
 }
-.gr-tl-vs-btn:hover { background: var(--p-surface-hover, rgba(0,0,0,0.04)); color: var(--p-text-color); }
+.gr-tl-vs-btn:hover { background: var(--p-surface-hover, var(--fst-glass-xs)); color: var(--p-text-color); }
 .gr-tl-vs-btn.active { background: var(--p-primary-color); color: white; }
 
 /* ─── DAG wrapper ─────────────────────────────────────────────────────────── */
@@ -2325,7 +2328,7 @@ onMounted(async () => {
 .gr-iface-live { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .gr-iface-evt-tag {
   font-size: 9px; padding: 2px 7px; border-radius: 10px;
-  background: var(--p-surface-section, rgba(0,0,0,0.05));
+  background: var(--p-surface-section, var(--fst-glass-sm));
   color: var(--p-text-muted-color); display: flex; align-items: center; gap: 3px;
   font-weight: 500;
 }
@@ -2351,7 +2354,7 @@ onMounted(async () => {
 }
 .gr-tl-route-trl {
   font-size: 11px; font-weight: 700; color: var(--p-primary-color);
-  padding: 2px 8px; background: rgba(99,102,241,0.1);
+  padding: 2px 8px; background: color-mix(in srgb, var(--p-primary-color) 1%, transparent);
   border-radius: 4px; display: inline-block; width: fit-content;
 }
 .gr-tl-route-measures {

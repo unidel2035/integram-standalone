@@ -1,7 +1,7 @@
 <template>
   <FstPageLayout
     title="Мой прогресс"
-    subtitle="Статистика обучения и достижения"
+    subtitle="Мой прогресс — достижения и траектория обучения"
     icon="pi pi-chart-line"
   >
     <div class="lp-page">
@@ -16,22 +16,22 @@
           <div class="lp-stat-label">Общий прогресс</div>
         </div>
         <div class="lp-stat-card">
-          <div class="lp-stat-icon" style="background: color-mix(in srgb, #16a34a 15%, transparent)">
-            <i class="pi pi-map" style="color: #16a34a"></i>
+          <div class="lp-stat-icon" style="background: color-mix(in srgb, var(--fst-green) 15%, transparent)">
+            <i class="pi pi-map" style="color: var(--fst-green)"></i>
           </div>
           <div class="lp-stat-value">{{ learningStore.completedTours.length }} / {{ learningStore.tours.length }}</div>
           <div class="lp-stat-label">Туров пройдено</div>
         </div>
         <div class="lp-stat-card">
-          <div class="lp-stat-icon" style="background: color-mix(in srgb, #2ca5e0 15%, transparent)">
-            <i class="pi pi-question-circle" style="color: #2ca5e0"></i>
+          <div class="lp-stat-icon" style="background: color-mix(in srgb, var(--fst-cyan) 15%, transparent)">
+            <i class="pi pi-question-circle" style="color: var(--fst-cyan)"></i>
           </div>
           <div class="lp-stat-value">{{ learningStore.completedQuizzes.length }} / {{ learningStore.quizzes.length }}</div>
           <div class="lp-stat-label">Квизов сдано</div>
         </div>
         <div class="lp-stat-card">
-          <div class="lp-stat-icon" style="background: color-mix(in srgb, #d97706 15%, transparent)">
-            <i class="pi pi-video" style="color: #d97706"></i>
+          <div class="lp-stat-icon" style="background: color-mix(in srgb, var(--fst-brand) 15%, transparent)">
+            <i class="pi pi-video" style="color: var(--fst-brand)"></i>
           </div>
           <div class="lp-stat-value">{{ learningStore.completedVideos.length }} / {{ learningStore.videos.length }}</div>
           <div class="lp-stat-label">Видео просмотрено</div>
@@ -298,8 +298,8 @@ function formatTime(iso) {
 }
 
 .lp-resource-row.done {
-  background: color-mix(in srgb, #16a34a 6%, var(--p-surface-card));
-  border-color: color-mix(in srgb, #16a34a 20%, var(--p-content-border-color));
+  background: color-mix(in srgb, var(--fst-green) 6%, var(--p-surface-card));
+  border-color: color-mix(in srgb, var(--fst-green) 20%, var(--p-content-border-color));
 }
 
 .lp-rr-icon {
@@ -326,7 +326,7 @@ function formatTime(iso) {
 }
 
 .lp-done-icon {
-  color: #16a34a;
+  color: var(--fst-green);
   font-size: 1.1rem;
   flex-shrink: 0;
 }

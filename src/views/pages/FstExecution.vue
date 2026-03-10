@@ -1,10 +1,10 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout title="Исполнение сделки" subtitle="Исполнение сделки — Kanban, KPI, транши, действия фонда">
     <!-- Header -->
     <template #header>
       <div class="fex-header-left">
         <div class="fex-logo">
-          <i class="pi pi-list-check" style="color:#66bb6a;font-size:20px"></i>
+          <i class="pi pi-list-check" style="font-size:20px"></i>
           <span>ФСТ НТИ · <b>Исполнение сделки</b> · {{ company.name }}</span>
           <Tag :value="`Транш ${currentTranche} активен`" severity="success" style="font-size:11px" />
           <Tag :value="`День ${simDay}`" severity="info" style="font-size:11px" />
@@ -58,7 +58,7 @@
       </div>
       <div class="fex-kpi-tranche">
         <div class="fex-kpi-name">Следующий транш</div>
-        <div class="fex-kpi-nums" :style="{ color: trancheReady ? '#66bb6a' : '#ffa726' }">
+        <div class="fex-kpi-nums" :style="{ color: trancheReady ? 'var(--fst-green)' : 'var(--fst-brand)' }">
           <i :class="trancheReady ? 'pi pi-check-circle' : 'pi pi-clock'" style="font-size:12px"></i>
           {{ trancheReady ? 'Разблокирован' : `${trancheProgress}% KPI` }}
         </div>
@@ -76,7 +76,7 @@
             <span v-for="cat in taskCategories" :key="cat.key"
               class="fex-chip" :class="{ active: taskFilter === cat.key }"
               @click="taskFilter = cat.key === taskFilter ? null : cat.key"
-              :style="cat.key === taskFilter ? { background: cat.color, color: '#fff' } : {}">
+              :style="cat.key === taskFilter ? { background: cat.color, color: 'white' } : {}">
               <i :class="cat.icon" style="font-size:10px"></i> {{ cat.name }}
             </span>
           </div>
@@ -100,7 +100,7 @@
                 :class="{ overdue: task.status === 'overdue', critical: task.critical }"
                 @click="selectedTask = task">
                 <div class="fex-task-cat" :style="{ background: catColor(task.category) }">
-                  <i :class="catIcon(task.category)" style="font-size:9px;color:#fff"></i>
+                  <i :class="catIcon(task.category)" style="font-size:9px;color:white"></i>
                   {{ task.category }}
                 </div>
                 <div class="fex-task-name">{{ task.name }}</div>
@@ -109,7 +109,7 @@
                   <span :style="{ color: deadlineColor(task.deadline) }">{{ task.deadline }}</span>
                 </div>
                 <div v-if="task.kpi" class="fex-task-kpi">
-                  <i class="pi pi-chart-bar" style="font-size:9px;color:#ffa726"></i>
+                  <i class="pi pi-chart-bar" style="font-size:9px;color:var(--fst-brand)"></i>
                   {{ task.kpi }}
                 </div>
                 <div v-if="task.progress !== undefined" class="fex-task-progress">
@@ -136,7 +136,7 @@
               <div v-if="selectedTask.kpi" class="fex-task-detail-row"><b>Влияет на KPI:</b> {{ selectedTask.kpi }}</div>
               <div v-if="selectedTask.desc" class="fex-task-detail-row fex-task-desc">{{ selectedTask.desc }}</div>
               <div v-if="selectedTask.fundAction" class="fex-task-fund-action">
-                <i class="pi pi-exclamation-triangle" style="color:#ffa726"></i>
+                <i class="pi pi-exclamation-triangle" style="color:var(--fst-brand)"></i>
                 <b>Реакция ФСТ:</b> {{ selectedTask.fundAction }}
               </div>
             </div>
@@ -162,7 +162,7 @@
           <div class="fex-fund-col">
             <div class="fex-fund-panel">
               <div class="fex-fund-panel-title">
-                <i class="pi pi-exclamation-triangle" style="color:#ef5350"></i> Сигналы ФСТ
+                <i class="pi pi-exclamation-triangle" style="color:var(--fst-red)"></i> Сигналы ФСТ
               </div>
               <div v-for="alert in fundAlerts" :key="alert.id" class="fex-alert" :class="alert.severity">
                 <div class="fex-alert-dot" :style="{ background: alertColor(alert.severity) }"></div>
@@ -178,14 +178,14 @@
                 </div>
               </div>
               <div v-if="!fundAlerts.length" class="fex-no-alerts">
-                <i class="pi pi-check-circle" style="color:#66bb6a;font-size:24px"></i>
+                <i class="pi pi-check-circle" style="color:var(--fst-green);font-size:24px"></i>
                 <div>Нет активных сигналов</div>
               </div>
             </div>
 
             <div class="fex-fund-panel">
               <div class="fex-fund-panel-title">
-                <i class="pi pi-bolt" style="color:#ffa726"></i> Действия ФСТ
+                <i class="pi pi-bolt" style="color:var(--fst-brand)"></i> Действия ФСТ
               </div>
               <div class="fex-actions-grid">
                 <Button v-for="action in fundActions" :key="action.id"
@@ -207,7 +207,7 @@
           <div class="fex-fund-col fex-fund-col-wide">
             <div class="fex-fund-panel">
               <div class="fex-fund-panel-title">
-                <i class="pi pi-chart-line" style="color:#42a5f5"></i> Прогресс KPI по месяцам
+                <i class="pi pi-chart-line"></i> Прогресс KPI по месяцам
               </div>
               <div class="fex-kpi-table">
                 <table>
@@ -239,14 +239,14 @@
             <!-- Tranche unlock condition -->
             <div class="fex-fund-panel">
               <div class="fex-fund-panel-title">
-                <i class="pi pi-lock" :style="{ color: trancheReady ? '#66bb6a' : '#ffa726' }"></i>
+                <i class="pi pi-lock" :style="{ color: trancheReady ? 'var(--fst-green)' : 'var(--fst-brand)' }"></i>
                 Условия разблокировки Транша {{ currentTranche + 1 }}
               </div>
               <div class="fex-tranche-conditions">
                 <div v-for="cond in trancheConditions" :key="cond.key" class="fex-tranche-cond"
                   :class="{ met: cond.met }">
                   <i :class="cond.met ? 'pi pi-check-circle' : 'pi pi-times-circle'"
-                    :style="{ color: cond.met ? '#66bb6a' : '#ef5350', fontSize:'14px' }" />
+                    :style="{ color: cond.met ? 'var(--fst-green)' : 'var(--fst-red)', fontSize:'14px' }" />
                   <div class="fex-cond-body">
                     <div class="fex-cond-name">{{ cond.name }}</div>
                     <div class="fex-cond-detail">{{ cond.detail }}</div>
@@ -258,7 +258,7 @@
               <Button v-if="trancheReady" label="Разблокировать транш" icon="pi pi-unlock"
                 severity="success" size="small" @click="unlockTranche" style="margin-top:10px;width:100%" />
               <div v-else class="fex-tranche-blocked">
-                <i class="pi pi-lock" style="color:#ffa726"></i>
+                <i class="pi pi-lock" style="color:var(--fst-brand)"></i>
                 {{ trancheConditions.filter(c=>!c.met).length }} условий не выполнено
               </div>
             </div>
@@ -268,7 +268,7 @@
           <div class="fex-fund-col">
             <div class="fex-fund-panel fex-events-panel">
               <div class="fex-fund-panel-title">
-                <i class="pi pi-history" style="color:#26c6da"></i> Лента событий
+                <i class="pi pi-history" style="color:var(--fst-cyan)"></i> Лента событий
               </div>
               <div class="fex-events-feed">
                 <div v-for="ev in eventFeed.slice().reverse()" :key="ev.id" class="fex-ev">
@@ -277,7 +277,7 @@
                     <div class="fex-ev-title">{{ ev.title }}</div>
                     <div class="fex-ev-sub">{{ ev.date }} · {{ ev.source }}</div>
                   </div>
-                  <Tag :value="ev.type" :style="{ fontSize: '9px', background: evColor(ev.type), color:'#fff' }" />
+                  <Tag :value="ev.type" :style="{ fontSize: '9px', background: evColor(ev.type), color: 'white' }" />
                 </div>
               </div>
             </div>
@@ -328,7 +328,7 @@ const speed = ref(5)
 const speedOpts = [{ l: '1x', v: 1 }, { l: '5x', v: 5 }, { l: '20x', v: 20 }]
 const viewMode = ref('tasks')
 const viewModes = [{ l: 'Задачи', v: 'tasks' }, { l: 'Мониторинг ФСТ', v: 'fund' }]
-const liveColor = ref('#66bb6a')
+const liveColor = ref('var(--fst-green)')
 const selectedTask = ref(null)
 const taskFilter = ref(null)
 
@@ -513,20 +513,20 @@ const trancheReady = computed(() => trancheConditions.value.every(c => c.met))
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const taskCategories = [
-  { key: 'Продукт', name: 'Продукт', icon: 'pi pi-cog', color: '#42a5f5' },
-  { key: 'Продажи', name: 'Продажи', icon: 'pi pi-dollar', color: '#66bb6a' },
-  { key: 'Команда', name: 'Команда', icon: 'pi pi-users', color: '#26c6da' },
-  { key: 'Финансы', name: 'Финансы', icon: 'pi pi-chart-bar', color: '#ffa726' },
-  { key: 'IP', name: 'IP', icon: 'pi pi-key', color: '#ab47bc' },
-  { key: 'Регуляторика', name: 'Регуляторика', icon: 'pi pi-shield', color: '#ef5350' },
+  { key: 'Продукт', name: 'Продукт', icon: 'pi pi-cog', color: 'var(--fst-blue)' },
+  { key: 'Продажи', name: 'Продажи', icon: 'pi pi-dollar', color: 'var(--fst-green)' },
+  { key: 'Команда', name: 'Команда', icon: 'pi pi-users', color: 'var(--fst-cyan)' },
+  { key: 'Финансы', name: 'Финансы', icon: 'pi pi-chart-bar', color: 'var(--fst-brand)' },
+  { key: 'IP', name: 'IP', icon: 'pi pi-key', color: 'var(--fst-purple)' },
+  { key: 'Регуляторика', name: 'Регуляторика', icon: 'pi pi-shield', color: 'var(--fst-red)' },
 ]
 
 const kanbanCols = [
-  { status: 'done', label: 'Выполнено', color: '#66bb6a' },
-  { status: 'inprogress', label: 'В работе', color: '#42a5f5' },
-  { status: 'todo', label: 'В очереди', color: '#78909c' },
-  { status: 'blocked', label: 'Заблокировано', color: '#ffa726' },
-  { status: 'overdue', label: 'Просрочено', color: '#ef5350' },
+  { status: 'done', label: 'Выполнено', color: 'var(--fst-green)' },
+  { status: 'inprogress', label: 'В работе', color: 'var(--fst-blue)' },
+  { status: 'todo', label: 'В очереди', color: 'var(--p-text-muted-color)' },
+  { status: 'blocked', label: 'Заблокировано', color: 'var(--fst-brand)' },
+  { status: 'overdue', label: 'Просрочено', color: 'var(--fst-red)' },
 ]
 
 const tasksDone = computed(() => tasks.value.filter(t => t.status === 'done').length)
@@ -543,9 +543,9 @@ const complianceScore = computed(() => {
 
 const complianceGradient = computed(() => {
   const s = complianceScore.value
-  if (s >= 70) return 'linear-gradient(135deg, #1b5e20, #388e3c)'
-  if (s >= 40) return 'linear-gradient(135deg, #e65100, #ffa726)'
-  return 'linear-gradient(135deg, #b71c1c, #ef5350)'
+  if (s >= 70) return 'linear-gradient(135deg, var(--fst-green-dark), var(--fst-green))'
+  if (s >= 40) return 'linear-gradient(135deg, var(--fst-brand-dark), var(--fst-brand))'
+  return 'linear-gradient(135deg, var(--fst-red-dark), var(--fst-red))'
 })
 
 function filteredTasks(status) {
@@ -558,13 +558,13 @@ function filteredTasks(status) {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function kpiColor(kpi) {
   const pct = kpi.actual / kpi.target
-  if (pct >= 0.9) return '#66bb6a'
-  if (pct >= 0.6) return '#ffa726'
-  return '#ef5350'
+  if (pct >= 0.9) return 'var(--fst-green)'
+  if (pct >= 0.6) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 }
 
 function catColor(cat) {
-  return taskCategories.find(c => c.key === cat)?.color ?? '#78909c'
+  return taskCategories.find(c => c.key === cat)?.color ?? 'var(--p-text-muted-color)'
 }
 
 function catIcon(cat) {
@@ -576,8 +576,8 @@ function deadlineColor(dl) {
   const d = new Date(dl)
   const now = new Date('2026-03-25')
   const days = Math.ceil((d - now) / 86400000)
-  if (days < 0) return '#ef5350'
-  if (days < 14) return '#ffa726'
+  if (days < 0) return 'var(--fst-red)'
+  if (days < 14) return 'var(--fst-brand)'
   return 'var(--p-text-muted-color)'
 }
 
@@ -587,22 +587,22 @@ function statusLabel(s) {
 }
 
 function alertColor(s) {
-  if (s === 'critical') return '#ef5350'
-  if (s === 'warn') return '#ffa726'
-  return '#42a5f5'
+  if (s === 'critical') return 'var(--fst-red)'
+  if (s === 'warn') return 'var(--fst-brand)'
+  return 'var(--fst-blue)'
 }
 
 function evColor(type) {
-  const map = { Финансы: '#66bb6a', Продукт: '#42a5f5', Риск: '#ef5350', Управление: '#ab47bc', Продажи: '#26c6da' }
-  return map[type] || '#78909c'
+  const map = { Финансы: 'var(--fst-green)', Продукт: 'var(--fst-blue)', Риск: 'var(--fst-red)', Управление: 'var(--fst-purple)', Продажи: 'var(--fst-cyan)' }
+  return map[type] || 'var(--p-text-muted-color)'
 }
 
 function monthCellBg(actual, target) {
   if (!target || actual === 0) return 'transparent'
   const pct = actual / target
-  if (pct >= 0.9) return 'rgba(102,187,106,0.2)'
-  if (pct >= 0.6) return 'rgba(255,167,38,0.2)'
-  return 'rgba(239,83,80,0.15)'
+  if (pct >= 0.9) return 'color-mix(in srgb, var(--fst-green) 20%, transparent)'
+  if (pct >= 0.6) return 'color-mix(in srgb, var(--fst-brand) 20%, transparent)'
+  return 'color-mix(in srgb, var(--fst-red) 15%, transparent)'
 }
 
 // ─── Simulation ───────────────────────────────────────────────────────────────
@@ -697,7 +697,7 @@ onMounted(() => {
   // Загружаем ленту событий компании из Integram
   eventStore.load('company', EXEC_COMPANY_ID).catch(() => {})
   simInterval = setInterval(() => {
-    liveColor.value = liveColor.value === '#66bb6a' ? '#388e3c' : '#66bb6a'
+    liveColor.value = liveColor.value === 'var(--fst-green)' ? 'var(--fst-green-dark)' : 'var(--fst-green)'
     if (!running.value) return
     simDay.value += speed.value
     for (const ev of simEventPool) {
@@ -769,7 +769,7 @@ function unlockTranche() {
 
 <style scoped>
 .fex-root {
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -820,12 +820,12 @@ function unlockTranche() {
 .fex-compliance-score {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: white;
   line-height: 1;
 }
 .fex-compliance-label {
   font-size: 9px;
-  color: rgba(255,255,255,0.8);
+  color: color-mix(in srgb, white 80%, transparent);
 }
 .fex-header-right {
   display: flex;
@@ -838,8 +838,8 @@ function unlockTranche() {
 .fex-kpi-bar {
   display: flex;
   gap: 0;
-  background: var(--surface-card);
-  border-bottom: 1px solid var(--surface-border);
+  background: var(--p-surface-card);
+  border-bottom: 1px solid var(--p-content-border-color);
   padding: 8px 16px;
   flex-shrink: 0;
   overflow-x: auto;
@@ -848,7 +848,7 @@ function unlockTranche() {
   flex: 1;
   min-width: 100px;
   padding: 0 12px;
-  border-right: 1px solid var(--surface-border);
+  border-right: 1px solid var(--p-content-border-color);
 }
 .fex-kpi-item:last-child { border-right: none; }
 .fex-kpi-tranche {
@@ -874,7 +874,7 @@ function unlockTranche() {
 .fex-kpi-progress { margin-bottom: 3px; }
 .fex-kpi-bar-track {
   height: 4px;
-  background: var(--surface-border);
+  background: var(--p-content-border-color);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -899,8 +899,8 @@ function unlockTranche() {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: var(--surface-card);
-  border-bottom: 1px solid var(--surface-border);
+  background: var(--p-surface-card);
+  border-bottom: 1px solid var(--p-content-border-color);
   flex-shrink: 0;
   gap: 12px;
   flex-wrap: wrap;
@@ -917,8 +917,8 @@ function unlockTranche() {
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
-  background: var(--surface-ground);
-  border: 1px solid var(--surface-border);
+  background: var(--p-surface-ground);
+  border: 1px solid var(--p-content-border-color);
   cursor: pointer;
   transition: all 0.15s;
   color: var(--p-text-color);
@@ -929,9 +929,9 @@ function unlockTranche() {
   gap: 12px;
 }
 .fex-stat { font-size: 11px; font-weight: 600; }
-.fex-stat.green { color: #66bb6a; }
-.fex-stat.yellow { color: #ffa726; }
-.fex-stat.red { color: #ef5350; }
+.fex-stat.green { color: var(--fst-green); }
+.fex-stat.yellow { color: var(--fst-brand); }
+.fex-stat.red { color: var(--fst-red); }
 
 /* Kanban */
 .fex-kanban {
@@ -967,14 +967,14 @@ function unlockTranche() {
   font-weight: 600;
   color: var(--p-text-color);
   padding: 8px 10px;
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 6px 6px 0 0;
-  border-top: 3px solid #78909c;
+  border-top: 3px solid var(--p-content-border-color);
   margin-bottom: 4px;
 }
 .fex-kanban-count {
   font-size: 10px;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
   border-radius: 10px;
   padding: 1px 7px;
   color: var(--p-text-muted-color);
@@ -983,16 +983,16 @@ function unlockTranche() {
 
 /* Task Card */
 .fex-task-card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   padding: 10px;
   cursor: pointer;
   transition: all 0.15s;
 }
 .fex-task-card:hover { border-color: var(--p-primary-color); transform: translateY(-1px); }
-.fex-task-card.overdue { border-left: 3px solid #ef5350; }
-.fex-task-card.critical { border-left: 3px solid #ffa726; }
+.fex-task-card.overdue { border-left: 3px solid var(--fst-red); }
+.fex-task-card.critical { border-left: 3px solid var(--fst-brand); }
 .fex-task-cat {
   display: inline-flex;
   align-items: center;
@@ -1000,7 +1000,7 @@ function unlockTranche() {
   font-size: 9px;
   padding: 1px 6px;
   border-radius: 10px;
-  color: #fff;
+  color: white;
   margin-bottom: 5px;
 }
 .fex-task-name {
@@ -1019,7 +1019,7 @@ function unlockTranche() {
 }
 .fex-task-kpi {
   font-size: 10px;
-  color: #ffa726;
+  color: var(--fst-brand);
   display: flex;
   align-items: center;
   gap: 3px;
@@ -1027,7 +1027,7 @@ function unlockTranche() {
 }
 .fex-task-progress {
   height: 3px;
-  background: var(--surface-border);
+  background: var(--p-content-border-color);
   border-radius: 2px;
   overflow: hidden;
   margin-top: 4px;
@@ -1042,19 +1042,19 @@ function unlockTranche() {
 .fex-task-dialog-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: color-mix(in srgb, var(--p-text-color) 50%, transparent);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .fex-task-dialog {
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 10px;
   padding: 20px;
   width: 480px;
   max-width: 90vw;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--p-content-border-color);
   box-shadow: 0 10px 40px color-mix(in srgb, var(--p-text-color) 30%, transparent);
 }
 .fex-task-dialog-header {
@@ -1080,8 +1080,8 @@ function unlockTranche() {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  background: rgba(255,167,38,0.1);
-  border: 1px solid rgba(255,167,38,0.3);
+  background: color-mix(in srgb, var(--fst-brand) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-brand) 30%, transparent);
   border-radius: 6px;
   padding: 8px 10px;
   font-size: 12px;
@@ -1106,8 +1106,8 @@ function unlockTranche() {
 .fex-fund-col { display: flex; flex-direction: column; gap: 10px; }
 .fex-fund-col-wide {}
 .fex-fund-panel {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 12px;
 }
@@ -1120,7 +1120,7 @@ function unlockTranche() {
   color: var(--p-text-color);
   margin-bottom: 10px;
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
 /* Alerts */
@@ -1130,12 +1130,12 @@ function unlockTranche() {
   gap: 10px;
   padding: 8px;
   border-radius: 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
   margin-bottom: 6px;
 }
-.fex-alert.critical { border-left: 3px solid #ef5350; }
-.fex-alert.warn { border-left: 3px solid #ffa726; }
-.fex-alert.info { border-left: 3px solid #42a5f5; }
+.fex-alert.critical { border-left: 3px solid var(--fst-red); }
+.fex-alert.warn { border-left: 3px solid var(--fst-brand); }
+.fex-alert.info { border-left: 3px solid var(--fst-blue); }
 .fex-alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
 .fex-alert-body { flex: 1; }
 .fex-alert-title { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
@@ -1160,7 +1160,7 @@ function unlockTranche() {
 }
 .fex-action-btn { width: 100%; }
 .fex-action-log {
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--p-content-border-color);
   padding-top: 8px;
 }
 .fex-log-entry {
@@ -1182,15 +1182,15 @@ function unlockTranche() {
 .fex-kpi-table th {
   text-align: center;
   padding: 4px 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
   color: var(--p-text-muted-color);
   font-weight: 600;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--p-content-border-color);
 }
 .fex-kpi-table td {
   text-align: center;
   padding: 5px 6px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--p-content-border-color);
   color: var(--p-text-color);
 }
 .fex-kpi-tname {
@@ -1207,7 +1207,7 @@ function unlockTranche() {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
 }
 .fex-cond-body { flex: 1; }
 .fex-cond-name { font-size: 12px; font-weight: 500; color: var(--p-text-color); }
@@ -1217,10 +1217,10 @@ function unlockTranche() {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #ffa726;
+  color: var(--fst-brand);
   margin-top: 10px;
   padding: 8px;
-  background: rgba(255,167,38,0.1);
+  background: color-mix(in srgb, var(--fst-brand) 10%, transparent);
   border-radius: 6px;
 }
 
@@ -1238,7 +1238,7 @@ function unlockTranche() {
   align-items: flex-start;
   gap: 8px;
   padding: 5px 0;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 .fex-ev:last-child { border-bottom: none; }
 .fex-ev-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }

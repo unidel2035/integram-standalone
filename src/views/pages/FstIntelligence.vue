@@ -1,12 +1,15 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Portfolio Intelligence"
+    subtitle="Еженедельный AI-отчёт по портфелю с анализом рисков и рыночной разведкой"
+  >
     <Toast position="bottom-center" />
 
     <!-- Header -->
     <template #header>
       <div class="fsti-header-left">
         <div class="fsti-logo">
-          <i class="pi pi-chart-line" style="color:#5c6bc0;font-size:20px"></i>
+          <i class="pi pi-chart-line" style="color:var(--fst-purple);font-size:20px"></i>
           <span>ФСТ НТИ · <b>Portfolio Intelligence</b></span>
           <Tag v-if="latestReport" :value="`Отчёт #${reports.length}`" severity="info" style="font-size:11px" />
         </div>
@@ -35,7 +38,7 @@
             :class="['fsti-report-item', { active: selectedReport?.id === r.id }]"
             @click="selectReport(r)">
             <div class="fsti-ri-header">
-              <i class="pi pi-file-check" style="color:#5c6bc0;font-size:12px"></i>
+              <i class="pi pi-file-check" style="color:var(--fst-purple);font-size:12px"></i>
               <span class="fsti-ri-date">{{ formatDate(r.createdAt) }}</span>
             </div>
             <div class="fsti-ri-title">{{ r.title }}</div>
@@ -77,7 +80,7 @@
           <!-- 1. Executive Digest -->
           <div class="fsti-section">
             <div class="fsti-section-title">
-              <i class="pi pi-star-fill" style="color:#ffa726"></i>
+              <i class="pi pi-star-fill" style="color:var(--fst-brand)"></i>
               Обзор недели (Executive Digest)
             </div>
             <div class="fsti-digest">
@@ -104,7 +107,7 @@
 
               <div v-if="selectedReport.actionItems?.length" class="fsti-action-items">
                 <div class="fsti-actions-header">
-                  <i class="pi pi-list-check" style="color:#5c6bc0"></i>
+                  <i class="pi pi-list-check" style="color:var(--fst-purple)"></i>
                   Действия управляющего (Action Items)
                 </div>
                 <div v-for="(action, idx) in selectedReport.actionItems" :key="idx" class="fsti-action-item">
@@ -118,7 +121,7 @@
           <!-- 2. Companies at Risk -->
           <div class="fsti-section">
             <div class="fsti-section-title">
-              <i class="pi pi-exclamation-triangle" style="color:#ef5350"></i>
+              <i class="pi pi-exclamation-triangle" style="color:var(--fst-red)"></i>
               Компании в зоне риска
             </div>
             <div class="fsti-risk-companies">
@@ -143,7 +146,7 @@
               </div>
 
               <div v-if="!selectedReport.riskCompanies?.length" class="fsti-empty-risks">
-                <i class="pi pi-check-circle" style="font-size:32px;color:#66bb6a"></i>
+                <i class="pi pi-check-circle" style="font-size:32px;color:var(--fst-green)"></i>
                 <div>Критических рисков не обнаружено</div>
               </div>
             </div>
@@ -152,7 +155,7 @@
           <!-- 3. Market Intelligence -->
           <div class="fsti-section">
             <div class="fsti-section-title">
-              <i class="pi pi-globe" style="color:#42a5f5"></i>
+              <i class="pi pi-globe" style="color:var(--fst-blue)"></i>
               Рыночная разведка
             </div>
             <div class="fsti-market">
@@ -183,7 +186,7 @@
                 <div class="fsti-market-subtitle">Новые нормативные акты и регуляторные изменения</div>
                 <div v-if="selectedReport.regulatoryChanges?.length" class="fsti-regulatory-list">
                   <div v-for="(reg, idx) in selectedReport.regulatoryChanges" :key="idx" class="fsti-reg-item">
-                    <i class="pi pi-file-edit" style="color:#ffa726"></i>
+                    <i class="pi pi-file-edit" style="color:var(--fst-brand)"></i>
                     <div>
                       <div class="fsti-reg-title">{{ reg.title }}</div>
                       <div class="fsti-reg-impact">{{ reg.impact }}</div>
@@ -198,7 +201,7 @@
           <!-- 4. Next Week Forecast -->
           <div class="fsti-section">
             <div class="fsti-section-title">
-              <i class="pi pi-calendar-plus" style="color:#66bb6a"></i>
+              <i class="pi pi-calendar-plus" style="color:var(--fst-green)"></i>
               Прогноз на следующую неделю
             </div>
             <div class="fsti-forecast">
@@ -869,7 +872,7 @@ onMounted(() => {
 .fsti-kpi-target,
 .fsti-tranche-amount {
   font-weight: 600;
-  color: #66bb6a;
+  color: var(--fst-green);
 }
 
 .fsti-tranche-condition {

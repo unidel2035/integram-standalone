@@ -884,12 +884,12 @@ const expensesByCategory = computed(() => {
   const total = Object.values(cats).reduce((s, v) => s + v, 0)
   const result = []
   const colors = {
-    'due-diligence': '#42A5F5',
-    'legal': '#66BB6A',
-    'travel': '#FFA726',
-    'admin': '#AB47BC',
-    'audit': '#EF5350',
-    'marketing': '#26C6DA'
+    'due-diligence': 'var(--fst-blue)',
+    'legal': 'var(--fst-green)',
+    'travel': 'var(--fst-brand)',
+    'admin': 'var(--fst-purple)',
+    'audit': 'var(--fst-red)',
+    'marketing': 'var(--fst-cyan)'
   }
   for (const [cat, amt] of Object.entries(cats)) {
     result.push({
@@ -1281,12 +1281,12 @@ function generateAuditPackage() {
 }
 
 .compliance-icon.ok {
-  background: #66bb6a;
+  background: var(--fst-green);
   color: white;
 }
 
 .compliance-icon.warning {
-  background: #ffa726;
+  background: var(--fst-brand);
   color: white;
 }
 
@@ -1468,11 +1468,11 @@ function generateAuditPackage() {
 }
 
 .admin-table .green {
-  color: #66bb6a;
+  color: var(--fst-green);
 }
 
 .admin-table .red {
-  color: #ef5350;
+  color: var(--fst-red);
 }
 
 .admin-table tfoot {
@@ -1489,13 +1489,13 @@ function generateAuditPackage() {
 }
 
 .status-badge.paid, .status-badge.completed, .status-badge.ok {
-  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
-  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-green) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-green) 70%, var(--p-text-color));
 }
 
 .status-badge.accrued, .status-badge.partial {
-  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
-  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-brand) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color));
 }
 
 .status-badge.pending {
@@ -1504,53 +1504,53 @@ function generateAuditPackage() {
 }
 
 .status-badge.warning {
-  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
-  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-brand) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color));
 }
 
 .category-badge.due-diligence {
-  background: color-mix(in srgb, #42a5f5 10%, var(--surface-card));
-  color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-blue) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-blue) 70%, var(--p-text-color));
 }
 
 .category-badge.legal {
-  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
-  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-green) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-green) 70%, var(--p-text-color));
 }
 
 .category-badge.travel {
-  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
-  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-brand) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color));
 }
 
 .category-badge.admin {
-  background: color-mix(in srgb, #ab47bc 10%, var(--surface-card));
-  color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-purple) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-purple) 70%, var(--p-text-color));
 }
 
 .category-badge.audit {
-  background: color-mix(in srgb, #ef5350 10%, var(--surface-card));
-  color: color-mix(in srgb, #ef5350 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-red) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-red) 70%, var(--p-text-color));
 }
 
 .category-badge.marketing {
-  background: color-mix(in srgb, #26a69a 10%, var(--surface-card));
-  color: color-mix(in srgb, #26a69a 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-cyan) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-cyan) 70%, var(--p-text-color));
 }
 
 .type-badge.realized-profit {
-  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
-  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-green) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-green) 70%, var(--p-text-color));
 }
 
 .type-badge.return-of-capital {
-  background: color-mix(in srgb, #42a5f5 10%, var(--surface-card));
-  color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-blue) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-blue) 70%, var(--p-text-color));
 }
 
 .type-badge.income {
-  background: color-mix(in srgb, #ab47bc 10%, var(--surface-card));
-  color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-purple) 10%, var(--p-surface-card));
+  color: color-mix(in srgb, var(--fst-purple) 70%, var(--p-text-color));
 }
 
 .link-btn, .action-btn {
@@ -1572,7 +1572,7 @@ function generateAuditPackage() {
 }
 
 .action-btn.del {
-  color: #ef5350;
+  color: var(--fst-red);
 }
 
 .admin-actions-bar {
@@ -1667,8 +1667,8 @@ function generateAuditPackage() {
 }
 
 .carry-step.final {
-  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
-  border-color: #66bb6a;
+  background: color-mix(in srgb, var(--fst-green) 10%, var(--p-surface-card));
+  border-color: var(--fst-green);
 }
 
 .carry-step-num {
@@ -1747,11 +1747,11 @@ function generateAuditPackage() {
 }
 
 .nav-table .nav-total td {
-  background: color-mix(in srgb, #66bb6a 10%, var(--surface-card));
+  background: color-mix(in srgb, var(--fst-green) 10%, var(--p-surface-card));
   font-weight: 700;
   font-size: 1.05rem;
-  border-top: 3px solid #66bb6a;
-  color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color));
+  border-top: 3px solid var(--fst-green);
+  color: color-mix(in srgb, var(--fst-green) 70%, var(--p-text-color));
 }
 
 .nav-metrics {
@@ -1910,7 +1910,7 @@ function generateAuditPackage() {
 }
 
 .audit-deadline.overdue {
-  color: #ef5350;
+  color: var(--fst-red);
   font-weight: 600;
 }
 
@@ -2019,7 +2019,7 @@ function generateAuditPackage() {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--p-text-color) 50%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;

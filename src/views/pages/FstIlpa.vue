@@ -241,7 +241,7 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .ilpa-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .ilpa-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .ilpa-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.ilpa-btn.primary  { background: var(--p-primary-color); color: #fff; }
+.ilpa-btn.primary  { background: var(--p-primary-color); color: white; }
 .ilpa-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
 .ilpa-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.83rem; }
 
@@ -249,15 +249,15 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .ilpa-status-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 16px; border-right: 1px solid var(--surface-border); flex: 1; min-width: 90px; }
 .ilpa-status-item:last-child { border-right: none; }
 .status-icon { font-size: 1.1rem; font-weight: 700; }
-.status-icon.done     { color: #66bb6a; }
-.status-icon.progress { color: #ff9800; }
+.status-icon.done     { color: var(--fst-green); }
+.status-icon.progress { color: var(--fst-brand); }
 .status-icon.pending  { color: var(--p-text-muted-color); }
 .status-label { font-size: 0.72rem; color: var(--p-text-color); text-align: center; font-weight: 600; }
 .status-date  { font-size: 0.65rem; color: var(--p-text-muted-color); }
 
 .ilpa-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .ilpa-tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; }
-.ilpa-tab.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
+.ilpa-tab.active { background: var(--p-primary-color); color: white; border-color: var(--p-primary-color); }
 
 .ilpa-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px; overflow-x: auto; }
 .ilpa-section h2 { margin: 0 0 8px; font-size: 1.1rem; color: var(--p-text-color); }
@@ -272,7 +272,7 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .ilpa-table tr.cas-sub td { color: var(--p-text-muted-color); font-style: italic; font-size: 0.8rem; background: var(--surface-ground); padding-top: 12px; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .bold { font-weight: 700; }
-.green { color: #66bb6a; } .red { color: #ef5350; } .orange { color: #ff9800; } .gray { color: var(--p-text-muted-color); } .blue { color: #42a5f5; }
+.green { color: var(--fst-green); } .red { color: var(--fst-red); } .orange { color: var(--fst-brand); } .gray { color: var(--p-text-muted-color); } .blue { color: var(--fst-blue); }
 
 .perf-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
 @media (max-width: 768px) { .perf-grid { grid-template-columns: 1fr; } }
@@ -282,7 +282,7 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .portco-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; }
 .portco-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .portco-name { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); }
-.portco-stage { font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; background: var(--p-primary-color); color: #fff; }
+.portco-stage { font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; background: var(--p-primary-color); color: white; }
 .portco-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
 .pm { text-align: center; }
 .pm-val { font-size: 1rem; font-weight: 700; color: var(--p-text-color); }

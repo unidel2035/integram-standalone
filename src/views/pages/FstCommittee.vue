@@ -216,7 +216,7 @@
             <div :class="['fst-step', { 'fst-step--done': phaseIdx > idx, 'fst-step--active': phaseIdx === idx }]">
               <div class="fst-step-dot"
                 :style="{ background: phaseIdx >= idx ? ph.color : 'transparent', borderColor: ph.color }">
-                <i v-if="phaseIdx > idx" class="pi pi-check" style="font-size:7px;color:#fff"></i>
+                <i v-if="phaseIdx > idx" class="pi pi-check" style="font-size:7px;color:white"></i>
               </div>
               <span class="fst-step-label">{{ ph.label }}</span>
             </div>
@@ -2178,7 +2178,7 @@ onUnmounted(() => {
 .fst-header-subfund {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #fff;
+  color: white;
   padding: 2px 8px;
   border-radius: 4px;
   flex-shrink: 0;
@@ -2302,7 +2302,7 @@ onUnmounted(() => {
   transition: all 0.15s;
 }
 .fst-tab:hover { background: var(--surface-hover); color: var(--p-text-color); }
-.fst-tab--on { background: var(--p-primary-color, #42a5f5); color: #fff; }
+.fst-tab--on { background: var(--p-primary-color, var(--fst-blue)); color: white; }
 .fst-tab-count {
   font-size: 0.75rem;
   font-weight: 700;
@@ -2310,7 +2310,7 @@ onUnmounted(() => {
   border-radius: 8px;
   background: color-mix(in srgb, white 25%, transparent);
 }
-.fst-tab-count--red { background: var(--p-red-500); color: #fff; }
+.fst-tab-count--red { background: var(--p-red-500); color: white; }
 .fst-panel-fill {
   flex: 1;
   min-height: 0;
@@ -2515,7 +2515,7 @@ onUnmounted(() => {
   gap: 7px;
   padding: 7px 16px;
   border-radius: 8px;
-  color: #fff;
+  color: white;
   font-size: 0.875rem;
   font-weight: 700;
   margin-bottom: 10px;
@@ -2772,7 +2772,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   background: var(--fst-red);
-  color: #fff;
+  color: white;
   border-radius: 10px;
   font-size: 0.7rem;
   font-weight: 700;
@@ -2945,7 +2945,7 @@ onUnmounted(() => {
   gap: 3px;
   padding: 1px 6px;
   border-radius: 4px;
-  color: #fff;
+  color: white;
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -3295,7 +3295,7 @@ onUnmounted(() => {
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 4px;
-  color: #fff;
+  color: white;
   white-space: nowrap;
 }
 .fst-tbl-stage {
@@ -3337,7 +3337,7 @@ onUnmounted(() => {
   overflow: hidden;
 }
 .fst-pcard2:hover {
-  box-shadow: 0 3px 14px rgba(0,0,0,0.14);
+  box-shadow: 0 3px 14px var(--fst-glass-lg);
   transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--card-accent, var(--p-primary-color)) 60%, var(--p-content-border-color));
   border-left-color: var(--card-accent, var(--p-primary-color));
@@ -3443,7 +3443,7 @@ onUnmounted(() => {
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 6px;
-  color: #fff;
+  color: white;
 }
 .fst-pmodal-stage {
   font-size: 0.875rem;
@@ -3731,7 +3731,7 @@ onUnmounted(() => {
   max-width: 60px;
 }
 .fst-phase-step--active .fst-phase-label {
-  color: #fff;
+  color: white;
   font-weight: 600;
 }
 .fst-phase-tag {
@@ -3853,7 +3853,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
   padding: 2px 6px;
   border-radius: 4px;
-  color: #fff;
+  color: white;
   margin-top: 4px;
   display: inline-flex;
   align-items: center;
@@ -4094,7 +4094,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
   padding: 2px 8px;
   border-radius: 4px;
-  color: #fff;
+  color: white;
 }
 .fst-vote-score { font-size: 0.8125rem; color: var(--p-text-muted-color); min-width: 40px; }
 .fst-vote-conf-bar {
@@ -4207,7 +4207,7 @@ onUnmounted(() => {
   gap: 6px;
   padding: 4px 16px;
   border-radius: 20px;
-  color: #fff;
+  color: white;
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -4306,7 +4306,7 @@ onUnmounted(() => {
   font-size: 0.875rem;
   padding: 4px 12px;
   border-radius: 12px;
-  color: #fff;
+  color: white;
 }
 
 /* Conclusion */
@@ -4323,7 +4323,7 @@ onUnmounted(() => {
   gap: 8px;
   padding: 6px 20px;
   border-radius: 20px;
-  color: #fff;
+  color: white;
   font-size: 1rem;
   font-weight: 700;
   margin-bottom: 16px;
@@ -4589,9 +4589,9 @@ onUnmounted(() => {
   top: 3px; left: 3px;
   width: 16px; height: 16px;
   border-radius: 50%;
-  background: #fff;
+  background: white;
   transition: transform 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--p-text-color) 30%, transparent);
 }
 .fst-ai-toggle--on .fst-ai-toggle-knob { transform: translateX(18px); }
 .fst-ai-mode-label { font-size: 0.8125rem; color: var(--p-text-color); }
@@ -4624,12 +4624,12 @@ onUnmounted(() => {
 }
 .fst-dtab--active {
   background: var(--p-primary-color);
-  color: #fff;
+  color: white;
   border-color: transparent;
 }
 .fst-dtab--active .fst-arg-count {
   background: color-mix(in srgb, white 25%, transparent);
-  color: #fff;
+  color: white;
 }
 
 /* ── Graph Panel ───────────────────────────────────────────── */
@@ -4759,7 +4759,7 @@ onUnmounted(() => {
 }
 .fst-profile-btn--active {
   background: var(--p-primary-color);
-  color: #fff;
+  color: white;
   border-color: transparent;
 }
 .fst-voting-desc {
@@ -4908,7 +4908,7 @@ onUnmounted(() => {
 /* Issue #163: New project button & form */
 .fst-new-project-btn {
   background: var(--p-primary-color);
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 50%;
   width: 22px; height: 22px;
@@ -4963,7 +4963,7 @@ onUnmounted(() => {
   transition: background .15s;
 }
 .fst-btn--primary {
-  background: var(--p-primary-color); color: #fff;
+  background: var(--p-primary-color); color: white;
 }
 .fst-btn--primary:disabled { opacity: .5; cursor: not-allowed; }
 .fst-btn--primary:not(:disabled):hover { filter: brightness(1.1); }

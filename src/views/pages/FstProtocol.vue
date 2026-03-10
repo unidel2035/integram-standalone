@@ -1,12 +1,15 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Протоколы инвесткомитета"
+    subtitle="История заседаний AI-ИК с полными дебатами агентов"
+  >
     <Toast position="bottom-center" />
 
     <!-- Header -->
     <template #header>
       <div class="fst-proto-header-left">
         <div class="fst-proto-logo">
-          <i class="pi pi-file-check" style="color:#ffa726;font-size:20px"></i>
+          <i class="pi pi-file-check" style="color:var(--fst-brand);font-size:20px"></i>
           <span>ФСТ НТИ · <b>Протоколы инвесткомитета</b></span>
           <Tag :value="`${sessions.length} сессий`" severity="info" style="font-size:11px" />
         </div>
@@ -35,12 +38,12 @@
     <!-- Sessions List -->
     <div class="fst-proto-body">
       <div v-if="loading" class="fst-proto-loading">
-        <i class="pi pi-spin pi-spinner" style="font-size:24px;color:#ffa726"></i>
+        <i class="pi pi-spin pi-spinner" style="font-size:24px;color:var(--fst-brand)"></i>
         <p>Загрузка протоколов...</p>
       </div>
 
       <div v-else-if="filteredSessions.length === 0" class="fst-proto-empty">
-        <i class="pi pi-inbox" style="font-size:48px;color:#666"></i>
+        <i class="pi pi-inbox" style="font-size:48px;color:var(--p-text-muted-color)"></i>
         <p>Нет протоколов инвесткомитета</p>
         <Button label="Запустить первую сессию" icon="pi pi-play" severity="success"
           @click="$router.push('/fst-committee')" />
@@ -52,7 +55,7 @@
           @click="selectSession(session)">
           <div class="fst-proto-card-header">
             <div class="fst-proto-card-project">
-              <i class="pi pi-briefcase" style="color:#42a5f5"></i>
+              <i class="pi pi-briefcase" style="color:var(--fst-blue)"></i>
               {{ session.protocol?.decision?.projectName || session.projectName || session.name }}
             </div>
             <div class="fst-proto-card-badges">
@@ -78,14 +81,14 @@
               <i class="pi pi-comments"></i>
               {{ session.protocol?.arguments?.length || 0 }} аргументов
             </span>
-            <span class="fst-proto-meta-item" v-if="session.votesAgainst > 0" style="color:#ef5350">
+            <span class="fst-proto-meta-item" v-if="session.votesAgainst > 0" style="color:var(--fst-red)">
               <i class="pi pi-times-circle"></i>
               {{ session.votesAgainst }} против
             </span>
           </div>
 
           <div v-if="session.protocol?.decision?.conditions?.length" class="fst-proto-card-conditions">
-            <i class="pi pi-info-circle" style="color:#ffa726"></i>
+            <i class="pi pi-info-circle" style="color:var(--fst-brand)"></i>
             <span>{{ session.protocol.decision.conditions.length }} условий одобрения</span>
           </div>
         </div>
@@ -112,7 +115,7 @@
                 :severity="decisionSeverity(selectedSession.protocol.decision.recommendation)"
                 :style="{ background: decisionColor(selectedSession.protocol.decision.recommendation), fontSize: '16px', padding: '8px 16px' }" />
               <div v-if="selectedSession.protocol.humanApproval" class="fst-proto-human-approval">
-                <i class="pi pi-check-circle" style="color:#4caf50"></i>
+                <i class="pi pi-check-circle" style="color:var(--fst-green)"></i>
                 Утверждено: {{ selectedSession.protocol.humanApproval.approvedBy }}
                 <span v-if="selectedSession.protocol.humanApproval.comment" class="fst-proto-human-comment">
                   "{{ selectedSession.protocol.humanApproval.comment }}"
@@ -151,7 +154,7 @@
           <div class="fst-proto-detail-title">Условия одобрения</div>
           <ul class="fst-proto-list">
             <li v-for="(c, i) in selectedSession.protocol.decision.conditions" :key="i">
-              <i class="pi pi-angle-right" style="color:#ffa726"></i> {{ c }}
+              <i class="pi pi-angle-right" style="color:var(--fst-brand)"></i> {{ c }}
             </li>
           </ul>
         </div>
@@ -161,7 +164,7 @@
           <div class="fst-proto-detail-title">Ключевые риски</div>
           <ul class="fst-proto-list">
             <li v-for="(r, i) in selectedSession.protocol.decision.risks" :key="i">
-              <i class="pi pi-exclamation-triangle" style="color:#ef5350"></i> {{ r }}
+              <i class="pi pi-exclamation-triangle" style="color:var(--fst-red)"></i> {{ r }}
             </li>
           </ul>
         </div>
@@ -317,10 +320,10 @@ function selectSession(session) {
 }
 
 function scoreColor(score) {
-  if (!score) return '#666'
-  if (score >= 72) return '#4caf50'
-  if (score >= 50) return '#ffa726'
-  return '#ef5350'
+  if (!score) return 'var(--p-text-muted-color)'
+  if (score >= 72) return 'var(--fst-green)'
+  if (score >= 50) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 }
 
 function decisionLabel(decision) {
@@ -335,12 +338,12 @@ function decisionLabel(decision) {
 
 function decisionColor(decision) {
   const colors = {
-    'APPROVE': '#4caf50',
-    'APPROVE_CONDITIONAL': '#66bb6a',
-    'REJECT': '#ef5350',
-    'DEFER': '#ffa726'
+    'APPROVE': 'var(--fst-green)',
+    'APPROVE_CONDITIONAL': 'var(--fst-green)',
+    'REJECT': 'var(--fst-red)',
+    'DEFER': 'var(--fst-brand)'
   }
-  return colors[decision] || '#666'
+  return colors[decision] || 'var(--p-text-muted-color)'
 }
 
 function decisionSeverity(decision) {
@@ -412,7 +415,7 @@ onMounted(() => {
 /* ── Root ─────────────────────────────────────────────────────── */
 .fst-protocol {
   min-height: 100vh;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
   padding: 20px;
 }
 
@@ -423,7 +426,7 @@ onMounted(() => {
   align-items: flex-start;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
 .fst-proto-header-left {
@@ -467,8 +470,8 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
 }
 
@@ -503,8 +506,8 @@ onMounted(() => {
 }
 
 .fst-proto-session-card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 16px;
   cursor: pointer;
@@ -512,8 +515,8 @@ onMounted(() => {
 }
 
 .fst-proto-session-card:hover {
-  border-color: #ffa726;
-  box-shadow: 0 2px 8px rgba(255, 167, 38, 0.2);
+  border-color: var(--fst-brand);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--fst-brand) 20%, transparent);
 }
 
 .fst-proto-card-header {
@@ -563,8 +566,8 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #ffa726;
-  background: rgba(255, 167, 38, 0.1);
+  color: var(--fst-brand);
+  background: color-mix(in srgb, var(--fst-brand) 10%, transparent);
   padding: 6px 10px;
   border-radius: 4px;
 }
@@ -579,7 +582,7 @@ onMounted(() => {
 }
 
 .fst-proto-detail-section {
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 16px;
 }
@@ -589,7 +592,7 @@ onMounted(() => {
   font-weight: 600;
   color: var(--p-text-color);
   margin-bottom: 12px;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--p-content-border-color);
   padding-bottom: 8px;
 }
 
@@ -647,7 +650,7 @@ onMounted(() => {
   grid-template-columns: 1fr auto auto 1fr;
   gap: 16px;
   align-items: center;
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   padding: 12px;
   border-radius: 6px;
 }
@@ -678,14 +681,14 @@ onMounted(() => {
 .fst-proto-conf-bar-bg {
   width: 100px;
   height: 6px;
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .fst-proto-conf-bar {
   height: 100%;
-  background: #42a5f5;
+  background: var(--fst-blue);
   transition: width 0.3s;
 }
 
@@ -723,8 +726,8 @@ onMounted(() => {
 }
 
 .fst-proto-arg {
-  background: var(--surface-card);
-  border-left: 3px solid #42a5f5;
+  background: var(--p-surface-card);
+  border-left: 3px solid var(--fst-blue);
   border-radius: 4px;
   padding: 10px 12px;
 }
@@ -747,7 +750,7 @@ onMounted(() => {
 }
 
 .fst-proto-arg-type {
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 11px;
@@ -773,7 +776,7 @@ onMounted(() => {
 }
 
 .fst-proto-policy-item {
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   padding: 10px 12px;
   border-radius: 4px;
   display: flex;

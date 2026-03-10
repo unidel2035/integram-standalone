@@ -1,7 +1,7 @@
 <template>
   <FstPageLayout
     title="Центр обучения ФСТ НТИ"
-    subtitle="Всё для освоения платформы: туры, видео, квизы, сценарии"
+    subtitle="Центр обучения — путь развития в венчурной экосистеме"
     icon="pi pi-graduation-cap"
   >
     <template #actions>
@@ -171,7 +171,7 @@
           <!-- Overall video progress -->
           <div class="dg-video-summary">
             <span class="dg-video-summary-stat">
-              <i class="pi pi-check-circle" style="color: #16a34a"></i>
+              <i class="pi pi-check-circle" style="color: var(--fst-green)"></i>
               Просмотрено <strong>{{ learningStore.completedVideos.length }}</strong> из
               <strong>{{ learningStore.videos.length }}</strong> уроков
             </span>
@@ -229,8 +229,8 @@
             :class="{ done: learningStore.completedQuizzes.includes(quiz.id) }"
           >
             <div class="dg-cc-header">
-              <div class="dg-cc-icon" style="background: color-mix(in srgb, #2ca5e0 15%, transparent)">
-                <i class="pi pi-question-circle" style="color: #2ca5e0"></i>
+              <div class="dg-cc-icon" style="background: color-mix(in srgb, var(--fst-cyan) 15%, transparent)">
+                <i class="pi pi-question-circle" style="color: var(--fst-cyan)"></i>
               </div>
               <span v-if="learningStore.completedQuizzes.includes(quiz.id)" class="dg-cc-done-badge">
                 <i class="pi pi-check"></i> Сдан
@@ -254,8 +254,8 @@
             :class="{ done: learningStore.completedScenarios.includes(scenario.id) }"
           >
             <div class="dg-cc-header">
-              <div class="dg-cc-icon" style="background: color-mix(in srgb, #16a34a 15%, transparent)">
-                <i class="pi pi-play" style="color: #16a34a"></i>
+              <div class="dg-cc-icon" style="background: color-mix(in srgb, var(--fst-green) 15%, transparent)">
+                <i class="pi pi-play" style="color: var(--fst-green)"></i>
               </div>
               <span v-if="learningStore.completedScenarios.includes(scenario.id)" class="dg-cc-done-badge">
                 <i class="pi pi-check"></i> Выполнен
@@ -488,12 +488,12 @@ const heroStats = computed(() => [
   {
     label: 'Квизов',
     value: learningStore.completedQuizzes.length + ' / ' + learningStore.quizzes.length,
-    color: '#2ca5e0',
+    color: 'var(--fst-cyan)',
   },
   {
     label: 'Видео',
     value: learningStore.completedVideos.length + ' / ' + learningStore.videos.length,
-    color: '#d97706',
+    color: 'var(--fst-brand)',
   },
 ])
 
@@ -738,8 +738,8 @@ function formatTime(iso) {
 }
 
 .dg-qs-card.done {
-  background: color-mix(in srgb, #16a34a 6%, var(--p-surface-card));
-  border-color: color-mix(in srgb, #16a34a 25%, var(--p-content-border-color));
+  background: color-mix(in srgb, var(--fst-green) 6%, var(--p-surface-card));
+  border-color: color-mix(in srgb, var(--fst-green) 25%, var(--p-content-border-color));
 }
 
 .dg-qs-icon {
@@ -762,7 +762,7 @@ function formatTime(iso) {
 }
 
 .dg-qs-check {
-  color: #16a34a;
+  color: var(--fst-green);
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
@@ -847,7 +847,7 @@ function formatTime(iso) {
 }
 
 .dg-catalog-card.done {
-  background: color-mix(in srgb, #16a34a 5%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--fst-green) 5%, var(--p-surface-card));
 }
 
 .dg-cc-header {
@@ -871,7 +871,7 @@ function formatTime(iso) {
 
 .dg-cc-done-badge {
   font-size: 0.7rem;
-  color: #16a34a;
+  color: var(--fst-green);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -998,7 +998,7 @@ function formatTime(iso) {
 
 .dg-video-summary-fill {
   height: 100%;
-  background: #16a34a;
+  background: var(--fst-green);
   border-radius: 99px;
   transition: width 0.5s ease;
 }

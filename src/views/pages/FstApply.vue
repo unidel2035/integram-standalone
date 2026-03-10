@@ -1,5 +1,5 @@
 <template>
-  <FstPageLayout title="Подать заявку в ФСТ НТИ">
+  <FstPageLayout title="Подать заявку в ФСТ НТИ" subtitle="Подача заявки на инвестиции — форма первичной оценки проекта">
     <Toast position="bottom-center" />
     <div class="apply-hero">
       <h1>Подать заявку в ФСТ НТИ</h1>
@@ -37,87 +37,75 @@
         <div class="form-grid">
           <div class="form-field required full">
             <label>Название компании</label>
-            <input v-model="form.companyName" placeholder="ООО «МоёПредприятие»" />
+            <InputText v-model="form.companyName" placeholder="ООО «МоёПредприятие»" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Форма собственности</label>
-            <select v-model="form.legalForm">
-              <option value="">— выберите —</option>
-              <option>ООО</option><option>АО</option><option>ЗАО</option>
-              <option>ИП</option><option>ПАО</option><option>НКО</option>
-            </select>
+            <Select v-model="form.legalForm" :options="legalFormOptions" placeholder="— выберите —" class="apply-input" />
           </div>
           <div class="form-field">
             <label>ИНН</label>
-            <input v-model="form.inn" placeholder="1234567890" maxlength="12" />
+            <InputText v-model="form.inn" placeholder="1234567890" class="apply-input" />
           </div>
           <div class="form-field">
             <label>ОГРН</label>
-            <input v-model="form.ogrn" placeholder="1027700132195" maxlength="15" />
+            <InputText v-model="form.ogrn" placeholder="1027700132195" class="apply-input" />
           </div>
           <div class="form-field">
             <label>КПП</label>
-            <input v-model="form.kpp" placeholder="770901001" maxlength="9" />
+            <InputText v-model="form.kpp" placeholder="770901001" class="apply-input" />
           </div>
           <div class="form-field required">
             <label>Email для связи</label>
-            <input v-model="form.email" type="email" placeholder="founder@company.ru" />
+            <InputText v-model="form.email" placeholder="founder@company.ru" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Телефон</label>
-            <input v-model="form.phone" placeholder="+7 (999) 000-00-00" />
+            <InputText v-model="form.phone" placeholder="+7 (999) 000-00-00" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Сайт компании</label>
-            <input v-model="form.website" placeholder="https://..." />
+            <InputText v-model="form.website" placeholder="https://..." class="apply-input" />
           </div>
           <div class="form-field">
             <label>Регион / Город</label>
-            <input v-model="form.city" placeholder="Москва" />
+            <InputText v-model="form.city" placeholder="Москва" class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Юридический адрес</label>
-            <input v-model="form.legalAddress" placeholder="123456, г. Москва, ул. Примерная, д. 1" />
+            <InputText v-model="form.legalAddress" placeholder="123456, г. Москва, ул. Примерная, д. 1" class="apply-input" />
           </div>
           <div class="form-field">
             <label>ФИО руководителя</label>
-            <input v-model="form.ceoName" placeholder="Иванов Иван Иванович" />
+            <InputText v-model="form.ceoName" placeholder="Иванов Иван Иванович" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Должность руководителя</label>
-            <input v-model="form.ceoTitle" placeholder="Генеральный директор / CEO" />
+            <InputText v-model="form.ceoTitle" placeholder="Генеральный директор / CEO" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Год основания</label>
-            <input v-model.number="form.foundedYear" type="number" min="2000" max="2026" />
+            <InputNumber v-model="form.foundedYear" :min="2000" :max="2026" :useGrouping="false" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Кол-во сотрудников</label>
-            <input v-model.number="form.teamSize" type="number" step="1" placeholder="15" />
+            <InputNumber v-model="form.teamSize" :step="1" placeholder="15" :useGrouping="false" class="apply-input" />
           </div>
           <div class="form-field required">
             <label>Отрасль / Сектор</label>
-            <select v-model="form.sector">
-              <option value="">— выберите —</option>
-              <option>Беспилотные авиационные системы (БАС)</option>
-              <option>Наземная робототехника</option>
-              <option>Малая распределённая энергетика (МЭ)</option>
-              <option>Компоненты и материалы для БАС</option>
-              <option>Программное обеспечение для БПЛА</option>
-              <option>Сервисы и услуги на базе БПЛА</option>
-            </select>
+            <Select v-model="form.sector" :options="sectorOptions" placeholder="— выберите —" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Резидентство / акселераторы</label>
-            <input v-model="form.residency" placeholder="Сколково, ИННОПОЛИС, Фонд НТИ..." />
+            <InputText v-model="form.residency" placeholder="Сколково, ИННОПОЛИС, Фонд НТИ..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Состав ключевой команды</label>
-            <textarea v-model="form.teamDesc" rows="2" placeholder="ФИО, роль, компетенции..."></textarea>
+            <Textarea v-model="form.teamDesc" :rows="2" placeholder="ФИО, роль, компетенции..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Выручка компании за последние 3 года, млн ₽</label>
-            <input v-model="form.revenue3y" placeholder="2022: 5, 2023: 12, 2024: 28" />
+            <InputText v-model="form.revenue3y" placeholder="2022: 5, 2023: 12, 2024: 28" class="apply-input" />
           </div>
         </div>
       </div>
@@ -128,15 +116,15 @@
         <div class="form-grid">
           <div class="form-field full">
             <label>Цели проекта</label>
-            <textarea v-model="form.projectGoals" rows="3" placeholder="Каких результатов планируете достичь за срок реализации?"></textarea>
+            <Textarea v-model="form.projectGoals" :rows="3" placeholder="Каких результатов планируете достичь за срок реализации?" class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Технологический результат</label>
-            <textarea v-model="form.techResult" rows="2" placeholder="Конкретный технологический артефакт / изделие / ПО..."></textarea>
+            <Textarea v-model="form.techResult" :rows="2" placeholder="Конкретный технологический артефакт / изделие / ПО..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Коммерческий результат</label>
-            <textarea v-model="form.commercialResult" rows="2" placeholder="Ожидаемые контракты, выручка, клиенты..."></textarea>
+            <Textarea v-model="form.commercialResult" :rows="2" placeholder="Ожидаемые контракты, выручка, клиенты..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Уровень готовности технологии (TRL 1–9)</label>
@@ -155,28 +143,23 @@
           </div>
           <div class="form-field">
             <label>Двойное назначение</label>
-            <select v-model="form.dualUse">
-              <option value="">— выберите —</option>
-              <option>Только гражданское</option>
-              <option>Возможно двойное применение</option>
-              <option>Явное двойное назначение</option>
-            </select>
+            <Select v-model="form.dualUse" :options="dualUseOptions" placeholder="— выберите —" class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Научно-технический задел</label>
-            <textarea v-model="form.rdBacklog" rows="2" placeholder="Патенты, НИР, опытные образцы, публикации..."></textarea>
+            <Textarea v-model="form.rdBacklog" :rows="2" placeholder="Патенты, НИР, опытные образцы, публикации..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>РИД и ОИС (интеллектуальная собственность)</label>
-            <textarea v-model="form.rid" rows="2" placeholder="Количество патентов, статус, охраняемые РИД..."></textarea>
+            <Textarea v-model="form.rid" :rows="2" placeholder="Количество патентов, статус, охраняемые РИД..." class="apply-input" />
           </div>
           <div class="form-field">
             <label>Сроки реализации проекта</label>
-            <input v-model="form.timeline" placeholder="напр. 24 мес. (2025–2026)" />
+            <InputText v-model="form.timeline" placeholder="напр. 24 мес. (2025–2026)" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Общая стоимость проекта, млн ₽</label>
-            <input v-model.number="form.projectCost" type="number" step="1" />
+            <InputNumber v-model="form.projectCost" :step="1" :useGrouping="false" class="apply-input" />
           </div>
         </div>
       </div>
@@ -187,31 +170,31 @@
         <div class="form-grid">
           <div class="form-field full">
             <label>Потенциальные заказчики / клиенты</label>
-            <textarea v-model="form.potentialCustomers" rows="2" placeholder="Кто будет платить? Первые клиенты / LOI?"></textarea>
+            <Textarea v-model="form.potentialCustomers" :rows="2" placeholder="Кто будет платить? Первые клиенты / LOI?" class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Модель монетизации</label>
-            <textarea v-model="form.monetizationModel" rows="2" placeholder="Продажа изделий, подписка, SaaS, сервисный контракт..."></textarea>
+            <Textarea v-model="form.monetizationModel" :rows="2" placeholder="Продажа изделий, подписка, SaaS, сервисный контракт..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>TAM / SAM / SOM — Россия, млрд ₽</label>
-            <input v-model="form.tamSamSomRf" placeholder="TAM=300, SAM=40, SOM=4" />
+            <InputText v-model="form.tamSamSomRf" placeholder="TAM=300, SAM=40, SOM=4" class="apply-input" />
           </div>
           <div class="form-field full">
             <label>TAM / SAM / SOM — зарубежные рынки, млрд ₽ (при наличии)</label>
-            <input v-model="form.tamSamSomAbroad" placeholder="TAM=500, SAM=60, SOM=5" />
+            <InputText v-model="form.tamSamSomAbroad" placeholder="TAM=500, SAM=60, SOM=5" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Целевые экспортные рынки</label>
-            <input v-model="form.exportMarkets" placeholder="ОАЭ, Иран, Бразилия..." />
+            <InputText v-model="form.exportMarkets" placeholder="ОАЭ, Иран, Бразилия..." class="apply-input" />
           </div>
           <div class="form-field">
             <label>Ключевые конкуренты</label>
-            <input v-model="form.competitors" placeholder="Компания А, Компания Б..." />
+            <InputText v-model="form.competitors" placeholder="Компания А, Компания Б..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Конкурентный анализ и УТП</label>
-            <textarea v-model="form.competitiveAnalysis" rows="3" placeholder="В чём ваше преимущество? Барьеры входа для конкурентов..."></textarea>
+            <Textarea v-model="form.competitiveAnalysis" :rows="3" placeholder="В чём ваше преимущество? Барьеры входа для конкурентов..." class="apply-input" />
           </div>
         </div>
       </div>
@@ -222,39 +205,39 @@
         <div class="form-grid">
           <div class="form-field required">
             <label>Запрашиваемые инвестиции, млн ₽</label>
-            <input v-model.number="form.amount" type="number" step="5" />
+            <InputNumber v-model="form.amount" :step="5" :useGrouping="false" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Предложение доли, %</label>
-            <input v-model.number="form.equityOffered" type="number" step="0.5" />
+            <InputNumber v-model="form.equityOffered" :step="0.5" :maxFractionDigits="1" :useGrouping="false" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Pre-money оценка, млн ₽</label>
-            <input v-model.number="form.preMoney" type="number" step="10" />
+            <InputNumber v-model="form.preMoney" :step="10" :useGrouping="false" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Текущая выручка ARR, млн ₽</label>
-            <input v-model.number="form.arr" type="number" step="0.5" />
+            <InputNumber v-model="form.arr" :step="0.5" :maxFractionDigits="1" :useGrouping="false" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Прогноз IRR, %</label>
-            <input v-model.number="form.irrForecast" type="number" step="1" placeholder="35" />
+            <InputNumber v-model="form.irrForecast" :step="1" :useGrouping="false" placeholder="35" class="apply-input" />
           </div>
           <div class="form-field">
             <label>Runway, мес.</label>
-            <input v-model.number="form.runway" type="number" step="1" />
+            <InputNumber v-model="form.runway" :step="1" :useGrouping="false" class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Стратегия выхода (exit)</label>
-            <textarea v-model="form.exitStrategy" rows="2" placeholder="IPO, M&A, стратегический покупатель, buyback..."></textarea>
+            <Textarea v-model="form.exitStrategy" :rows="2" placeholder="IPO, M&A, стратегический покупатель, buyback..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Опыт работы с институтами развития</label>
-            <textarea v-model="form.devInstitutions" rows="2" placeholder="Сколково, ФРП, РВК, РФРИТ, Фонд НТИ..."></textarea>
+            <Textarea v-model="form.devInstitutions" :rows="2" placeholder="Сколково, ФРП, РВК, РФРИТ, Фонд НТИ..." class="apply-input" />
           </div>
           <div class="form-field full">
             <label>Государственное финансирование (гранты, субсидии)</label>
-            <textarea v-model="form.govFunding" rows="2" placeholder="Получены / поданы гранты, сумма, источник..."></textarea>
+            <Textarea v-model="form.govFunding" :rows="2" placeholder="Получены / поданы гранты, сумма, источник..." class="apply-input" />
           </div>
         </div>
       </div>
@@ -267,7 +250,7 @@
             <label>Pitch Deck (PDF/PPT)</label>
             <div class="file-drop" @dragover.prevent @drop.prevent="handleDrop($event, 'pitch')">
               <input type="file" accept=".pdf,.pptx" @change="handleFile($event, 'pitch')" hidden ref="pitchInput" />
-              <button class="file-btn" @click="$refs.pitchInput.click()">Выбрать файл</button>
+              <Button label="Выбрать файл" severity="secondary" size="small" @click="$refs.pitchInput.click()" />
               <span class="file-name">{{ form.pitchFile || 'Или перетащите файл сюда' }}</span>
             </div>
           </div>
@@ -275,13 +258,13 @@
             <label>Финансовая модель (Excel)</label>
             <div class="file-drop">
               <input type="file" accept=".xlsx,.xls" @change="handleFile($event, 'model')" hidden ref="modelInput" />
-              <button class="file-btn" @click="$refs.modelInput.click()">Выбрать файл</button>
+              <Button label="Выбрать файл" severity="secondary" size="small" @click="$refs.modelInput.click()" />
               <span class="file-name">{{ form.modelFile || 'Или перетащите файл сюда' }}</span>
             </div>
           </div>
           <div class="form-field">
             <label>Telegram</label>
-            <input v-model="form.telegram" placeholder="@username" />
+            <InputText v-model="form.telegram" placeholder="@username" class="apply-input" />
           </div>
           <div class="form-field full">
             <label class="checkbox-label">
@@ -311,12 +294,9 @@
 
       <!-- Навигация -->
       <div class="step-nav">
-        <button class="apply-btn secondary" @click="prevStep" :disabled="currentStep === 0">← Назад</button>
-        <button v-if="currentStep < steps.length - 1" class="apply-btn primary" @click="nextStep">Далее →</button>
-        <button v-else class="apply-btn primary submit" @click="submitApplication" :disabled="!canSubmit || submitting">
-          <i v-if="submitting" class="pi pi-spin pi-spinner" style="font-size: 0.9rem; margin-right: 6px;"></i>
-          {{ submitting ? 'Отправка...' : 'Отправить заявку' }}
-        </button>
+        <Button label="← Назад" severity="secondary" @click="prevStep" :disabled="currentStep === 0" />
+        <Button v-if="currentStep < steps.length - 1" label="Далее →" @click="nextStep" />
+        <Button v-else :label="submitting ? 'Отправка...' : 'Отправить заявку'" severity="success" @click="submitApplication" :disabled="!canSubmit || submitting" :loading="submitting" />
       </div>
     </div>
 
@@ -324,9 +304,7 @@
     <div v-if="!submitted" class="apply-table-section">
       <div class="ats-header">
         <h2>Поданные заявки</h2>
-        <button class="apply-btn secondary" @click="loadApplications" :disabled="loadingApps">
-          <i :class="loadingApps ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"></i>
-        </button>
+        <Button :icon="loadingApps ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" severity="secondary" @click="loadApplications" :disabled="loadingApps" />
       </div>
       <div v-if="loadingApps" class="ats-empty">Загрузка...</div>
       <div v-else-if="applications.length === 0" class="ats-empty">Заявок пока нет</div>
@@ -384,6 +362,11 @@
 import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useToast } from 'primevue/usetoast'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+import Select from 'primevue/select'
+import Textarea from 'primevue/textarea'
 import { createProjectFromApplication, createApplication, createCompany, getApplications } from '@/services/fstApi'
 import { useStartuperStore } from '@/stores/startuperStore'
 import { useEventStore } from '@/stores/eventStore.js'
@@ -409,6 +392,17 @@ onMounted(loadApplications)
 const prefilled = ref(false)
 
 const steps = ['Компания', 'Проект', 'Рынок', 'Финансы', 'Документы']
+
+const legalFormOptions = ['ООО', 'АО', 'ЗАО', 'ИП', 'ПАО', 'НКО']
+const sectorOptions = [
+  'Беспилотные авиационные системы (БАС)',
+  'Наземная робототехника',
+  'Малая распределённая энергетика (МЭ)',
+  'Компоненты и материалы для БАС',
+  'Программное обеспечение для БПЛА',
+  'Сервисы и услуги на базе БПЛА'
+]
+const dualUseOptions = ['Только гражданское', 'Возможно двойное применение', 'Явное двойное назначение']
 
 const criteria = ref([
   { icon: '💰', label: 'Объём инвестиций', value: '50–500 млн ₽' },
@@ -446,10 +440,10 @@ const trlDescription = computed(() => {
 })
 
 const scoringRows = computed(() => [
-  { label: 'TRL', score: form.value.trl * 11, color: form.value.trl >= 5 ? '#66bb6a' : '#ef5350' },
-  { label: 'Суверенность', score: form.value.sovereignty, color: form.value.sovereignty >= 60 ? '#66bb6a' : '#ff9800' },
-  { label: 'Команда', score: form.value.teamSize ? Math.min(100, form.value.teamSize * 5) : 30, color: '#42a5f5' },
-  { label: 'IRR прогноз', score: form.value.irrForecast ? Math.min(100, form.value.irrForecast * 1.5) : 20, color: '#ab47bc' }
+  { label: 'TRL', score: form.value.trl * 11, color: form.value.trl >= 5 ? 'var(--fst-green)' : 'var(--fst-red)' },
+  { label: 'Суверенность', score: form.value.sovereignty, color: form.value.sovereignty >= 60 ? 'var(--fst-green)' : 'var(--fst-brand)' },
+  { label: 'Команда', score: form.value.teamSize ? Math.min(100, form.value.teamSize * 5) : 30, color: 'var(--fst-blue)' },
+  { label: 'IRR прогноз', score: form.value.irrForecast ? Math.min(100, form.value.irrForecast * 1.5) : 20, color: 'var(--fst-purple)' }
 ])
 
 const gatePass = computed(() => form.value.trl >= 5 && form.value.sovereignty >= 60)
@@ -586,24 +580,24 @@ async function submitApplication() {
 </script>
 
 <style scoped>
-.apply-hero { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 32px; text-align: center; }
+.apply-hero { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 32px; text-align: center; }
 .apply-hero h1 { margin: 0 0 8px; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .apply-hero p { font-size: 0.95rem; color: var(--p-text-muted-color); max-width: 600px; margin: 0 auto 20px; }
 .apply-criteria { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-.ac-item { display: flex; align-items: center; gap: 10px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; }
+.ac-item { display: flex; align-items: center; gap: 10px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 10px 14px; }
 .ac-icon { font-size: 1.3rem; }
 .ac-title { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .ac-val   { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
 
-.apply-form-wrap { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+.apply-form-wrap { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 28px; display: flex; flex-direction: column; gap: 24px; }
 
 .apply-steps { display: flex; gap: 0; overflow-x: auto; padding-bottom: 4px; }
 .apply-step { display: flex; align-items: center; gap: 6px; flex: 1; position: relative; min-width: 80px; }
 .apply-step::after { content: '→'; position: absolute; right: -6px; color: var(--p-text-muted-color); font-size: 0.8rem; }
 .apply-step:last-child::after { display: none; }
-.step-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 700; background: var(--surface-ground); border: 2px solid var(--surface-border); color: var(--p-text-muted-color); flex-shrink: 0; }
-.apply-step.active .step-circle { background: var(--p-primary-color); border-color: var(--p-primary-color); color: #fff; }
-.apply-step.done .step-circle { background: #66bb6a; border-color: #66bb6a; color: #fff; }
+.step-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 700; background: var(--p-surface-ground); border: 2px solid var(--p-content-border-color); color: var(--p-text-muted-color); flex-shrink: 0; }
+.apply-step.active .step-circle { background: var(--p-primary-color); border-color: var(--p-primary-color); color: white; }
+.apply-step.done .step-circle { background: var(--fst-green); border-color: var(--fst-green); color: white; }
 .step-label { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .apply-step.active .step-label { color: var(--p-text-color); font-weight: 600; }
 
@@ -612,10 +606,10 @@ async function submitApplication() {
 @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
 .form-field { display: flex; flex-direction: column; gap: 4px; }
 .form-field.full { grid-column: 1 / -1; }
-.form-field.required label::after { content: ' *'; color: #ef5350; }
+.form-field.required label::after { content: ' *'; color: var(--fst-red); }
 .form-field label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.form-field input, .form-field select, .form-field textarea { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; resize: vertical; }
-.form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--p-primary-color); outline: none; }
+.apply-input { width: 100%; font-size: 0.85rem; }
+.form-field input[type="range"] { width: 100%; }
 .checkbox-label { display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; color: var(--p-text-color); cursor: pointer; }
 .checkbox-label input { width: auto; margin-top: 2px; accent-color: var(--p-primary-color); }
 
@@ -624,36 +618,30 @@ async function submitApplication() {
 .trl-val  { font-size: 0.95rem; font-weight: 700; color: var(--p-primary-color); min-width: 50px; }
 .trl-desc { font-size: 0.72rem; color: var(--p-text-muted-color); width: 100%; }
 
-.file-drop { display: flex; align-items: center; gap: 10px; border: 2px dashed var(--surface-border); border-radius: 8px; padding: 12px; }
-.file-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); cursor: pointer; font-size: 0.82rem; }
+.file-drop { display: flex; align-items: center; gap: 10px; border: 2px dashed var(--p-content-border-color); border-radius: 8px; padding: 12px; }
 .file-name { font-size: 0.78rem; color: var(--p-text-muted-color); }
 
-.scoring-preview { margin-top: 8px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 10px; padding: 16px; }
+.scoring-preview { margin-top: 8px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 16px; }
 .scoring-preview h3 { margin: 0 0 12px; font-size: 0.9rem; color: var(--p-text-color); }
 .score-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .score-row { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; }
 .score-row span:first-child { min-width: 100px; color: var(--p-text-muted-color); }
-.score-bar-wrap { flex: 1; height: 8px; background: var(--surface-border); border-radius: 4px; overflow: hidden; }
+.score-bar-wrap { flex: 1; height: 8px; background: var(--p-content-border-color); border-radius: 4px; overflow: hidden; }
 .score-bar { height: 100%; border-radius: 4px; transition: width 0.4s; }
 .score-num { min-width: 50px; text-align: right; font-weight: 600; color: var(--p-text-color); }
 .gate-result { padding: 8px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; }
-.gate-result.pass { background: #66bb6a18; color: #66bb6a; border: 1px solid #66bb6a44; }
-.gate-result.fail { background: #ef535018; color: #ef5350; border: 1px solid #ef535044; }
+.gate-result.pass { background: color-mix(in srgb, var(--fst-green) 10%, transparent); color: var(--fst-green); border: 1px solid color-mix(in srgb, var(--fst-green) 30%, transparent); }
+.gate-result.fail { background: color-mix(in srgb, var(--fst-red) 10%, transparent); color: var(--fst-red); border: 1px solid color-mix(in srgb, var(--fst-red) 30%, transparent); }
 
-.step-nav { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--surface-border); }
-.apply-btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.88rem; font-weight: 600; }
-.apply-btn.primary { background: var(--p-primary-color); color: #fff; }
-.apply-btn.secondary { background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
-.apply-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.apply-btn.submit { background: #66bb6a; }
+.step-nav { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--p-content-border-color); }
 
-.apply-success { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 48px; text-align: center; }
-.success-icon { font-size: 4rem; color: #66bb6a; margin-bottom: 16px; }
+.apply-success { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 48px; text-align: center; }
+.success-icon { font-size: 4rem; color: var(--fst-green); margin-bottom: 16px; }
 .apply-success h2 { margin: 0 0 8px; color: var(--p-text-color); }
 .apply-success p { font-size: 0.9rem; color: var(--p-text-muted-color); }
 .next-steps { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; text-align: left; max-width: 480px; margin-left: auto; margin-right: auto; }
 .ns-step { display: flex; align-items: flex-start; gap: 12px; }
-.ns-num { width: 28px; height: 28px; border-radius: 50%; background: var(--p-primary-color); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+.ns-num { width: 28px; height: 28px; border-radius: 50%; background: var(--p-primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
 .ns-title { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }
 .ns-desc  { font-size: 0.75rem; color: var(--p-text-muted-color); }
 
@@ -668,20 +656,20 @@ async function submitApplication() {
 </style>
 
 <style scoped>
-.apply-table-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 20px; }
+.apply-table-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; }
 .ats-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .ats-header h2 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .ats-empty { text-align: center; padding: 24px; color: var(--p-text-muted-color); font-size: 0.85rem; }
 .ats-wrap { overflow-x: auto; }
 .ats-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 640px; }
-.ats-table th { padding: 6px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; white-space: nowrap; }
-.ats-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
+.ats-table th { padding: 6px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.72rem; white-space: nowrap; }
+.ats-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
 .ats-id   { font-size: 0.72rem; color: var(--p-text-muted-color); font-family: monospace; }
 .ats-name { font-weight: 600; }
 .ats-muted { color: var(--p-text-muted-color); }
 .ats-muted.small { font-size: 0.75rem; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ats-badge { background: var(--p-primary-color); color: #fff; padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
-.ats-irr { font-weight: 700; color: #66bb6a; }
-.ats-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--surface-border); color: var(--p-text-muted-color); text-decoration: none; font-size: 0.78rem; transition: all 0.15s; }
+.ats-badge { background: var(--p-primary-color); color: white; padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+.ats-irr { font-weight: 700; color: var(--fst-green); }
+.ats-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--p-content-border-color); color: var(--p-text-muted-color); text-decoration: none; font-size: 0.78rem; transition: all 0.15s; }
 .ats-icon-btn:hover { border-color: var(--p-primary-color); color: var(--p-primary-color); }
 </style>

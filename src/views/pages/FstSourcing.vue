@@ -496,25 +496,25 @@ const stats = computed(() => [
     label: 'Всего находок',
     value: leads.value.length,
     icon: 'pi pi-search',
-    color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    color: 'linear-gradient(135deg, var(--fst-purple) 0%, var(--fst-purple-dark) 100%)'
   },
   {
     label: 'Высокий score (75+)',
     value: leads.value.filter(l => l.score >= 75).length,
     icon: 'pi pi-star',
-    color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+    color: 'linear-gradient(135deg, var(--fst-purple) 0%, var(--fst-red) 100%)'
   },
   {
     label: 'За эту неделю',
     value: leads.value.filter(l => isThisWeek(l.foundAt)).length,
     icon: 'pi pi-calendar',
-    color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+    color: 'linear-gradient(135deg, var(--fst-blue) 0%, var(--fst-cyan) 100%)'
   },
   {
     label: 'В воронку',
     value: leads.value.filter(l => l.addedToDealflow).length,
     icon: 'pi pi-check-circle',
-    color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+    color: 'linear-gradient(135deg, var(--fst-green) 0%, var(--fst-cyan) 100%)'
   }
 ])
 
@@ -560,13 +560,13 @@ const filteredLeads = computed(() => {
 
 // Functions
 function sectorColor(sector) {
-  return { БАС: '#1565c0', РОБО: '#1b5e20', МЭ: '#4a148c' }[sector] || '#607d8b'
+  return { БАС: 'var(--fst-blue-dark)', РОБО: 'var(--fst-green-dark)', МЭ: 'var(--fst-purple-dark)' }[sector] || 'var(--p-text-muted-color)'
 }
 
 function scoreColor(score) {
-  if (score >= 75) return '#66bb6a'
-  if (score >= 50) return '#ffa726'
-  return '#ef5350'
+  if (score >= 75) return 'var(--fst-green)'
+  if (score >= 50) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 }
 
 function signalIcon(type) {
@@ -715,7 +715,7 @@ onMounted(() => {
 
 .sourcing-btn.primary {
   background: var(--p-primary-color);
-  color: #fff;
+  color: white;
 }
 
 .sourcing-btn.secondary {
@@ -749,7 +749,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: white;
   font-size: 1.2rem;
 }
 
@@ -880,7 +880,7 @@ onMounted(() => {
   font-size: 0.7rem;
   padding: 3px 8px;
   border-radius: 6px;
-  color: #fff;
+  color: white;
   font-weight: 600;
 }
 
@@ -990,7 +990,7 @@ onMounted(() => {
   font-size: 0.75rem;
   font-weight: 600;
   background: var(--p-primary-color);
-  color: #fff;
+  color: white;
   transition: opacity 0.15s;
   display: flex;
   align-items: center;
@@ -1011,7 +1011,7 @@ onMounted(() => {
 .sourcing-detail-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--p-text-color) 50%, transparent);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -1256,7 +1256,7 @@ onMounted(() => {
 
 .sourcing-checkbox-status.active {
   background: var(--p-primary-color);
-  color: #fff;
+  color: white;
 }
 
 .sourcing-input {

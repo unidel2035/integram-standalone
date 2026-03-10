@@ -1,10 +1,10 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout title="Цифровой двойник фонда" subtitle="Цифровой двойник фонда — NAV, IRR, субфонды, симуляция">
     <!-- Header -->
     <template #header>
       <div class="fft-header-left">
         <div class="fft-logo">
-          <i class="pi pi-building-columns" style="color:#ffa726;font-size:15px"></i>
+          <i class="pi pi-building-columns" style="font-size:15px"></i>
           <span>Цифровой Двойник · <b>ФСТ НТИ</b></span>
           <Tag value="NAV Live" severity="warn" style="font-size:11px" />
         </div>
@@ -42,7 +42,7 @@
 
       <!-- Col 1: Portfolio Companies -->
       <div class="fft-col">
-        <div class="fft-panel-title"><i class="pi pi-sitemap" style="color:#42a5f5"></i> Портфельные компании ({{ companies.length }})</div>
+        <div class="fft-panel-title"><i class="pi pi-sitemap"></i> Портфельные компании ({{ companies.length }})</div>
 
         <div class="fft-companies">
           <div v-for="c in companies" :key="c.id"
@@ -60,10 +60,10 @@
             </div>
             <div class="fft-cc-bars">
               <div class="fft-cc-bar" :title="'TRL: ' + c.trl">
-                <div :style="{ width: c.trl/9*100+'%', background: '#42a5f5' }"></div>
+                <div :style="{ width: c.trl/9*100+'%', background: 'var(--fst-blue)' }"></div>
               </div>
               <div class="fft-cc-bar" :title="'Суверен: ' + c.sov">
-                <div :style="{ width: c.sov/9*100+'%', background: c.sov >= 6 ? '#4caf50' : '#ffa726' }"></div>
+                <div :style="{ width: c.sov/9*100+'%', background: c.sov >= 6 ? 'var(--fst-green)' : 'var(--fst-brand)' }"></div>
               </div>
             </div>
             <div v-if="c.alert" class="fft-cc-alert">
@@ -96,7 +96,7 @@
         <!-- Temporal Replay (#187) -->
         <div class="fft-replay" v-if="replayEnabled">
           <div class="fft-replay-header">
-            <i class="pi pi-history" style="color:#60a5fa;font-size:13px" />
+            <i class="pi pi-history" style="font-size:13px" />
             <span>Состояние на: <b>{{ replayDateLabel }}</b></span>
             <Button icon="pi pi-times" size="small" text severity="secondary"
               @click="replayEnabled = false; replayTs = Date.now()" style="margin-left:auto" />
@@ -116,7 +116,7 @@
 
         <!-- Subfunds -->
         <div class="fft-panel-title" style="margin-top:12px">
-          <i class="pi pi-building-columns" style="color:#ffa726"></i> Субфонды
+          <i class="pi pi-building-columns"></i> Субфонды
         </div>
         <div class="fft-subfunds">
           <div v-for="sf in subfunds" :key="sf.id" class="fft-subfund" :style="{ borderTop: `3px solid ${sf.color}` }">
@@ -134,7 +134,7 @@
 
         <!-- Sankey-like flow (collapsible) -->
         <div class="fft-panel-title fft-panel-title--toggle" style="margin-top:12px" @click="showFlows = !showFlows">
-          <i class="pi pi-arrow-right-arrow-left" style="color:#7e57c2"></i> Инвест. потоки
+          <i class="pi pi-arrow-right-arrow-left"></i> Инвест. потоки
           <i :class="showFlows ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" style="margin-left:auto;font-size:10px;opacity:0.5" />
         </div>
         <canvas v-show="showFlows" ref="flowChart" height="100"></canvas>
@@ -145,7 +145,7 @@
         <!-- Selected company detail -->
         <div v-if="selectedCompany" class="fft-company-detail">
           <div class="fft-panel-title">
-            <i class="pi pi-building" style="color:#42a5f5"></i> {{ selectedCompany.name }}
+            <i class="pi pi-building"></i> {{ selectedCompany.name }}
             <Button icon="pi pi-external-link" size="small" text severity="info"
               @click="() => $router.push('/fst-twin')" title="Открыть ЦД" />
           </div>
@@ -170,12 +170,12 @@
           </div>
         </div>
         <div v-else class="fft-select-hint">
-          <i class="pi pi-hand-pointer" style="font-size:24px;color:#444;margin-bottom:8px"></i>
+          <i class="pi pi-hand-pointer" style="font-size:24px;margin-bottom:8px"></i>
           <div>Выберите компанию из портфеля</div>
         </div>
 
         <!-- Events (compact: last 5 only) -->
-        <div class="fft-panel-title" style="margin-top:12px"><i class="pi pi-list" style="color:#66bb6a"></i> Фонд-события</div>
+        <div class="fft-panel-title" style="margin-top:12px"><i class="pi pi-list"></i> Фонд-события</div>
         <div class="fft-events">
           <TransitionGroup name="fft-evt" tag="div">
             <div v-for="e in fundEvents.slice(0, 5)" :key="e.id" class="fft-evt-row">
@@ -188,12 +188,12 @@
 
         <!-- AI Forecast (compact inline) -->
         <div class="fft-ai-forecast-compact">
-          <div class="fft-af-title"><i class="pi pi-microchip-ai" style="color:#42a5f5;font-size:11px"></i> AI-прогноз</div>
+          <div class="fft-af-title"><i class="pi pi-microchip-ai" style="font-size:11px"></i> AI-прогноз</div>
           <div class="fft-afc-grid">
-            <div class="fft-afc-item"><span>NAV 2026</span><b style="color:#4caf50">{{ fmtM(nav * 1.18) }}</b></div>
-            <div class="fft-afc-item"><span>NAV 2027</span><b style="color:#66bb6a">{{ fmtM(nav * 1.42) }}</b></div>
-            <div class="fft-afc-item"><span>IRR</span><b style="color:#7e57c2">{{ forecastIRR }}%</b></div>
-            <div class="fft-afc-item"><span>DPI</span><b style="color:#ffa726">{{ forecastDPI }}x</b></div>
+            <div class="fft-afc-item"><span>NAV 2026</span><b style="color:var(--fst-green)">{{ fmtM(nav * 1.18) }}</b></div>
+            <div class="fft-afc-item"><span>NAV 2027</span><b style="color:var(--fst-green)">{{ fmtM(nav * 1.42) }}</b></div>
+            <div class="fft-afc-item"><span>IRR</span><b style="color:var(--fst-purple)">{{ forecastIRR }}%</b></div>
+            <div class="fft-afc-item"><span>DPI</span><b style="color:var(--fst-brand)">{{ forecastDPI }}x</b></div>
           </div>
           <div class="fft-af-verdict" :style="{ color: fundGradeColor }">{{ aiVerdict }}</div>
         </div>
@@ -254,9 +254,9 @@ const replayFundState = computed(() => {
 
 // ── Fund Static Data ──────────────────────────────────────────
 const subfunds = ref([
-  { id: 'bas',   name: 'БАС',  icon: 'pi pi-send',         color: '#42a5f5', budget: 3_200_000_000, deployed: 1_120_000_000, companies: 3, nav: 1_340_000_000, leverage: 3 },
-  { id: 'robot', name: 'РОБО', icon: 'pi pi-cog',           color: '#66bb6a', budget: 1_800_000_000, deployed: 360_000_000,   companies: 2, nav: 430_000_000,   leverage: 3 },
-  { id: 'me',    name: 'МЭ',   icon: 'pi pi-microchip-ai',  color: '#ffa726', budget: 1_400_000_000, deployed: 450_000_000,   companies: 2, nav: 510_000_000,   leverage: 3 },
+  { id: 'bas',   name: 'БАС',  icon: 'pi pi-send',         color: 'var(--fst-blue)',  budget: 3_200_000_000, deployed: 1_120_000_000, companies: 3, nav: 1_340_000_000, leverage: 3 },
+  { id: 'robot', name: 'РОБО', icon: 'pi pi-cog',           color: 'var(--fst-green)', budget: 1_800_000_000, deployed: 360_000_000,   companies: 2, nav: 430_000_000,   leverage: 3 },
+  { id: 'me',    name: 'МЭ',   icon: 'pi pi-microchip-ai',  color: 'var(--fst-brand)', budget: 1_400_000_000, deployed: 450_000_000,   companies: 2, nav: 510_000_000,   leverage: 3 },
 ])
 
 const companies = ref([
@@ -284,16 +284,16 @@ const running = ref(true)
 const speed = ref(1)
 const speedOpts = [{ l: '1x', v: 1 }, { l: '3x', v: 3 }, { l: '10x', v: 10 }]
 const lastUpdate = ref(new Date().toLocaleTimeString('ru-RU'))
-const liveColor = ref('#4caf50')
+const liveColor = ref('var(--fst-green)')
 const quarter = ref(1)
 const year = ref(2026)
 let timer = null
 
 const fundEvents = ref([
-  { id: 1, icon: 'pi pi-check-circle', color: '#4caf50', time: '09:00', text: 'Транш-2 АвиаЛогик разблокирован (TRL 7 достигнут)' },
-  { id: 2, icon: 'pi pi-exclamation-triangle', color: '#ffa726', time: '09:45', text: 'МикроСхема: runway < 9 мес. — требует внимания ИК' },
-  { id: 3, icon: 'pi pi-star', color: '#ffa726', time: '10:30', text: 'РоботАгро: новый контракт с АгроХолдинг-2025 (120 млн)' },
-  { id: 4, icon: 'pi pi-shield', color: '#ef5350', time: '11:00', text: 'Росавиация: мониторинг 114-П (затрагивает 3 компании БАС)' },
+  { id: 1, icon: 'pi pi-check-circle', color: 'var(--fst-green)', time: '09:00', text: 'Транш-2 АвиаЛогик разблокирован (TRL 7 достигнут)' },
+  { id: 2, icon: 'pi pi-exclamation-triangle', color: 'var(--fst-brand)', time: '09:45', text: 'МикроСхема: runway < 9 мес. — требует внимания ИК' },
+  { id: 3, icon: 'pi pi-star', color: 'var(--fst-brand)', time: '10:30', text: 'РоботАгро: новый контракт с АгроХолдинг-2025 (120 млн)' },
+  { id: 4, icon: 'pi pi-shield', color: 'var(--fst-red)', time: '11:00', text: 'Росавиация: мониторинг 114-П (затрагивает 3 компании БАС)' },
 ])
 
 // ── Dynamic Metrics ───────────────────────────────────────────
@@ -315,10 +315,10 @@ const fundGrade = computed(() => {
 })
 const gradeColor = computed(() => {
   const g = fundGrade.value
-  if (g.startsWith('A')) return '#4caf50'
-  if (g === 'BBB') return '#66bb6a'
-  if (g === 'BB') return '#ffa726'
-  return '#ef5350'
+  if (g.startsWith('A')) return 'var(--fst-green)'
+  if (g === 'BBB') return 'var(--fst-green)'
+  if (g === 'BB') return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 })
 const fundGradeColor = gradeColor
 
@@ -332,19 +332,19 @@ const aiVerdict = computed(() => {
 })
 
 const topKpis = computed(() => [
-  { label: 'NAV', value: fmtM(nav.value), color: '#4caf50' },
-  { label: 'Инвестировано', value: fmtM(totalInvested.value), color: '#42a5f5' },
-  { label: 'Привлечено частных', value: fmtM(privateCapital.value), color: '#7e57c2' },
-  { label: 'ROI', value: (totalROI.value * 100).toFixed(1) + '%', color: totalROI.value >= 0.15 ? '#4caf50' : '#ffa726' },
-  { label: 'Компаний', value: companies.value.length.toString(), color: '#ffa726' },
+  { label: 'NAV', value: fmtM(nav.value), color: 'var(--fst-green)' },
+  { label: 'Инвестировано', value: fmtM(totalInvested.value), color: 'var(--fst-blue)' },
+  { label: 'Привлечено частных', value: fmtM(privateCapital.value), color: 'var(--fst-purple)' },
+  { label: 'ROI', value: (totalROI.value * 100).toFixed(1) + '%', color: totalROI.value >= 0.15 ? 'var(--fst-green)' : 'var(--fst-brand)' },
+  { label: 'Компаний', value: companies.value.length.toString(), color: 'var(--fst-brand)' },
   { label: 'Фонд-Индекс', value: fundIndex.value + ' ' + fundGrade.value, color: gradeColor.value },
 ])
 
 const fundMetrics = computed(() => [
-  { label: 'Суверенность портфеля', value: (avgSov.value * 100 / 9).toFixed(0) + '%', color: avgSov.value >= 6 ? '#4caf50' : '#ffa726', pct: avgSov.value / 9 * 100 },
-  { label: 'Ср. TRL портфеля', value: avgTRL.value.toFixed(1) + '/9', color: '#42a5f5', pct: avgTRL.value / 9 * 100 },
-  { label: 'Выручка грантополучателей', value: fmtM(totalRevenue.value), color: '#66bb6a', pct: Math.min(100, totalRevenue.value / 1e9 * 100) },
-  { label: 'Leverage (частный капитал)', value: (privateCapital.value / totalInvested.value).toFixed(1) + ':1', color: '#7e57c2', pct: Math.min(100, privateCapital.value / totalInvested.value / 3 * 100) },
+  { label: 'Суверенность портфеля', value: (avgSov.value * 100 / 9).toFixed(0) + '%', color: avgSov.value >= 6 ? 'var(--fst-green)' : 'var(--fst-brand)', pct: avgSov.value / 9 * 100 },
+  { label: 'Ср. TRL портфеля', value: avgTRL.value.toFixed(1) + '/9', color: 'var(--fst-blue)', pct: avgTRL.value / 9 * 100 },
+  { label: 'Выручка грантополучателей', value: fmtM(totalRevenue.value), color: 'var(--fst-green)', pct: Math.min(100, totalRevenue.value / 1e9 * 100) },
+  { label: 'Leverage (частный капитал)', value: (privateCapital.value / totalInvested.value).toFixed(1) + ':1', color: 'var(--fst-purple)', pct: Math.min(100, privateCapital.value / totalInvested.value / 3 * 100) },
 ])
 
 const avgSov = computed(() => companies.value.reduce((a, c) => a + c.sov, 0) / companies.value.length)
@@ -354,12 +354,12 @@ const companyDetailMetrics = computed(() => {
   const c = selectedCompany.value
   if (!c) return []
   return [
-    { l: 'Инвестировано', v: fmtM(c.invested), c: '#42a5f5' },
-    { l: 'Оценка', v: fmtM(c.valuation), c: '#7e57c2' },
-    { l: 'Multiple', v: (c.valuation / c.invested).toFixed(1) + 'x', c: '#4caf50' },
-    { l: 'Runway', v: c.runway + ' мес.', c: c.runway < 9 ? '#ef5350' : c.runway < 12 ? '#ffa726' : '#4caf50' },
-    { l: 'TRL / MRL', v: c.trl + ' / ' + c.mrl, c: '#42a5f5' },
-    { l: 'Суверен.', v: c.sov + '/9', c: c.sov >= 6 ? '#4caf50' : '#ffa726' },
+    { l: 'Инвестировано', v: fmtM(c.invested), c: 'var(--fst-blue)' },
+    { l: 'Оценка', v: fmtM(c.valuation), c: 'var(--fst-purple)' },
+    { l: 'Multiple', v: (c.valuation / c.invested).toFixed(1) + 'x', c: 'var(--fst-green)' },
+    { l: 'Runway', v: c.runway + ' мес.', c: c.runway < 9 ? 'var(--fst-red)' : c.runway < 12 ? 'var(--fst-brand)' : 'var(--fst-green)' },
+    { l: 'TRL / MRL', v: c.trl + ' / ' + c.mrl, c: 'var(--fst-blue)' },
+    { l: 'Суверен.', v: c.sov + '/9', c: c.sov >= 6 ? 'var(--fst-green)' : 'var(--fst-brand)' },
   ]
 })
 
@@ -402,7 +402,7 @@ function addEvent(e) {
 function step() {
   tick.value++
   lastUpdate.value = new Date().toLocaleTimeString('ru-RU')
-  liveColor.value = '#4caf50'
+  liveColor.value = 'var(--fst-green)'
 
   // NAV grows
   nav.value = Math.round(nav.value * (1 + 0.004 * Math.random()))
@@ -451,17 +451,17 @@ function step() {
   // Random fund events
   if (Math.random() < 0.04) {
     const evts = [
-      { icon: 'pi pi-star', color: '#ffa726', text: 'АвиаЛогик: новый LOI с ГТЛК (+180 млн ₽)' },
-      { icon: 'pi pi-arrow-up', color: '#4caf50', text: 'РоботАгро: TRL 7 → переход Раунд B начат' },
-      { icon: 'pi pi-exclamation-triangle', color: '#ef5350', text: 'МикроСхема: runway < 6 мес — экстренный ИК' },
-      { icon: 'pi pi-file-check', color: '#7e57c2', text: 'Новый патент: ГринДрон (точное агро)' },
-      { icon: 'pi pi-users', color: '#42a5f5', text: 'СканТекс: привлечён COO с опытом Velodyne' },
-      { icon: 'pi pi-globe', color: '#66bb6a', text: 'Leverage: ПСБ подтвердил со-инвестирование МЭ-субфонда' },
+      { icon: 'pi pi-star', color: 'var(--fst-brand)', text: 'АвиаЛогик: новый LOI с ГТЛК (+180 млн ₽)' },
+      { icon: 'pi pi-arrow-up', color: 'var(--fst-green)', text: 'РоботАгро: TRL 7 → переход Раунд B начат' },
+      { icon: 'pi pi-exclamation-triangle', color: 'var(--fst-red)', text: 'МикроСхема: runway < 6 мес — экстренный ИК' },
+      { icon: 'pi pi-file-check', color: 'var(--fst-purple)', text: 'Новый патент: ГринДрон (точное агро)' },
+      { icon: 'pi pi-users', color: 'var(--fst-blue)', text: 'СканТекс: привлечён COO с опытом Velodyne' },
+      { icon: 'pi pi-globe', color: 'var(--fst-green)', text: 'Leverage: ПСБ подтвердил со-инвестирование МЭ-субфонда' },
     ]
     addEvent(evts[Math.floor(Math.random() * evts.length)])
   }
 
-  setTimeout(() => { liveColor.value = '#78909c' }, 300)
+  setTimeout(() => { liveColor.value = 'var(--p-text-muted-color)' }, 300)
 }
 
 function toggleRun() {
@@ -480,15 +480,15 @@ watch(speed, () => { clearTimeout(timer); if (running.value) scheduleTimer() })
 
 // ── Helpers ───────────────────────────────────────────────────
 function healthColor(h) {
-  if (h >= 75) return '#2e7d32'
-  if (h >= 55) return '#e65100'
-  return '#b71c1c'
+  if (h >= 75) return 'var(--fst-green-dark)'
+  if (h >= 55) return 'var(--fst-brand-dark)'
+  return 'var(--fst-red-dark)'
 }
 function stageSeverity(s) {
   return s === 'Series A' || s === 'Series B' ? 'info' : s === 'Growth' ? 'success' : 'secondary'
 }
 function riskColor(l) {
-  return l === 'HIGH' ? '#ef5350' : l === 'MED' ? '#ffa726' : '#4caf50'
+  return l === 'HIGH' ? 'var(--fst-red)' : l === 'MED' ? 'var(--fst-brand)' : 'var(--fst-green)'
 }
 function fmtM(v) {
   if (!v) return '0'
@@ -505,7 +505,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 </script>
 
 <style scoped>
-.fft-root { min-height: 100vh; background: var(--surface-ground); color: var(--p-text-color); font-family: 'Inter', sans-serif; display: flex; flex-direction: column }
+.fft-root { min-height: 100vh; background: var(--p-surface-ground); color: var(--p-text-color); font-family: 'Inter', sans-serif; display: flex; flex-direction: column }
 
 .fft-header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: transparent; border-bottom: 1px solid var(--p-content-border-color) }
 .fft-header-left { min-width: 180px }
@@ -527,7 +527,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fft-panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 6px; margin-bottom: 8px }
 
 /* Temporal Replay */
-.fft-replay { background: #60a5fa18; border: 1px solid #60a5fa44; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+.fft-replay { background: color-mix(in srgb, var(--fst-blue) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-blue) 30%, transparent); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
 .fft-replay-header { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 8px; }
 .fft-replay-slider { width: 100%; margin-bottom: 8px; }
 .fft-replay-presets { display: flex; gap: 4px; }
@@ -540,16 +540,16 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fft-company-card--selected { border-color: var(--p-primary-color); background: color-mix(in srgb, var(--p-primary-color) 8%, transparent) }
 .fft-cc-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px }
 .fft-cc-name { flex: 1; font-size: 13px; font-weight: 600 }
-.fft-cc-health { color: #fff; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px }
+.fft-cc-health { color: white; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px }
 .fft-cc-meta { display: flex; gap: 10px; font-size: 10px; color: var(--p-text-muted-color); margin-bottom: 4px }
 .fft-cc-bars { display: flex; flex-direction: column; gap: 2px }
 .fft-cc-bar { height: 4px; background: var(--p-content-border-color); border-radius: 2px; overflow: hidden }
 .fft-cc-bar > div { height: 100%; border-radius: 2px; transition: width 0.5s }
-.fft-cc-alert { font-size: 10px; color: #ffa726; display: flex; align-items: center; gap: 4px; margin-top: 3px }
+.fft-cc-alert { font-size: 10px; color: var(--fst-brand); display: flex; align-items: center; gap: 4px; margin-top: 3px }
 
 /* Fund index */
 .fft-fund-index-row { display: flex; gap: 12px; align-items: flex-start }
-.fft-fund-index { display: flex; flex-direction: column; align-items: center; background: var(--surface-card); border-radius: 10px; padding: 12px 16px; min-width: 80px }
+.fft-fund-index { display: flex; flex-direction: column; align-items: center; background: var(--p-surface-card); border-radius: 10px; padding: 12px 16px; min-width: 80px }
 .fft-fi-grade { font-size: 28px; font-weight: 900 }
 .fft-fi-val { font-size: 14px; font-weight: 600 }
 .fft-fi-label { font-size: 10px; color: var(--p-text-muted-color); text-transform: uppercase }
@@ -566,10 +566,10 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   background: var(--p-surface-card);
   border-radius: 10px; padding: 10px 12px;
   border: 1px solid var(--p-content-border-color);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--p-text-color) 8%, transparent);
   transition: box-shadow 0.2s;
 }
-.fft-subfund:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.14); }
+.fft-subfund:hover { box-shadow: 0 2px 8px color-mix(in srgb, var(--p-text-color) 14%, transparent); }
 .fft-sf-header { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; margin-bottom: 5px }
 .fft-sf-budget { font-size: 13px; font-weight: 700; color: var(--p-text-color); }
 .fft-sf-companies { font-size: 10px; color: var(--p-text-muted-color); margin-top: 5px }
@@ -577,13 +577,13 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 /* Health matrix */
 .fft-health-matrix { display: flex; flex-wrap: wrap; gap: 4px }
 .fft-hm-cell { display: flex; flex-direction: column; align-items: center; padding: 5px 8px; border-radius: 6px; min-width: 48px; cursor: pointer }
-.fft-hm-name { font-size: 10px; color: #fff; opacity: 0.8 }
-.fft-hm-val { font-size: 14px; font-weight: 700; color: #fff }
+.fft-hm-name { font-size: 10px; color: white; opacity: 0.8 }
+.fft-hm-val { font-size: 14px; font-weight: 700; color: white }
 
 /* Company detail */
 .fft-company-detail { background: var(--p-surface-section); border-radius: 8px; padding: 10px }
 .fft-cd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px }
-.fft-cd-item { background: var(--surface-card); border-radius: 6px; padding: 7px }
+.fft-cd-item { background: var(--p-surface-card); border-radius: 6px; padding: 7px }
 .fft-cd-label { font-size: 10px; color: var(--p-text-muted-color) }
 .fft-cd-val { font-size: 15px; font-weight: 700 }
 .fft-cd-risks { margin-top: 8px }
@@ -621,8 +621,8 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   .fft-top-kpi-label { font-size: 9px; }
   .fft-main { grid-template-columns: 1fr !important; }
   .fft-subfunds { grid-template-columns: 1fr !important; }
-  .fft-sidebar, .fft-detail { max-height: 40vh; overflow-y: auto; border: none; border-bottom: 1px solid var(--surface-border); }
-  .fft-col { border-right: none; border-bottom: 1px solid var(--surface-border); }
+  .fft-sidebar, .fft-detail { max-height: 40vh; overflow-y: auto; border: none; border-bottom: 1px solid var(--p-content-border-color); }
+  .fft-col { border-right: none; border-bottom: 1px solid var(--p-content-border-color); }
   .fft-col:last-child { border-bottom: none; }
   /* Header buttons: icon-only */
   .fft-header-right .p-button .p-button-label { display: none; }

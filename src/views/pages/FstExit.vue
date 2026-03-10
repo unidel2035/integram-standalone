@@ -1,17 +1,20 @@
 <template>
   <FstPageLayout title="Сценарии выхода" subtitle="M&A, IPO, Buyback — расчёт доходности и оптимальной стратегии">
     <template #actions>
-      <button class="exit-btn primary" @click="exportExitAnalysis">Экспорт анализа</button>
+      <Button icon="pi pi-download" label="Экспорт анализа" size="small" severity="secondary" @click="exportExitAnalysis" />
     </template>
 
     <!-- Выбор компании -->
     <div class="exit-company-bar">
-      <button
+      <Button
         v-for="c in companies"
         :key="c.id"
-        :class="['co-btn', { active: selectedCo === c.id }]"
+        :label="c.name"
+        size="small"
+        :severity="selectedCo === c.id ? undefined : 'secondary'"
+        :outlined="selectedCo !== c.id"
         @click="selectedCo = c.id"
-      >{{ c.name }}</button>
+      />
     </div>
 
     <!-- Параметры выхода -->
@@ -20,27 +23,27 @@
       <div class="params-grid">
         <div class="param-group">
           <label>Текущий NAV, млн ₽</label>
-          <input v-model.number="params.nav" type="number" step="10" @input="calc" />
+          <InputNumber v-model="params.nav" :step="10" :min="0" fluid @input="calc" />
         </div>
         <div class="param-group">
           <label>Вложено ФСТ, млн ₽</label>
-          <input v-model.number="params.invested" type="number" step="10" @input="calc" />
+          <InputNumber v-model="params.invested" :step="10" :min="0" fluid @input="calc" />
         </div>
         <div class="param-group">
           <label>Доля ФСТ FD, %</label>
-          <input v-model.number="params.fstShare" type="number" step="0.5" @input="calc" />
+          <InputNumber v-model="params.fstShare" :step="0.5" :min="0" :max="100" suffix="%" fluid @input="calc" />
         </div>
         <div class="param-group">
           <label>Дата входа</label>
-          <input v-model="params.entryDate" type="date" @change="calc" />
+          <InputText v-model="params.entryDate" type="date" fluid @change="calc" />
         </div>
         <div class="param-group">
           <label>Прогнозная выручка, млн ₽</label>
-          <input v-model.number="params.revenue" type="number" step="10" @input="calc" />
+          <InputNumber v-model="params.revenue" :step="10" :min="0" fluid @input="calc" />
         </div>
         <div class="param-group">
           <label>ARR Growth, %</label>
-          <input v-model.number="params.growth" type="number" step="5" @input="calc" />
+          <InputNumber v-model="params.growth" :step="5" suffix="%" fluid @input="calc" />
         </div>
       </div>
     </div>
@@ -54,15 +57,15 @@
         <div class="scenario-params">
           <div class="sp-group">
             <label>EV/Revenue (стратег.)</label>
-            <input v-model.number="maParams.evRevMult" type="number" step="0.5" @input="calc" />
+            <InputNumber v-model="maParams.evRevMult" :step="0.5" :min="1" fluid @input="calc" />
           </div>
           <div class="sp-group">
             <label>Горизонт, лет</label>
-            <input v-model.number="maParams.years" type="number" step="1" min="1" max="7" @input="calc" />
+            <InputNumber v-model="maParams.years" :step="1" :min="1" :max="7" fluid @input="calc" />
           </div>
           <div class="sp-group">
             <label>Вероятность, %</label>
-            <input v-model.number="maParams.prob" type="number" step="5" min="5" max="95" @input="calc" />
+            <InputNumber v-model="maParams.prob" :step="5" :min="5" :max="95" suffix="%" fluid @input="calc" />
           </div>
         </div>
         <div class="scenario-results">
@@ -89,15 +92,15 @@
         <div class="scenario-params">
           <div class="sp-group">
             <label>P/S при IPO</label>
-            <input v-model.number="ipoParams.psMult" type="number" step="0.5" @input="calc" />
+            <InputNumber v-model="ipoParams.psMult" :step="0.5" :min="1" fluid @input="calc" />
           </div>
           <div class="sp-group">
             <label>Lock-up, мес.</label>
-            <input v-model.number="ipoParams.lockupMonths" type="number" step="3" min="3" max="24" @input="calc" />
+            <InputNumber v-model="ipoParams.lockupMonths" :step="3" :min="3" :max="24" fluid @input="calc" />
           </div>
           <div class="sp-group">
             <label>Вероятность, %</label>
-            <input v-model.number="ipoParams.prob" type="number" step="5" min="5" max="60" @input="calc" />
+            <InputNumber v-model="ipoParams.prob" :step="5" :min="5" :max="60" suffix="%" fluid @input="calc" />
           </div>
         </div>
         <div class="scenario-results">
@@ -124,15 +127,15 @@
         <div class="scenario-params">
           <div class="sp-group">
             <label>Дисконт к NAV, %</label>
-            <input v-model.number="bbParams.navDiscount" type="number" step="5" min="0" max="50" @input="calc" />
+            <InputNumber v-model="bbParams.navDiscount" :step="5" :min="0" :max="50" suffix="%" fluid @input="calc" />
           </div>
           <div class="sp-group">
             <label>Горизонт, лет</label>
-            <input v-model.number="bbParams.years" type="number" step="1" min="1" max="5" @input="calc" />
+            <InputNumber v-model="bbParams.years" :step="1" :min="1" :max="5" fluid @input="calc" />
           </div>
           <div class="sp-group">
             <label>Вероятность, %</label>
-            <input v-model.number="bbParams.prob" type="number" step="5" min="10" max="90" @input="calc" />
+            <InputNumber v-model="bbParams.prob" :step="5" :min="10" :max="90" suffix="%" fluid @input="calc" />
           </div>
         </div>
         <div class="scenario-results">
@@ -190,6 +193,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
+import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
 
 const selectedCo = ref('agrodr')
 
@@ -244,9 +250,9 @@ const bbResult = computed(() => {
 })
 
 const evRows = computed(() => [
-  { name: 'M&A',     prob: maParams.value.prob,  proceeds: maResult.value.fstProceeds,  weighted: Math.round(maResult.value.fstProceeds * maParams.value.prob / 100),  color: '#42a5f5' },
-  { name: 'IPO',     prob: ipoParams.value.prob, proceeds: ipoResult.value.fstProceeds, weighted: Math.round(ipoResult.value.fstProceeds * ipoParams.value.prob / 100), color: '#66bb6a' },
-  { name: 'Buyback', prob: bbParams.value.prob,  proceeds: bbResult.value.fstProceeds,  weighted: Math.round(bbResult.value.fstProceeds * bbParams.value.prob / 100),   color: '#ff9800' }
+  { name: 'M&A',     prob: maParams.value.prob,  proceeds: maResult.value.fstProceeds,  weighted: Math.round(maResult.value.fstProceeds * maParams.value.prob / 100),  color: 'var(--fst-blue)' },
+  { name: 'IPO',     prob: ipoParams.value.prob, proceeds: ipoResult.value.fstProceeds, weighted: Math.round(ipoResult.value.fstProceeds * ipoParams.value.prob / 100), color: 'var(--fst-green)' },
+  { name: 'Buyback', prob: bbParams.value.prob,  proceeds: bbResult.value.fstProceeds,  weighted: Math.round(bbResult.value.fstProceeds * bbParams.value.prob / 100),   color: 'var(--fst-brand)' }
 ])
 
 const evTotal = computed(() => evRows.value.reduce((s, r) => s + r.weighted, 0))
@@ -276,61 +282,61 @@ function exportExitAnalysis() {
 </script>
 
 <style scoped>
-.exit-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
+.exit-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .exit-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .exit-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .exit-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .exit-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.exit-btn.primary { background: var(--p-primary-color); color: #fff; }
+.exit-btn.primary { background: var(--p-primary-color); color: white; }
 
 .exit-company-bar { display: flex; gap: 6px; flex-wrap: wrap; }
-.co-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.875rem; }
-.co-btn.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
+.co-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.875rem; }
+.co-btn.active { background: var(--p-primary-color); color: white; border-color: var(--p-primary-color); }
 
-.exit-params-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; }
+.exit-params-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; }
 .exit-params-card h3 { margin: 0 0 14px; font-size: 0.95rem; color: var(--p-text-color); }
 .params-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
 .param-group { display: flex; flex-direction: column; gap: 4px; }
 .param-group label { font-size: 0.72rem; color: var(--p-text-muted-color); }
-.param-group input { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 6px 10px; color: var(--p-text-color); font-size: 0.85rem; }
+.param-group input { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 6px; padding: 6px 10px; color: var(--p-text-color); font-size: 0.85rem; }
 
 .exit-scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-.exit-scenario-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.exit-scenario-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .exit-scenario-card.best { border-color: var(--p-primary-color); box-shadow: 0 0 0 1px var(--p-primary-color); }
 .exit-scenario-card h3 { margin: 0; font-size: 0.9rem; color: var(--p-text-color); }
 .scenario-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; width: fit-content; }
-.scenario-badge.ma  { background: #42a5f522; color: #42a5f5; }
-.scenario-badge.ipo { background: #66bb6a22; color: #66bb6a; }
-.scenario-badge.bb  { background: #ff980022; color: #ff9800; }
+.scenario-badge.ma  { background: color-mix(in srgb, var(--fst-blue) 15%, transparent); color: var(--fst-blue); }
+.scenario-badge.ipo { background: color-mix(in srgb, var(--fst-green) 15%, transparent); color: var(--fst-green); }
+.scenario-badge.bb  { background: color-mix(in srgb, var(--fst-brand) 15%, transparent); color: var(--fst-brand); }
 
 .scenario-params { display: flex; flex-direction: column; gap: 8px; }
 .sp-group { display: flex; flex-direction: column; gap: 3px; }
 .sp-group label { font-size: 0.7rem; color: var(--p-text-muted-color); }
-.sp-group input { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 5px; padding: 5px 8px; color: var(--p-text-color); font-size: 0.82rem; }
+.sp-group input { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 5px; padding: 5px 8px; color: var(--p-text-color); font-size: 0.82rem; }
 
 .scenario-results { display: flex; flex-direction: column; gap: 6px; }
 .sr-row { display: flex; justify-content: space-between; font-size: 0.83rem; }
 .sr-row span { color: var(--p-text-muted-color); }
 .sr-row strong { font-weight: 700; color: var(--p-text-color); }
-.green { color: #66bb6a; } .orange { color: #ff9800; }
-.scenario-prob { font-size: 0.72rem; color: var(--p-text-muted-color); border-top: 1px solid var(--surface-border); padding-top: 8px; }
+.green { color: var(--fst-green); } .orange { color: var(--fst-brand); }
+.scenario-prob { font-size: 0.72rem; color: var(--p-text-muted-color); border-top: 1px solid var(--p-content-border-color); padding-top: 8px; }
 
-.exit-ev-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; }
+.exit-ev-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; }
 .exit-ev-card h3 { margin: 0 0 14px; font-size: 0.95rem; color: var(--p-text-color); }
 .ev-table { display: flex; flex-direction: column; gap: 8px; }
 .ev-row { display: grid; grid-template-columns: 80px 50px 120px 120px 1fr; align-items: center; gap: 10px; font-size: 0.83rem; }
 .ev-name { font-weight: 600; color: var(--p-text-color); }
 .ev-prob { color: var(--p-text-muted-color); }
 .ev-proceeds, .ev-weighted { text-align: right; color: var(--p-text-color); }
-.ev-bar-wrap { height: 8px; background: var(--surface-border); border-radius: 4px; overflow: hidden; }
+.ev-bar-wrap { height: 8px; background: var(--p-content-border-color); border-radius: 4px; overflow: hidden; }
 .ev-bar { height: 100%; border-radius: 4px; transition: width 0.4s; }
-.ev-total-row { display: flex; gap: 24px; justify-content: flex-end; padding-top: 10px; border-top: 2px solid var(--surface-border); font-size: 0.9rem; color: var(--p-text-color); }
+.ev-total-row { display: flex; gap: 24px; justify-content: flex-end; padding-top: 10px; border-top: 2px solid var(--p-content-border-color); font-size: 0.9rem; color: var(--p-text-color); }
 
 .exit-recommendation { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-radius: 10px; border: 1px solid; }
-.exit-recommendation.ma  { background: #42a5f510; border-color: #42a5f5; }
-.exit-recommendation.ipo { background: #66bb6a10; border-color: #66bb6a; }
-.exit-recommendation.bb  { background: #ff980010; border-color: #ff9800; }
-.rec-icon { font-size: 1rem; font-weight: 900; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.1); }
+.exit-recommendation.ma  { background: color-mix(in srgb, var(--fst-blue) 8%, transparent); border-color: var(--fst-blue); }
+.exit-recommendation.ipo { background: color-mix(in srgb, var(--fst-green) 8%, transparent); border-color: var(--fst-green); }
+.exit-recommendation.bb  { background: color-mix(in srgb, var(--fst-brand) 8%, transparent); border-color: var(--fst-brand); }
+.rec-icon { font-size: 1rem; font-weight: 900; padding: 8px 12px; border-radius: 8px; background: color-mix(in srgb, var(--p-text-color) 8%, transparent); }
 .rec-title { font-weight: 700; font-size: 0.95rem; color: var(--p-text-color); margin-bottom: 4px; }
 .rec-desc  { font-size: 0.8rem; color: var(--p-text-muted-color); }
 

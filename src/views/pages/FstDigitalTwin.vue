@@ -1,5 +1,8 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Цифровой двойник компании"
+    subtitle="Живая симуляция показателей портфельной компании"
+  >
     <!-- ─── Topbar left: title + status ─── -->
     <template #header>
       <div class="fdt-title-group fst-topbar-left">

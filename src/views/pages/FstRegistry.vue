@@ -1,8 +1,8 @@
 <template>
   <FstPageLayout title="Реестр производителей БПЛА" subtitle="Интеграция с реестром отечественных БПЛА по Постановлению Правительства №1726">
     <template #actions>
-      <button class="reg-btn secondary" @click="syncRegistry">Синхронизировать</button>
-        <button class="reg-btn primary" @click="showApplication = true">Подать заявку</button>
+      <Button label="Синхронизировать" severity="secondary" @click="syncRegistry" />
+      <Button label="Подать заявку" @click="showApplication = true" />
     </template>
 
     <!-- Статус синхронизации -->
@@ -33,7 +33,7 @@
             </div>
           </div>
           <div class="cos-actions">
-            <button class="small-btn" @click="applyForRegistration(co)">{{ co.status === 'registered' ? 'Обновить' : 'Зарегистрировать' }}</button>
+            <Button :label="co.status === 'registered' ? 'Обновить' : 'Зарегистрировать'" severity="secondary" outlined size="small" @click="applyForRegistration(co)" />
           </div>
         </div>
       </div>
@@ -43,15 +43,9 @@
     <div class="reg-section">
       <h2>Поиск в реестре отечественных БПЛА</h2>
       <div class="search-bar">
-        <input v-model="searchQuery" placeholder="Модель, производитель или рег. номер..." class="reg-search" @keyup.enter="doSearch" />
-        <select v-model="categoryFilter" class="reg-select">
-          <option value="">Все категории</option>
-          <option>Мультироторный</option>
-          <option>Самолётного типа</option>
-          <option>Вертолётного типа</option>
-          <option>Наземный робот</option>
-        </select>
-        <button class="reg-btn primary" @click="doSearch">Найти</button>
+        <InputText v-model="searchQuery" placeholder="Модель, производитель или рег. номер..." class="reg-search" @keyup.enter="doSearch" />
+        <Select v-model="categoryFilter" :options="categoryOptions" placeholder="Все категории" size="small" />
+        <Button label="Найти" @click="doSearch" />
       </div>
       <table class="reg-table" v-if="searchResults.length">
         <thead>
@@ -93,41 +87,43 @@
     </div>
 
     <!-- Application modal -->
-    <div v-if="showApplication" class="modal-overlay" @click.self="showApplication = false">
-      <div class="modal-box">
-        <h3>Заявка на включение в реестр</h3>
-        <div class="modal-form">
-          <label>Производитель</label>
-          <input v-model="appForm.manufacturer" />
-          <label>Модель БПЛА</label>
-          <input v-model="appForm.model" />
-          <label>Категория</label>
-          <select v-model="appForm.category">
-            <option>Мультироторный</option>
-            <option>Самолётного типа</option>
-            <option>Вертолётного типа</option>
-          </select>
-          <label>Максимальная взлётная масса, кг</label>
-          <input v-model.number="appForm.maxWeight" type="number" step="0.1" />
-          <label>Уровень локализации, %</label>
-          <input v-model.number="appForm.localization" type="number" step="5" />
-        </div>
-        <div class="modal-actions">
-          <button class="reg-btn secondary" @click="showApplication = false">Отмена</button>
-          <button class="reg-btn primary" @click="submitApplication">Отправить заявку</button>
-        </div>
+    <Dialog v-model:visible="showApplication" header="Заявка на включение в реестр" :style="{ width: '380px' }" modal>
+      <div class="modal-form">
+        <label>Производитель</label>
+        <InputText v-model="appForm.manufacturer" fluid />
+        <label>Модель БПЛА</label>
+        <InputText v-model="appForm.model" fluid />
+        <label>Категория</label>
+        <Select v-model="appForm.category" :options="appCategoryOptions" fluid />
+        <label>Максимальная взлётная масса, кг</label>
+        <InputText v-model.number="appForm.maxWeight" type="number" step="0.1" fluid />
+        <label>Уровень локализации, %</label>
+        <InputText v-model.number="appForm.localization" type="number" step="5" fluid />
       </div>
-    </div>
+      <template #footer>
+        <div class="modal-actions">
+          <Button label="Отмена" severity="secondary" @click="showApplication = false" />
+          <Button label="Отправить заявку" @click="submitApplication" />
+        </div>
+      </template>
+    </Dialog>
   </FstPageLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import Dialog from 'primevue/dialog'
 
 const showApplication = ref(false)
 const searchQuery     = ref('')
 const categoryFilter  = ref('')
+
+const categoryOptions = ['', 'Мультироторный', 'Самолётного типа', 'Вертолётного типа', 'Наземный робот']
+const appCategoryOptions = ['Мультироторный', 'Самолётного типа', 'Вертолётного типа']
 const searchResults   = ref([])
 const searched        = ref(false)
 
@@ -201,56 +197,45 @@ function syncRegistry() { syncStatus.value[3].status = 'ok'; syncStatus.value[3]
 </script>
 
 <style scoped>
-.reg-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
-.reg-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.reg-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
-.reg-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.reg-actions { display: flex; gap: 8px; }
-.reg-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.reg-btn.primary  { background: var(--p-primary-color); color: #fff; }
-.reg-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
-
-.reg-sync-bar { display: flex; gap: 0; background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; overflow: hidden; }
-.sync-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px; border-right: 1px solid var(--surface-border); }
+.reg-sync-bar { display: flex; gap: 0; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; overflow: hidden; }
+.sync-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px; border-right: 1px solid var(--p-content-border-color); }
 .sync-item:last-child { border-right: none; }
 .sync-icon { font-size: 1rem; font-weight: 700; }
-.sync-icon.ok   { color: #66bb6a; }
-.sync-icon.sync { color: #ff9800; }
-.sync-icon.fail { color: #ef5350; }
+.sync-icon.ok   { color: var(--fst-green); }
+.sync-icon.sync { color: var(--fst-brand); }
+.sync-icon.fail { color: var(--fst-red); }
 .sync-label { font-size: 0.72rem; color: var(--p-text-color); text-align: center; font-weight: 600; }
 .sync-time  { font-size: 0.65rem; color: var(--p-text-muted-color); }
 
-.reg-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
+.reg-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; overflow-x: auto; }
 .reg-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
 
 .portfolio-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.co-status-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; }
+.co-status-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; }
 .cos-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .cos-name { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); }
 .cos-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
-.cos-badge.registered    { background: #66bb6a22; color: #66bb6a; }
-.cos-badge.partial       { background: #ff980022; color: #ff9800; }
-.cos-badge.pending       { background: #42a5f522; color: #42a5f5; }
-.cos-badge.not_registered{ background: #ef535022; color: #ef5350; }
+.cos-badge.registered    { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
+.cos-badge.partial       { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
+.cos-badge.pending       { background: color-mix(in srgb, var(--fst-blue) 13%, transparent); color: var(--fst-blue); }
+.cos-badge.not_registered{ background: color-mix(in srgb, var(--fst-red) 13%, transparent); color: var(--fst-red); }
 .cos-products { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-.cos-product { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; background: var(--surface-card); border-radius: 6px; }
+.cos-product { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; background: var(--p-surface-card); border-radius: 6px; }
 .prod-model { font-weight: 600; font-size: 0.8rem; color: var(--p-text-color); }
 .prod-reg { font-size: 0.72rem; font-weight: 600; }
-.prod-reg.registered     { color: #66bb6a; }
+.prod-reg.registered     { color: var(--fst-green); }
 .prod-reg.not-registered { color: var(--p-text-muted-color); }
 .prod-cat { font-size: 0.65rem; color: var(--p-text-muted-color); }
 .cos-actions { display: flex; }
-.small-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid var(--p-primary-color); background: transparent; color: var(--p-primary-color); cursor: pointer; font-size: 0.75rem; font-weight: 600; }
 
 .search-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-.reg-search { flex: 1; min-width: 200px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; }
-.reg-select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.83rem; }
+.reg-search { flex: 1; min-width: 200px; }
 .no-results { text-align: center; color: var(--p-text-muted-color); padding: 20px; font-size: 0.85rem; }
 
 .reg-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 640px; }
-.reg-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; }
-.reg-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
-.portfolio-row { background: rgba(99, 102, 241, 0.04); }
+.reg-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.72rem; }
+.reg-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
+.portfolio-row { background: color-mix(in srgb, var(--p-primary-color) 4%, transparent); }
 .reg-num { font-family: monospace; font-size: 0.72rem; color: var(--p-primary-color); }
 .reg-manufacturer { font-weight: 600; }
 .reg-model { font-size: 0.82rem; }
@@ -258,17 +243,13 @@ function syncRegistry() { syncStatus.value[3].status = 'ok'; syncStatus.value[3]
 .reg-use, .reg-date { font-size: 0.72rem; color: var(--p-text-muted-color); }
 
 .req-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.req-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 12px; }
+.req-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px; }
 .req-title { font-weight: 700; font-size: 0.85rem; color: var(--p-text-color); margin-bottom: 4px; }
 .req-desc { font-size: 0.72rem; color: var(--p-text-muted-color); margin-bottom: 6px; }
 .req-threshold { font-size: 0.78rem; font-weight: 600; color: var(--p-primary-color); }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-box { background: var(--surface-card); border-radius: 12px; padding: 24px; width: 380px; max-width: 95vw; }
-.modal-box h3 { margin: 0 0 16px; }
 .modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .modal-form label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.modal-form input, .modal-form select { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 /* ── Mobile adaptive ── */

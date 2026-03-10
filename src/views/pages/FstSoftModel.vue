@@ -1,5 +1,8 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Программный двойник"
+    subtitle="Мягкая модель фонда: события, состояния, симуляция сценариев"
+  >
     <!-- Header -->
     <template #header>
       <div style="display:flex;align-items:center;gap:12px;flex:1">

@@ -605,7 +605,7 @@ function sendOffer(buyer) {
 </script>
 
 <style scoped>
-.sec-root { padding: 24px; display: flex; flex-direction: column; gap: 24px; min-height: 100vh; background: var(--surface-ground); }
+.sec-root { padding: 24px; display: flex; flex-direction: column; gap: 24px; min-height: 100vh; background: var(--p-surface-ground); }
 
 /* Header */
 .sec-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
@@ -615,35 +615,35 @@ function sendOffer(buyer) {
 
 /* Buttons */
 .sec-btn { padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
-.sec-btn.primary { background: var(--p-primary-color); color: #fff; }
+.sec-btn.primary { background: var(--p-primary-color); color: white; }
 .sec-btn.primary:hover { opacity: 0.9; }
-.sec-btn.secondary { background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
+.sec-btn.secondary { background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-content-border-color); }
 .sec-btn.secondary:hover { background: var(--surface-hover); }
 
 .sec-btn-sm { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: all 0.2s; }
-.sec-btn-sm.primary { background: var(--p-primary-color); color: #fff; }
-.sec-btn-sm.secondary { background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
+.sec-btn-sm.primary { background: var(--p-primary-color); color: white; }
+.sec-btn-sm.secondary { background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-content-border-color); }
 
-.sec-select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.9rem; }
-.sec-select-sm { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.85rem; }
-.sec-input { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-color); font-size: 0.9rem; width: 100%; }
+.sec-select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.9rem; }
+.sec-select-sm { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.85rem; }
+.sec-input { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-color); font-size: 0.9rem; width: 100%; }
 
 /* Position Summary */
-.sec-position { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px; }
+.sec-position { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 24px; }
 .sec-position h2 { margin: 0 0 16px; font-size: 1.1rem; color: var(--p-text-color); }
 .sec-pos-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
-.sec-pos-card { display: flex; align-items: center; gap: 14px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 10px; padding: 16px; }
-.sec-pos-icon { width: 48px; height: 48px; border-radius: 10px; background: var(--p-primary-color); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+.sec-pos-card { display: flex; align-items: center; gap: 14px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 16px; }
+.sec-pos-icon { width: 48px; height: 48px; border-radius: 10px; background: var(--p-primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
 .sec-pos-val { font-size: 1.5rem; font-weight: 700; color: var(--p-primary-color); }
 .sec-pos-lbl { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 2px; }
 
 /* Tabs */
 .sec-tabs { display: flex; gap: 6px; overflow-x: auto; }
-.sec-tab { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--surface-border); background: var(--surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s; }
-.sec-tab.active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
+.sec-tab { padding: 10px 18px; border-radius: 8px; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); color: var(--p-text-muted-color); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s; }
+.sec-tab.active { background: var(--p-primary-color); color: white; border-color: var(--p-primary-color); }
 
 /* Section */
-.sec-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px; }
+.sec-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 24px; }
 .sec-section h2 { margin: 0 0 20px; font-size: 1.15rem; color: var(--p-text-color); }
 .sec-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
 .sec-filters { display: flex; gap: 8px; }
@@ -655,7 +655,7 @@ function sendOffer(buyer) {
 
 /* Offers Grid */
 .sec-offers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.sec-offer-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s; }
+.sec-offer-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s; }
 .sec-offer-card:hover { border-color: var(--p-primary-color); box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 8%, transparent); }
 .sec-offer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .sec-offer-header h3 { margin: 0; font-size: 1rem; color: var(--p-text-color); }
@@ -674,30 +674,30 @@ function sendOffer(buyer) {
 
 /* Valuation */
 .sec-val-methods { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
-.sec-val-method { background: var(--surface-ground); border: 2px solid var(--surface-border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; }
+.sec-val-method { background: var(--p-surface-ground); border: 2px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; }
 .sec-val-method:hover { border-color: var(--p-primary-color); }
 .sec-val-method.active { border-color: var(--p-primary-color); background: var(--p-primary-color)11; }
 .sec-val-method-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .sec-val-method-header i { font-size: 1.5rem; color: var(--p-primary-color); }
 .sec-val-method-header h3 { margin: 0; font-size: 1rem; color: var(--p-text-color); }
 .sec-val-method-desc { font-size: 0.8rem; color: var(--p-text-muted-color); margin-bottom: 14px; line-height: 1.4; }
-.sec-val-result { background: var(--surface-card); border-radius: 8px; padding: 12px; text-align: center; }
+.sec-val-result { background: var(--p-surface-card); border-radius: 8px; padding: 12px; text-align: center; }
 .sec-val-result-val { font-size: 1.6rem; font-weight: 700; color: var(--p-primary-color); }
 .sec-val-result-label { font-size: 0.7rem; color: var(--p-text-muted-color); margin-top: 4px; }
 
-.sec-val-details { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px; }
+.sec-val-details { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; }
 .sec-val-details h3 { margin: 0 0 16px; font-size: 1rem; color: var(--p-text-color); }
 .sec-val-calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .sec-val-param { display: flex; flex-direction: column; gap: 4px; }
 .sec-val-param label { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .sec-val-param-value { font-size: 0.95rem; font-weight: 600; color: var(--p-text-color); }
-.sec-val-recommendation { display: flex; gap: 12px; padding: 14px; background: var(--surface-card); border-radius: 8px; border-left: 3px solid var(--p-primary-color); font-size: 0.85rem; color: var(--p-text-color); line-height: 1.5; }
+.sec-val-recommendation { display: flex; gap: 12px; padding: 14px; background: var(--p-surface-card); border-radius: 8px; border-left: 3px solid var(--p-primary-color); font-size: 0.85rem; color: var(--p-text-color); line-height: 1.5; }
 .sec-val-recommendation i { color: var(--p-primary-color); font-size: 1.2rem; flex-shrink: 0; }
 
 /* Table */
 .sec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.sec-table th { padding: 10px 12px; text-align: left; color: var(--p-text-muted-color); border-bottom: 2px solid var(--surface-border); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-.sec-table td { padding: 12px 12px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
+.sec-table th { padding: 10px 12px; text-align: left; color: var(--p-text-muted-color); border-bottom: 2px solid var(--p-content-border-color); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+.sec-table td { padding: 12px 12px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
 .sec-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .sec-table .bold { font-weight: 700; }
 .sec-table .green { color: var(--fst-green); }
@@ -710,7 +710,7 @@ function sendOffer(buyer) {
 .sec-badge.status-cancelled { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 
 .sec-history-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
-.sec-sum-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+.sec-sum-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
 .sec-sum-label { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .sec-sum-value { font-size: 1.3rem; font-weight: 700; color: var(--p-primary-color); }
 
@@ -718,10 +718,10 @@ function sendOffer(buyer) {
 .sec-network-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 
 .sec-buyers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.sec-buyer-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s; }
+.sec-buyer-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s; }
 .sec-buyer-card:hover { border-color: var(--p-primary-color); box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 8%, transparent); }
 .sec-buyer-header { display: flex; align-items: center; gap: 12px; }
-.sec-buyer-avatar { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+.sec-buyer-avatar { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
 .sec-buyer-header h3 { margin: 0; font-size: 1rem; color: var(--p-text-color); }
 .sec-buyer-type { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .sec-buyer-info { display: flex; flex-direction: column; gap: 8px; }
@@ -730,15 +730,15 @@ function sendOffer(buyer) {
 .sec-buyer-actions { display: flex; gap: 8px; }
 
 /* Modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-box { background: var(--surface-card); border-radius: 14px; width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px color-mix(in srgb, var(--p-text-color) 30%, transparent); }
+.modal-overlay { position: fixed; inset: 0; background: color-mix(in srgb, var(--p-text-color) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-box { background: var(--p-surface-card); border-radius: 14px; width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px color-mix(in srgb, var(--p-text-color) 30%, transparent); }
 .modal-lg { width: 700px; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--surface-border); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--p-content-border-color); }
 .modal-header h3 { margin: 0; font-size: 1.15rem; color: var(--p-text-color); }
 .modal-close { background: none; border: none; cursor: pointer; color: var(--p-text-muted-color); font-size: 1.2rem; padding: 4px; transition: color 0.2s; }
 .modal-close:hover { color: var(--p-text-color); }
 .modal-body { padding: 24px; }
-.modal-footer { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid var(--surface-border); }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid var(--p-content-border-color); }
 
 /* Form */
 .modal-form { display: flex; flex-direction: column; gap: 16px; }
@@ -755,7 +755,7 @@ function sendOffer(buyer) {
 .checkbox-label input[type="checkbox"] { cursor: pointer; }
 
 .network-list { list-style: none; padding: 0; margin: 16px 0; }
-.network-list li { padding: 8px 0; border-bottom: 1px solid var(--surface-border); font-size: 0.9rem; }
+.network-list li { padding: 8px 0; border-bottom: 1px solid var(--p-content-border-color); font-size: 0.9rem; }
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {

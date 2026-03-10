@@ -1,18 +1,10 @@
 <template>
-  <FstPageLayout title="🤝 Сеть со-инвесторов" subtitle="Управление синдикацией с РФРИТ, Сколково, Ростех Венчурс, Росинфокоминвест">
+  <FstPageLayout title="Сеть со-инвесторов" subtitle="Синдикация — соинвестирование с партнёрскими фондами">
     <template #actions>
-      <button class="syn-btn secondary" @click="showAnalytics = !showAnalytics">
-          <i class="pi pi-chart-line"></i> Аналитика
-        </button>
-        <button class="syn-btn secondary" @click="exportSyndication">
-          <i class="pi pi-download"></i> Экспорт
-        </button>
-        <button class="syn-btn primary" @click="showAddInvestor = true">
-          <i class="pi pi-user-plus"></i> + Инвестор
-        </button>
-        <button class="syn-btn primary" @click="showAddDeal = true">
-          <i class="pi pi-plus"></i> + Сделка
-        </button>
+      <Button icon="pi pi-chart-line" label="Аналитика" severity="secondary" @click="showAnalytics = !showAnalytics" />
+      <Button icon="pi pi-download" label="Экспорт" severity="secondary" @click="exportSyndication" />
+      <Button icon="pi pi-user-plus" label="+ Инвестор" @click="showAddInvestor = true" />
+      <Button icon="pi pi-plus" label="+ Сделка" @click="showAddDeal = true" />
     </template>
 
     <!-- Сводка синдикации -->
@@ -25,14 +17,15 @@
 
     <!-- Tabs -->
     <div class="syn-tabs">
-      <button
+      <Button
         v-for="tab in tabs"
         :key="tab.id"
-        :class="['syn-tab', { active: activeTab === tab.id }]"
+        :label="tab.label"
+        :icon="tab.icon"
+        :severity="activeTab === tab.id ? undefined : 'secondary'"
+        size="small"
         @click="activeTab = tab.id"
-      >
-        <i :class="tab.icon"></i> {{ tab.label }}
-      </button>
+      />
     </div>
 
     <!-- База со-инвесторов -->
@@ -40,17 +33,8 @@
       <div class="section-header">
         <h2>База со-инвесторов</h2>
         <div class="filter-group">
-          <select v-model="filterType" class="syn-select">
-            <option value="all">Все типы</option>
-            <option value="gov">Государственные</option>
-            <option value="private">Частные</option>
-            <option value="corporate">Корпоративные</option>
-          </select>
-          <select v-model="filterRelation" class="syn-select">
-            <option value="all">Все статусы</option>
-            <option value="active">Активные</option>
-            <option value="potential">Потенциальные</option>
-          </select>
+          <Select v-model="filterType" :options="investorTypeOptions" optionLabel="label" optionValue="value" size="small" />
+          <Select v-model="filterRelation" :options="relationOptions" optionLabel="label" optionValue="value" size="small" />
         </div>
       </div>
       <div class="investor-grid">
@@ -115,14 +99,7 @@
       <div class="section-header">
         <h2>Синдицированные сделки</h2>
         <div class="filter-group">
-          <select v-model="filterStatus" class="syn-select">
-            <option value="all">Все статусы</option>
-            <option value="negotiating">Переговоры</option>
-            <option value="nda">Подписали NDA</option>
-            <option value="ts">Подписали TS</option>
-            <option value="closed">Закрыты</option>
-            <option value="failed">Не состоялись</option>
-          </select>
+          <Select v-model="filterStatus" :options="dealStatusOptions" optionLabel="label" optionValue="value" size="small" />
         </div>
       </div>
       <table class="syn-table">
@@ -162,12 +139,8 @@
             <td><span class="deal-status" :class="deal.status">{{ dealStatusLabel(deal.status) }}</span></td>
             <td class="deal-date">{{ deal.closeDate }}</td>
             <td>
-              <button class="action-btn" @click="updateCapTable(deal)" title="Обновить cap table">
-                <i class="pi pi-chart-pie"></i>
-              </button>
-              <button class="action-btn" @click="viewDealDetails(deal)" title="Детали">
-                <i class="pi pi-eye"></i>
-              </button>
+              <Button icon="pi pi-chart-pie" severity="secondary" text size="small" @click="updateCapTable(deal)" v-tooltip="'Обновить cap table'" />
+              <Button icon="pi pi-eye" severity="secondary" text size="small" @click="viewDealDetails(deal)" v-tooltip="'Детали'" />
             </td>
           </tr>
         </tbody>
@@ -241,9 +214,7 @@
               </div>
             </div>
             <div class="potential-reason">{{ opportunity.reason }}</div>
-            <button class="syn-btn primary small" @click="inviteCoInvestor(opportunity)">
-              <i class="pi pi-send"></i> Пригласить
-            </button>
+            <Button icon="pi pi-send" label="Пригласить" size="small" @click="inviteCoInvestor(opportunity)" />
           </div>
         </div>
       </div>
@@ -262,101 +233,70 @@
               <span class="tt-val">{{ t.value }}</span>
             </div>
           </div>
-          <button class="ts-btn" @click="useTemplate(ts)">Использовать шаблон</button>
+          <Button label="Использовать шаблон" severity="secondary" outlined size="small" @click="useTemplate(ts)" />
         </div>
       </div>
     </div>
 
-    <!-- Модалы -->
     <!-- Добавить инвестора -->
-    <div v-if="showAddInvestor" class="modal-overlay" @click.self="showAddInvestor = false">
-      <div class="modal-box large">
-        <h3>Добавить со-инвестора</h3>
-        <div class="modal-form">
-          <label>Название</label>
-          <input v-model="newInvestor.name" placeholder="Название фонда/института" />
-
-          <label>Тип</label>
-          <select v-model="newInvestor.type">
-            <option value="gov">Государственный</option>
-            <option value="private">Частный</option>
-            <option value="corporate">Корпоративный</option>
-          </select>
-
-          <label>Фокус-сектора (через запятую)</label>
-          <input v-model="newInvestor.focusStr" placeholder="БАС, Deep Tech, Robotics" />
-
-          <label>Контактное лицо</label>
-          <input v-model="newInvestor.contactName" placeholder="Имя Фамилия" />
-
-          <label>Должность</label>
-          <input v-model="newInvestor.contactPosition" placeholder="Инвестиционный директор" />
-
-          <label>Email</label>
-          <input v-model="newInvestor.contactEmail" type="email" placeholder="investor@fund.ru" />
-
-          <label>Мин. тикет (млн ₽)</label>
-          <input v-model.number="newInvestor.minTicket" type="number" step="10" />
-
-          <label>Макс. тикет (млн ₽)</label>
-          <input v-model.number="newInvestor.maxTicket" type="number" step="50" />
-        </div>
-        <div class="modal-actions">
-          <button class="syn-btn secondary" @click="showAddInvestor = false">Отмена</button>
-          <button class="syn-btn primary" @click="addInvestor">Добавить</button>
-        </div>
+    <Dialog v-model:visible="showAddInvestor" header="Добавить со-инвестора" :style="{ width: '600px' }" modal>
+      <div class="modal-form">
+        <label>Название</label>
+        <InputText v-model="newInvestor.name" placeholder="Название фонда/института" fluid />
+        <label>Тип</label>
+        <Select v-model="newInvestor.type" :options="newInvestorTypeOptions" optionLabel="label" optionValue="value" fluid />
+        <label>Фокус-сектора (через запятую)</label>
+        <InputText v-model="newInvestor.focusStr" placeholder="БАС, Deep Tech, Robotics" fluid />
+        <label>Контактное лицо</label>
+        <InputText v-model="newInvestor.contactName" placeholder="Имя Фамилия" fluid />
+        <label>Должность</label>
+        <InputText v-model="newInvestor.contactPosition" placeholder="Инвестиционный директор" fluid />
+        <label>Email</label>
+        <InputText v-model="newInvestor.contactEmail" type="email" placeholder="investor@fund.ru" fluid />
+        <label>Мин. тикет (млн ₽)</label>
+        <InputText v-model.number="newInvestor.minTicket" type="number" step="10" fluid />
+        <label>Макс. тикет (млн ₽)</label>
+        <InputText v-model.number="newInvestor.maxTicket" type="number" step="50" fluid />
       </div>
-    </div>
+      <template #footer>
+        <div class="modal-actions">
+          <Button label="Отмена" severity="secondary" @click="showAddInvestor = false" />
+          <Button label="Добавить" @click="addInvestor" />
+        </div>
+      </template>
+    </Dialog>
 
     <!-- Добавить сделку -->
-    <div v-if="showAddDeal" class="modal-overlay" @click.self="showAddDeal = false">
-      <div class="modal-box">
-        <h3>Новая синдицированная сделка</h3>
-        <div class="modal-form">
-          <label>Компания</label>
-          <input v-model="newDeal.company" />
-
-          <label>Раунд</label>
-          <input v-model="newDeal.round" placeholder="Серия A" />
-
-          <label>Объём раунда, млн ₽</label>
-          <input v-model.number="newDeal.totalRound" type="number" step="10" />
-
-          <label>Доля ФСТ, млн ₽</label>
-          <input v-model.number="newDeal.fstAmount" type="number" step="5" />
-
-          <label>Со-инвесторы (через запятую)</label>
-          <input v-model="newDeal.coInvestorsStr" placeholder="Сколково, ФРП..." />
-
-          <label>Права со-инвесторов</label>
-          <select v-model="newDeal.rights">
-            <option value="pari-passu">Pari Passu (равные)</option>
-            <option value="senior">Senior (приоритетные)</option>
-            <option value="junior">Junior (младшие)</option>
-          </select>
-
-          <label>Статус</label>
-          <select v-model="newDeal.status">
-            <option value="negotiating">Переговоры</option>
-            <option value="nda">Подписали NDA</option>
-            <option value="ts">Подписали TS</option>
-            <option value="closed">Закрыта</option>
-          </select>
-
-          <label>Планируемое закрытие</label>
-          <input v-model="newDeal.closeDate" type="date" />
-        </div>
-        <div class="modal-actions">
-          <button class="syn-btn secondary" @click="showAddDeal = false">Отмена</button>
-          <button class="syn-btn primary" @click="addDeal">Добавить</button>
-        </div>
+    <Dialog v-model:visible="showAddDeal" header="Новая синдицированная сделка" :style="{ width: '400px' }" modal>
+      <div class="modal-form">
+        <label>Компания</label>
+        <InputText v-model="newDeal.company" fluid />
+        <label>Раунд</label>
+        <InputText v-model="newDeal.round" placeholder="Серия A" fluid />
+        <label>Объём раунда, млн ₽</label>
+        <InputText v-model.number="newDeal.totalRound" type="number" step="10" fluid />
+        <label>Доля ФСТ, млн ₽</label>
+        <InputText v-model.number="newDeal.fstAmount" type="number" step="5" fluid />
+        <label>Со-инвесторы (через запятую)</label>
+        <InputText v-model="newDeal.coInvestorsStr" placeholder="Сколково, ФРП..." fluid />
+        <label>Права со-инвесторов</label>
+        <Select v-model="newDeal.rights" :options="rightsOptions" optionLabel="label" optionValue="value" fluid />
+        <label>Статус</label>
+        <Select v-model="newDeal.status" :options="newDealStatusOptions" optionLabel="label" optionValue="value" fluid />
+        <label>Планируемое закрытие</label>
+        <InputText v-model="newDeal.closeDate" type="date" fluid />
       </div>
-    </div>
+      <template #footer>
+        <div class="modal-actions">
+          <Button label="Отмена" severity="secondary" @click="showAddDeal = false" />
+          <Button label="Добавить" @click="addDeal" />
+        </div>
+      </template>
+    </Dialog>
 
     <!-- Детали инвестора -->
-    <div v-if="selectedInvestor" class="modal-overlay" @click.self="selectedInvestor = null">
-      <div class="modal-box large">
-        <h3>{{ selectedInvestor.name }}</h3>
+    <Dialog v-model:visible="investorDetailVisible" :header="selectedInvestor?.name" :style="{ width: '600px' }" modal>
+      <template v-if="selectedInvestor">
         <div class="investor-details">
           <div class="detail-section">
             <h4>Основная информация</h4>
@@ -364,7 +304,6 @@
             <p><strong>Статус:</strong> {{ relLabel(selectedInvestor.relation) }}</p>
             <p><strong>Тикет:</strong> {{ selectedInvestor.minTicket }}–{{ selectedInvestor.maxTicket }} млн ₽</p>
           </div>
-
           <div class="detail-section">
             <h4>Рейтинг партнёра</h4>
             <div class="rating-detail">
@@ -386,37 +325,79 @@
               </div>
             </div>
           </div>
-
           <div class="detail-section" v-if="selectedInvestor.contact">
             <h4>Контакт</h4>
             <p><strong>Имя:</strong> {{ selectedInvestor.contact.name }}</p>
             <p><strong>Должность:</strong> {{ selectedInvestor.contact.position }}</p>
             <p><strong>Email:</strong> <a :href="`mailto:${selectedInvestor.contact.email}`">{{ selectedInvestor.contact.email }}</a></p>
           </div>
-
           <div class="detail-section">
             <h4>История со-инвестиций</h4>
             <p><strong>Сделок вместе:</strong> {{ selectedInvestor.coDeals }}</p>
             <p><strong>Общий объём:</strong> {{ selectedInvestor.totalAmount }} млн ₽</p>
           </div>
         </div>
+      </template>
+      <template #footer>
         <div class="modal-actions">
-          <button class="syn-btn primary" @click="selectedInvestor = null">Закрыть</button>
+          <Button label="Закрыть" @click="investorDetailVisible = false" />
         </div>
-      </div>
-    </div>
+      </template>
+    </Dialog>
   </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
+import Dialog from 'primevue/dialog'
+
+// Select options
+const investorTypeOptions = [
+  { label: 'Все типы', value: 'all' },
+  { label: 'Государственные', value: 'gov' },
+  { label: 'Частные', value: 'private' },
+  { label: 'Корпоративные', value: 'corporate' }
+]
+const relationOptions = [
+  { label: 'Все статусы', value: 'all' },
+  { label: 'Активные', value: 'active' },
+  { label: 'Потенциальные', value: 'potential' }
+]
+const dealStatusOptions = [
+  { label: 'Все статусы', value: 'all' },
+  { label: 'Переговоры', value: 'negotiating' },
+  { label: 'Подписали NDA', value: 'nda' },
+  { label: 'Подписали TS', value: 'ts' },
+  { label: 'Закрыты', value: 'closed' },
+  { label: 'Не состоялись', value: 'failed' }
+]
+const newInvestorTypeOptions = [
+  { label: 'Государственный', value: 'gov' },
+  { label: 'Частный', value: 'private' },
+  { label: 'Корпоративный', value: 'corporate' }
+]
+const rightsOptions = [
+  { label: 'Pari Passu (равные)', value: 'pari-passu' },
+  { label: 'Senior (приоритетные)', value: 'senior' },
+  { label: 'Junior (младшие)', value: 'junior' }
+]
+const newDealStatusOptions = [
+  { label: 'Переговоры', value: 'negotiating' },
+  { label: 'Подписали NDA', value: 'nda' },
+  { label: 'Подписали TS', value: 'ts' },
+  { label: 'Закрыта', value: 'closed' }
+]
 
 // UI State
 const showAddDeal = ref(false)
 const showAddInvestor = ref(false)
 const showAnalytics = ref(false)
 const selectedInvestor = ref(null)
+const investorDetailVisible = ref(false)
 const activeTab = ref('investors')
 
 // Filters
@@ -720,6 +701,7 @@ const networkGraphRef = ref(null)
 // Functions
 function showInvestorDetails(inv) {
   selectedInvestor.value = inv
+  investorDetailVisible.value = true
 }
 
 function getInvestorShare(deal, coInvestorName) {
@@ -851,156 +833,132 @@ function initNetworkGraph() {
 </script>
 
 <style scoped>
-.syn-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
-.syn-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.syn-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
-.syn-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.syn-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.syn-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.83rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-.syn-btn.primary { background: var(--p-primary-color); color: #fff; }
-.syn-btn.secondary { background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
-.syn-btn.small { padding: 6px 10px; font-size: 0.75rem; }
-.syn-btn:hover { opacity: 0.9; }
-
 .syn-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-.ss-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 14px; text-align: center; }
+.ss-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 14px; text-align: center; }
 .ss-val { font-size: 1.5rem; font-weight: 700; }
-.ss-val.green { color: #66bb6a; }
+.ss-val.green { color: var(--fst-green); }
 .ss-val.blue { color: var(--p-primary-color); }
 .ss-lbl { font-size: 0.72rem; color: var(--p-text-muted-color); margin-top: 4px; }
 
-.syn-tabs { display: flex; gap: 8px; background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 8px; overflow-x: auto; }
-.syn-tab { padding: 8px 16px; border-radius: 6px; border: none; background: transparent; color: var(--p-text-muted-color); cursor: pointer; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-.syn-tab:hover { background: var(--surface-hover); color: var(--p-text-color); }
-.syn-tab.active { background: var(--p-primary-color); color: #fff; }
+.syn-tabs { display: flex; gap: 8px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 8px; overflow-x: auto; }
 
-.syn-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
+.syn-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; overflow-x: auto; }
 .syn-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
 .section-header h2 { margin: 0; }
 .filter-group { display: flex; gap: 8px; }
-.syn-select { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--surface-border); background: var(--surface-ground); color: var(--p-text-color); font-size: 0.8rem; }
 
 .investor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-.inv-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.2s; }
-.inv-card:hover { border-color: var(--p-primary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.inv-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.2s; }
+.inv-card:hover { border-color: var(--p-primary-color); box-shadow: 0 2px 8px color-mix(in srgb, var(--p-text-color) 10%, transparent); }
 .inv-header { display: flex; align-items: center; gap: 10px; }
-.inv-avatar { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff; }
-.inv-avatar.gov { background: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
-.inv-avatar.private { background: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.inv-avatar.corporate { background: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
+.inv-avatar { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: white; }
+.inv-avatar.gov { background: var(--fst-blue); }
+.inv-avatar.private { background: var(--fst-purple); }
+.inv-avatar.corporate { background: var(--fst-brand); }
 .inv-info { flex: 1; }
 .inv-name { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }
 .inv-type { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .inv-rel { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; }
-.inv-rel.active { background: #66bb6a22; color: #66bb6a; }
-.inv-rel.potential { background: var(--surface-border); color: var(--p-text-muted-color); }
+.inv-rel.active { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
+.inv-rel.potential { background: var(--p-content-border-color); color: var(--p-text-muted-color); }
 
-.inv-rating { display: flex; flex-direction: column; gap: 4px; padding: 8px; background: var(--surface-card); border-radius: 6px; }
+.inv-rating { display: flex; flex-direction: column; gap: 4px; padding: 8px; background: var(--p-surface-card); border-radius: 6px; }
 .rating-item { display: flex; justify-content: space-between; align-items: center; }
 .rating-label { font-size: 0.7rem; color: var(--p-text-muted-color); }
 .rating-stars { display: flex; gap: 2px; }
-.rating-stars i { font-size: 0.7rem; color: #ffa726; }
+.rating-stars i { font-size: 0.7rem; color: var(--fst-brand); }
 
 .inv-stats { display: flex; gap: 12px; }
 .inv-stat { display: flex; flex-direction: column; gap: 1px; }
 .inv-stat span { font-size: 0.65rem; color: var(--p-text-muted-color); }
 .inv-stat strong { font-size: 0.82rem; font-weight: 700; color: var(--p-text-color); }
 .inv-focus { display: flex; gap: 4px; flex-wrap: wrap; }
-.focus-tag { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background: var(--surface-border); color: var(--p-text-muted-color); }
-.inv-contact { font-size: 0.7rem; color: var(--p-text-muted-color); line-height: 1.4; padding-top: 8px; border-top: 1px solid var(--surface-border); }
+.focus-tag { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; background: var(--p-content-border-color); color: var(--p-text-muted-color); }
+.inv-contact { font-size: 0.7rem; color: var(--p-text-muted-color); line-height: 1.4; padding-top: 8px; border-top: 1px solid var(--p-content-border-color); }
 .inv-contact i { margin-right: 4px; }
 
 .syn-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 800px; }
-.syn-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; }
-.syn-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
+.syn-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.72rem; }
+.syn-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
 .deal-name { font-weight: 600; }
 .deal-round { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .num { text-align: right; }
 .share-pct { font-size: 0.68rem; color: var(--p-text-muted-color); }
 .co-list { display: flex; gap: 4px; flex-wrap: wrap; }
-.co-chip { font-size: 0.68rem; padding: 1px 6px; border-radius: 4px; background: var(--surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--surface-border); cursor: pointer; }
-.co-chip:hover { background: var(--p-primary-color); color: #fff; }
+.co-chip { font-size: 0.68rem; padding: 1px 6px; border-radius: 4px; background: var(--p-surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); cursor: pointer; }
+.co-chip:hover { background: var(--p-primary-color); color: white; }
 .rights-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
-.rights-badge.pari-passu { background: #42a5f522; color: #42a5f5; }
-.rights-badge.senior { background: #66bb6a22; color: #66bb6a; }
-.rights-badge.junior { background: #ff980022; color: #ff9800; }
+.rights-badge.pari-passu { background: color-mix(in srgb, var(--fst-blue) 13%, transparent); color: var(--fst-blue); }
+.rights-badge.senior { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
+.rights-badge.junior { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
 .deal-status { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
-.deal-status.closed { background: #66bb6a22; color: #66bb6a; }
-.deal-status.ts { background: #42a5f522; color: #42a5f5; }
-.deal-status.nda { background: #9c27b022; color: #9c27b0; }
-.deal-status.negotiating { background: #ff980022; color: #ff9800; }
-.deal-status.failed { background: #ef535022; color: #ef5350; }
+.deal-status.closed { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
+.deal-status.ts { background: color-mix(in srgb, var(--fst-blue) 13%, transparent); color: var(--fst-blue); }
+.deal-status.nda { background: color-mix(in srgb, var(--fst-purple) 13%, transparent); color: var(--fst-purple); }
+.deal-status.negotiating { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
+.deal-status.failed { background: color-mix(in srgb, var(--fst-red) 13%, transparent); color: var(--fst-red); }
 .deal-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.action-btn { padding: 4px 8px; border: none; background: transparent; color: var(--p-text-muted-color); cursor: pointer; border-radius: 4px; }
-.action-btn:hover { background: var(--surface-hover); color: var(--p-primary-color); }
 
 /* Analytics */
-.analytics-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.analytics-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
 .analytics-card h3 { margin: 0 0 12px; font-size: 0.95rem; color: var(--p-text-color); display: flex; align-items: center; gap: 8px; }
 .network-graph { margin: 16px 0; }
 .graph-legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px; font-size: 0.75rem; color: var(--p-text-muted-color); }
 .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
-.legend-dot.gov { background: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
-.legend-dot.private { background: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.legend-dot.corporate { background: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
+.legend-dot.gov { background: var(--fst-blue); }
+.legend-dot.private { background: var(--fst-purple); }
+.legend-dot.corporate { background: var(--fst-brand); }
 .legend-dot.fst { background: var(--p-primary-color); }
 
 /* Heatmap */
 .heatmap-container { overflow-x: auto; }
 .heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-.heatmap-table th { padding: 8px; text-align: center; border: 1px solid var(--surface-border); background: var(--surface-ground); font-size: 0.7rem; color: var(--p-text-muted-color); }
-.heatmap-table td { padding: 8px; text-align: center; border: 1px solid var(--surface-border); }
+.heatmap-table th { padding: 8px; text-align: center; border: 1px solid var(--p-content-border-color); background: var(--p-surface-ground); font-size: 0.7rem; color: var(--p-text-muted-color); }
+.heatmap-table td { padding: 8px; text-align: center; border: 1px solid var(--p-content-border-color); }
 .heatmap-label { text-align: left !important; font-weight: 600; color: var(--p-text-color); }
 .heatmap-cell { cursor: pointer; transition: all 0.2s; }
-.heatmap-cell.heat-0 { background: var(--surface-ground); color: var(--p-text-muted-color); }
-.heatmap-cell.heat-1 { background: #42a5f533; color: #42a5f5; }
-.heatmap-cell.heat-2 { background: #66bb6a66; color: #66bb6a; }
-.heatmap-cell.heat-3 { background: #66bb6a; color: #fff; font-weight: 700; }
+.heatmap-cell.heat-0 { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.heatmap-cell.heat-1 { background: color-mix(in srgb, var(--fst-blue) 20%, transparent); color: var(--fst-blue); }
+.heatmap-cell.heat-2 { background: color-mix(in srgb, var(--fst-green) 40%, transparent); color: var(--fst-green); }
+.heatmap-cell.heat-3 { background: var(--fst-green); color: white; font-weight: 700; }
 .heatmap-cell:hover { opacity: 0.8; }
 
 /* Syndication Potential */
 .potential-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
-.potential-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.potential-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .potential-header { display: flex; justify-content: space-between; align-items: center; }
 .potential-company { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
 .potential-score { font-size: 0.85rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
-.potential-score.score-high { background: #66bb6a22; color: #66bb6a; }
-.potential-score.score-medium { background: #ff980022; color: #ff9800; }
-.potential-score.score-low { background: var(--surface-border); color: var(--p-text-muted-color); }
+.potential-score.score-high { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
+.potential-score.score-medium { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
+.potential-score.score-low { background: var(--p-content-border-color); color: var(--p-text-muted-color); }
 .potential-sector { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .potential-matches { font-size: 0.75rem; }
 .potential-matches strong { display: block; margin-bottom: 6px; color: var(--p-text-color); }
 .match-list { display: flex; gap: 4px; flex-wrap: wrap; }
-.match-chip { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; background: var(--p-primary-color); color: #fff; cursor: pointer; }
+.match-chip { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; background: var(--p-primary-color); color: white; cursor: pointer; }
 .match-chip:hover { opacity: 0.8; }
-.potential-reason { font-size: 0.72rem; color: var(--p-text-muted-color); font-style: italic; padding: 8px; background: var(--surface-card); border-radius: 4px; }
+.potential-reason { font-size: 0.72rem; color: var(--p-text-muted-color); font-style: italic; padding: 8px; background: var(--p-surface-card); border-radius: 4px; }
 
 /* Term Sheets */
 .ts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.ts-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.ts-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .ts-name { font-weight: 700; font-size: 0.88rem; color: var(--p-primary-color); }
 .ts-desc { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .ts-terms { display: flex; flex-direction: column; gap: 4px; }
 .ts-term { display: flex; gap: 6px; font-size: 0.78rem; }
 .tt-label { color: var(--p-text-muted-color); min-width: 100px; }
 .tt-val { font-weight: 600; color: var(--p-text-color); }
-.ts-btn { margin-top: auto; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--p-primary-color); background: transparent; color: var(--p-primary-color); cursor: pointer; font-size: 0.78rem; font-weight: 600; }
-.ts-btn:hover { background: var(--p-primary-color); color: #fff; }
 
 /* Modals */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-box { background: var(--surface-card); border-radius: 12px; padding: 24px; width: 400px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
-.modal-box.large { width: 600px; }
-.modal-box h3 { margin: 0 0 16px; color: var(--p-text-color); }
 .modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .modal-form label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.modal-form input, .modal-form select { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 /* Investor Details Modal */
 .investor-details { display: flex; flex-direction: column; gap: 16px; }
-.detail-section { padding: 12px; background: var(--surface-ground); border-radius: 8px; }
+.detail-section { padding: 12px; background: var(--p-surface-ground); border-radius: 8px; }
 .detail-section h4 { margin: 0 0 8px; font-size: 0.85rem; color: var(--p-primary-color); }
 .detail-section p { margin: 4px 0; font-size: 0.8rem; color: var(--p-text-color); }
 .detail-section a { color: var(--p-primary-color); text-decoration: none; }

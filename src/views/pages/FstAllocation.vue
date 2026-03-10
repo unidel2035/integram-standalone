@@ -1,17 +1,17 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout title="Аллокация капитала" subtitle="Оптимизация аллокации — распределение капитала по субфондам">
     <Toast position="bottom-center" />
 
     <!-- Header -->
     <template #header>
       <div class="fsa-header-left">
         <div class="fsa-logo">
-          <i class="pi pi-chart-pie" style="color:#ab47bc;font-size:20px"></i>
+          <i class="pi pi-chart-pie" style="font-size:20px"></i>
           <span>ФСТ НТИ · <b>Оптимизация аллокации</b></span>
           <Tag value="Black-Litterman" severity="secondary" style="font-size:11px" />
         </div>
         <div class="fsa-updated">
-          <i class="pi pi-circle-fill" style="color:#66bb6a;font-size:8px"></i>
+          <i class="pi pi-circle-fill" style="font-size:8px;color:var(--fst-green)"></i>
           Обновлено: {{ lastUpdate }}
         </div>
       </div>
@@ -29,7 +29,7 @@
       <div class="fsa-left">
         <div class="fsa-panel">
           <div class="fsa-panel-header">
-            <i class="pi pi-sliders-h" style="color:#ab47bc"></i>
+            <i class="pi pi-sliders-h"></i>
             <span>Распределение капитала</span>
           </div>
 
@@ -75,7 +75,7 @@
           <!-- Market Views (Black-Litterman) -->
           <div class="fsa-views-section">
             <div class="fsa-views-header" @click="viewsExpanded = !viewsExpanded">
-              <i class="pi pi-eye" style="color:#42a5f5"></i>
+              <i class="pi pi-eye"></i>
               <span>Взгляды управляющего</span>
               <i :class="viewsExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" style="margin-left:auto;font-size:11px;color:var(--p-text-muted-color)"></i>
             </div>
@@ -105,7 +105,7 @@
       <div class="fsa-center">
         <div class="fsa-panel">
           <div class="fsa-panel-header">
-            <i class="pi pi-chart-line" style="color:#66bb6a"></i>
+            <i class="pi pi-chart-line"></i>
             <span>Граница эффективности</span>
             <Tag :value="`Sharpe ${sharpeRatio.toFixed(2)}`" severity="success" style="margin-left:auto;font-size:11px" />
           </div>
@@ -121,19 +121,19 @@
           <div class="fsa-metrics-grid">
             <div class="fsa-metric-card">
               <div class="fsa-metric-label">Ожидаемый IRR</div>
-              <div class="fsa-metric-value" :style="{ color: '#66bb6a' }">{{ (expectedReturn * 100).toFixed(2) }}%</div>
+              <div class="fsa-metric-value fsa-mv-green">{{ (expectedReturn * 100).toFixed(2) }}%</div>
             </div>
             <div class="fsa-metric-card">
               <div class="fsa-metric-label">Волатильность</div>
-              <div class="fsa-metric-value" :style="{ color: '#ffa726' }">{{ (portfolioRisk * 100).toFixed(2) }}%</div>
+              <div class="fsa-metric-value fsa-mv-brand">{{ (portfolioRisk * 100).toFixed(2) }}%</div>
             </div>
             <div class="fsa-metric-card">
               <div class="fsa-metric-label">Sharpe Ratio</div>
-              <div class="fsa-metric-value" :style="{ color: '#42a5f5' }">{{ sharpeRatio.toFixed(2) }}</div>
+              <div class="fsa-metric-value fsa-mv-blue">{{ sharpeRatio.toFixed(2) }}</div>
             </div>
             <div class="fsa-metric-card">
               <div class="fsa-metric-label">Max Drawdown</div>
-              <div class="fsa-metric-value" :style="{ color: '#ef5350' }">{{ (maxDrawdown * 100).toFixed(1) }}%</div>
+              <div class="fsa-metric-value fsa-mv-red">{{ (maxDrawdown * 100).toFixed(1) }}%</div>
             </div>
           </div>
         </div>
@@ -141,7 +141,7 @@
         <!-- Correlation Matrix -->
         <div class="fsa-panel" style="margin-top:16px">
           <div class="fsa-panel-header">
-            <i class="pi pi-sitemap" style="color:#ec407a"></i>
+            <i class="pi pi-sitemap"></i>
             <span>Матрица корреляций</span>
             <Button icon="pi pi-info-circle" size="small" severity="secondary" text @click="showCorrelationInfo = true" />
           </div>
@@ -175,7 +175,7 @@
       <div class="fsa-right">
         <div class="fsa-panel">
           <div class="fsa-panel-header">
-            <i class="pi pi-exclamation-triangle" style="color:#ff9800"></i>
+            <i class="pi pi-exclamation-triangle"></i>
             <span>Стресс-тесты</span>
           </div>
 
@@ -217,7 +217,7 @@
           <!-- Concentration Risks -->
           <div class="fsa-concentration">
             <div class="fsa-concentration-header">
-              <i class="pi pi-chart-pie" style="color:#ab47bc"></i>
+              <i class="pi pi-chart-pie"></i>
               <span>Концентрация рисков</span>
             </div>
             <div class="fsa-concentration-list">
@@ -311,7 +311,7 @@ const subfunds = ref([
     name: 'БАС (беспилотные авиасистемы)',
     shortName: 'БАС',
     icon: 'pi pi-send',
-    color: '#42a5f5',
+    color: 'var(--fst-blue)',
     weight: 0.35,
     companies: 12,
     currentIRR: 0.28,
@@ -323,7 +323,7 @@ const subfunds = ref([
     name: 'РОБО (робототехника)',
     shortName: 'РОБО',
     icon: 'pi pi-android',
-    color: '#66bb6a',
+    color: 'var(--fst-green)',
     weight: 0.30,
     companies: 8,
     currentIRR: 0.32,
@@ -335,7 +335,7 @@ const subfunds = ref([
     name: 'МЭ (микроэлектроника)',
     shortName: 'МЭ',
     icon: 'pi pi-microchip',
-    color: '#ab47bc',
+    color: 'var(--fst-purple)',
     weight: 0.25,
     companies: 6,
     currentIRR: 0.24,
@@ -347,7 +347,7 @@ const subfunds = ref([
     name: 'AI (искусственный интеллект)',
     shortName: 'AI',
     icon: 'pi pi-sparkles',
-    color: '#ffa726',
+    color: 'var(--fst-brand)',
     weight: 0.10,
     companies: 4,
     currentIRR: 0.45,
@@ -411,7 +411,7 @@ const stressScenarios = ref([
     id: 1,
     name: 'Шок сертификации',
     icon: 'pi pi-ban',
-    color: '#ef5350',
+    color: 'var(--fst-red)',
     description: 'Росавиация закрыла все сертификации на 1 год',
     navImpact: -0.18,
     irrImpact: -0.12,
@@ -421,7 +421,7 @@ const stressScenarios = ref([
     id: 2,
     name: 'Заморозка бюджетов МО',
     icon: 'pi pi-lock',
-    color: '#ff9800',
+    color: 'var(--fst-brand)',
     description: 'Ключевой заказчик (МО РФ) заморозил бюджеты на 6 мес',
     navImpact: -0.25,
     irrImpact: -0.15,
@@ -431,7 +431,7 @@ const stressScenarios = ref([
     id: 3,
     name: 'Кадровый кризис',
     icon: 'pi pi-users',
-    color: '#ffa726',
+    color: 'var(--fst-brand)',
     description: 'Критический кадровый риск: 3 CTO ушли одновременно',
     navImpact: -0.12,
     irrImpact: -0.08,
@@ -441,7 +441,7 @@ const stressScenarios = ref([
     id: 4,
     name: 'Санкционное давление',
     icon: 'pi pi-shield',
-    color: '#ab47bc',
+    color: 'var(--fst-purple)',
     description: 'Обострение санкций, блокировка комплектующих из Азии',
     navImpact: -0.15,
     irrImpact: -0.10,
@@ -513,13 +513,13 @@ function formatNumber(num, decimals = 0) {
 }
 
 function irrColor(irr) {
-  if (irr >= 0.3) return '#66bb6a'
-  if (irr >= 0.2) return '#ffa726'
-  return '#ef5350'
+  if (irr >= 0.3) return 'var(--fst-green)'
+  if (irr >= 0.2) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 }
 
 function impactColor(impact) {
-  return impact < 0 ? '#ef5350' : '#66bb6a'
+  return impact < 0 ? 'var(--fst-red)' : 'var(--fst-green)'
 }
 
 function corrClass(corr) {
@@ -529,9 +529,9 @@ function corrClass(corr) {
 }
 
 function riskLevelColor(level) {
-  if (level > 60) return '#ef5350'
-  if (level > 40) return '#ffa726'
-  return '#66bb6a'
+  if (level > 60) return 'var(--fst-red)'
+  if (level > 40) return 'var(--fst-brand)'
+  return 'var(--fst-green)'
 }
 
 function onWeightChange() {
@@ -722,7 +722,7 @@ function initChart() {
             callback: (val) => (val * 100).toFixed(0) + '%',
             color: 'var(--p-text-muted-color)'
           },
-          grid: { color: 'var(--surface-border)' }
+          grid: { color: 'var(--p-content-border-color)' }
         },
         y: {
           title: { display: true, text: 'Доходность (IRR)', color: 'var(--p-text-muted-color)' },
@@ -730,7 +730,7 @@ function initChart() {
             callback: (val) => (val * 100).toFixed(0) + '%',
             color: 'var(--p-text-muted-color)'
           },
-          grid: { color: 'var(--surface-border)' }
+          grid: { color: 'var(--p-content-border-color)' }
         }
       }
     }
@@ -766,7 +766,7 @@ onUnmounted(() => {
 <style scoped>
 .fst-allocation {
   min-height: 100vh;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
   display: flex;
   flex-direction: column;
 }
@@ -826,8 +826,8 @@ onUnmounted(() => {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .fsa-panel {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 20px;
 }
@@ -849,7 +849,7 @@ onUnmounted(() => {
 .fsa-total-nav {
   text-align: center;
   padding: 12px;
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 6px;
   margin-bottom: 12px;
 }
@@ -944,7 +944,7 @@ onUnmounted(() => {
 
 .fsa-view-item {
   padding: 12px;
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 6px;
   border-left: 3px solid var(--p-primary-color);
 }
@@ -985,7 +985,7 @@ onUnmounted(() => {
 
 .fsa-metric-card {
   padding: 12px;
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 6px;
   text-align: center;
 }
@@ -1000,6 +1000,10 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 700;
 }
+.fsa-mv-green { color: var(--fst-green); }
+.fsa-mv-brand { color: var(--fst-brand); }
+.fsa-mv-blue  { color: var(--fst-blue); }
+.fsa-mv-red   { color: var(--fst-red); }
 
 /* Correlation Matrix */
 .fsa-correlation-matrix {
@@ -1034,18 +1038,18 @@ onUnmounted(() => {
 }
 
 .fsa-corr-cell.high-corr {
-  background: rgba(239, 83, 80, 0.2);
-  color: #ef5350;
+  background: color-mix(in srgb, var(--fst-red) 20%, transparent);
+  color: var(--fst-red);
 }
 
 .fsa-corr-cell.med-corr {
-  background: rgba(255, 167, 38, 0.2);
-  color: #ffa726;
+  background: color-mix(in srgb, var(--fst-brand) 20%, transparent);
+  color: var(--fst-brand);
 }
 
 .fsa-corr-cell.low-corr {
-  background: rgba(102, 187, 106, 0.2);
-  color: #66bb6a;
+  background: color-mix(in srgb, var(--fst-green) 20%, transparent);
+  color: var(--fst-green);
 }
 
 .fsa-risk-alerts {
@@ -1064,15 +1068,15 @@ onUnmounted(() => {
 }
 
 .fsa-risk-alert.warn {
-  background: rgba(255, 152, 0, 0.1);
-  color: #ff9800;
-  border-left: 3px solid #ff9800;
+  background: color-mix(in srgb, var(--fst-brand) 10%, transparent);
+  color: var(--fst-brand);
+  border-left: 3px solid var(--fst-brand);
 }
 
 .fsa-risk-alert.info {
-  background: rgba(66, 165, 245, 0.1);
-  color: #42a5f5;
-  border-left: 3px solid #42a5f5;
+  background: color-mix(in srgb, var(--fst-blue) 10%, transparent);
+  color: var(--fst-blue);
+  border-left: 3px solid var(--fst-blue);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1094,9 +1098,9 @@ onUnmounted(() => {
 
 .fsa-stress-card {
   padding: 12px;
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 6px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--p-content-border-color);
 }
 
 .fsa-stress-header {
@@ -1171,7 +1175,7 @@ onUnmounted(() => {
 .fsa-conc-bar-wrap {
   position: relative;
   height: 20px;
-  background: var(--surface-card);
+  background: var(--p-surface-card);
   border-radius: 4px;
   overflow: hidden;
 }

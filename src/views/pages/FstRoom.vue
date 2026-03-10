@@ -1,5 +1,5 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout title="Agent Room" subtitle="Agent Room — многоагентный AI-анализ в свободном формате">
     <template #header>
       <div class="room-header">
         <div class="room-title">
@@ -348,9 +348,9 @@ const apiExample = computed(() => JSON.stringify({
   background: var(--p-text-muted-color);
   flex-shrink: 0;
 }
-.room-member-dot.human { background: #22c55e; }
-.room-member-dot.claude { background: #a855f7; }
-.room-member-dot.agent { background: #3b82f6; }
+.room-member-dot.human { background: var(--fst-green); }
+.room-member-dot.claude { background: var(--fst-purple); }
+.room-member-dot.agent { background: var(--fst-blue); }
 .room-member-name { flex: 1; font-weight: 500; color: var(--p-text-color); }
 .room-member-role { font-size: 0.7rem; color: var(--p-text-muted-color); }
 .room-empty-members { font-size: 0.8rem; color: var(--p-text-muted-color); }
@@ -360,7 +360,7 @@ const apiExample = computed(() => JSON.stringify({
   font-size: 0.82rem;
   transition: background 0.15s;
 }
-.room-known:hover { background: var(--p-primary-color)22; }
+.room-known:hover { background: color-mix(in srgb, var(--p-primary-color) 13%, transparent); }
 .room-known-name { color: var(--p-text-color); font-weight: 500; }
 .room-api-hint { font-size: 0.75rem; }
 .room-api-hint code { color: var(--p-primary-color); }
@@ -411,8 +411,8 @@ const apiExample = computed(() => JSON.stringify({
   align-self: flex-end;
 }
 .room-msg--own .room-msg-text {
-  background: var(--p-primary-color)22;
-  border-color: var(--p-primary-color)44;
+  background: color-mix(in srgb, var(--p-primary-color) 13%, transparent);
+  border-color: color-mix(in srgb, var(--p-primary-color) 27%, transparent);
 }
 .room-msg--system {
   align-self: center;
@@ -436,14 +436,14 @@ const apiExample = computed(() => JSON.stringify({
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--p-text-muted-color);
 }
-.room-msg-role-dot.human { background: #22c55e; }
-.room-msg-role-dot.claude { background: #a855f7; }
-.room-msg-role-dot.agent { background: #3b82f6; }
+.room-msg-role-dot.human { background: var(--fst-green); }
+.room-msg-role-dot.claude { background: var(--fst-purple); }
+.room-msg-role-dot.agent { background: var(--fst-blue); }
 .room-msg-name { font-weight: 600; color: var(--p-text-color); }
 .room-msg-role-label { opacity: 0.7; }
 .room-msg-time { margin-left: auto; }
 .room-msg-model {
-  background: var(--p-primary-color)22;
+  background: color-mix(in srgb, var(--p-primary-color) 13%, transparent);
   color: var(--p-primary-color);
   border-radius: 4px;
   padding: 0 0.3rem;

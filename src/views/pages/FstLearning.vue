@@ -1,5 +1,8 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Обучение"
+    subtitle="Интерактивные модули освоения платформы VentureOS"
+  >
     <!-- Header -->
     <template #header>
       <div class="header-content">

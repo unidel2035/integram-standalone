@@ -1,11 +1,11 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout title="Инвестиционный питч" subtitle="Инвестиционный питч — презентация проекта для фонда">
     <template #header>
       <div style="display:flex;align-items:center;gap:12px">
-        <i class="pi pi-building" style="color:#42a5f5;font-size:18px"></i>
-        <span style="font-weight:600">ai2fund · <b style="color:#42a5f5">VentureOS</b></span>
+        <i class="pi pi-building" style="color:var(--fst-blue);font-size:18px"></i>
+        <span style="font-weight:600">ai2fund · <b style="color:var(--fst-blue)">VentureOS</b></span>
         <Tag value="Seed Round 2026" severity="info" style="font-size:11px" />
-        <Tag value="30M ₽" style="background:#42a5f5;color:#fff;font-size:11px" />
+        <Tag value="30M ₽" style="background:var(--fst-blue);color:white;font-size:11px" />
       </div>
       <div style="display:flex;gap:8px">
         <Button icon="pi pi-share-alt" label="Поделиться" size="small" severity="secondary" @click="share" />
@@ -19,7 +19,7 @@
       <div class="pitch-hero">
         <div class="pitch-hero-badge">Инвестиционное предложение · Seed · Март 2026</div>
         <h1 class="pitch-hero-title">
-          <span style="color:#42a5f5">ai2fund</span> — VentureOS
+          <span style="color:var(--fst-blue)">ai2fund</span> — VentureOS
         </h1>
         <p class="pitch-hero-sub">
           AI-платформа полного цикла управления венчурным фондом.<br>
@@ -39,7 +39,7 @@
 
       <!-- ═══ PROBLEM / SOLUTION ═══ -->
       <div class="pitch-section">
-        <div class="pitch-section-title"><i class="pi pi-exclamation-circle" style="color:#ef5350"></i> Проблема</div>
+        <div class="pitch-section-title"><i class="pi pi-exclamation-circle" style="color:var(--fst-red)"></i> Проблема</div>
         <div class="pitch-two-col">
           <div class="pitch-problem-card" v-for="p in problems" :key="p.text">
             <i :class="p.icon" :style="{ color: p.color, fontSize:'24px' }"></i>
@@ -52,11 +52,11 @@
       </div>
 
       <div class="pitch-section">
-        <div class="pitch-section-title"><i class="pi pi-check-circle" style="color:#66bb6a"></i> Решение — VentureOS</div>
+        <div class="pitch-section-title"><i class="pi pi-check-circle" style="color:var(--fst-green)"></i> Решение — VentureOS</div>
         <div class="pitch-solution-grid">
           <div class="pitch-module" v-for="m in modules" :key="m.name">
             <div class="pitch-module-icon" :style="{ background: m.bg }">
-              <i :class="m.icon" style="color:#fff;font-size:20px"></i>
+              <i :class="m.icon" style="color:white;font-size:20px"></i>
             </div>
             <div class="pitch-module-name">{{ m.name }}</div>
             <div class="pitch-module-desc">{{ m.desc }}</div>
@@ -66,7 +66,7 @@
 
       <!-- ═══ TRACTION / DEMO ═══ -->
       <div class="pitch-section pitch-section-dark">
-        <div class="pitch-section-title" style="color:#fff"><i class="pi pi-bolt" style="color:#ffa726"></i> Traction & Demo</div>
+        <div class="pitch-section-title" style="color:white"><i class="pi pi-bolt" style="color:var(--fst-brand)"></i> Traction & Demo</div>
         <div class="pitch-traction-row">
           <div class="pitch-traction-item" v-for="t in traction" :key="t.label">
             <div class="pitch-traction-val" :style="{ color: t.color }">{{ t.val }}</div>
@@ -81,7 +81,7 @@
 
       <!-- ═══ MARKET ═══ -->
       <div class="pitch-section">
-        <div class="pitch-section-title"><i class="pi pi-chart-pie" style="color:#7e57c2"></i> Рынок</div>
+        <div class="pitch-section-title"><i class="pi pi-chart-pie" style="color:var(--fst-purple)"></i> Рынок</div>
         <div class="pitch-market-grid">
           <div class="pitch-market-box" v-for="m in market" :key="m.label">
             <div class="pitch-market-val" :style="{ color: m.color }">{{ m.val }}</div>
@@ -104,8 +104,8 @@
             <tbody>
               <tr v-for="c in competitors" :key="c.name" :class="{ 'pitch-comp-us': c.us }">
                 <td><b>{{ c.name }}</b></td>
-                <td><i :class="c.ai ? 'pi pi-check' : 'pi pi-times'" :style="{ color: c.ai ? '#66bb6a' : '#ef5350' }"></i></td>
-                <td><i :class="c.twin ? 'pi pi-check' : 'pi pi-times'" :style="{ color: c.twin ? '#66bb6a' : '#ef5350' }"></i></td>
+                <td><i :class="c.ai ? 'pi pi-check' : 'pi pi-times'" :style="{ color: c.ai ? 'var(--fst-green)' : 'var(--fst-red)' }"></i></td>
+                <td><i :class="c.twin ? 'pi pi-check' : 'pi pi-times'" :style="{ color: c.twin ? 'var(--fst-green)' : 'var(--fst-red)' }"></i></td>
                 <td>{{ c.avail }}</td>
                 <td>{{ c.price }}</td>
               </tr>
@@ -116,7 +116,7 @@
 
       <!-- ═══ FINANCIALS ═══ -->
       <div class="pitch-section">
-        <div class="pitch-section-title"><i class="pi pi-chart-line" style="color:#66bb6a"></i> Финансовая модель</div>
+        <div class="pitch-section-title"><i class="pi pi-chart-line" style="color:var(--fst-green)"></i> Финансовая модель</div>
         <div class="pitch-fin-grid">
           <div class="pitch-fin-kpi" v-for="f in finKpis" :key="f.label">
             <div class="pitch-fin-val" :style="{ color: f.color }">{{ f.val }}</div>
@@ -132,13 +132,13 @@
                 <div class="pitch-cf-bar"
                   :style="{
                     height: Math.abs(y.val) * 2 + 'px',
-                    background: y.val >= 0 ? '#66bb6a' : '#ef5350',
+                    background: y.val >= 0 ? 'var(--fst-green)' : 'var(--fst-red)',
                     marginTop: y.val >= 0 ? (230 - Math.abs(y.val)*2) + 'px' : '0',
                     marginBottom: y.val < 0 ? (230 - Math.abs(y.val)*2) + 'px' : '0'
                   }">
                 </div>
               </div>
-              <div class="pitch-cf-val" :style="{ color: y.val >= 0 ? '#66bb6a' : '#ef5350' }">
+              <div class="pitch-cf-val" :style="{ color: y.val >= 0 ? 'var(--fst-green)' : 'var(--fst-red)' }">
                 {{ y.val > 0 ? '+' : '' }}{{ y.val }}
               </div>
             </div>
@@ -148,8 +148,8 @@
 
       <!-- ═══ IC RESULTS ═══ -->
       <div class="pitch-section pitch-section-dark">
-        <div class="pitch-section-title" style="color:#fff">
-          <i class="pi pi-users" style="color:#42a5f5"></i> AI-инвесткомитет: результат голосования
+        <div class="pitch-section-title" style="color:white">
+          <i class="pi pi-users" style="color:var(--fst-blue)"></i> AI-инвесткомитет: результат голосования
         </div>
         <div class="pitch-ic-subtitle">Платформа оценила сама себя. 6 AI-агентов проголосовали 09.03.2026</div>
         <div class="pitch-ic-verdict">
@@ -170,7 +170,7 @@
 
       <!-- ═══ TERM SHEET ═══ -->
       <div class="pitch-section">
-        <div class="pitch-section-title"><i class="pi pi-file-edit" style="color:#ffa726"></i> Term Sheet (краткое)</div>
+        <div class="pitch-section-title"><i class="pi pi-file-edit" style="color:var(--fst-brand)"></i> Term Sheet (краткое)</div>
         <div class="pitch-term-grid">
           <div class="pitch-term-item" v-for="t in termSheet" :key="t.label">
             <div class="pitch-term-label">{{ t.label }}</div>
@@ -189,7 +189,7 @@
 
       <!-- ═══ TEAM ═══ -->
       <div class="pitch-section">
-        <div class="pitch-section-title"><i class="pi pi-users" style="color:#42a5f5"></i> Команда</div>
+        <div class="pitch-section-title"><i class="pi pi-users" style="color:var(--fst-blue)"></i> Команда</div>
         <div class="pitch-team-grid">
           <div class="pitch-team-member" v-for="m in team" :key="m.name">
             <div class="pitch-team-avatar">{{ m.emoji }}</div>
@@ -202,7 +202,7 @@
 
       <!-- ═══ SOVEREIGNTY ═══ -->
       <div class="pitch-section">
-        <div class="pitch-section-title"><i class="pi pi-shield" style="color:#ffa726"></i> Суверенность 7.5/10</div>
+        <div class="pitch-section-title"><i class="pi pi-shield" style="color:var(--fst-brand)"></i> Суверенность 7.5/10</div>
         <div class="pitch-sov-grid">
           <div class="pitch-sov-item" v-for="s in sovereignty" :key="s.label">
             <div class="pitch-sov-label">{{ s.label }}</div>
@@ -259,44 +259,44 @@ const showContact = ref(false)
 const showTerm = ref(false)
 
 const heroKpis = [
-  { val: '30M ₽', label: 'Запрашивается', color: '#42a5f5' },
-  { val: '15%', label: 'Equity', color: '#ffa726' },
-  { val: '170M ₽', label: 'Pre-money', color: '#66bb6a' },
-  { val: '85%', label: 'IRR прогноз', color: '#ab47bc' },
-  { val: '8x', label: 'MOIC цель', color: '#ef5350' },
-  { val: 'TRL 7', label: 'Зрелость', color: '#42a5f5' },
+  { val: '30M ₽', label: 'Запрашивается', color: 'var(--fst-blue)' },
+  { val: '15%', label: 'Equity', color: 'var(--fst-brand)' },
+  { val: '170M ₽', label: 'Pre-money', color: 'var(--fst-green)' },
+  { val: '85%', label: 'IRR прогноз', color: 'var(--fst-purple)' },
+  { val: '8x', label: 'MOIC цель', color: 'var(--fst-red)' },
+  { val: 'TRL 7', label: 'Зрелость', color: 'var(--fst-blue)' },
 ]
 
 const problems = [
-  { icon: 'pi pi-clock', color: '#ef5350', title: 'Потеря времени', text: 'Управляющие тратят 70% времени на рутину: Excel, Telegram, ручные отчёты LP, подготовка к ИК.' },
-  { icon: 'pi pi-eye-slash', color: '#ffa726', title: 'Слепые зоны', text: 'Нет единого взгляда на портфель в реальном времени — риски обнаруживаются поздно.' },
-  { icon: 'pi pi-ban', color: '#7e57c2', title: 'Нет AI-инструментов', text: 'Конкуренты (Allvue, iLEVEL) недоступны в РФ. Отечественного аналога с AI — нет.' },
-  { icon: 'pi pi-chart-line', color: '#ef5350', title: 'Потери на выходе', text: 'Без цифрового двойника и финмоделирования фонды недооценивают портфель на 20-40%.' },
+  { icon: 'pi pi-clock', color: 'var(--fst-red)', title: 'Потеря времени', text: 'Управляющие тратят 70% времени на рутину: Excel, Telegram, ручные отчёты LP, подготовка к ИК.' },
+  { icon: 'pi pi-eye-slash', color: 'var(--fst-brand)', title: 'Слепые зоны', text: 'Нет единого взгляда на портфель в реальном времени — риски обнаруживаются поздно.' },
+  { icon: 'pi pi-ban', color: 'var(--fst-purple)', title: 'Нет AI-инструментов', text: 'Конкуренты (Allvue, iLEVEL) недоступны в РФ. Отечественного аналога с AI — нет.' },
+  { icon: 'pi pi-chart-line', color: 'var(--fst-red)', title: 'Потери на выходе', text: 'Без цифрового двойника и финмоделирования фонды недооценивают портфель на 20-40%.' },
 ]
 
 const modules = [
-  { icon: 'pi pi-users', bg: '#42a5f5', name: 'AI-инвесткомитет', desc: '6 агентов: технолог, финансист, суверенность, риск, портфель, скептик. VETO и ревизия.' },
-  { icon: 'pi pi-filter', bg: '#66bb6a', name: 'Deal Flow', desc: 'AI-сорсинг, автоматический скоринг заявок, воронка, форма подачи.' },
-  { icon: 'pi pi-chart-scatter', bg: '#7e57c2', name: 'Digital Twin', desc: 'Цифровой двойник фонда и каждой компании: NAV, IRR, tick-engine симуляция.' },
-  { icon: 'pi pi-brain', bg: '#ffa726', name: 'KAG', desc: 'Гибридная база знаний: 1100+ концептов, vector+graph поиск, онтология.' },
-  { icon: 'pi pi-link', bg: '#26c6da', name: 'MCP-протокол', desc: '60+ инструментов для AI-агентов: интеграция с БД Integram, аналитика, схемы.' },
-  { icon: 'pi pi-shield', bg: '#ef5350', name: 'LP-прозрачность', desc: 'Santiago Principles, ILPA отчётность, публичная витрина, ESG-скоринг.' },
+  { icon: 'pi pi-users', bg: 'var(--fst-blue)', name: 'AI-инвесткомитет', desc: '6 агентов: технолог, финансист, суверенность, риск, портфель, скептик. VETO и ревизия.' },
+  { icon: 'pi pi-filter', bg: 'var(--fst-green)', name: 'Deal Flow', desc: 'AI-сорсинг, автоматический скоринг заявок, воронка, форма подачи.' },
+  { icon: 'pi pi-chart-scatter', bg: 'var(--fst-purple)', name: 'Digital Twin', desc: 'Цифровой двойник фонда и каждой компании: NAV, IRR, tick-engine симуляция.' },
+  { icon: 'pi pi-brain', bg: 'var(--fst-brand)', name: 'KAG', desc: 'Гибридная база знаний: 1100+ концептов, vector+graph поиск, онтология.' },
+  { icon: 'pi pi-link', bg: 'var(--fst-cyan)', name: 'MCP-протокол', desc: '60+ инструментов для AI-агентов: интеграция с БД Integram, аналитика, схемы.' },
+  { icon: 'pi pi-shield', bg: 'var(--fst-red)', name: 'LP-прозрачность', desc: 'Santiago Principles, ILPA отчётность, публичная витрина, ESG-скоринг.' },
 ]
 
 const traction = [
-  { val: 'Live', label: 'Продукт', color: '#66bb6a' },
-  { val: '14+', label: 'Модулей', color: '#42a5f5' },
-  { val: '60+', label: 'MCP-инструментов', color: '#ffa726' },
-  { val: '1100+', label: 'KAG концептов', color: '#ab47bc' },
-  { val: '3', label: 'Переговора с фондами', color: '#66bb6a' },
-  { val: 'ИК', label: 'Оценил сам себя', color: '#ef5350' },
+  { val: 'Live', label: 'Продукт', color: 'var(--fst-green)' },
+  { val: '14+', label: 'Модулей', color: 'var(--fst-blue)' },
+  { val: '60+', label: 'MCP-инструментов', color: 'var(--fst-brand)' },
+  { val: '1100+', label: 'KAG концептов', color: 'var(--fst-purple)' },
+  { val: '3', label: 'Переговора с фондами', color: 'var(--fst-green)' },
+  { val: 'ИК', label: 'Оценил сам себя', color: 'var(--fst-red)' },
 ]
 
 const market = [
-  { val: '45 млрд ₽', label: 'TAM', note: 'Рынок VC-инфраструктуры РФ к 2030', color: '#42a5f5' },
-  { val: '6 млрд ₽', label: 'SAM', note: '200+ фондов × LTV ~30M', color: '#ffa726' },
-  { val: '1.2 млрд ₽', label: 'SOM Y3', note: 'Реалистичный max ARR при 35 клиентах', color: '#66bb6a' },
-  { val: '35%', label: 'CAGR', note: 'Рост сегмента AI-автоматизации фондов', color: '#ab47bc' },
+  { val: '45 млрд ₽', label: 'TAM', note: 'Рынок VC-инфраструктуры РФ к 2030', color: 'var(--fst-blue)' },
+  { val: '6 млрд ₽', label: 'SAM', note: '200+ фондов × LTV ~30M', color: 'var(--fst-brand)' },
+  { val: '1.2 млрд ₽', label: 'SOM Y3', note: 'Реалистичный max ARR при 35 клиентах', color: 'var(--fst-green)' },
+  { val: '35%', label: 'CAGR', note: 'Рост сегмента AI-автоматизации фондов', color: 'var(--fst-purple)' },
 ]
 
 const competitors = [
@@ -317,21 +317,21 @@ const cashflow = [
 ]
 
 const finKpis = [
-  { val: '85%', label: 'IRR прогноз', color: '#66bb6a' },
-  { val: '8x', label: 'MOIC цель', color: '#42a5f5' },
-  { val: '2.8 лет', label: 'DPP', color: '#ffa726' },
-  { val: '124M ₽', label: 'NPV (ставка 25%)', color: '#ab47bc' },
-  { val: '300K/мес', label: 'Burn rate', color: '#ef5350' },
-  { val: '10 мес', label: 'Runway без инвестиций', color: '#78909c' },
+  { val: '85%', label: 'IRR прогноз', color: 'var(--fst-green)' },
+  { val: '8x', label: 'MOIC цель', color: 'var(--fst-blue)' },
+  { val: '2.8 лет', label: 'DPP', color: 'var(--fst-brand)' },
+  { val: '124M ₽', label: 'NPV (ставка 25%)', color: 'var(--fst-purple)' },
+  { val: '300K/мес', label: 'Burn rate', color: 'var(--fst-red)' },
+  { val: '10 мес', label: 'Runway без инвестиций', color: 'var(--p-text-muted-color)' },
 ]
 
 const icAgents = [
-  { emoji: '🔬', name: 'Технический', vote: 'С УСЛОВИЯМИ', voteColor: '#ffa726', note: 'TRL 7 подтверждён, нужен план IP и пилот' },
-  { emoji: '📊', name: 'Финансовый', vote: 'ОТКЛОНИТЬ', voteColor: '#ef5350', note: 'Pre-money завышена, пересмотреть до 80-120M' },
-  { emoji: '🛡️', name: 'Суверенность', vote: 'НА ДОРАБОТКУ', voteColor: '#ff7043', note: 'DeepSeek/Anthropic → YandexGPT/GigaChat' },
-  { emoji: '⚠️', name: 'Риск-менеджер', vote: 'С УСЛОВИЯМИ', voteColor: '#ffa726', note: '8 рисков, критичный: нет юрлица, vesting 4 года' },
-  { emoji: '🎯', name: 'Стратег', vote: 'С УСЛОВИЯМИ', voteColor: '#ffa726', note: 'Синергия с портфелем, новая AI/Tech вертикаль' },
-  { emoji: '🔍', name: 'Критический', vote: 'НА ДОРАБОТКУ', voteColor: '#ff7043', note: 'TAM завышен, нет валидации спроса, exit 1.6M нереален' },
+  { emoji: '🔬', name: 'Технический', vote: 'С УСЛОВИЯМИ', voteColor: 'var(--fst-brand)', note: 'TRL 7 подтверждён, нужен план IP и пилот' },
+  { emoji: '📊', name: 'Финансовый', vote: 'ОТКЛОНИТЬ', voteColor: 'var(--fst-red)', note: 'Pre-money завышена, пересмотреть до 80-120M' },
+  { emoji: '🛡️', name: 'Суверенность', vote: 'НА ДОРАБОТКУ', voteColor: 'var(--fst-brand)', note: 'DeepSeek/Anthropic → YandexGPT/GigaChat' },
+  { emoji: '⚠️', name: 'Риск-менеджер', vote: 'С УСЛОВИЯМИ', voteColor: 'var(--fst-brand)', note: '8 рисков, критичный: нет юрлица, vesting 4 года' },
+  { emoji: '🎯', name: 'Стратег', vote: 'С УСЛОВИЯМИ', voteColor: 'var(--fst-brand)', note: 'Синергия с портфелем, новая AI/Tech вертикаль' },
+  { emoji: '🔍', name: 'Критический', vote: 'НА ДОРАБОТКУ', voteColor: 'var(--fst-brand)', note: 'TAM завышен, нет валидации спроса, exit 1.6M нереален' },
 ]
 
 const termSheet = [
@@ -370,12 +370,12 @@ const team = [
 ]
 
 const sovereignty = [
-  { label: 'Хостинг данных', val: 9, color: '#66bb6a' },
-  { label: 'База данных (Integram)', val: 9, color: '#66bb6a' },
-  { label: 'Команда (граждане РФ)', val: 10, color: '#66bb6a' },
-  { label: 'AI-модели', val: 5, color: '#ffa726' },
-  { label: 'Репозиторий кода', val: 4, color: '#ef5350' },
-  { label: 'Сертификация ФСТЭК', val: 1, color: '#ef5350' },
+  { label: 'Хостинг данных', val: 9, color: 'var(--fst-green)' },
+  { label: 'База данных (Integram)', val: 9, color: 'var(--fst-green)' },
+  { label: 'Команда (граждане РФ)', val: 10, color: 'var(--fst-green)' },
+  { label: 'AI-модели', val: 5, color: 'var(--fst-brand)' },
+  { label: 'Репозиторий кода', val: 4, color: 'var(--fst-red)' },
+  { label: 'Сертификация ФСТЭК', val: 1, color: 'var(--fst-red)' },
 ]
 
 function openDemo() { window.open('https://ai2fund.ru', '_blank') }
@@ -388,13 +388,13 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 
 /* HERO */
 .pitch-hero {
-  background: linear-gradient(135deg, var(--p-surface-card) 0%, color-mix(in srgb, #42a5f5 8%, var(--p-surface-card)) 100%);
+  background: linear-gradient(135deg, var(--p-surface-card) 0%, color-mix(in srgb, var(--fst-blue) 8%, var(--p-surface-card)) 100%);
   border-radius: 16px; border: 1px solid var(--p-content-border-color);
   padding: 48px 40px; margin-bottom: 32px; text-align: center;
 }
 .pitch-hero-badge {
-  display: inline-block; background: color-mix(in srgb, #42a5f5 15%, transparent);
-  color: #42a5f5; border: 1px solid color-mix(in srgb, #42a5f5 30%, transparent);
+  display: inline-block; background: color-mix(in srgb, var(--fst-blue) 15%, transparent);
+  color: var(--fst-blue); border: 1px solid color-mix(in srgb, var(--fst-blue) 30%, transparent);
   border-radius: 20px; padding: 4px 16px; font-size: 12px; font-weight: 600;
   letter-spacing: 0.5px; margin-bottom: 20px;
 }
@@ -420,8 +420,8 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
   padding: 32px; margin-bottom: 20px;
 }
 .pitch-section-dark {
-  background: color-mix(in srgb, #42a5f5 8%, var(--p-surface-card));
-  border-color: color-mix(in srgb, #42a5f5 20%, transparent);
+  background: color-mix(in srgb, var(--fst-blue) 8%, var(--p-surface-card));
+  border-color: color-mix(in srgb, var(--fst-blue) 20%, transparent);
 }
 .pitch-section-title {
   font-size: 18px; font-weight: 700; margin-bottom: 24px;
@@ -454,13 +454,13 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 .pitch-traction-label { font-size: 12px; color: var(--p-text-muted-color); margin-top: 4px; }
 .pitch-demo-link {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  color: #42a5f5; cursor: pointer; font-weight: 600; font-size: 15px;
+  color: var(--fst-blue); cursor: pointer; font-weight: 600; font-size: 15px;
   padding: 12px; border-radius: 8px;
-  background: color-mix(in srgb, #42a5f5 10%, transparent);
-  border: 1px solid color-mix(in srgb, #42a5f5 25%, transparent);
+  background: color-mix(in srgb, var(--fst-blue) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-blue) 25%, transparent);
   transition: background 0.2s;
 }
-.pitch-demo-link:hover { background: color-mix(in srgb, #42a5f5 18%, transparent); }
+.pitch-demo-link:hover { background: color-mix(in srgb, var(--fst-blue) 18%, transparent); }
 
 /* MARKET */
 .pitch-market-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
@@ -478,7 +478,7 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
   color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color);
 }
 .pitch-comp-table td { padding: 10px 12px; border-bottom: 1px solid var(--p-content-border-color); }
-.pitch-comp-us { background: color-mix(in srgb, #42a5f5 8%, transparent); }
+.pitch-comp-us { background: color-mix(in srgb, var(--fst-blue) 8%, transparent); }
 
 /* FINANCIALS */
 .pitch-fin-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 28px; }
@@ -498,14 +498,14 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 .pitch-ic-subtitle { color: var(--p-text-muted-color); font-size: 13px; margin-bottom: 20px; }
 .pitch-ic-verdict { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
 .pitch-ic-verdict-badge {
-  background: color-mix(in srgb, #ffa726 15%, transparent);
-  color: #ffa726; border: 1px solid color-mix(in srgb, #ffa726 30%, transparent);
+  background: color-mix(in srgb, var(--fst-brand) 15%, transparent);
+  color: var(--fst-brand); border: 1px solid color-mix(in srgb, var(--fst-brand) 30%, transparent);
   border-radius: 8px; padding: 8px 20px; font-weight: 700; font-size: 16px;
 }
 .pitch-ic-votes { font-size: 14px; }
-.v-yes { color: #66bb6a; font-weight: 700; }
-.v-work { color: #ffa726; font-weight: 700; }
-.v-no { color: #ef5350; font-weight: 700; }
+.v-yes { color: var(--fst-green); font-weight: 700; }
+.v-work { color: var(--fst-brand); font-weight: 700; }
+.v-no { color: var(--fst-red); font-weight: 700; }
 .pitch-agents { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
 .pitch-agent {
   background: var(--p-surface-card); border-radius: 10px; padding: 16px 12px; text-align: center;
@@ -524,11 +524,11 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 .pitch-tranches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .pitch-tranche {
   padding: 20px; border-radius: 10px; text-align: center;
-  background: color-mix(in srgb, #42a5f5 8%, var(--p-surface-ground));
-  border: 1px solid color-mix(in srgb, #42a5f5 20%, transparent);
+  background: color-mix(in srgb, var(--fst-blue) 8%, var(--p-surface-ground));
+  border: 1px solid color-mix(in srgb, var(--fst-blue) 20%, transparent);
 }
 .pitch-tranche-num { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 6px; }
-.pitch-tranche-amount { font-size: 26px; font-weight: 800; color: #42a5f5; margin-bottom: 8px; }
+.pitch-tranche-amount { font-size: 26px; font-weight: 800; color: var(--fst-blue); margin-bottom: 8px; }
 .pitch-tranche-kpi { font-size: 12px; color: var(--p-text-color); margin-bottom: 6px; line-height: 1.4; }
 .pitch-tranche-date { font-size: 11px; color: var(--p-text-muted-color); }
 
@@ -537,7 +537,7 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 .pitch-team-member { text-align: center; padding: 20px 12px; background: var(--p-surface-ground); border-radius: 10px; }
 .pitch-team-avatar { font-size: 40px; margin-bottom: 10px; }
 .pitch-team-name { font-weight: 700; margin-bottom: 2px; color: var(--p-text-color); }
-.pitch-team-role { font-size: 12px; color: #42a5f5; margin-bottom: 6px; font-weight: 600; }
+.pitch-team-role { font-size: 12px; color: var(--fst-blue); margin-bottom: 6px; font-weight: 600; }
 .pitch-team-note { font-size: 11px; color: var(--p-text-muted-color); line-height: 1.4; }
 
 /* SOVEREIGNTY */
@@ -548,8 +548,8 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 
 /* CTA */
 .pitch-cta-section {
-  background: linear-gradient(135deg, color-mix(in srgb, #42a5f5 12%, var(--p-surface-card)), var(--p-surface-card));
-  border-radius: 16px; border: 1px solid color-mix(in srgb, #42a5f5 25%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--fst-blue) 12%, var(--p-surface-card)), var(--p-surface-card));
+  border-radius: 16px; border: 1px solid color-mix(in srgb, var(--fst-blue) 25%, transparent);
   padding: 48px; text-align: center; margin-bottom: 0;
 }
 .pitch-cta-title { font-size: 32px; font-weight: 800; margin: 0 0 12px 0; color: var(--p-text-color); }

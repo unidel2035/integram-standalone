@@ -7,32 +7,32 @@
     <!-- ─── Metrics strip ─── -->
     <div class="wf-metrics fst-metrics-strip">
       <div class="fst-metric-item">
-        <i class="pi pi-dollar fst-metric-item-icon" style="color:var(--fst-blue)"></i>
+        <i class="pi pi-dollar fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ params.exitProceeds }} млн</div>
         <div class="fst-metric-item-label">Выход</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-wallet fst-metric-item-icon" style="color:var(--fst-green)"></i>
+        <i class="pi pi-wallet fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ totalCapital }} млн</div>
         <div class="fst-metric-item-label">Капитал LP</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-chart-line fst-metric-item-icon" :style="{ color: overallMoic >= 1.5 ? 'var(--fst-green)' : overallMoic >= 1 ? 'var(--fst-brand)' : 'var(--fst-red)' }"></i>
+        <i class="pi pi-chart-line fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ overallMoic }}x</div>
         <div class="fst-metric-item-label">MOIC</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-percentage fst-metric-item-icon" style="color:var(--fst-brand)"></i>
+        <i class="pi pi-percentage fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ params.hurdleRate }}%</div>
         <div class="fst-metric-item-label">Hurdle Rate</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-arrow-up-right fst-metric-item-icon" style="color:var(--fst-purple)"></i>
+        <i class="pi pi-arrow-up-right fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ params.carry }}%</div>
         <div class="fst-metric-item-label">Carry</div>
       </div>
       <div class="fst-metric-item">
-        <i class="pi pi-users fst-metric-item-icon" style="color:var(--fst-cyan)"></i>
+        <i class="pi pi-users fst-metric-item-icon"></i>
         <div class="fst-metric-item-val">{{ investors.length }}</div>
         <div class="fst-metric-item-label">Инвесторов</div>
       </div>
@@ -44,27 +44,27 @@
       <div class="wf-inputs-grid">
         <div class="wf-field">
           <label>Выручка от продажи, млн ₽</label>
-          <input v-model.number="params.exitProceeds" type="number" step="50" @input="calc" />
+          <InputNumber v-model="params.exitProceeds" :step="50" :min="0" fluid @input="calc" />
         </div>
         <div class="wf-field">
           <label>Hurdle Rate (preferred return), %</label>
-          <input v-model.number="params.hurdleRate" type="number" step="0.5" @input="calc" />
+          <InputNumber v-model="params.hurdleRate" :step="0.5" :min="0" :max="100" suffix="%" fluid @input="calc" />
         </div>
         <div class="wf-field">
           <label>Carried Interest, %</label>
-          <input v-model.number="params.carry" type="number" step="1" @input="calc" />
+          <InputNumber v-model="params.carry" :step="1" :min="0" :max="50" suffix="%" fluid @input="calc" />
         </div>
         <div class="wf-field">
           <label>Дата закрытия фонда</label>
-          <input v-model="params.fundCloseDate" type="date" @change="calc" />
+          <InputText v-model="params.fundCloseDate" type="date" fluid @change="calc" />
         </div>
         <div class="wf-field">
           <label>Дата выхода</label>
-          <input v-model="params.exitDate" type="date" @change="calc" />
+          <InputText v-model="params.exitDate" type="date" fluid @change="calc" />
         </div>
         <div class="wf-field">
           <label>Общий объём фонда, млн ₽</label>
-          <input v-model.number="params.fundSize" type="number" step="100" @input="calc" />
+          <InputNumber v-model="params.fundSize" :step="100" :min="0" fluid @input="calc" />
         </div>
       </div>
     </div>
@@ -171,35 +171,27 @@
       </div>
     </div>
 
-    <!-- Add Investor Modal -->
-    <div v-if="showAddInvestor" class="modal-overlay" @click.self="showAddInvestor = false">
-      <div class="modal-box">
-        <h3>Добавить инвестора</h3>
-        <div class="modal-form">
-          <label>Название</label>
-          <input v-model="newInv.name" />
-          <label>Взносы, млн ₽</label>
-          <input v-model.number="newInv.capital" type="number" step="10" />
-          <label>Тип ликв. предпочтения</label>
-          <select v-model="newInv.prefType">
-            <option value="none">Обычные акции (нет)</option>
-            <option value="non_part">Non-participating preferred</option>
-            <option value="part">Participating preferred</option>
-            <option value="capped">Capped participating</option>
-          </select>
-          <label>Множитель (1x, 2x...)</label>
-          <input v-model.number="newInv.mult" type="number" step="0.25" min="0.5" />
-          <label>
-            <input type="checkbox" v-model="newInv.participating" />
-            Участие в upside после ликв. преф.
-          </label>
-        </div>
-        <div class="modal-actions">
-          <Button label="Отмена" size="small" severity="secondary" @click="showAddInvestor = false" />
-          <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="addInvestor" />
-        </div>
+    <!-- Add Investor Dialog -->
+    <Dialog v-model:visible="showAddInvestor" header="Добавить инвестора" modal :style="{ width: '420px' }">
+      <div class="modal-form">
+        <label>Название</label>
+        <InputText v-model="newInv.name" fluid />
+        <label>Взносы, млн ₽</label>
+        <InputNumber v-model="newInv.capital" :step="10" :min="0" fluid />
+        <label>Тип ликв. предпочтения</label>
+        <Select v-model="newInv.prefType" :options="prefTypeOptions" optionLabel="label" optionValue="value" fluid />
+        <label>Множитель (1x, 2x...)</label>
+        <InputNumber v-model="newInv.mult" :step="0.25" :min="0.5" :max="10" fluid />
+        <label class="checkbox-label">
+          <input type="checkbox" v-model="newInv.participating" />
+          Участие в upside после ликв. преф.
+        </label>
       </div>
-    </div>
+      <template #footer>
+        <Button label="Отмена" size="small" severity="secondary" @click="showAddInvestor = false" />
+        <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="addInvestor" />
+      </template>
+    </Dialog>
   </FstPageLayout>
 </template>
 
@@ -207,6 +199,10 @@
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 
 const showAddInvestor = ref(false)
 
@@ -311,6 +307,13 @@ function calcIrr(fv, pv, n) {
 
 function calc() {}
 
+const prefTypeOptions = [
+  { label: 'Обычные акции (нет)', value: 'none' },
+  { label: 'Non-participating preferred', value: 'non_part' },
+  { label: 'Participating preferred', value: 'part' },
+  { label: 'Capped participating', value: 'capped' }
+]
+
 const newInv = ref({ name: '', capital: 100, prefType: 'non_part', mult: 1, participating: false })
 function addInvestor() {
   investors.value.push({ ...newInv.value })
@@ -332,17 +335,17 @@ function exportWaterfall() {
 </script>
 
 <style scoped>
-.wf-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
+.wf-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .wf-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .wf-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .wf-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .wf-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.wf-btn.primary  { background: var(--p-primary-color); color: #fff; }
-.wf-btn.secondary{ background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
+.wf-btn.primary  { background: var(--p-primary-color); color: white; }
+.wf-btn.secondary{ background: var(--p-surface-card); color: var(--p-text-color); border: 1px solid var(--p-content-border-color); }
 .wf-btn.small { padding: 5px 10px; font-size: 0.78rem; }
 
 .wf-inputs-card, .wf-stack-card, .wf-result-card, .wf-irr-card {
-  background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px;
 }
 h3 { margin: 0 0 14px; font-size: 1rem; color: var(--p-text-color); }
 h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
@@ -350,19 +353,18 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
 .wf-inputs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 .wf-field { display: flex; flex-direction: column; gap: 4px; }
 .wf-field label { font-size: 0.75rem; color: var(--p-text-muted-color); }
-.wf-field input { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; }
 
 .wf-stack-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .wf-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
-.wf-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.75rem; }
-.wf-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
-.wf-table tfoot td { border-top: 2px solid var(--surface-border); border-bottom: none; background: var(--surface-ground); }
+.wf-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.75rem; }
+.wf-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
+.wf-table tfoot td { border-top: 2px solid var(--p-content-border-color); border-bottom: none; background: var(--p-surface-ground); }
 .inv-name { font-weight: 600; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .bold { font-weight: 700; }
 .green { color: var(--fst-green); } .red { color: var(--fst-red); }
 .pref-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-.pref-badge.none     { background: var(--surface-ground); color: var(--p-text-muted-color); }
+.pref-badge.none     { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
 .pref-badge.non_part { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: color-mix(in srgb, var(--fst-blue) 70%, var(--p-text-color)); }
 .pref-badge.part     { background: color-mix(in srgb, var(--fst-purple) 12%, transparent); color: color-mix(in srgb, var(--fst-purple) 70%, var(--p-text-color)); }
 .pref-badge.capped   { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color)); }
@@ -370,7 +372,7 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
 .del-btn:hover { color: var(--fst-red); }
 
 .wf-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
-.wf-step { display: grid; grid-template-columns: 30px 1fr auto 150px; align-items: center; gap: 12px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 12px 16px; }
+.wf-step { display: grid; grid-template-columns: 30px 1fr auto 150px; align-items: center; gap: 12px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px 16px; }
 .step-num { font-size: 1.1rem; font-weight: 900; color: var(--p-primary-color); }
 .step-title { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }
 .step-desc  { font-size: 0.72rem; color: var(--p-text-muted-color); }
@@ -386,21 +388,16 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
 .result-table td, .result-table th { vertical-align: middle; }
 
 .irr-scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-.irr-sc { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; }
+.irr-sc { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; }
 .irr-exit { font-size: 1.4rem; font-weight: 900; color: var(--p-primary-color); }
 .irr-label { font-size: 0.75rem; color: var(--p-text-muted-color); margin: 2px 0 8px; }
 .irr-val { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
-.irr-bar-wrap { height: 6px; background: var(--surface-border); border-radius: 3px; overflow: hidden; }
+.irr-bar-wrap { height: 6px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden; }
 .irr-bar { height: 100%; border-radius: 3px; transition: width 0.4s; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.modal-box { background: var(--surface-card); border-radius: 12px; padding: 24px; width: 400px; max-width: 95vw; }
-.modal-box h3 { margin: 0 0 16px; }
-.modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-.modal-form label { font-size: 0.78rem; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 6px; }
-.modal-form input, .modal-form select { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem; width: 100%; }
-.modal-form input[type=checkbox] { width: auto; }
-.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+.modal-form label { font-size: 0.78rem; color: var(--p-text-muted-color); }
+.checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--p-text-muted-color); }
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {

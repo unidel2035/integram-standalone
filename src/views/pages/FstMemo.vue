@@ -329,7 +329,7 @@ function exportPdf() { window.print() }
 }
 .memo-doc-header {
   background: color-mix(in srgb, var(--fst-blue) 70%, var(--p-surface-card));
-  color: #fff;
+  color: white;
   padding: 20px 24px;
   display: flex;
   align-items: center;
@@ -338,7 +338,7 @@ function exportPdf() { window.print() }
 .memo-doc-logo    { font-size: 1.2rem; font-weight: 900; letter-spacing: 1px; opacity: .9; }
 .memo-doc-title   { font-size: 1.1rem; font-weight: 800; letter-spacing: 2px; }
 .memo-doc-subtitle{ font-size: 0.82rem; opacity: .8; margin-top: 2px; }
-.memo-doc-conf    { margin-left: auto; background: rgba(255,255,255,.15); border-radius: 4px; padding: 4px 10px; font-size: 0.72rem; letter-spacing: 1px; }
+.memo-doc-conf    { margin-left: auto; background: color-mix(in srgb, white 15%, transparent); border-radius: 4px; padding: 4px 10px; font-size: 0.72rem; letter-spacing: 1px; }
 .memo-doc-body    { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
 /* ── Chapters ── */
@@ -354,14 +354,14 @@ function exportPdf() { window.print() }
 
 /* Market bar */
 .memo-market-bar { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
-.memo-market-seg { color: #fff; font-size: 0.78rem; padding: 6px 12px; border-radius: 4px; }
+.memo-market-seg { color: white; font-size: 0.78rem; padding: 6px 12px; border-radius: 4px; }
 .memo-market-tam { background: var(--fst-blue-dark); width: 100%; }
 .memo-market-sam { background: var(--fst-blue);      width: 30%; }
 .memo-market-som { background: var(--fst-cyan);      width: 8%; }
 
 /* Badges */
 .memo-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-.memo-badge { color: #fff; font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; }
+.memo-badge { color: white; font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; }
 
 /* Financial table */
 .memo-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
@@ -373,7 +373,7 @@ function exportPdf() { window.print() }
 /* Risks */
 .memo-risks-table { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .memo-risk-row    { display: flex; align-items: flex-start; gap: 10px; font-size: 0.84rem; }
-.memo-risk-level  { color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; min-width: 80px; text-align: center; }
+.memo-risk-level  { color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; min-width: 80px; text-align: center; }
 .memo-risk-text   { color: var(--p-text-color); flex: 1; }
 .memo-risk-mit    { color: var(--p-text-muted-color); flex: 2; }
 

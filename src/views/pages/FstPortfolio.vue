@@ -1,5 +1,8 @@
 <template>
-  <FstPageLayout>
+  <FstPageLayout
+    title="Портфель фонда"
+    subtitle="Мониторинг здоровья портфельных компаний"
+  >
     <!-- ─── Topbar left: title + status ─── -->
     <template #header>
       <div class="fsp-title-group">
@@ -61,7 +64,7 @@
             <div class="fsp-card-header">
               <div class="fsp-card-name">{{ c.name }}</div>
               <div class="fsp-card-badges">
-                <Tag :value="c.subfund" style="font-size:10px;background:var(--fst-blue);color:#fff" />
+                <Tag :value="c.subfund" style="font-size:10px;background:var(--fst-blue);color:white" />
                 <FeatureHint
                   v-if="cIdx === 0"
                   id="portfolio-traffic-light"
@@ -214,7 +217,7 @@
                 <div class="fsp-event-date">{{ new Date(ev.ts).toLocaleDateString('ru-RU') }}</div>
               </div>
               <Tag :value="ev.data?.originalType || ev.type.replace(/_/g,' ')"
-                   :style="{ fontSize: '9px', background: ev.color || 'var(--fst-blue)', color: '#fff', maxWidth:'90px', overflow:'hidden' }" />
+                   :style="{ fontSize: '9px', background: ev.color || 'var(--fst-blue)', color: 'white', maxWidth:'90px', overflow:'hidden' }" />
             </div>
           </div>
 
@@ -901,8 +904,8 @@ async function generateAiReport() {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(239, 83, 80, 0.12);
-  border: 1px solid rgba(239, 83, 80, 0.4);
+  background: color-mix(in srgb, var(--fst-red) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-red) 40%, transparent);
   border-radius: 8px;
   padding: 10px 14px;
   margin-bottom: 12px;
@@ -921,7 +924,7 @@ async function generateAiReport() {
 /* Card */
 .fsp-card {
   background: transparent;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 12px;
   cursor: pointer;
@@ -929,7 +932,7 @@ async function generateAiReport() {
   position: relative;
 }
 .fsp-card:hover { border-color: var(--p-primary-color); }
-.fsp-card.selected { border-color: var(--p-primary-color); box-shadow: 0 0 0 2px rgba(var(--p-primary-rgb), 0.2); }
+.fsp-card.selected { border-color: var(--p-primary-color); box-shadow: 0 0 0 2px color-mix(in srgb, var(--p-primary-color) 20%, transparent); }
 .fsp-card.risk-red    { border-left: 3px solid var(--fst-red);   }
 .fsp-card.risk-yellow { border-left: 3px solid var(--fst-brand); }
 .fsp-card.risk-green  { border-left: 3px solid var(--fst-green); }
@@ -968,7 +971,7 @@ async function generateAiReport() {
 
 .fsp-health-bar-wrap {
   height: 6px;
-  background: var(--surface-border);
+  background: var(--p-content-border-color);
   border-radius: 3px;
   overflow: hidden;
   position: relative;
@@ -997,10 +1000,10 @@ async function generateAiReport() {
 
 /* Detail panel */
 .fsp-detail {
-  border-left: 1px solid var(--surface-border);
+  border-left: 1px solid var(--p-content-border-color);
   overflow-y: auto;
   padding: 12px;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
 }
 .fsp-detail-empty {
   display: flex;
@@ -1015,7 +1018,7 @@ async function generateAiReport() {
 
 .fsp-detail-panel {
   background: transparent;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 10px;
@@ -1049,7 +1052,7 @@ async function generateAiReport() {
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  color: white;
   flex-shrink: 0;
 }
 
@@ -1060,7 +1063,7 @@ async function generateAiReport() {
 .fsp-kpi-bar-wrap {
   flex: 1;
   height: 6px;
-  background: var(--surface-border);
+  background: var(--p-content-border-color);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -1075,7 +1078,7 @@ async function generateAiReport() {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
 }
 .fsp-source-icon { font-size: 14px; color: var(--p-text-muted-color); width: 20px; }
 .fsp-source-info { flex: 1; }
@@ -1090,7 +1093,7 @@ async function generateAiReport() {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-ground);
 }
 .fsp-sensor-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .fsp-sensor-info { flex: 1; }
@@ -1099,7 +1102,7 @@ async function generateAiReport() {
 
 /* Events */
 .fsp-events { display: flex; flex-direction: column; gap: 6px; }
-.fsp-tl-count { background: var(--p-primary-color); color:#fff; border-radius:10px; padding:0 5px; font-size:10px; }
+.fsp-tl-count { background: var(--p-primary-color); color:white; border-radius:10px; padding:0 5px; font-size:10px; }
 .fsp-add-event-dialog { margin-top:0.6rem; padding:0.6rem; background:var(--p-surface-ground); border-radius:8px; border:1px solid var(--p-content-border-color); }
 .fsp-aed-title { font-size:0.78rem; font-weight:600; color:var(--p-text-color); margin-bottom:0.4rem; }
 .fsp-event {
@@ -1146,8 +1149,8 @@ async function generateAiReport() {
 
 @media (max-width: 900px) {
   .fsp-body { grid-template-columns: 1fr !important; }
-  .fsp-detail { border-left: none; border-top: 1px solid var(--surface-border); }
-  .fsp-right { max-height: 50vh; overflow-y: auto; border-left: none; border-top: 1px solid var(--surface-border); }
+  .fsp-detail { border-left: none; border-top: 1px solid var(--p-content-border-color); }
+  .fsp-right { max-height: 50vh; overflow-y: auto; border-left: none; border-top: 1px solid var(--p-content-border-color); }
   .fsp-filter-bar { flex-wrap: wrap; gap: 6px; }
   .fsp-filter-sel, .fsp-search { width: 100% !important; }
 
