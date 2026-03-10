@@ -1,8 +1,42 @@
 <template>
   <FstPageLayout title="Waterfall Калькулятор" subtitle="Распределение выручки от выхода по очерёдности">
     <template #actions>
-      <button class="wf-btn secondary" @click="exportWaterfall">Экспорт</button>
+      <Button icon="pi pi-download" label="Экспорт" size="small" severity="secondary" @click="exportWaterfall" />
     </template>
+
+    <!-- ─── Metrics strip ─── -->
+    <div class="wf-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-dollar fst-metric-item-icon" style="color:var(--fst-blue)"></i>
+        <div class="fst-metric-item-val">{{ params.exitProceeds }} млн</div>
+        <div class="fst-metric-item-label">Выход</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-wallet fst-metric-item-icon" style="color:var(--fst-green)"></i>
+        <div class="fst-metric-item-val">{{ totalCapital }} млн</div>
+        <div class="fst-metric-item-label">Капитал LP</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-chart-line fst-metric-item-icon" :style="{ color: overallMoic >= 1.5 ? 'var(--fst-green)' : overallMoic >= 1 ? 'var(--fst-brand)' : 'var(--fst-red)' }"></i>
+        <div class="fst-metric-item-val">{{ overallMoic }}x</div>
+        <div class="fst-metric-item-label">MOIC</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-percentage fst-metric-item-icon" style="color:var(--fst-brand)"></i>
+        <div class="fst-metric-item-val">{{ params.hurdleRate }}%</div>
+        <div class="fst-metric-item-label">Hurdle Rate</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-arrow-up-right fst-metric-item-icon" style="color:var(--fst-purple)"></i>
+        <div class="fst-metric-item-val">{{ params.carry }}%</div>
+        <div class="fst-metric-item-label">Carry</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-users fst-metric-item-icon" style="color:var(--fst-cyan)"></i>
+        <div class="fst-metric-item-val">{{ investors.length }}</div>
+        <div class="fst-metric-item-label">Инвесторов</div>
+      </div>
+    </div>
 
     <!-- Параметры выхода -->
     <div class="wf-inputs-card">
@@ -39,7 +73,7 @@
     <div class="wf-stack-card">
       <div class="wf-stack-header">
         <h3>Стек инвесторов</h3>
-        <button class="wf-btn primary small" @click="showAddInvestor = true">+ Инвестор</button>
+        <Button icon="pi pi-plus" label="Инвестор" size="small" severity="success" @click="showAddInvestor = true" />
       </div>
       <table class="wf-table">
         <thead>
@@ -59,7 +93,7 @@
             <td><span class="pref-badge" :class="inv.prefType">{{ prefLabel(inv.prefType) }}</span></td>
             <td class="num">{{ inv.mult }}x</td>
             <td class="num">{{ inv.participating ? 'Да' : 'Нет' }}</td>
-            <td><button class="del-btn" @click="removeInvestor(i)">✕</button></td>
+            <td><Button icon="pi pi-times" size="small" text severity="danger" @click="removeInvestor(i)" /></td>
           </tr>
         </tbody>
       </table>
@@ -131,7 +165,7 @@
           <div class="irr-label">{{ s.label }}</div>
           <div class="irr-val" :class="s.irr >= params.hurdleRate ? 'green' : 'red'">{{ s.irr }}%</div>
           <div class="irr-bar-wrap">
-            <div class="irr-bar" :style="{ width: Math.min(s.irr / 50 * 100, 100) + '%', background: s.irr >= params.hurdleRate ? '#66bb6a' : '#ef5350' }"></div>
+            <div class="irr-bar" :style="{ width: Math.min(s.irr / 50 * 100, 100) + '%', background: s.irr >= params.hurdleRate ? 'var(--fst-green)' : 'var(--fst-red)' }"></div>
           </div>
         </div>
       </div>
@@ -161,8 +195,8 @@
           </label>
         </div>
         <div class="modal-actions">
-          <button class="wf-btn secondary" @click="showAddInvestor = false">Отмена</button>
-          <button class="wf-btn primary" @click="addInvestor">Добавить</button>
+          <Button label="Отмена" size="small" severity="secondary" @click="showAddInvestor = false" />
+          <Button icon="pi pi-plus" label="Добавить" size="small" severity="success" @click="addInvestor" />
         </div>
       </div>
     </div>
@@ -172,6 +206,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
 
 const showAddInvestor = ref(false)
 
@@ -207,28 +242,28 @@ const waterfallSteps = computed(() => {
 
   // Step 1: Return of capital
   const rcAmount = Math.min(exit, totalCapital.value)
-  steps.push({ title: 'Возврат капитала', desc: 'LP получают вложенные средства', amount: rcAmount, pct: rcAmount / exit * 100, color: 'blue', barColor: '#42a5f5' })
+  steps.push({ title: 'Возврат капитала', desc: 'LP получают вложенные средства', amount: rcAmount, pct: rcAmount / exit * 100, color: 'blue', barColor: 'var(--fst-blue)' })
 
   // Step 2: Preferred return / hurdle
   const yearsHeld = 5
   const preferredReturn = Math.min(exit - rcAmount, totalCapital.value * Math.pow(1 + params.value.hurdleRate / 100, yearsHeld) - totalCapital.value)
   const prefReturnActual = Math.max(0, preferredReturn)
-  steps.push({ title: `Preferred Return (${params.value.hurdleRate}%)`, desc: `Накопленный доход за ${yearsHeld} лет`, amount: Math.round(prefReturnActual), pct: prefReturnActual / exit * 100, color: 'green', barColor: '#66bb6a' })
+  steps.push({ title: `Preferred Return (${params.value.hurdleRate}%)`, desc: `Накопленный доход за ${yearsHeld} лет`, amount: Math.round(prefReturnActual), pct: prefReturnActual / exit * 100, color: 'green', barColor: 'var(--fst-green)' })
 
   // Step 3: GP Catch-up
   const remaining2 = exit - rcAmount - prefReturnActual
   const catchup = Math.min(remaining2, (params.value.carry / (100 - params.value.carry)) * prefReturnActual)
   const catchupActual = Math.max(0, catchup)
-  steps.push({ title: 'GP Catch-up', desc: `УК догоняет до ${params.value.carry}% carry`, amount: Math.round(catchupActual), pct: catchupActual / exit * 100, color: 'purple', barColor: '#ab47bc' })
+  steps.push({ title: 'GP Catch-up', desc: `УК догоняет до ${params.value.carry}% carry`, amount: Math.round(catchupActual), pct: catchupActual / exit * 100, color: 'purple', barColor: 'var(--fst-purple)' })
 
   // Step 4: Carry split
   const remaining3 = exit - rcAmount - prefReturnActual - catchupActual
   const carryAmount = Math.max(0, remaining3 * params.value.carry / 100)
-  steps.push({ title: `Carried Interest (${params.value.carry}%)`, desc: 'Вознаграждение УК от сверхдохода', amount: Math.round(carryAmount), pct: carryAmount / exit * 100, color: 'orange', barColor: '#ff9800' })
+  steps.push({ title: `Carried Interest (${params.value.carry}%)`, desc: 'Вознаграждение УК от сверхдохода', amount: Math.round(carryAmount), pct: carryAmount / exit * 100, color: 'orange', barColor: 'var(--fst-brand)' })
 
   // Step 5: Remaining to LP
   const toLP = Math.max(0, remaining3 - carryAmount)
-  steps.push({ title: 'Остаток LP', desc: 'Pro-rata распределение среди LP', amount: Math.round(toLP), pct: toLP / exit * 100, color: 'blue', barColor: '#42a5f5' })
+  steps.push({ title: 'Остаток LP', desc: 'Pro-rata распределение среди LP', amount: Math.round(toLP), pct: toLP / exit * 100, color: 'blue', barColor: 'var(--fst-blue)' })
 
   return steps
 })
@@ -325,14 +360,14 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
 .inv-name { font-weight: 600; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .bold { font-weight: 700; }
-.green { color: #66bb6a; } .red { color: #ef5350; }
+.green { color: var(--fst-green); } .red { color: var(--fst-red); }
 .pref-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
 .pref-badge.none     { background: var(--surface-ground); color: var(--p-text-muted-color); }
-.pref-badge.non_part { background: #1565c022; color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
-.pref-badge.part     { background: #7b1fa222; color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.pref-badge.capped   { background: #e65100 22; color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
+.pref-badge.non_part { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: color-mix(in srgb, var(--fst-blue) 70%, var(--p-text-color)); }
+.pref-badge.part     { background: color-mix(in srgb, var(--fst-purple) 12%, transparent); color: color-mix(in srgb, var(--fst-purple) 70%, var(--p-text-color)); }
+.pref-badge.capped   { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color)); }
 .del-btn { background: none; border: none; color: var(--p-text-muted-color); cursor: pointer; font-size: 0.9rem; padding: 2px 6px; }
-.del-btn:hover { color: #ef5350; }
+.del-btn:hover { color: var(--fst-red); }
 
 .wf-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
 .wf-step { display: grid; grid-template-columns: 30px 1fr auto 150px; align-items: center; gap: 12px; background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 12px 16px; }
@@ -340,10 +375,10 @@ h4 { margin: 16px 0 10px; font-size: 0.9rem; color: var(--p-text-color); }
 .step-title { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }
 .step-desc  { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .step-amount { font-size: 1rem; font-weight: 700; text-align: right; min-width: 80px; }
-.step-amount.blue   { color: #42a5f5; }
-.step-amount.green  { color: #66bb6a; }
-.step-amount.purple { color: #ab47bc; }
-.step-amount.orange { color: #ff9800; }
+.step-amount.blue   { color: var(--fst-blue); }
+.step-amount.green  { color: var(--fst-green); }
+.step-amount.purple { color: var(--fst-purple); }
+.step-amount.orange { color: var(--fst-brand); }
 .step-bar-wrap { display: flex; align-items: center; gap: 6px; }
 .step-bar { height: 8px; border-radius: 4px; transition: width 0.4s; }
 .step-pct { font-size: 0.72rem; color: var(--p-text-muted-color); white-space: nowrap; }
