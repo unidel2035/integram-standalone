@@ -734,39 +734,45 @@
             <i class="pi pi-gauge" style="color:#a78bfa"></i>
             Скорость симуляции
           </div>
-          <SelectButton v-model="selectedSpeed" :options="speedOptions" optionLabel="label" optionValue="id" :allowEmpty="false" class="fst-speed-select" fluid>
-            <template #option="{ option }">
-              <i :class="option.icon" />
-              <span>{{ option.label }}</span>
-            </template>
-          </SelectButton>
+          <div class="fst-speed-cards">
+            <div v-for="sp in speedOptions" :key="sp.id"
+              :class="['fst-speed-card', { active: selectedSpeed === sp.id }]"
+              @click="selectedSpeed = sp.id">
+              <i :class="sp.icon" class="fst-speed-card-icon" />
+              <strong class="fst-speed-card-val">{{ sp.val }}</strong>
+              <span class="fst-speed-card-desc">{{ sp.desc }}</span>
+            </div>
+          </div>
 
           <div class="fst-section-title" style="margin-top:20px">
             <i class="pi pi-bolt" style="color:#a78bfa"></i>
             Режим агентов
           </div>
           <div class="fst-toggle-row">
-            <ToggleSwitch v-model="useAI" />
+            <i :class="useAI ? 'pi pi-bolt' : 'pi pi-server'" class="fst-toggle-icon" :style="{ color: useAI ? 'var(--p-purple-400)' : 'var(--p-text-muted-color)' }" />
             <div class="fst-toggle-label">
-              <i :class="useAI ? 'pi pi-bolt' : 'pi pi-server'" class="fst-toggle-icon" :style="{ color: useAI ? 'var(--p-purple-400)' : 'var(--p-text-muted-color)' }" />
-              <span><strong>{{ useAI ? 'Реальный AI' : 'Шаблоны' }}</strong> — {{ useAI ? 'агенты думают и отвечают друг другу' : 'быстрая симуляция без API-вызовов' }}</span>
+              <strong>{{ useAI ? 'Реальный AI' : 'Шаблоны' }}</strong>
+              <span>{{ useAI ? 'агенты думают и отвечают' : 'без API-вызовов' }}</span>
             </div>
+            <ToggleSwitch v-model="useAI" />
           </div>
 
           <div v-if="useAI" class="fst-toggle-row">
-            <ToggleSwitch v-model="useAgentLoop" />
+            <i :class="useAgentLoop ? 'pi pi-sitemap' : 'pi pi-comments'" class="fst-toggle-icon" :style="{ color: useAgentLoop ? 'var(--p-orange-400)' : 'var(--p-text-muted-color)' }" />
             <div class="fst-toggle-label">
-              <i :class="useAgentLoop ? 'pi pi-sitemap' : 'pi pi-comments'" class="fst-toggle-icon" :style="{ color: useAgentLoop ? 'var(--p-orange-400)' : 'var(--p-text-muted-color)' }" />
-              <span><strong>{{ useAgentLoop ? 'Multi-Agent Loop' : 'Single-call' }}</strong> — {{ useAgentLoop ? 'агенты вызывают инструменты, работают параллельно, видят зал' : 'один LLM-вызов на аргумент (быстро)' }}</span>
+              <strong>{{ useAgentLoop ? 'Multi-Agent Loop' : 'Single-call' }}</strong>
+              <span>{{ useAgentLoop ? 'параллельно, видят зал' : 'один вызов на аргумент' }}</span>
             </div>
+            <ToggleSwitch v-model="useAgentLoop" />
           </div>
 
           <div v-if="useAI && useAgentLoop" class="fst-toggle-row">
-            <ToggleSwitch v-model="useOrchestrator" />
+            <i :class="useOrchestrator ? 'pi pi-server' : 'pi pi-desktop'" class="fst-toggle-icon" :style="{ color: useOrchestrator ? 'var(--p-green-400)' : 'var(--p-text-muted-color)' }" />
             <div class="fst-toggle-label">
-              <i :class="useOrchestrator ? 'pi pi-server' : 'pi pi-desktop'" class="fst-toggle-icon" :style="{ color: useOrchestrator ? 'var(--p-green-400)' : 'var(--p-text-muted-color)' }" />
-              <span><strong>{{ useOrchestrator ? 'Server Orchestration' : 'Client-side' }}</strong> — {{ useOrchestrator ? 'агенты работают на сервере, UI получает события в реальном времени' : 'агенты работают в браузере (по умолчанию)' }}</span>
+              <strong>{{ useOrchestrator ? 'Server' : 'Client-side' }}</strong>
+              <span>{{ useOrchestrator ? 'сервер → события в реальном времени' : 'в браузере (по умолчанию)' }}</span>
             </div>
+            <ToggleSwitch v-model="useOrchestrator" />
           </div>
 
           <!-- ═══ Режим голосования ═══ -->
@@ -1358,9 +1364,9 @@ let engine = null
 // ── Speed Options ─────────────────────────────────────────────
 
 const speedOptions = [
-  { id: 'slow',   label: '1x — Полный',   icon: 'pi pi-clock' },
-  { id: 'normal', label: '2.5x — Быстрый', icon: 'pi pi-bolt' },
-  { id: 'fast',   label: '6x — Демо',     icon: 'pi pi-forward' },
+  { id: 'slow',   label: '1x — Полный',    icon: 'pi pi-clock',   val: '1×',   desc: 'Полный' },
+  { id: 'normal', label: '2.5x — Быстрый', icon: 'pi pi-bolt',    val: '2.5×', desc: 'Быстрый' },
+  { id: 'fast',   label: '6x — Демо',      icon: 'pi pi-forward', val: '6×',   desc: 'Демо' },
 ]
 
 // ── Computed ──────────────────────────────────────────────────
@@ -3254,8 +3260,48 @@ onUnmounted(() => {
   padding: 0 4px;
   text-decoration: underline;
 }
-.fst-speed-select { width: 100%; font-size: 0.875rem; }
-.fst-speed-select .p-selectbutton-option { flex: 1; justify-content: center; gap: 5px; }
+/* ── Speed cards ── */
+.fst-speed-cards { display: flex; gap: 8px; margin-bottom: 4px; }
+.fst-speed-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 6px 10px;
+  border: 2px solid var(--p-content-border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+}
+.fst-speed-card:hover {
+  border-color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 6%, transparent);
+}
+.fst-speed-card.active {
+  border-color: var(--p-primary-color);
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
+}
+.fst-speed-card-icon {
+  font-size: 1.2rem;
+  color: var(--p-text-muted-color);
+  transition: color 0.15s;
+}
+.fst-speed-card.active .fst-speed-card-icon { color: var(--p-primary-color); }
+.fst-speed-card-val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  line-height: 1;
+}
+.fst-speed-card.active .fst-speed-card-val { color: var(--p-primary-color); }
+.fst-speed-card-desc {
+  font-size: 0.6875rem;
+  color: var(--p-text-muted-color);
+  text-align: center;
+}
+/* legacy */
 .fst-speed-btn {
   padding: 6px 14px;
   border: 1px solid var(--surface-border);
@@ -4125,19 +4171,25 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-/* ── AI mode toggle rows (PrimeVue ToggleSwitch) ── */
+/* ── AI mode toggle rows ── */
 .fst-toggle-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 8px;
-  margin-bottom: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--p-content-border-color);
 }
-.fst-toggle-icon { font-size: 0.95rem; flex-shrink: 0; }
-.fst-toggle-label { display: flex; align-items: center; gap: 6px; font-size: 0.8125rem; color: var(--p-text-color); flex: 1; min-width: 0; }
-.fst-toggle-label strong { font-weight: 600; }
+.fst-toggle-row:last-of-type { border-bottom: none; }
+.fst-toggle-icon { font-size: 1.05rem; flex-shrink: 0; width: 20px; text-align: center; }
+.fst-toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+.fst-toggle-label strong { font-size: 0.8125rem; font-weight: 600; color: var(--p-text-color); }
+.fst-toggle-label span { font-size: 0.725rem; color: var(--p-text-muted-color); }
 .fst-profile-select { width: 100%; font-size: 0.8rem; }
 .fst-profile-select .p-selectbutton-option { flex: 1; justify-content: center; font-size: 0.8rem; }
 /* legacy kept for reference, unused */

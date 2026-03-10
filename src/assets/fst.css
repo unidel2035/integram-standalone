@@ -171,20 +171,21 @@
 .fst-section-title {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  gap: 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
   color: var(--p-text-muted-color);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 14px 0 6px;
-  border-bottom: 1px solid var(--p-content-border-color);
-  margin-bottom: 10px;
+  letter-spacing: 0.07em;
+  padding: 18px 0 10px 10px;
+  border-left: 3px solid var(--p-primary-color);
+  margin-bottom: 4px;
 }
-.fst-section-title i { font-size: 0.875rem; }
+.fst-section-title i { font-size: 0.875rem; opacity: 0.85; }
 .fst-section-title--plain {
-  border-bottom: none;
-  padding-bottom: 2px;
+  border-left: none;
+  padding-left: 0;
   text-transform: none;
   letter-spacing: 0;
+  font-size: 0.8125rem;
 }
