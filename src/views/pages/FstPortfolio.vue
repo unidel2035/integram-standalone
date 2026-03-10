@@ -478,15 +478,6 @@ onMounted(() => {
   loadPortfolioFromDb()
 })
 
-// При изменении списка компаний (после loadPortfolioFromDb) инициализируем их ленты
-watch(companies, (list) => {
-  for (const c of list) {
-    const k = `company:${c.id}`
-    if (!eventStore.timelines[k]) {
-      ensureCompanyTimeline(c)
-    }
-  }
-}, { deep: false })
 onUnmounted(() => clearInterval(liveTimer))
 
 // ─── Filters ─────────────────────────────────────────────────────────────────
@@ -655,6 +646,16 @@ const dataSources = ref([
   { id: 'news', name: 'Новостной мониторинг', icon: 'pi pi-globe', status: 'ok', lastUpdate: '2026-03-05 10:00' },
   { id: 'crm', name: 'Отчёты компании (Integram)', icon: 'pi pi-database', status: 'ok', lastUpdate: '2026-03-01 09:00' },
 ])
+
+// При изменении списка компаний (после loadPortfolioFromDb) инициализируем их ленты
+watch(companies, (list) => {
+  for (const c of list) {
+    const k = `company:${c.id}`
+    if (!eventStore.timelines[k]) {
+      ensureCompanyTimeline(c)
+    }
+  }
+}, { deep: false })
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const filteredCompanies = computed(() => {
