@@ -672,60 +672,80 @@
       </Dialog>
 
       <div class="fst-setup-body">
-        <!-- Projects Grid -->
+        <!-- Projects Table -->
         <div class="fst-setup-col fst-setup-col--projects">
-          <div class="fst-section-title">
-            <i class="pi pi-th-large" style="color:#38bdf8"></i>
-            Выберите проект для рассмотрения
-            <button class="fst-new-project-btn" @click="newProjectDialog = true" title="Новая заявка">
-              <i class="pi pi-plus"></i>
-            </button>
-            <span v-if="selectedProjectId" class="fst-selected-badge">
-              <i class="pi pi-check-circle"></i> Выбран
-            </span>
-          </div>
-          <div class="fst-project-grid">
-            <div v-if="PROJECTS_POOL.length === 0" class="fst-setup-empty">
-              <i class="pi pi-spin pi-spinner"></i> Загрузка проектов...
+          <div class="fst-project-table-header">
+            <div class="fst-section-title" style="padding-top:0; margin-bottom:0; border:none; flex:1">
+              <i class="pi pi-table" style="color:var(--p-primary-color)"></i>
+              Выберите проект
+              <span v-if="selectedProjectId" class="fst-selected-badge">
+                <i class="pi pi-check-circle"></i> Выбран
+              </span>
             </div>
-            <div v-for="p in PROJECTS_POOL" :key="p.id"
-              :class="['fst-pcard', { 'fst-pcard--selected': selectedProjectId === p.id }]"
-              :style="{ '--pc': SUBFUNDS[p.subFund]?.color || '#667eea' }"
-              @click="openProjectModal(p)">
-              <!-- Top stripe -->
-              <div class="fst-pcard-stripe"></div>
-              <!-- Selected indicator -->
-              <div v-if="selectedProjectId === p.id" class="fst-pcard-checkmark">
-                <i class="pi pi-check"></i>
-              </div>
-              <!-- Subfund + Stage -->
-              <div class="fst-pcard-top">
-                <span class="fst-pcard-subfund" :style="{ background: SUBFUNDS[p.subFund]?.color || '#666' }">
-                  {{ SUBFUNDS[p.subFund]?.shortName || p.subFund?.toUpperCase() }}
+            <IconField>
+              <InputIcon class="pi pi-search" />
+              <InputText v-model="projectFilter" placeholder="Поиск..." size="small" class="fst-project-search" />
+            </IconField>
+            <Button icon="pi pi-plus" size="small" text rounded title="Новая заявка" @click="newProjectDialog = true" />
+          </div>
+
+          <DataTable
+            :value="PROJECTS_POOL"
+            v-model:selection="selectedRow"
+            selectionMode="single"
+            dataKey="id"
+            size="small"
+            stripedRows
+            :metaKeySelection="false"
+            :globalFilterFields="['title', 'company', 'subFund', 'stage']"
+            :filters="{ global: { value: projectFilter, matchMode: 'contains' } }"
+            scrollable
+            scrollHeight="flex"
+            class="fst-project-table"
+            :rowClass="(p) => p.id === selectedProjectId ? 'fst-row-selected' : ''"
+          >
+            <template #empty>
+              <div class="fst-setup-empty"><i class="pi pi-spin pi-spinner"></i> Загрузка проектов...</div>
+            </template>
+            <Column style="width:60px">
+              <template #body="{ data }">
+                <span class="fst-tbl-subfund" :style="{ background: SUBFUNDS[data.subFund]?.color || '#667eea' }">
+                  {{ SUBFUNDS[data.subFund]?.shortName || data.subFund?.toUpperCase().slice(0,3) }}
                 </span>
-                <span class="fst-pcard-stage">{{ p.stage }}</span>
-              </div>
-              <!-- Title -->
-              <div class="fst-pcard-title">{{ p.title }}</div>
-              <!-- Company -->
-              <div class="fst-pcard-company">
-                <i class="pi pi-building"></i> {{ p.company }}
-              </div>
-              <!-- Amount -->
-              <div class="fst-pcard-amount">{{ (p.requestedAmount / 1e6).toFixed(0) }} млн ₽</div>
-              <!-- Metrics -->
-              <div class="fst-pcard-metrics">
-                <span class="fst-metric" :class="trlClass(p.trl)">TRL {{ p.trl }}</span>
-                <span class="fst-metric" :class="trlClass(p.mrl - 1)">MRL {{ p.mrl }}</span>
-                <span class="fst-metric" :class="sovClass(p.sovereigntyScore)">{{ p.sovereigntyScore }}/9</span>
-                <span class="fst-metric" :class="irrClass(p.projectedIRR)">IRR {{ (p.projectedIRR * 100).toFixed(0) }}%</span>
-              </div>
-              <!-- Click hint -->
-              <div class="fst-pcard-hint">
-                <i class="pi pi-eye"></i> Подробнее
-              </div>
-            </div>
-          </div>
+              </template>
+            </Column>
+            <Column style="width:70px">
+              <template #body="{ data }">
+                <span class="fst-tbl-stage">{{ data.stage }}</span>
+              </template>
+            </Column>
+            <Column field="title" header="Название" style="min-width:180px">
+              <template #body="{ data }">
+                <div class="fst-tbl-title">{{ data.title }}</div>
+                <div class="fst-tbl-company">{{ data.company }}</div>
+              </template>
+            </Column>
+            <Column header="Запрос" style="width:80px">
+              <template #body="{ data }">
+                <span class="fst-tbl-amount">{{ (data.requestedAmount / 1e6).toFixed(0) }} млн</span>
+              </template>
+            </Column>
+            <Column header="TRL" style="width:46px">
+              <template #body="{ data }">
+                <span class="fst-tbl-metric" :class="trlClass(data.trl)">{{ data.trl }}</span>
+              </template>
+            </Column>
+            <Column header="IRR" style="width:54px">
+              <template #body="{ data }">
+                <span class="fst-tbl-metric" :class="irrClass(data.projectedIRR)">{{ (data.projectedIRR * 100).toFixed(0) }}%</span>
+              </template>
+            </Column>
+            <Column style="width:38px">
+              <template #body="{ data }">
+                <Button icon="pi pi-eye" text rounded size="small" class="fst-tbl-detail-btn" @click.stop="openProjectModal(data)" />
+              </template>
+            </Column>
+          </DataTable>
         </div>
 
         <!-- Right: Settings -->
@@ -1142,6 +1162,11 @@ function closeBriefing() {
   try { localStorage.removeItem('startuper_twin') } catch {}
 }
 const selectedProjectId = ref(null)
+const projectFilter = ref('')
+const selectedRow = computed({
+  get: () => PROJECTS_POOL.value?.find(p => p.id === selectedProjectId.value) ?? null,
+  set: (p) => { if (p) selectedProjectId.value = p.id }
+})
 const selectedSpeed = ref('normal')
 const useAI        = ref(true)
 const useAgentLoop = ref(true)    // Multi-agent orchestrator: tool_use + parallel
@@ -2894,7 +2919,7 @@ onUnmounted(() => {
 }
 .fst-setup-body {
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: 1fr 420px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -3029,106 +3054,57 @@ onUnmounted(() => {
   text-transform: none;
   letter-spacing: 0;
 }
-.fst-project-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
-}
-.fst-pcard {
-  position: relative;
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 12px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  overflow: hidden;
-}
-.fst-pcard-stripe {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--pc);
-}
-.fst-pcard:hover {
-  border-color: var(--pc);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--p-text-color) 15%, transparent), 0 0 0 1px var(--pc);
-}
-.fst-pcard--selected {
-  border-color: var(--pc);
-  box-shadow: 0 0 0 2px var(--pc), 0 4px 16px color-mix(in srgb, var(--p-text-color) 10%, transparent);
-}
-.fst-pcard-checkmark {
-  position: absolute;
-  top: 10px; right: 10px;
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  background: #4caf50;
+/* ── Project DataTable ── */
+.fst-project-table-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.8125rem;
-  color: #fff;
+  gap: 10px;
+  padding: 14px 24px 10px;
+  border-bottom: 1px solid var(--p-content-border-color);
 }
-.fst-pcard-top {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
+.fst-project-search { width: 180px; font-size: 0.8125rem; }
+.fst-project-table { flex: 1; }
+.fst-project-table .p-datatable-thead th {
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--p-text-muted-color) !important;
+  background: transparent !important;
+  padding: 6px 8px !important;
 }
-.fst-pcard-subfund {
-  font-size: 0.75rem;
+.fst-project-table .p-datatable-tbody td { padding: 6px 8px !important; cursor: pointer; }
+.fst-project-table .p-datatable-tbody tr:hover td { background: color-mix(in srgb, var(--p-primary-color) 6%, transparent) !important; }
+.fst-project-table .p-row-selected td,
+.fst-project-table tr.fst-row-selected td { background: color-mix(in srgb, var(--p-primary-color) 12%, transparent) !important; }
+.fst-tbl-subfund {
+  font-size: 0.6875rem;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
-  color: #fff;
-}
-.fst-pcard-stage {
-  font-size: 0.75rem;
-  color: var(--p-text-muted-color);
-  background: var(--surface-hover);
   padding: 2px 7px;
   border-radius: 4px;
+  color: #fff;
+  white-space: nowrap;
 }
-.fst-pcard-title {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: var(--p-text-color);
-  line-height: 1.3;
-  flex: 1;
-}
-.fst-pcard-company {
-  font-size: 0.8125rem;
+.fst-tbl-stage {
+  font-size: 0.6875rem;
   color: var(--p-text-muted-color);
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  background: var(--p-surface-ground);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
 }
-.fst-pcard-amount {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--pc);
-}
-.fst-pcard-metrics {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-.fst-pcard-hint {
-  margin-top: 4px;
+.fst-tbl-title { font-size: 0.8125rem; font-weight: 600; color: var(--p-text-color); line-height: 1.3; }
+.fst-tbl-company { font-size: 0.7rem; color: var(--p-text-muted-color); margin-top: 1px; }
+.fst-tbl-amount { font-size: 0.8125rem; font-weight: 600; color: var(--p-text-color); white-space: nowrap; }
+.fst-tbl-metric {
   font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  opacity: 0;
-  transition: opacity 0.2s;
+  font-weight: 700;
 }
-.fst-pcard:hover .fst-pcard-hint { opacity: 1; }
+.fst-tbl-metric.metric--good { color: var(--p-green-400); }
+.fst-tbl-metric.metric--warn { color: var(--p-orange-400); }
+.fst-tbl-metric.metric--bad  { color: var(--p-red-400); }
+.fst-tbl-detail-btn { opacity: 0; transition: opacity 0.15s; }
+.fst-project-table .p-datatable-tbody tr:hover .fst-tbl-detail-btn { opacity: 1; }
 
 /* ── Project Detail Modal ─────────────────────────────────── */
 .fst-pmodal { display: flex; flex-direction: column; gap: 16px; }

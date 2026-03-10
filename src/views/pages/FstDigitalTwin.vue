@@ -489,8 +489,7 @@ function initChart() {
         y: { grid: { color: '#333' }, ticks: { color: '#aaa', font: { size: 10 } } },
       },
       animation: false,
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: false,
     },
   })
 }
