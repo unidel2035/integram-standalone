@@ -2920,6 +2920,8 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 1fr 360px;
   flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 .fst-setup-col {
   padding: 20px 24px;
@@ -2927,6 +2929,13 @@ onUnmounted(() => {
 }
 .fst-setup-col--projects {
   border-right: 1px solid var(--surface-border);
+}
+.fst-setup-col--settings {
+  height: 100%;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 .fst-setup-section-title {
   display: flex;
@@ -2948,12 +2957,16 @@ onUnmounted(() => {
   gap: 8px;
 }
 .fst-setup-launch {
-  margin-top: 24px;
-  padding-top: 18px;
+  margin-top: auto;
+  padding: 16px 0 4px;
   border-top: 1px solid var(--surface-border);
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: sticky;
+  bottom: 0;
+  background: var(--p-surface-card, var(--surface-card));
+  z-index: 5;
 }
 .fst-launch-btn { width: 100%; justify-content: center; }
 .fst-launch-hint { text-align: center; font-size: 0.875rem; color: var(--p-text-muted-color); }
@@ -4653,8 +4666,7 @@ onUnmounted(() => {
 
   /* Settings compact on mobile */
   .fst-setup-col--settings {
-    max-height: 50vh;
-    overflow-y: auto;
+    height: 50vh;
   }
   .fst-speed-row { gap: 6px; }
   .fst-speed-btn { padding: 6px 10px; font-size: 0.8rem; }
