@@ -809,19 +809,28 @@
             <div class="fst-toggle-row">
               <i :class="useAI ? 'pi pi-bolt' : 'pi pi-server'" class="fst-toggle-icon"
                 :style="{ color: useAI ? 'var(--p-purple-400)' : 'var(--p-text-muted-color)' }" />
-              <span class="fst-toggle-name">{{ useAI ? 'Реальный AI' : 'Шаблоны' }}</span>
+              <div class="fst-toggle-label">
+                <strong>{{ useAI ? 'Реальный AI' : 'Шаблоны' }}</strong>
+                <span>{{ useAI ? 'LLM-вызовы на каждый агент' : 'без API, быстро' }}</span>
+              </div>
               <ToggleSwitch v-model="useAI" />
             </div>
             <div v-if="useAI" class="fst-toggle-row">
               <i :class="useAgentLoop ? 'pi pi-sitemap' : 'pi pi-comments'" class="fst-toggle-icon"
                 :style="{ color: useAgentLoop ? 'var(--p-orange-400)' : 'var(--p-text-muted-color)' }" />
-              <span class="fst-toggle-name">Multi-Agent Loop</span>
+              <div class="fst-toggle-label">
+                <strong>Multi-Agent Loop</strong>
+                <span>агенты видят аргументы друг друга</span>
+              </div>
               <ToggleSwitch v-model="useAgentLoop" />
             </div>
             <div v-if="useAI && useAgentLoop" class="fst-toggle-row">
               <i :class="useOrchestrator ? 'pi pi-server' : 'pi pi-desktop'" class="fst-toggle-icon"
                 :style="{ color: useOrchestrator ? 'var(--p-green-400)' : 'var(--p-text-muted-color)' }" />
-              <span class="fst-toggle-name">{{ useOrchestrator ? 'Серверный' : 'Client-side' }}</span>
+              <div class="fst-toggle-label">
+                <strong>{{ useOrchestrator ? 'Серверный' : 'Client-side' }}</strong>
+                <span>{{ useOrchestrator ? 'WebSocket, события в реальном времени' : 'прямо в браузере' }}</span>
+              </div>
               <ToggleSwitch v-model="useOrchestrator" />
             </div>
           </div>
@@ -834,6 +843,11 @@
               { label: 'Гибрид', value: 'hybrid' },
               { label: 'LLM', value: 'llm' }
             ]" optionLabel="label" optionValue="value" :allowEmpty="false" fluid size="small" />
+            <div class="fst-rp-hint">
+              <span v-if="votingMode === 'formula'">Алгоритмические веса — быстро и предсказуемо</span>
+              <span v-else-if="votingMode === 'hybrid'">LLM-позиция + формульный score — баланс</span>
+              <span v-else>Только LLM — stance и уверенность агента</span>
+            </div>
           </div>
 
           <!-- ═══ Настройки моделей оркестратора ═══ -->
@@ -4344,6 +4358,20 @@ onUnmounted(() => {
   font-weight: 500;
   color: var(--p-text-color);
   min-width: 0;
+}
+.fst-toggle-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.fst-toggle-label strong { font-size: 0.8125rem; font-weight: 600; color: var(--p-text-color); }
+.fst-toggle-label span  { font-size: 0.6875rem; color: var(--p-text-muted-color); line-height: 1.3; }
+.fst-rp-hint {
+  font-size: 0.6875rem;
+  color: var(--p-text-muted-color);
+  line-height: 1.4;
 }
 
 /* ── Accordion rows (Models / Policy / IC thresholds) ── */
