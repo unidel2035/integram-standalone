@@ -790,9 +790,9 @@
               </div>
             </div>
             <div class="fst-voting-desc">
-              <span v-if="votingMode === 'formula'"><i class="pi pi-calculator"/> Алгоритм · веса + bias + шум</span>
-              <span v-else-if="votingMode === 'hybrid'"><i class="pi pi-sliders-h"/> LLM stance + формульный score</span>
-              <span v-else><i class="pi pi-comments"/> Чисто LLM · stance из ответа агента</span>
+              <span v-if="votingMode === 'formula'">Алгоритмические веса · быстро, предсказуемо</span>
+              <span v-else-if="votingMode === 'hybrid'">LLM stance + формульный score · баланс</span>
+              <span v-else>Чисто LLM · stance и confidence агента</span>
             </div>
           </div>
 
@@ -4388,18 +4388,12 @@ onUnmounted(() => {
   border-color: transparent;
 }
 .fst-voting-desc {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  text-align: center;
   font-size: 0.725rem;
   color: var(--p-text-muted-color);
-  background: color-mix(in srgb, var(--p-surface-ground) 60%, transparent);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 20px;
-  padding: 3px 10px;
-  margin-top: 6px;
+  margin-top: 5px;
+  padding: 0 4px;
 }
-.fst-voting-desc i { font-size: 0.7rem; opacity: 0.7; }
 .fst-model-profile-desc {
   font-size: 0.8125rem;
   color: var(--p-text-muted-color);
