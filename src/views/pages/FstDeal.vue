@@ -398,9 +398,15 @@
       </div>
     </div></FeatureHint>
 
-    <!-- Ontology: Next Steps -->
+    <!-- Ontology bar -->
     <div class="fst-deal-ont-bar">
       <OntologyNextSteps entity-type="deal" :entity-id="dealId" />
+      <CausalExplanation entity-type="deal" :entity-id="dealId" style="margin-top:8px" />
+      <CounterfactualPanel
+        :deal-id="dealId"
+        :company-name="deal.companyName"
+        style="margin-top:8px"
+      />
     </div>
 
     <!-- Page Tutor -->
@@ -430,6 +436,8 @@ import { useToast } from 'primevue/usetoast'
 import FstFinModelBlock from '@/components/finmodel/FstFinModelBlock.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
+import CounterfactualPanel from '@/components/ontology/CounterfactualPanel.vue'
+import CausalExplanation from '@/components/ontology/CausalExplanation.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'

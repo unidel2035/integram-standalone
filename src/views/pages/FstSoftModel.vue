@@ -15,6 +15,8 @@
           style="margin-left:8px" />
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <Button label="Граф платформы" icon="pi pi-share-alt" size="small" severity="secondary"
+          @click="showGraph = true" />
         <Button label="Добавить событие" icon="pi pi-plus" size="small" severity="secondary"
           @click="showAddEvent = true" :disabled="!selectedModule" />
         <Button icon="pi pi-home" label="ФСТ" size="small" text severity="secondary"
@@ -249,6 +251,11 @@
     </div>
 
     <!-- Add event dialog -->
+    <!-- Platform Graph (#181) -->
+    <Dialog v-model:visible="showGraph" header="Граф платформы" :style="{ width: '90vw', maxWidth: '1100px' }" modal>
+      <OntologyPlatformGraph />
+    </Dialog>
+
     <Dialog v-model:visible="showAddEvent" header="Добавить событие" :modal="true" style="width:420px">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div>
@@ -282,6 +289,7 @@ import { useSoftEventStore } from '@/stores/softEventStore.js'
 import { healthColor } from '@/services/softModel.js'
 import { SOFT_EVENT_TYPES } from '@/config/softEventTypes.js'
 import { useRouter } from 'vue-router'
+import OntologyPlatformGraph from '@/components/ontology/OntologyPlatformGraph.vue'
 
 const router = useRouter()
 const softStore = useSoftEventStore()
@@ -296,6 +304,7 @@ onMounted(() => {
 const selectedModule = ref(null)
 const phaseFilter = ref('all')
 const showAddEvent = ref(false)
+const showGraph    = ref(false)
 const newEventType = ref(null)
 const newEventDesc = ref('')
 

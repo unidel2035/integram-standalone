@@ -93,6 +93,27 @@
           </div>
         </div>
 
+        <!-- Temporal Replay (#187) -->
+        <div class="fft-replay" v-if="replayEnabled">
+          <div class="fft-replay-header">
+            <i class="pi pi-history" style="color:#60a5fa;font-size:13px" />
+            <span>Состояние на: <b>{{ replayDateLabel }}</b></span>
+            <Button icon="pi pi-times" size="small" text severity="secondary"
+              @click="replayEnabled = false; replayTs = Date.now()" style="margin-left:auto" />
+          </div>
+          <Slider v-model="replaySlider" :min="0" :max="100" class="fft-replay-slider" />
+          <div class="fft-replay-presets">
+            <Button label="3 мес" size="small" text severity="secondary" @click="setReplay(90)" />
+            <Button label="6 мес" size="small" text severity="secondary" @click="setReplay(180)" />
+            <Button label="1 год" size="small" text severity="secondary" @click="setReplay(365)" />
+            <Button label="Сейчас" size="small" severity="secondary" @click="replayTs = Date.now(); replaySlider = 100" />
+          </div>
+        </div>
+        <div v-else class="fft-replay-toggle">
+          <Button label="Машина времени" icon="pi pi-history" size="small" text severity="secondary"
+            @click="replayEnabled = true" />
+        </div>
+
         <!-- Subfunds -->
         <div class="fft-panel-title" style="margin-top:12px">
           <i class="pi pi-building-columns" style="color:#ffa726"></i> Субфонды
@@ -193,9 +214,47 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Chart from 'chart.js/auto'
+import Slider from 'primevue/slider'
+import Button from 'primevue/button'
 import { useRouter } from 'vue-router'
+import { useEventStore } from '@/stores/eventStore.js'
 
 const $router = useRouter()
+const eventStore = useEventStore()
+const FUND_ID = 'fst-nti'
+
+// ── Temporal Replay (#187) ────────────────────────────────────
+const replayEnabled = ref(false)
+const replaySlider  = ref(100)   // 0=oldest event, 100=now
+const replayTs      = ref(Date.now())
+
+// Slider → actual timestamp
+watch(replaySlider, (val) => {
+  const timeline = eventStore.getTimeline('fund', FUND_ID)
+  if (!timeline.length) { replayTs.value = Date.now(); return }
+  const minTs = timeline[0].ts
+  const maxTs = Date.now()
+  replayTs.value = Math.round(minTs + (maxTs - minTs) * val / 100)
+})
+
+function setReplay(daysAgo) {
+  const target = Date.now() - daysAgo * 86_400_000
+  const timeline = eventStore.getTimeline('fund', FUND_ID)
+  const minTs = timeline[0]?.ts || Date.now() - 365 * 86_400_000
+  const maxTs = Date.now()
+  replaySlider.value = Math.round((target - minTs) / (maxTs - minTs) * 100)
+  replayTs.value = target
+}
+
+const replayDateLabel = computed(() => {
+  if (replaySlider.value >= 99) return 'сейчас'
+  return new Date(replayTs.value).toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' })
+})
+
+const replayFundState = computed(() => {
+  if (replaySlider.value >= 99) return null
+  return eventStore.getStateAt('fund', FUND_ID, replayTs.value)
+})
 
 // ── Fund Static Data ──────────────────────────────────────────
 const subfunds = ref([
@@ -374,6 +433,13 @@ function step() {
   if (tick.value % 20 === 0) {
     quarter.value = quarter.value >= 4 ? 1 : quarter.value + 1
     if (quarter.value === 1) year.value++
+    // Фиксируем квартальный NAV в event log
+    eventStore.add('fund', FUND_ID, 'NAV_UPDATED', {
+      nav:       nav.value,
+      quarter:   quarter.value,
+      year:      year.value,
+      totalROI:  +totalROI.value.toFixed(4),
+    })
     if (chart) {
       chart.data.datasets[0].data.push(+(nav.value / 1e6).toFixed(0))
       chart.data.datasets[1].data.push(+(totalRevenue.value / 1e6).toFixed(0))
@@ -435,7 +501,10 @@ function fmtM(v) {
   return (v / 1e3).toFixed(0) + ' тыс'
 }
 
-onMounted(() => { nextTick(() => { initChart(); scheduleTimer() }) })
+onMounted(() => {
+  eventStore.load('fund', FUND_ID).catch(() => {})
+  nextTick(() => { initChart(); scheduleTimer() })
+})
 onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 </script>
 
@@ -460,6 +529,13 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 .fft-col-center { background: var(--p-surface-section) }
 
 .fft-panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 6px; margin-bottom: 8px }
+
+/* Temporal Replay */
+.fft-replay { background: #60a5fa18; border: 1px solid #60a5fa44; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+.fft-replay-header { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 8px; }
+.fft-replay-slider { width: 100%; margin-bottom: 8px; }
+.fft-replay-presets { display: flex; gap: 4px; }
+.fft-replay-toggle { margin-bottom: 8px; }
 
 /* Companies list */
 .fft-companies { display: flex; flex-direction: column; gap: 6px }

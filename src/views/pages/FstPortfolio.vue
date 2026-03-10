@@ -266,8 +266,9 @@
           </div>
         </div>
 
-        <!-- Ontology Next Steps -->
-        <OntologyNextSteps entity-type="company" :entity-id="selectedCompany.id" style="margin-bottom:10px" />
+        <!-- Ontology Next Steps + Causal -->
+        <OntologyNextSteps entity-type="company" :entity-id="selectedCompany.id" style="margin-bottom:8px" />
+        <CausalExplanation entity-type="company" :entity-id="selectedCompany.id" style="margin-bottom:10px" />
 
         <!-- Deal link -->
         <div class="fsp-detail-nav">
@@ -304,6 +305,7 @@ import { getPortfolio, getProjects } from '@/services/fstApi'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
+import CausalExplanation from '@/components/ontology/CausalExplanation.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
 import EntityLinksPanel from '@/components/links/EntityLinksPanel.vue'
 import { useEventStore } from '@/stores/eventStore.js'

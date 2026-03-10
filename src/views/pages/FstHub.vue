@@ -66,6 +66,11 @@
       </div>
     </div>
 
+    <!-- ══════════════════════════════════════════ ONTOLOGY ALERTS -->
+    <div class="hub-ontology-bar">
+      <OntologyGapAlerts :max-items="5" />
+    </div>
+
     <!-- ══════════════════════════════════════════ MODULES -->
     <div class="hub-section">
       <div class="hub-section-label">Модули платформы</div>
@@ -121,6 +126,7 @@ import PracticeScenariosDialog from '@/components/PracticeScenariosDialog.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
 import FeatureHint from '@/components/FeatureHint.vue'
 import { useEventStore } from '@/stores/eventStore.js'
+import OntologyGapAlerts from '@/components/ontology/OntologyGapAlerts.vue'
 
 const router = useRouter()
 const sandboxStore = useSandboxStore()
@@ -353,6 +359,10 @@ const modulesByPhase = computed(() => {
 }
 
 /* ═══════════════════════════════════════════════ SECTION */
+.hub-ontology-bar {
+  padding: 12px 24px 0;
+}
+
 .hub-section {
   padding: 20px 24px;
   border-bottom: 1px solid var(--p-content-border-color);

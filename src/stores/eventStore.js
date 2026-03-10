@@ -17,6 +17,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getEventDef } from '@/config/eventRegistry.js'
 import { moduleState } from '@/services/softModel.js'
+import { processEvent as processAutomation } from '@/services/crossEntityAutomation.js'
 
 // ─── Персистентность через бэкенд ─────────────────────────────────────────────
 
@@ -194,8 +195,18 @@ export const useEventStore = defineStore('events', () => {
     }
     timeline.push(evt)
     persistEvent(evt)   // fire-and-forget
+    // Cross-entity automation: fire-and-forget
+    if (_automationEmitter) {
+      processAutomation(evt, _automationEmitter).catch(() => {})
+    }
     return evt
   }
+
+  // ─── Automation emitter (опционально) ────────────────────────────────────
+  // Устанавливается через useEventStore().setAutomationEmitter(fn)
+
+  let _automationEmitter = null
+  function setAutomationEmitter(fn) { _automationEmitter = fn }
 
   // ─── Загрузить ленту из Integram ──────────────────────────────────────────
 
@@ -240,6 +251,14 @@ export const useEventStore = defineStore('events', () => {
 
   function getState(entityType, entityId) {
     const events = getTimeline(entityType, entityId)
+    const reducer = REDUCERS[entityType]
+    return reducer ? reducer(events) : {}
+  }
+
+  // ─── Проекция на произвольный момент времени (#187 temporal replay) ─────────
+
+  function getStateAt(entityType, entityId, ts) {
+    const events = getTimeline(entityType, entityId).filter(e => e.ts <= ts)
     const reducer = REDUCERS[entityType]
     return reducer ? reducer(events) : {}
   }
@@ -293,6 +312,7 @@ export const useEventStore = defineStore('events', () => {
   return {
     timelines,
     getTimeline,
+    getStateAt,
     add,
     load,
     remove,
@@ -302,6 +322,7 @@ export const useEventStore = defineStore('events', () => {
     getLastEvent,
     getStats,
     grTimelines,
+    setAutomationEmitter,
     // shortcuts
     addProjectEvent:  (id, type, data) => add('project',  id, type, data),
     addCompanyEvent:  (id, type, data) => add('company',  id, type, data),
