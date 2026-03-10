@@ -2,7 +2,7 @@
   <FstPageLayout>
     <template #header>
       <div style="display:flex;align-items:center;gap:10px;flex:1">
-        <i class="pi pi-building" style="color:#42a5f5;font-size:20px"></i>
+        <i class="pi pi-building" style="color:var(--fst-blue);font-size:20px"></i>
         <div>
           <div style="font-weight:700;font-size:15px">GR-Панель · Government Relations</div>
           <div style="font-size:11px;color:var(--p-text-muted-color)">Меры поддержки · Онтологии · Конструктор новых мер</div>
@@ -21,6 +21,15 @@
       </button>
     </div>
 
+    <!-- Метрики -->
+    <div class="fst-metrics-strip">
+      <div v-for="m in govMetrics" :key="m.label" class="fst-metric-item">
+        <i :class="m.icon" class="fst-metric-item-icon" :style="{ color: m.color }"></i>
+        <div class="fst-metric-item-val">{{ m.val }}</div>
+        <div class="fst-metric-item-label">{{ m.label }}</div>
+      </div>
+    </div>
+
     <!-- ═══════════════════════════════════════════════════════════════════════
          ТАБ 1: Меры поддержки стартапов
     ════════════════════════════════════════════════════════════════════════ -->
@@ -29,7 +38,7 @@
       <!-- Выбор стартапа для персонального плана -->
       <div class="gr-startup-panel">
         <div class="gr-section-title">
-          <i class="pi pi-bolt" style="color:#ffa726"></i>
+          <i class="pi pi-bolt" style="color:var(--fst-brand)"></i>
           Персональный план мер — выберите проект
         </div>
         <div class="gr-startup-row">
@@ -61,7 +70,7 @@
         <!-- AI план -->
         <div v-if="planText" class="gr-plan-block">
           <div class="gr-plan-header">
-            <i class="pi pi-file-check" style="color:#66bb6a"></i>
+            <i class="pi pi-file-check" style="color:var(--fst-green)"></i>
             <span>AI-план получения мер поддержки · {{ selectedProject?.name }}</span>
           </div>
           <div class="gr-plan-text" v-html="planText"></div>
@@ -71,7 +80,7 @@
       <!-- Банк мер поддержки -->
       <div class="gr-measures-bank">
         <div class="gr-section-title">
-          <i class="pi pi-wallet" style="color:#42a5f5"></i>
+          <i class="pi pi-wallet" style="color:var(--fst-blue)"></i>
           Банк мер государственной поддержки
           <span class="gr-count">{{ filteredMeasures.length }} из {{ allMeasures.length }}</span>
         </div>
@@ -180,7 +189,7 @@
             <div class="gr-multiplier-desc">
               <span v-if="!activeBosses.length" style="color:var(--p-text-muted-color)">Барьеры не обнаружены — запустите диагностику</span>
               <span v-else-if="bossesActive">⚔️ Повержено {{ bossesDefeated }} из {{ activeBosses.length }} барьеров</span>
-              <span v-else style="color:#22c55e">🏆 Все барьеры пробиты — максимальный мультипликатор!</span>
+              <span v-else style="color:var(--fst-green)">🏆 Все барьеры пробиты — максимальный мультипликатор!</span>
             </div>
           </div>
           <div class="gr-multiplier-right">
@@ -194,7 +203,7 @@
         </div>
         <div v-else-if="aiSuggestion" class="gr-ai-hint">
           <div class="gr-ai-hint-header">
-            <i class="pi pi-sparkles" style="color:#ab47bc" />
+            <i class="pi pi-sparkles" style="color:var(--fst-purple)" />
             <strong>AI: следующие шаги после финансирования</strong>
             <button class="gr-ai-hint-close" @click="aiSuggestion = null">×</button>
           </div>
@@ -219,7 +228,7 @@
 
         <!-- Нет боссов но есть лента → всё хорошо -->
         <div v-else class="gr-no-bosses">
-          <i class="pi pi-shield-check" style="font-size:2rem;color:#22c55e;opacity:0.6" />
+          <i class="pi pi-shield-check" style="font-size:2rem;color:var(--fst-green);opacity:0.6" />
           <div>Барьеры не обнаружены или все преодолены</div>
           <div style="font-size:11px">Продолжайте добавлять события через лист возможных мер ниже</div>
         </div>
@@ -260,7 +269,7 @@
     ════════════════════════════════════════════════════════════════════════ -->
     <div v-if="activeTab === 'grmap'" class="gr-content">
       <div class="gr-section-title">
-        <i class="pi pi-map" style="color:#42a5f5"></i>
+        <i class="pi pi-map" style="color:var(--fst-blue)"></i>
         GR-карта всего портфеля
         <span class="gr-count">{{ grMapProjects.length }} проектов</span>
       </div>
@@ -292,11 +301,11 @@
               <span class="gr-map-stat-lbl">финанс.</span>
             </div>
             <div class="gr-map-stat">
-              <span class="gr-map-stat-val" style="color:#f59e0b">{{ proj.applied }}</span>
+              <span class="gr-map-stat-val" style="color:var(--fst-brand)">{{ proj.applied }}</span>
               <span class="gr-map-stat-lbl">заявок</span>
             </div>
             <div class="gr-map-stat">
-              <span class="gr-map-stat-val" style="color:#ef4444">{{ proj.rejected }}</span>
+              <span class="gr-map-stat-val" style="color:var(--fst-red)">{{ proj.rejected }}</span>
               <span class="gr-map-stat-lbl">откл.</span>
             </div>
             <div class="gr-map-stat">
@@ -321,7 +330,7 @@
       <!-- Заголовок онтологии -->
       <div class="gr-onto-header-block">
         <div class="gr-section-title">
-          <i class="pi pi-share-alt" style="color:#7c3aed"></i>
+          <i class="pi pi-share-alt" style="color:var(--fst-purple)"></i>
           Событийная онтология
         </div>
         <div class="gr-onto-desc">
@@ -332,7 +341,7 @@
 
       <!-- Классы онтологии -->
       <div class="gr-section-title" style="margin-top:4px">
-        <i class="pi pi-table" style="color:#3b82f6"></i>
+        <i class="pi pi-table" style="color:var(--fst-blue)"></i>
         Классы (типы объектов)
       </div>
       <div class="gr-onto-classes">
@@ -350,7 +359,7 @@
 
       <!-- Живые интерфейсы из событийной ленты -->
       <div class="gr-section-title" style="margin-top:20px">
-        <i class="pi pi-arrow-right-arrow-left" style="color:#7c3aed"></i>
+        <i class="pi pi-arrow-right-arrow-left" style="color:var(--fst-purple)"></i>
         Интерфейсы — живые (из ленты проекта)
       </div>
       <div class="gr-onto-desc" style="margin-bottom:12px">
@@ -363,14 +372,14 @@
         <div v-for="iface in GR_INTERFACES" :key="iface.id" class="gr-iface-card"
              :style="{ borderColor: iface.color + '44' }">
           <div class="gr-iface-subjects">
-            <div class="gr-iface-subj" :style="{ color: SUBJECT_ROLES[iface.from]?.color || '#64748b' }">
+            <div class="gr-iface-subj" :style="{ color: SUBJECT_ROLES[iface.from]?.color || 'var(--p-text-muted-color)' }">
               <i :class="SUBJECT_ROLES[iface.from]?.icon || 'pi pi-user'" />
               {{ SUBJECT_ROLES[iface.from]?.label || iface.from }}
             </div>
             <div class="gr-iface-line" :style="{ background: iface.color }">
               <span class="gr-iface-line-label">{{ iface.label }}</span>
             </div>
-            <div class="gr-iface-subj" :style="{ color: SUBJECT_ROLES[iface.to]?.color || '#64748b' }">
+            <div class="gr-iface-subj" :style="{ color: SUBJECT_ROLES[iface.to]?.color || 'var(--p-text-muted-color)' }">
               <i :class="SUBJECT_ROLES[iface.to]?.icon || 'pi pi-user'" />
               {{ SUBJECT_ROLES[iface.to]?.label || iface.to }}
             </div>
@@ -390,7 +399,7 @@
 
       <!-- Классические интерфейсы из онтологии -->
       <div class="gr-section-title" style="margin-top:20px">
-        <i class="pi pi-arrow-right-arrow-left" style="color:#7c3aed"></i>
+        <i class="pi pi-arrow-right-arrow-left" style="color:var(--fst-purple)"></i>
         Структурные интерфейсы (онтология мер)
       </div>
       <div class="gr-onto-interfaces">
@@ -406,7 +415,7 @@
 
       <!-- Событийные цепочки (причинно-следственные) -->
       <div class="gr-section-title" style="margin-top:20px">
-        <i class="pi pi-history" style="color:#f59e0b"></i>
+        <i class="pi pi-history" style="color:var(--fst-brand)"></i>
         Событийные цепочки (каузальная онтология)
       </div>
       <div class="gr-onto-desc" style="margin-bottom:12px">
@@ -465,7 +474,7 @@
       <!-- Событийная онтология -->
       <div class="gr-ontology-panel">
         <div class="gr-section-title">
-          <i class="pi pi-sitemap" style="color:#ab47bc"></i>
+          <i class="pi pi-sitemap" style="color:var(--fst-purple)"></i>
           Событийная онтология — меры как узлы цепочки
           <span class="gr-count" style="margin-left:6px">нажмите на шаг чтобы увидеть меры</span>
         </div>
@@ -509,7 +518,7 @@
               </div>
             </div>
             <div class="gr-onto-result">
-              <i class="pi pi-check-circle" style="color:#66bb6a" /> {{ chain.result }}
+              <i class="pi pi-check-circle" style="color:var(--fst-green)" /> {{ chain.result }}
             </div>
           </div>
         </div>
@@ -519,7 +528,7 @@
       <!-- Конструктор новой меры -->
       <div class="gr-constructor-panel">
         <div class="gr-section-title">
-          <i class="pi pi-plus-circle" style="color:#66bb6a"></i>
+          <i class="pi pi-plus-circle" style="color:var(--fst-green)"></i>
           Конструктор новой меры поддержки
         </div>
         <div class="gr-constructor-form">
@@ -589,7 +598,7 @@
         <!-- Концепция -->
         <div v-if="proposalText" class="gr-proposal-block">
           <div class="gr-proposal-header">
-            <i class="pi pi-file-edit" style="color:#42a5f5"></i>
+            <i class="pi pi-file-edit" style="color:var(--fst-blue)"></i>
             Проектное предложение новой меры
           </div>
           <div v-html="proposalText" class="gr-proposal-text"></div>
@@ -598,7 +607,7 @@
         <!-- Служебная записка -->
         <div v-if="memoText" class="gr-memo-block">
           <div class="gr-memo-header">
-            <i class="pi pi-envelope" style="color:#ffa726"></i>
+            <i class="pi pi-envelope" style="color:var(--fst-brand)"></i>
             Служебная записка — к запуску новой меры
             <Button label="Скопировать" icon="pi pi-copy" size="small" text @click="copyMemo" />
           </div>
@@ -609,7 +618,7 @@
       <!-- Библиотека предложений -->
       <div v-if="proposalLibrary.length" class="gr-library-panel">
         <div class="gr-section-title">
-          <i class="pi pi-book" style="color:#ffa726"></i>
+          <i class="pi pi-book" style="color:var(--fst-brand)"></i>
           Библиотека предложений ({{ proposalLibrary.length }})
         </div>
         <div class="gr-library-grid">
@@ -657,7 +666,7 @@
       <!-- Радар + список -->
       <div class="gov-card">
         <div class="gr-section-title">
-          <i class="pi pi-crosshairs" style="color:#42a5f5"></i>
+          <i class="pi pi-crosshairs" style="color:var(--fst-blue)"></i>
           Радар регуляторных рисков
           <Button label="AI-анализ рисков" icon="pi pi-sparkles" size="small" severity="warning"
             :loading="radarLoading" @click="runRadarAnalysis" style="margin-left:auto" />
@@ -670,13 +679,13 @@
             <div class="radar-svg-container" @mouseleave="radarTip.visible = false">
               <svg viewBox="0 0 400 400" class="radar-svg">
                 <!-- Кольца риска -->
-                <circle cx="200" cy="200" r="145" fill="rgba(239,83,80,0.05)" stroke="#ef5350" stroke-width="1" stroke-dasharray="5,3"/>
-                <circle cx="200" cy="200" r="95"  fill="rgba(255,167,38,0.05)" stroke="#ffa726" stroke-width="1" stroke-dasharray="5,3"/>
-                <circle cx="200" cy="200" r="45"  fill="rgba(102,187,106,0.08)" stroke="#66bb6a" stroke-width="1" stroke-dasharray="5,3"/>
+                <circle cx="200" cy="200" r="145" fill="color-mix(in srgb, var(--fst-red) 5%, transparent)" stroke="var(--fst-red)" stroke-width="1" stroke-dasharray="5,3"/>
+                <circle cx="200" cy="200" r="95"  fill="color-mix(in srgb, var(--fst-brand) 5%, transparent)" stroke="var(--fst-brand)" stroke-width="1" stroke-dasharray="5,3"/>
+                <circle cx="200" cy="200" r="45"  fill="color-mix(in srgb, var(--fst-green) 8%, transparent)" stroke="var(--fst-green)" stroke-width="1" stroke-dasharray="5,3"/>
                 <!-- Подписи колец -->
-                <text x="204" y="58"  font-size="9" fill="#ef5350" opacity="0.8">Высокий</text>
-                <text x="204" y="108" font-size="9" fill="#ffa726" opacity="0.8">Средний</text>
-                <text x="204" y="158" font-size="9" fill="#66bb6a" opacity="0.8">Низкий</text>
+                <text x="204" y="58"  font-size="9" fill="var(--fst-red)" opacity="0.8">Высокий</text>
+                <text x="204" y="108" font-size="9" fill="var(--fst-brand)" opacity="0.8">Средний</text>
+                <text x="204" y="158" font-size="9" fill="var(--fst-green)" opacity="0.8">Низкий</text>
                 <!-- Линии секторов -->
                 <line v-for="(l, i) in radarSectorLines" :key="i"
                       x1="200" y1="200" :x2="l.x2" :y2="l.y2"
@@ -699,7 +708,7 @@
                   <circle :cx="getRegPos(reg).x" :cy="getRegPos(reg).y"
                           :r="radarTip.reg?.code === reg.code ? 12 : 9"
                           :fill="getRegColor(reg)" opacity="0.9"
-                          :stroke="radarTip.reg?.code === reg.code ? '#fff' : 'none'" stroke-width="2"/>
+                          :stroke="radarTip.reg?.code === reg.code ? 'white' : 'none'" stroke-width="2"/>
                   <text :x="getRegPos(reg).x" :y="getRegPos(reg).y + 1"
                         text-anchor="middle" dominant-baseline="middle"
                         font-size="6.5" fill="white" font-weight="bold" pointer-events="none">
@@ -726,9 +735,9 @@
               </div>
             </Teleport>
             <div class="radar-chart-legend">
-              <span class="rcl-item"><span class="rcl-dot" style="background:#ef5350"></span>Высокий (внешнее)</span>
-              <span class="rcl-item"><span class="rcl-dot" style="background:#ffa726"></span>Средний</span>
-              <span class="rcl-item"><span class="rcl-dot" style="background:#66bb6a"></span>Низкий (центр)</span>
+              <span class="rcl-item"><span class="rcl-dot" style="background:var(--fst-red)"></span>Высокий (внешнее)</span>
+              <span class="rcl-item"><span class="rcl-dot" style="background:var(--fst-brand)"></span>Средний</span>
+              <span class="rcl-item"><span class="rcl-dot" style="background:var(--fst-green)"></span>Низкий (центр)</span>
             </div>
           </div>
 
@@ -834,7 +843,7 @@
       </div>
 
       <div v-if="regModal.proposalText" class="gr-proposal-block" style="margin-top:14px">
-        <div class="gr-proposal-header"><i class="pi pi-file-edit" style="color:#42a5f5"></i> Проектное предложение</div>
+        <div class="gr-proposal-header"><i class="pi pi-file-edit" style="color:var(--fst-blue)"></i> Проектное предложение</div>
         <div v-html="regModal.proposalText" class="gr-proposal-text"></div>
       </div>
     </div>
@@ -992,6 +1001,15 @@ const irrMultiplier = computed(() => {
   return +(1.0 + d * 0.4 + (allDefeated ? 0.5 : 0)).toFixed(1)
 })
 
+const govMetrics = computed(() => [
+  { icon: 'pi pi-wallet',      color: 'var(--fst-blue)',        val: allMeasures.value.length,      label: 'Мер поддержки' },
+  { icon: 'pi pi-check-circle',color: 'var(--fst-green)',       val: matchedMeasures.value.length,  label: 'Совпадают' },
+  { icon: 'pi pi-building',    color: 'var(--p-primary-color)', val: projects.value.length,         label: 'Проектов' },
+  { icon: 'pi pi-shield',      color: irrMultiplier.value >= 2 ? 'var(--fst-green)' : 'var(--fst-brand)', val: irrMultiplier.value + 'x', label: 'IRR мульт.' },
+  { icon: 'pi pi-bolt',        color: bossesActive.value > 0 ? 'var(--fst-red)' : 'var(--fst-green)',     val: activeBosses.value.length, label: 'Боссов' },
+  { icon: 'pi pi-exclamation-circle', color: 'var(--fst-purple)', val: regulations.value.length,   label: 'НПА на радаре' },
+])
+
 // Атаки, доступные конкретному боссу — фильтруем possibleEvents по типам атак босса
 function movesForBoss(boss) {
   const bossAttackTypes = new Set(boss.attacks.map(a => a.type))
@@ -1123,10 +1141,10 @@ const grMapProjects = computed(() => {
 })
 
 const GR_PHASE_META = {
-  none:    { label: 'Без событий', color: '#64748b', icon: 'pi pi-circle' },
-  init:    { label: 'Инициирован', color: '#3b82f6', icon: 'pi pi-play' },
-  applied: { label: 'Заявки поданы', color: '#f59e0b', icon: 'pi pi-send' },
-  funded:  { label: 'Финансирован', color: '#22c55e', icon: 'pi pi-check-circle' },
+  none:    { label: 'Без событий', color: 'var(--p-text-muted-color)', icon: 'pi pi-circle' },
+  init:    { label: 'Инициирован', color: 'var(--fst-blue)',           icon: 'pi pi-play' },
+  applied: { label: 'Заявки поданы', color: 'var(--fst-brand)',        icon: 'pi pi-send' },
+  funded:  { label: 'Финансирован', color: 'var(--fst-green)',         icon: 'pi pi-check-circle' },
 }
 
 // ─── Банк мер поддержки (удалён, данные в grMeasuresData.js) ─────────────────
@@ -1475,7 +1493,7 @@ function getRegPos(reg) {
 }
 
 function getRegColor(reg) {
-  return reg.risk === 'high' ? '#ef5350' : reg.risk === 'medium' ? '#ffa726' : '#66bb6a'
+  return reg.risk === 'high' ? 'var(--fst-red)' : reg.risk === 'medium' ? 'var(--fst-brand)' : 'var(--fst-green)'
 }
 
 const radarTip = ref({ visible: false, reg: null, x: 0, y: 0 })
@@ -1825,7 +1843,7 @@ onMounted(async () => {
   color: var(--p-text-muted-color); font-family: inherit; transition: all 0.15s;
 }
 .gr-tab:hover { background: var(--p-surface-hover, rgba(0,0,0,0.04)); color: var(--p-text-color); }
-.gr-tab--active { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
+.gr-tab--active { background: var(--p-primary-color); color: white; border-color: var(--p-primary-color); }
 
 .gr-content { display: flex; flex-direction: column; gap: 20px; }
 
@@ -1857,7 +1875,7 @@ onMounted(async () => {
 .gr-plan-block { border: 1px solid var(--p-content-border-color); border-radius: 8px; overflow: hidden; }
 .gr-plan-header {
   display: flex; align-items: center; gap: 8px; padding: 10px 14px;
-  background: rgba(102,187,106,0.06); font-weight: 600; font-size: 13px;
+  background: color-mix(in srgb, var(--fst-green) 6%, transparent); font-weight: 600; font-size: 13px;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .gr-plan-text { padding: 14px; font-size: 13px; line-height: 1.7; }
@@ -1872,25 +1890,25 @@ onMounted(async () => {
   border: 1px solid var(--p-content-border-color); border-radius: 8px;
   padding: 12px; background: var(--p-surface-card); transition: border-color 0.2s;
 }
-.gr-measure-card--matched { border-color: var(--p-green-400, #4caf50); background: rgba(76,175,80,0.03); }
+.gr-measure-card--matched { border-color: var(--fst-green); background: color-mix(in srgb, var(--fst-green) 3%, transparent); }
 .gr-mc-header { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
 .gr-match-badge {
-  font-size: 11px; font-weight: 700; color: var(--p-green-600, #2e7d32);
-  background: rgba(76,175,80,0.12); border-radius: 10px; padding: 2px 8px;
+  font-size: 11px; font-weight: 700; color: var(--fst-green);
+  background: color-mix(in srgb, var(--fst-green) 12%, transparent); border-radius: 10px; padding: 2px 8px;
 }
 .gr-mc-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; line-height: 1.4; }
 .gr-mc-operator { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 8px; }
 .gr-mc-meta { display: flex; gap: 10px; font-size: 11px; color: var(--p-text-muted-color); flex-wrap: wrap; margin-bottom: 6px; }
 .gr-mc-meta span { display: flex; align-items: center; gap: 3px; }
 .gr-mc-criteria { font-size: 11px; color: var(--p-text-muted-color); line-height: 1.6; }
-.gr-mc-deadline { font-size: 11px; color: var(--p-orange-500, #ff9800); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+.gr-mc-deadline { font-size: 11px; color: var(--fst-brand); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
 
-:deep(.gr-type-grant) { background: rgba(102,187,106,0.15) !important; color: #2e7d32 !important; border: none !important; }
-:deep(.gr-type-loan) { background: rgba(66,165,245,0.15) !important; color: #1565c0 !important; border: none !important; }
-:deep(.gr-type-tax) { background: rgba(171,71,188,0.15) !important; color: #6a1b9a !important; border: none !important; }
-:deep(.gr-type-status) { background: rgba(255,167,38,0.15) !important; color: #e65100 !important; border: none !important; }
-:deep(.gr-type-subsidy) { background: rgba(38,198,218,0.15) !important; color: #00695c !important; border: none !important; }
-:deep(.gr-type-guarantee) { background: rgba(239,83,80,0.15) !important; color: #b71c1c !important; border: none !important; }
+:deep(.gr-type-grant)     { background: color-mix(in srgb, var(--fst-green)  15%, transparent) !important; color: var(--fst-green)  !important; border: none !important; }
+:deep(.gr-type-loan)      { background: color-mix(in srgb, var(--fst-blue)   15%, transparent) !important; color: var(--fst-blue)   !important; border: none !important; }
+:deep(.gr-type-tax)       { background: color-mix(in srgb, var(--fst-purple) 15%, transparent) !important; color: var(--fst-purple) !important; border: none !important; }
+:deep(.gr-type-status)    { background: color-mix(in srgb, var(--fst-brand)  15%, transparent) !important; color: var(--fst-brand)  !important; border: none !important; }
+:deep(.gr-type-subsidy)   { background: color-mix(in srgb, var(--fst-cyan)   15%, transparent) !important; color: var(--fst-cyan)   !important; border: none !important; }
+:deep(.gr-type-guarantee) { background: color-mix(in srgb, var(--fst-red)    15%, transparent) !important; color: var(--fst-red)    !important; border: none !important; }
 
 /* Agent panel */
 .gr-agent-header {
@@ -1899,9 +1917,9 @@ onMounted(async () => {
 }
 .gr-agent-icon {
   width: 44px; height: 44px;
-  background: linear-gradient(135deg, #1565c0, #42a5f5);
+  background: linear-gradient(135deg, var(--fst-blue-dark, var(--fst-blue)), var(--fst-blue));
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: #fff; flex-shrink: 0;
+  font-size: 20px; color: white; flex-shrink: 0;
 }
 .gr-agent-title { font-weight: 700; font-size: 14px; }
 .gr-agent-sub { font-size: 11px; color: var(--p-text-muted-color); margin-top: 2px; }
@@ -1914,18 +1932,18 @@ onMounted(async () => {
 }
 .gr-pipe-step:first-child { border-radius: 8px 0 0 8px; }
 .gr-pipe-step:last-child { border-radius: 0 8px 8px 0; border-right: 1px solid var(--p-content-border-color); }
-.gr-pipe-step--done { background: rgba(76,175,80,0.07); border-color: var(--p-green-400, #4caf50); }
-.gr-pipe-step--running { background: rgba(255,167,38,0.1); border-color: #ffa726; }
+.gr-pipe-step--done { background: color-mix(in srgb, var(--fst-green) 7%, transparent); border-color: var(--fst-green); }
+.gr-pipe-step--running { background: color-mix(in srgb, var(--fst-brand) 10%, transparent); border-color: var(--fst-brand); }
 .gr-pipe-dot { font-size: 15px; color: var(--p-text-muted-color); flex-shrink: 0; }
-.gr-pipe-step--done .gr-pipe-dot { color: var(--p-green-500, #4caf50); }
-.gr-pipe-step--running .gr-pipe-dot { color: #ffa726; animation: spin 1s linear infinite; }
+.gr-pipe-step--done .gr-pipe-dot { color: var(--fst-green); }
+.gr-pipe-step--running .gr-pipe-dot { color: var(--fst-brand); animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .gr-pipe-name { font-size: 11px; font-weight: 600; }
 .gr-pipe-desc { font-size: 10px; color: var(--p-text-muted-color); }
 
 .gr-agent-output { border: 1px solid var(--p-content-border-color); border-radius: 8px; overflow: hidden; }
 .gr-agent-output-header {
-  padding: 10px 14px; background: rgba(66,165,245,0.06);
+  padding: 10px 14px; background: color-mix(in srgb, var(--fst-blue) 6%, transparent);
   font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px;
   border-bottom: 1px solid var(--p-content-border-color);
 }
@@ -1947,14 +1965,14 @@ onMounted(async () => {
   font-size: 10px; color: var(--p-text-muted-color);
   background: var(--p-surface-hover, rgba(0,0,0,0.04)); border-radius: 4px; padding: 1px 6px;
 }
-.gr-onto-event--detect { color: #ef5350; }
-.gr-onto-event--analyze { color: #ffa726; }
-.gr-onto-event--org { color: #42a5f5; }
-.gr-onto-event--design { color: #ab47bc; }
-.gr-onto-event--pilot { color: #26c6da; }
-.gr-onto-event--legal { color: #66bb6a; }
-.gr-onto-event--scale { color: #66bb6a; }
-.gr-onto-result { font-size: 12px; font-weight: 600; color: var(--p-green-600, #2e7d32); display: flex; align-items: center; gap: 6px; }
+.gr-onto-event--detect  { color: var(--fst-red); }
+.gr-onto-event--analyze { color: var(--fst-brand); }
+.gr-onto-event--org     { color: var(--fst-blue); }
+.gr-onto-event--design  { color: var(--fst-purple); }
+.gr-onto-event--pilot   { color: var(--fst-cyan); }
+.gr-onto-event--legal   { color: var(--fst-green); }
+.gr-onto-event--scale   { color: var(--fst-green); }
+.gr-onto-result { font-size: 12px; font-weight: 600; color: var(--fst-green); display: flex; align-items: center; gap: 6px; }
 
 /* Constructor */
 .gr-constructor-form { display: flex; flex-direction: column; gap: 12px; }
@@ -1969,7 +1987,7 @@ onMounted(async () => {
   font-size: 11px; cursor: pointer; transition: all 0.15s; color: var(--p-text-muted-color);
 }
 .gr-onto-tag:hover { border-color: var(--p-primary-color); color: var(--p-primary-color); }
-.gr-onto-tag--sel { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
+.gr-onto-tag--sel { background: var(--p-primary-color); color: white; border-color: var(--p-primary-color); }
 .gr-cf-actions { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 6px; }
 
 .gr-proposal-block, .gr-memo-block {
@@ -1979,8 +1997,8 @@ onMounted(async () => {
   display: flex; align-items: center; gap: 8px; padding: 10px 14px;
   font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--p-content-border-color);
 }
-.gr-proposal-header { background: rgba(66,165,245,0.05); }
-.gr-memo-header { background: rgba(255,167,38,0.05); }
+.gr-proposal-header { background: color-mix(in srgb, var(--fst-blue) 5%, transparent); }
+.gr-memo-header { background: color-mix(in srgb, var(--fst-brand) 5%, transparent); }
 .gr-proposal-text, .gr-memo-text { padding: 14px; font-size: 13px; line-height: 1.7; }
 
 .gr-library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
@@ -2011,13 +2029,13 @@ onMounted(async () => {
 .gr-onto-event:hover { background: rgba(99,102,241,0.06); }
 .gr-onto-event.is-active { background: rgba(99,102,241,0.1); outline: 1px solid var(--p-primary-color); }
 .gr-onto-event.has-measures::before { content: '●'; color: var(--p-primary-color); font-size: 8px; margin-right: 4px; }
-.gr-onto-event.is-gap::before { content: '○'; color: #ef5350; font-size: 8px; margin-right: 4px; }
+.gr-onto-event.is-gap::before { content: '○'; color: var(--fst-red); font-size: 8px; margin-right: 4px; }
 .gr-onto-mbadge {
-  font-size: 9px; background: var(--p-primary-color); color: #fff;
+  font-size: 9px; background: var(--p-primary-color); color: white;
   border-radius: 8px; padding: 1px 6px; margin-left: 6px; font-weight: 700;
 }
 .gr-onto-gbadge {
-  font-size: 9px; background: rgba(239,83,80,0.15); color: #ef5350;
+  font-size: 9px; background: color-mix(in srgb, var(--fst-red) 15%, transparent); color: var(--fst-red);
   border-radius: 8px; padding: 1px 6px; margin-left: 6px;
 }
 .gr-onto-expanded { margin: 4px 0 10px 24px; display: flex; flex-direction: column; gap: 4px; }
@@ -2032,8 +2050,8 @@ onMounted(async () => {
 .gr-om-amt { font-size: 11px; color: var(--p-text-muted-color); flex-shrink: 0; }
 .gr-onto-gap-row {
   display: flex; align-items: center; gap: 10px; padding: 8px 12px;
-  background: rgba(239,83,80,0.05); border: 1px dashed #ef5350;
-  border-radius: 6px; font-size: 12px; color: #ef5350; flex-wrap: wrap;
+  background: color-mix(in srgb, var(--fst-red) 5%, transparent); border: 1px dashed var(--fst-red);
+  border-radius: 6px; font-size: 12px; color: var(--fst-red); flex-wrap: wrap;
 }
 
 /* Radar */
@@ -2063,9 +2081,9 @@ onMounted(async () => {
 .radar-desc { font-size: 12px; color: var(--p-text-muted-color); }
 .radar-meta { text-align: right; display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
 .radar-date { color: var(--p-text-muted-color); }
-.risk-high { color: #ef5350; font-weight: 600; }
-.risk-medium { color: #ffa726; font-weight: 600; }
-.risk-low { color: #66bb6a; font-weight: 600; }
+.risk-high   { color: var(--fst-red);   font-weight: 600; }
+.risk-medium { color: var(--fst-brand); font-weight: 600; }
+.risk-low    { color: var(--fst-green); font-weight: 600; }
 
 /* ─── Справочник мер в конструкторе ──────────────────────────────────────── */
 .gr-ref-panel {
@@ -2140,7 +2158,7 @@ onMounted(async () => {
 }
 .gr-map-card-stats { display: flex; gap: 10px; margin-bottom: 6px; }
 .gr-map-stat { display: flex; flex-direction: column; align-items: center; min-width: 36px; }
-.gr-map-stat-val { font-size: 1rem; font-weight: 700; color: #22c55e; }
+.gr-map-stat-val { font-size: 1rem; font-weight: 700; color: var(--fst-green); }
 .gr-map-stat-lbl { font-size: 8px; color: var(--p-text-muted-color); text-transform: uppercase; }
 .gr-map-card-last { font-size: 9px; color: var(--p-text-muted-color); }
 </style>
@@ -2214,7 +2232,7 @@ onMounted(async () => {
 .gr-onto-subtypes, .gr-onto-props { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .gr-onto-subtype {
   font-size: 10px; padding: 2px 6px; border-radius: 4px;
-  background: var(--p-primary-color); color: #fff; opacity: 0.8;
+  background: var(--p-primary-color); color: white; opacity: 0.8;
 }
 .gr-onto-prop {
   font-size: 10px; padding: 2px 6px; border-radius: 4px;
@@ -2229,7 +2247,7 @@ onMounted(async () => {
 }
 .gr-onto-iface-from {
   font-size: 12px; font-weight: 600;
-  background: var(--p-primary-color); color: #fff; padding: 3px 10px; border-radius: 6px;
+  background: var(--p-primary-color); color: white; padding: 3px 10px; border-radius: 6px;
   white-space: nowrap;
 }
 .gr-onto-iface-to {
@@ -2266,7 +2284,7 @@ onMounted(async () => {
   color: var(--p-text-muted-color); font-family: inherit; transition: all 0.15s;
 }
 .gr-tl-vs-btn:hover { background: var(--p-surface-hover, rgba(0,0,0,0.04)); color: var(--p-text-color); }
-.gr-tl-vs-btn.active { background: var(--p-primary-color); color: #fff; }
+.gr-tl-vs-btn.active { background: var(--p-primary-color); color: white; }
 
 /* ─── DAG wrapper ─────────────────────────────────────────────────────────── */
 .gr-tl-dag-wrap {
@@ -2299,7 +2317,7 @@ onMounted(async () => {
   min-width: 40px;
 }
 .gr-iface-line-label {
-  position: absolute; font-size: 9px; font-weight: 700; color: #fff;
+  position: absolute; font-size: 9px; font-weight: 700; color: white;
   background: inherit; padding: 1px 5px; border-radius: 4px; white-space: nowrap;
   text-transform: uppercase; letter-spacing: 0.04em;
 }
@@ -2354,26 +2372,26 @@ onMounted(async () => {
 
 /* ─── Пробелы в поддержке ─────────────────────────────────────────────────── */
 .gr-tl-gaps {
-  background: rgba(245,158,11,0.05);
-  border: 1px solid rgba(245,158,11,0.3);
+  background: color-mix(in srgb, var(--fst-brand) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-brand) 30%, transparent);
   border-radius: 10px; padding: 12px 16px;
 }
 .gr-tl-gaps-title {
   display: flex; align-items: center; gap: 8px;
-  font-weight: 700; font-size: 13px; color: #b45309;
+  font-weight: 700; font-size: 13px; color: var(--fst-brand);
   margin-bottom: 8px;
 }
 .gr-tl-gaps-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .gr-tl-gap-tag {
   font-size: 11px; padding: 3px 10px;
-  background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35);
-  border-radius: 12px; color: #92400e;
+  background: color-mix(in srgb, var(--fst-brand) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-brand) 35%, transparent);
+  border-radius: 12px; color: var(--fst-brand);
 }
 
 /* ─── Контрфактический анализ ─────────────────────────────────────────────── */
 .gr-tl-counterfactual {
-  background: rgba(139,92,246,0.05);
-  border: 1px solid rgba(139,92,246,0.3);
+  background: color-mix(in srgb, var(--fst-purple) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-purple) 30%, transparent);
   border-radius: 10px; padding: 14px 18px;
 }
 .gr-tl-cf-header {
@@ -2381,8 +2399,8 @@ onMounted(async () => {
   margin-bottom: 14px;
 }
 .gr-tl-cf-ev {
-  font-size: 12px; font-weight: 600; color: #7c3aed;
-  background: rgba(139,92,246,0.12); padding: 2px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; color: var(--fst-purple);
+  background: color-mix(in srgb, var(--fst-purple) 12%, transparent); padding: 2px 10px; border-radius: 6px;
 }
 .gr-tl-cf-close {
   margin-left: auto; background: none; border: none; cursor: pointer;
@@ -2392,28 +2410,28 @@ onMounted(async () => {
 .gr-tl-cf-close:hover { color: var(--p-text-color); }
 .gr-tl-cf-body {
   display: flex; gap: 0; align-items: stretch;
-  border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--fst-purple) 20%, transparent); border-radius: 8px; overflow: hidden;
 }
 .gr-tl-cf-col {
   flex: 1; padding: 12px 16px;
   background: var(--p-surface-card);
   display: flex; flex-direction: column; gap: 6px; font-size: 13px;
 }
-.gr-tl-cf-col:not(:last-child) { border-right: 1px solid rgba(139,92,246,0.2); }
+.gr-tl-cf-col:not(:last-child) { border-right: 1px solid color-mix(in srgb, var(--fst-purple) 20%, transparent); }
 .gr-tl-cf-label {
   font-size: 11px; font-weight: 700; color: var(--p-text-muted-color);
   text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;
 }
 .gr-tl-cf-arrow {
   display: flex; align-items: center; justify-content: center;
-  padding: 0 10px; font-size: 22px; color: rgba(139,92,246,0.4);
+  padding: 0 10px; font-size: 22px; color: color-mix(in srgb, var(--fst-purple) 40%, transparent);
   background: var(--p-surface-card); flex-shrink: 0;
 }
 
 /* ─── AI Suggestion hint ─── */
 .gr-ai-hint {
   background: var(--p-surface-card);
-  border: 1px solid #ab47bc44;
+  border: 1px solid color-mix(in srgb, var(--fst-purple) 25%, transparent);
   border-radius: 10px;
   padding: 10px 14px;
   margin-bottom: 8px;
@@ -2458,8 +2476,8 @@ onMounted(async () => {
 
 /* ─── Экран старта ─── */
 @keyframes arena-glow {
-  0%, 100% { text-shadow: 0 0 20px rgba(245,158,11,0.5); }
-  50%       { text-shadow: 0 0 40px rgba(245,158,11,0.9); }
+  0%, 100% { text-shadow: 0 0 20px color-mix(in srgb, var(--fst-brand) 50%, transparent); }
+  50%       { text-shadow: 0 0 40px color-mix(in srgb, var(--fst-brand) 90%, transparent); }
 }
 .gr-arena-start {
   display: flex; flex-direction: column; align-items: center;
@@ -2484,8 +2502,8 @@ onMounted(async () => {
 
 /* ─── Мультипликатор IRR ─── */
 @keyframes multiplier-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
-  50%       { box-shadow: 0 0 20px 4px rgba(34,197,94,0.25); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--fst-green) 0%, transparent); }
+  50%       { box-shadow: 0 0 20px 4px color-mix(in srgb, var(--fst-green) 25%, transparent); }
 }
 .gr-multiplier {
   display: flex; align-items: center; gap: 16px;
@@ -2496,12 +2514,12 @@ onMounted(async () => {
   transition: border-color 0.4s;
 }
 .gr-multiplier--max {
-  border-color: #22c55e88;
+  border-color: color-mix(in srgb, var(--fst-green) 50%, transparent);
   animation: multiplier-pulse 2s ease infinite;
 }
 .gr-multiplier-left { text-align: center; min-width: 60px; }
 .gr-multiplier-val {
-  font-size: 2.2rem; font-weight: 900; color: #22c55e;
+  font-size: 2.2rem; font-weight: 900; color: var(--fst-green);
   line-height: 1; font-variant-numeric: tabular-nums;
   transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
 }
@@ -2512,7 +2530,7 @@ onMounted(async () => {
   border-radius: 6px; overflow: hidden; margin-bottom: 6px;
 }
 .gr-multiplier-fill {
-  height: 100%; background: linear-gradient(90deg, #22c55e, #86efac);
+  height: 100%; background: linear-gradient(90deg, var(--fst-green), color-mix(in srgb, var(--fst-green) 50%, white));
   border-radius: 6px;
   transition: width 0.7s cubic-bezier(0.16,1,0.3,1);
 }
@@ -2564,8 +2582,8 @@ onMounted(async () => {
   border-radius: 10px;
   padding: 2px 8px;
 }
-.gr-bosses-score--win    { background: #22c55e22; color: #22c55e; }
-.gr-bosses-score--active { background: #ef444422; color: #ef4444; }
+.gr-bosses-score--win    { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.gr-bosses-score--active { background: color-mix(in srgb, var(--fst-red) 12%, transparent);   color: var(--fst-red); }
 .gr-bosses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
