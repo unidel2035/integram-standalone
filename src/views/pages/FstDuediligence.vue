@@ -1,9 +1,11 @@
 <template>
   <FstPageLayout title="AI Due Diligence" subtitle="Due Diligence — углублённая проверка перед инвестицией">
     <template #actions>
-      <Button label="Экспорт DD-отчёта" severity="secondary" @click="exportDd" />
-      <Button label="+ Новая проверка" @click="showNewDd = true" />
+      <Button label="Экспорт DD-отчёта" size="small" severity="secondary" @click="exportDd" />
+      <Button label="+ Новая проверка" size="small" @click="showNewDd = true" />
     </template>
+
+    <div class="dd-content">
 
     <!-- Активные DD -->
     <div class="dd-active-list">
@@ -24,15 +26,15 @@
 
     <!-- Детали выбранного DD -->
     <div v-if="selectedDd" class="dd-detail">
-      <h2>{{ selectedDd.company }} — Due Diligence</h2>
+      <div class="dd-section-title">{{ selectedDd.company }} — Due Diligence</div>
 
       <div class="dd-tabs">
-        <Button v-for="t in ddTabs" :key="t.id" :label="t.label" :severity="ddActiveTab === t.id ? undefined : 'secondary'" size="small" @click="ddActiveTab = t.id" />
+        <SelectButton v-model="ddActiveTab" :options="ddTabs" optionLabel="label" optionValue="id" :allowEmpty="false" size="small" />
       </div>
 
       <!-- Правовой блок -->
       <div v-if="ddActiveTab === 'legal'" class="dd-block">
-        <h3>Правовая проверка</h3>
+        <div class="dd-block-title">Правовая проверка</div>
         <div class="check-grid">
           <div v-for="item in legalChecks" :key="item.label" class="dd-check" :class="item.result">
             <div class="check-icon">{{ checkIcon(item.result) }}</div>
@@ -47,7 +49,7 @@
 
       <!-- Финансовый блок -->
       <div v-if="ddActiveTab === 'financial'" class="dd-block">
-        <h3>Финансовый анализ</h3>
+        <div class="dd-block-title">Финансовый анализ</div>
         <div class="fin-metrics">
           <div v-for="m in finMetrics" :key="m.label" class="fin-metric">
             <div class="fm-label">{{ m.label }}</div>
@@ -56,14 +58,14 @@
           </div>
         </div>
         <div class="dd-redflags" v-if="redFlags.length">
-          <h4>Красные флаги</h4>
+          <div class="dd-block-title" style="color: var(--fst-red)">Красные флаги</div>
           <div v-for="rf in redFlags" :key="rf" class="redflag">! {{ rf }}</div>
         </div>
       </div>
 
       <!-- Технологический блок -->
       <div v-if="ddActiveTab === 'tech'" class="dd-block">
-        <h3>Технологический Due Diligence</h3>
+        <div class="dd-block-title">Технологический Due Diligence</div>
         <div class="tech-items">
           <div v-for="item in techChecks" :key="item.area" class="tech-item">
             <div class="ti-area">{{ item.area }}</div>
@@ -78,7 +80,7 @@
 
       <!-- AI-саммари -->
       <div v-if="ddActiveTab === 'summary'" class="dd-block">
-        <h3>AI-сводка Due Diligence</h3>
+        <div class="dd-block-title">AI-сводка Due Diligence</div>
         <div class="dd-verdict" :class="selectedDd.verdict">
           <div class="verdict-icon">{{ selectedDd.verdict === 'proceed' ? '✓' : selectedDd.verdict === 'caution' ? '!' : '✗' }}</div>
           <div>
@@ -87,15 +89,17 @@
           </div>
         </div>
         <div class="dd-strengths">
-          <h4>Сильные стороны</h4>
+          <div class="dd-block-title">Сильные стороны</div>
           <ul><li v-for="s in selectedDd.strengths" :key="s">{{ s }}</li></ul>
         </div>
         <div class="dd-risks">
-          <h4>Риски к управлению</h4>
+          <div class="dd-block-title" style="color: var(--fst-brand)">Риски к управлению</div>
           <ul><li v-for="r in selectedDd.risks" :key="r">{{ r }}</li></ul>
         </div>
       </div>
     </div>
+
+    </div><!-- /dd-content -->
 
     <!-- Новая DD Modal -->
     <Dialog v-model:visible="showNewDd" header="Новая DD-проверка" :style="{ width: '380px' }" modal>
@@ -124,6 +128,7 @@ import { ref } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useEventStore } from '@/stores/eventStore.js'
 import Button from 'primevue/button'
+import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Dialog from 'primevue/dialog'
@@ -241,8 +246,10 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 </script>
 
 <style scoped>
+.dd-content { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; }
+
 .dd-active-list { display: flex; gap: 10px; flex-wrap: wrap; }
-.dd-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 14px; cursor: pointer; flex: 1; min-width: 180px; transition: border-color 0.2s; }
+.dd-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 14px; cursor: pointer; flex: 1; min-width: 180px; transition: border-color 0.2s; }
 .dd-card.selected { border-color: var(--p-primary-color); }
 .dd-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .dd-co-name { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); }
@@ -254,11 +261,10 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .dd-fill { height: 100%; background: var(--p-primary-color); border-radius: 3px; transition: width 0.5s; }
 .dd-meta { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--p-text-muted-color); }
 
-.dd-detail { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; }
-.dd-detail h2 { margin: 0 0 14px; font-size: 1.1rem; color: var(--p-text-color); }
-.dd-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-
-.dd-block h3 { margin: 0 0 14px; font-size: 0.95rem; color: var(--p-text-color); }
+.dd-detail { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; }
+.dd-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
+.dd-block-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 12px; }
+.dd-tabs { margin-bottom: 16px; }
 .check-grid { display: flex; flex-direction: column; gap: 8px; }
 .dd-check { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--p-surface-ground); }
 .dd-check.ok   { border-left: 3px solid var(--fst-green); }
@@ -279,7 +285,6 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .fm-val     { font-size: 1.2rem; font-weight: 700; margin: 4px 0; }
 .fm-val.green  { color: var(--fst-green); } .fm-val.orange { color: var(--fst-brand); } .fm-val.red { color: var(--fst-red); }
 .fm-comment { font-size: 0.68rem; color: var(--p-text-muted-color); }
-.dd-redflags h4 { margin: 0 0 8px; font-size: 0.85rem; color: var(--fst-red); }
 .redflag { font-size: 0.8rem; color: var(--fst-red); padding: 6px 10px; background: color-mix(in srgb, var(--fst-red) 7%, transparent); border-radius: 5px; margin-bottom: 4px; }
 
 .tech-items { display: flex; flex-direction: column; gap: 10px; }
@@ -290,7 +295,7 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .ti-score { font-size: 0.78rem; font-weight: 700; color: var(--p-text-color); text-align: right; }
 .ti-finding { font-size: 0.72rem; color: var(--p-text-muted-color); grid-column: 1 / -1; }
 
-.dd-verdict { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 10px; margin-bottom: 16px; }
+.dd-verdict { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; margin-bottom: 16px; }
 .dd-verdict.proceed { background: color-mix(in srgb, var(--fst-green) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-green) 27%, transparent); }
 .dd-verdict.caution { background: color-mix(in srgb, var(--fst-brand) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-brand) 27%, transparent); }
 .dd-verdict.reject  { background: color-mix(in srgb, var(--fst-red) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-red) 27%, transparent); }
@@ -301,7 +306,7 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .dd-verdict.reject  .verdict-icon { color: var(--fst-red); }
 .verdict-title { font-weight: 700; font-size: 0.95rem; color: var(--p-text-color); margin-bottom: 4px; }
 .verdict-text  { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.dd-strengths h4, .dd-risks h4 { margin: 12px 0 6px; font-size: 0.85rem; color: var(--p-text-color); }
+.dd-strengths .dd-block-title, .dd-risks .dd-block-title { margin-top: 12px; }
 .dd-strengths ul, .dd-risks ul { margin: 0; padding-left: 18px; }
 .dd-strengths li { font-size: 0.8rem; color: var(--p-text-color); margin-bottom: 4px; }
 .dd-risks li { font-size: 0.8rem; color: var(--fst-brand); margin-bottom: 4px; }

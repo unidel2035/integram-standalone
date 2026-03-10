@@ -78,10 +78,10 @@
       <!-- ── Quick Start (если роль не выбрана или показываем по умолчанию) ── -->
       <div class="dg-section">
         <div class="dg-section-header">
-          <h2 class="dg-section-title">
+          <div class="dg-section-title">
             <i class="pi pi-bolt"></i>
             Быстрый старт
-          </h2>
+          </div>
           <Button
             v-if="!learningStore.userRole"
             label="Выбрать мою роль"
@@ -121,10 +121,10 @@
       <!-- ── Каталог ресурсов ── -->
       <div class="dg-section">
         <div class="dg-section-header">
-          <h2 class="dg-section-title">
+          <div class="dg-section-title">
             <i class="pi pi-book"></i>
             Каталог ресурсов
-          </h2>
+          </div>
         </div>
 
         <!-- Tabs -->
@@ -289,10 +289,10 @@
       <!-- ── Последние активности ── -->
       <div v-if="learningStore.recentActivities.length > 0" class="dg-section">
         <div class="dg-section-header">
-          <h2 class="dg-section-title">
+          <div class="dg-section-title">
             <i class="pi pi-history"></i>
             Последние активности
-          </h2>
+          </div>
           <router-link to="/fst-learning-progress" class="dg-see-all">
             Весь прогресс <i class="pi pi-arrow-right"></i>
           </router-link>
@@ -318,10 +318,10 @@
       <!-- ── Для AI-агентов ── -->
       <div class="dg-section dg-ai-section">
         <div class="dg-section-header">
-          <h2 class="dg-section-title">
+          <div class="dg-section-title">
             <i class="pi pi-microchip-ai"></i>
             Для AI-агентов
-          </h2>
+          </div>
         </div>
         <div class="dg-ai-grid">
           <div class="dg-ai-card">
@@ -364,7 +364,34 @@
         </div>
       </div>
 
-    </div>
+      <!-- ── Подсказки платформы ── -->
+      <div class="dg-hints-section dg-section">
+        <div class="dg-section-header">
+          <div class="dg-section-title">
+            <i class="pi pi-lightbulb"></i>
+            Подсказки платформы
+          </div>
+        </div>
+        <p class="dg-hints-desc">
+          При первом посещении каждой страницы платформа показывает обучающие подсказки-пульсы.
+          Если хотите увидеть их снова — нажмите кнопку ниже.
+        </p>
+        <div class="dg-hints-row">
+          <span class="dg-hints-count">
+            <i class="pi pi-check-circle" style="color: var(--p-primary-color)"></i>
+            Просмотрено подсказок: <strong>{{ hintsSeenCount }}</strong>
+          </span>
+          <Button icon="pi pi-refresh" label="Показать все подсказки заново" size="small" severity="secondary" @click="resetFeatureHints" />
+        </div>
+        <Transition name="dg-fade">
+          <div v-if="hintsResetDone" class="dg-hints-ok">
+            <i class="pi pi-check"></i>
+            Сброшено! При следующем посещении страниц подсказки появятся снова.
+          </div>
+        </Transition>
+      </div>
+
+    </div><!-- /dg-page -->
 
     <!-- ── Role selection dialog ── -->
     <Dialog v-model:visible="showRoleDialog" modal header="Выберите вашу роль" :style="{ width: '480px' }">
@@ -382,34 +409,6 @@
         </div>
       </div>
     </Dialog>
-
-    <!-- ── Feature Hints Reset ── -->
-    <div class="dg-hints-section">
-      <div class="dg-hints-header">
-        <i class="pi pi-lightbulb" style="color: var(--p-primary-color)"></i>
-        <span>Подсказки платформы</span>
-      </div>
-      <p class="dg-hints-desc">
-        При первом посещении каждой страницы платформа показывает обучающие подсказки-пульсы.
-        Если хотите увидеть их снова — нажмите кнопку ниже.
-      </p>
-      <div class="dg-hints-row">
-        <span class="dg-hints-count">
-          <i class="pi pi-check-circle" style="color: var(--p-primary-color)"></i>
-          Просмотрено подсказок: <strong>{{ hintsSeenCount }}</strong>
-        </span>
-        <button class="dg-hints-reset-btn" @click="resetFeatureHints">
-          <i class="pi pi-refresh"></i>
-          Показать все подсказки заново
-        </button>
-      </div>
-      <Transition name="dg-fade">
-        <div v-if="hintsResetDone" class="dg-hints-ok">
-          <i class="pi pi-check"></i>
-          Сброшено! При следующем посещении страниц подсказки появятся снова.
-        </div>
-      </Transition>
-    </div>
 
   </FstPageLayout>
 </template>
@@ -542,19 +541,18 @@ function formatTime(iso) {
 
 <style scoped>
 .dg-page {
-  max-width: 980px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 16px;
+  padding-top: 16px;
 }
 
 /* ── Hero ── */
 .dg-hero {
   display: flex;
-  gap: 2rem;
+  gap: 20px;
   align-items: flex-start;
-  padding: 2rem;
+  padding: 20px;
   background: linear-gradient(135deg,
     color-mix(in srgb, var(--p-primary-color) 12%, var(--p-surface-card)) 0%,
     var(--p-surface-card) 100%
@@ -669,7 +667,7 @@ function formatTime(iso) {
 .dg-section {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .dg-section-header {

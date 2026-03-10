@@ -1,22 +1,23 @@
 <template>
-  <FstPageLayout title="Agent Room" subtitle="Agent Room — многоагентный AI-анализ в свободном формате">
+  <FstPageLayout>
     <template #header>
-      <div class="room-header">
-        <div class="room-title">
-          <i class="pi pi-comments" style="color: var(--p-primary-color); font-size:1.3rem" />
-          <span>Agent Room</span>
-          <Tag v-if="connected" severity="success" value="online" />
-          <Tag v-else severity="danger" value="offline" />
-        </div>
-        <div class="room-controls">
-          <InputText v-model="roomName" placeholder="Имя комнаты" style="width:140px" :disabled="connected" />
-          <InputText v-model="sessionName" placeholder="Ваше имя / роль" style="width:160px" :disabled="connected" />
-          <Select v-model="sessionRole" :options="ROLES" option-label="label" option-value="value"
-                  style="width:130px" :disabled="connected" />
-          <Button v-if="!connected" label="Войти" icon="pi pi-sign-in" @click="connect" />
-          <Button v-else label="Выйти" icon="pi pi-sign-out" severity="secondary" @click="disconnect" />
-        </div>
+      <div class="room-title-group">
+        <span class="room-live-dot" :class="{ active: connected }" />
+        <span class="room-title-text">Agent Room</span>
+        <span class="room-sep">·</span>
+        <span class="room-sub">многоагентный AI-анализ · SSE · MCP-агенты</span>
+        <Tag v-if="connected" severity="success" value="online" size="small" />
+        <Tag v-else severity="secondary" value="offline" size="small" />
       </div>
+    </template>
+
+    <template #actions>
+      <InputText v-model="roomName" placeholder="Имя комнаты" size="small" style="width:140px" :disabled="connected" />
+      <InputText v-model="sessionName" placeholder="Ваше имя / роль" size="small" style="width:160px" :disabled="connected" />
+      <Select v-model="sessionRole" :options="ROLES" option-label="label" option-value="value"
+              size="small" style="width:130px" :disabled="connected" />
+      <Button v-if="!connected" label="Войти" icon="pi pi-sign-in" size="small" @click="connect" />
+      <Button v-else label="Выйти" icon="pi pi-sign-out" size="small" severity="secondary" @click="disconnect" />
     </template>
 
     <div class="room-layout">
@@ -289,27 +290,19 @@ const apiExample = computed(() => JSON.stringify({
 </script>
 
 <style scoped>
-.room-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+.room-title-group { display: flex; align-items: center; gap: 8px; }
+.room-live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--p-text-muted-color); flex-shrink: 0;
 }
-.room-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--p-text-color);
+.room-live-dot.active {
+  background: var(--fst-green);
+  animation: room-pulse 2s infinite;
 }
-.room-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
+@keyframes room-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.room-title-text { font-size: 14px; font-weight: 600; color: var(--p-text-color); }
+.room-sep { color: var(--p-text-muted-color); }
+.room-sub { font-size: 0.82rem; color: var(--p-text-muted-color); font-weight: 400; }
 
 .room-layout {
   display: grid;
@@ -323,7 +316,7 @@ const apiExample = computed(() => JSON.stringify({
 .room-sidebar {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0.75rem;
   overflow-y: auto;
   display: flex;
@@ -382,7 +375,7 @@ const apiExample = computed(() => JSON.stringify({
   flex-direction: column;
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .room-messages {

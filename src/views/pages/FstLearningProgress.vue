@@ -1,42 +1,39 @@
 <template>
-  <FstPageLayout
-    title="Мой прогресс"
-    subtitle="Мой прогресс — достижения и траектория обучения"
-    icon="pi pi-chart-line"
-  >
-    <div class="lp-page">
-
-      <!-- Summary cards -->
-      <div class="lp-stats-row">
-        <div class="lp-stat-card">
-          <div class="lp-stat-icon" style="background: color-mix(in srgb, var(--p-primary-color) 15%, transparent)">
-            <i class="pi pi-graduation-cap" style="color: var(--p-primary-color)"></i>
-          </div>
-          <div class="lp-stat-value">{{ learningStore.overallProgress }}%</div>
-          <div class="lp-stat-label">Общий прогресс</div>
-        </div>
-        <div class="lp-stat-card">
-          <div class="lp-stat-icon" style="background: color-mix(in srgb, var(--fst-green) 15%, transparent)">
-            <i class="pi pi-map" style="color: var(--fst-green)"></i>
-          </div>
-          <div class="lp-stat-value">{{ learningStore.completedTours.length }} / {{ learningStore.tours.length }}</div>
-          <div class="lp-stat-label">Туров пройдено</div>
-        </div>
-        <div class="lp-stat-card">
-          <div class="lp-stat-icon" style="background: color-mix(in srgb, var(--fst-cyan) 15%, transparent)">
-            <i class="pi pi-question-circle" style="color: var(--fst-cyan)"></i>
-          </div>
-          <div class="lp-stat-value">{{ learningStore.completedQuizzes.length }} / {{ learningStore.quizzes.length }}</div>
-          <div class="lp-stat-label">Квизов сдано</div>
-        </div>
-        <div class="lp-stat-card">
-          <div class="lp-stat-icon" style="background: color-mix(in srgb, var(--fst-brand) 15%, transparent)">
-            <i class="pi pi-video" style="color: var(--fst-brand)"></i>
-          </div>
-          <div class="lp-stat-value">{{ learningStore.completedVideos.length }} / {{ learningStore.videos.length }}</div>
-          <div class="lp-stat-label">Видео просмотрено</div>
-        </div>
+  <FstPageLayout>
+    <template #header>
+      <div class="lp-title-group">
+        <span class="lp-live-dot" />
+        <span class="lp-title">Мой прогресс</span>
+        <span class="lp-sep">·</span>
+        <span class="lp-sub">достижения и траектория обучения</span>
       </div>
+    </template>
+
+    <!-- Metrics strip -->
+    <div class="lp-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-graduation-cap fst-metric-item-icon"></i>
+        <div class="fst-metric-item-val">{{ learningStore.overallProgress }}%</div>
+        <div class="fst-metric-item-label">Общий прогресс</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-map fst-metric-item-icon" style="color: var(--fst-green)"></i>
+        <div class="fst-metric-item-val">{{ learningStore.completedTours.length }} / {{ learningStore.tours.length }}</div>
+        <div class="fst-metric-item-label">Туров пройдено</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-question-circle fst-metric-item-icon" style="color: var(--fst-cyan)"></i>
+        <div class="fst-metric-item-val">{{ learningStore.completedQuizzes.length }} / {{ learningStore.quizzes.length }}</div>
+        <div class="fst-metric-item-label">Квизов сдано</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-video fst-metric-item-icon" style="color: var(--fst-brand)"></i>
+        <div class="fst-metric-item-val">{{ learningStore.completedVideos.length }} / {{ learningStore.videos.length }}</div>
+        <div class="fst-metric-item-label">Видео просмотрено</div>
+      </div>
+    </div>
+
+    <div class="lp-page">
 
       <!-- Progress bar -->
       <div class="lp-progress-section">
@@ -108,7 +105,7 @@
       </div>
 
       <!-- Recent activity -->
-      <div class="lp-section-card" style="margin-top: 1.5rem">
+      <div class="lp-section-card">
         <div class="lp-section-title">
           <i class="pi pi-history"></i> Последняя активность
         </div>
@@ -174,70 +171,41 @@ function formatTime(iso) {
 </script>
 
 <style scoped>
+/* ── Header ── */
+.lp-title-group { display: flex; align-items: center; gap: 8px; }
+.lp-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--p-primary-color); flex-shrink: 0; animation: lp-pulse 2s infinite; }
+@keyframes lp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.lp-title { font-size: 14px; font-weight: 600; color: var(--p-text-color); }
+.lp-sep { color: var(--p-text-muted-color); }
+.lp-sub { font-size: 0.82rem; color: var(--p-text-muted-color); font-weight: 400; }
+
+/* ── Metrics flush ── */
+.lp-metrics { margin: -20px -20px 0; border-bottom: 1px solid var(--p-content-border-color); }
+
+/* ── Content wrapper ── */
 .lp-page {
-  max-width: 980px;
-  margin: 0 auto;
-}
-
-.lp-stats-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.lp-stat-card {
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 0.875rem;
-  padding: 1.25rem 1rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  text-align: center;
-}
-
-.lp-stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-}
-
-.lp-stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--p-text-color);
-}
-
-.lp-stat-label {
-  font-size: 0.8rem;
-  color: var(--p-text-muted-color);
+  gap: 16px;
+  padding-top: 16px;
 }
 
 .lp-progress-section {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 0.875rem;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  padding: 16px 20px;
 }
 
 .lp-progress-header {
   display: flex;
   justify-content: space-between;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 10px;
 }
 
-.lp-progress-pct {
-  color: var(--p-primary-color);
-}
+.lp-progress-pct { color: var(--p-primary-color); }
 
 .lp-progress-track {
   height: 10px;
@@ -256,42 +224,40 @@ function formatTime(iso) {
 .lp-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: 1.25rem;
+  gap: 16px;
 }
 
 .lp-section-card {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 0.875rem;
-  padding: 1.25rem;
+  border-radius: 12px;
+  padding: 16px;
 }
 
 .lp-section-title {
-  font-size: 0.9rem;
+  font-size: 11px;
   font-weight: 700;
-  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--p-text-muted-color);
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--p-text-color);
-}
-
-.lp-section-title i {
-  color: var(--p-primary-color);
+  gap: 6px;
 }
 
 .lp-resource-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
 .lp-resource-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: 0.5rem;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
   border: 1px solid var(--p-content-border-color);
   font-size: 0.875rem;
   transition: background 0.15s;
@@ -360,15 +326,15 @@ function formatTime(iso) {
 .lp-activity-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
 .lp-activity-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
   border: 1px solid var(--p-content-border-color);
   font-size: 0.875rem;
 }
@@ -409,11 +375,6 @@ function formatTime(iso) {
 }
 
 @media (max-width: 640px) {
-  .lp-grid {
-    grid-template-columns: 1fr;
-  }
-  .lp-stats-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .lp-grid { grid-template-columns: 1fr; }
 }
 </style>

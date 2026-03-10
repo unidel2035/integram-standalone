@@ -1,144 +1,73 @@
 <template>
-  <FstPageLayout
-    title="Глоссарий"
-    subtitle="Глоссарий — термины венчурного инвестирования и технологий"
-  >
-    <!-- Header -->
+  <FstPageLayout>
     <template #header>
-      <div class="header-content">
-        <div class="title-section">
-          <i class="pi pi-book" style="font-size: 2rem; color: var(--p-primary-color);"></i>
-          <div>
-            <h1>📚 Глоссарий венчурных терминов</h1>
-            <p class="subtitle">Интерактивный справочник с AI-объяснениями для начинающих инвесторов</p>
-          </div>
-        </div>
-        <div class="header-actions">
-          <Button
-            label="Калькулятор метрик"
-            icon="pi pi-calculator"
-            @click="calculatorVisible = true"
-            outlined
-            severity="primary"
-          />
-        </div>
+      <div class="gl-title-group">
+        <span class="gl-live-dot" />
+        <span class="gl-title">Глоссарий</span>
+        <span class="gl-sep">·</span>
+        <span class="gl-sub">термины венчурного инвестирования и технологий</span>
       </div>
     </template>
 
+    <template #actions>
+      <Button label="Калькулятор метрик" icon="pi pi-calculator" size="small" severity="secondary" @click="calculatorVisible = true" />
+    </template>
+
+    <!-- Metrics strip -->
+    <div class="gl-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-book fst-metric-item-icon"></i>
+        <div class="fst-metric-item-val">{{ totalTerms }}</div>
+        <div class="fst-metric-item-label">Всего терминов</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-chart-line fst-metric-item-icon"></i>
+        <div class="fst-metric-item-val">{{ categoryCounts.financial || 0 }}</div>
+        <div class="fst-metric-item-label">Финансовые</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-briefcase fst-metric-item-icon"></i>
+        <div class="fst-metric-item-val">{{ categoryCounts.venture || 0 }}</div>
+        <div class="fst-metric-item-label">Венчурные</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-sparkles fst-metric-item-icon"></i>
+        <div class="fst-metric-item-val">{{ categoryCounts.ai || 0 }}</div>
+        <div class="fst-metric-item-label">AI & Технологии</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-shield fst-metric-item-icon"></i>
+        <div class="fst-metric-item-val">{{ categoryCounts.regulation || 0 }}</div>
+        <div class="fst-metric-item-label">Регулирование</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-desktop fst-metric-item-icon"></i>
+        <div class="fst-metric-item-val">{{ categoryCounts.platform || 0 }}</div>
+        <div class="fst-metric-item-label">Платформа</div>
+      </div>
+    </div>
+
+    <div class="gl-content">
+
     <!-- Search and Filters -->
-    <Card class="search-card">
-      <template #content>
-        <div class="search-section">
-          <IconField iconPosition="left" class="search-input-wrapper">
-            <InputIcon>
-              <i class="pi pi-search" />
-            </InputIcon>
-            <InputText
-              v-model="searchQuery"
-              placeholder="Поиск терминов по названию или описанию..."
-              class="w-full"
-            />
-          </IconField>
-
-          <div class="category-filters">
-            <Button
-              v-for="category in categories"
-              :key="category.id"
-              :label="category.label"
-              :icon="`pi ${category.icon}`"
-              :severity="selectedCategory === category.id ? 'primary' : 'secondary'"
-              :outlined="selectedCategory !== category.id"
-              @click="toggleCategory(category.id)"
-              size="small"
-            />
-            <Button
-              v-if="selectedCategory"
-              label="Все термины"
-              icon="pi pi-times"
-              severity="secondary"
-              outlined
-              @click="selectedCategory = null"
-              size="small"
-            />
-          </div>
-        </div>
-      </template>
-    </Card>
-
-    <!-- Stats -->
-    <div class="stats-grid">
-      <Card class="stat-card">
-        <template #title>
-          <div class="stat-title">
-            <i class="pi pi-book"></i>
-            <span>Всего терминов</span>
-          </div>
-        </template>
-        <template #content>
-          <div class="stat-value">{{ totalTerms }}</div>
-        </template>
-      </Card>
-
-      <Card class="stat-card">
-        <template #title>
-          <div class="stat-title">
-            <i class="pi pi-chart-line"></i>
-            <span>Финансовые</span>
-          </div>
-        </template>
-        <template #content>
-          <div class="stat-value">{{ categoryCounts.financial || 0 }}</div>
-        </template>
-      </Card>
-
-      <Card class="stat-card">
-        <template #title>
-          <div class="stat-title">
-            <i class="pi pi-briefcase"></i>
-            <span>Венчурные</span>
-          </div>
-        </template>
-        <template #content>
-          <div class="stat-value">{{ categoryCounts.venture || 0 }}</div>
-        </template>
-      </Card>
-
-      <Card class="stat-card">
-        <template #title>
-          <div class="stat-title">
-            <i class="pi pi-sparkles"></i>
-            <span>AI & Технологии</span>
-          </div>
-        </template>
-        <template #content>
-          <div class="stat-value">{{ categoryCounts.ai || 0 }}</div>
-        </template>
-      </Card>
-
-      <Card class="stat-card">
-        <template #title>
-          <div class="stat-title">
-            <i class="pi pi-shield"></i>
-            <span>Регулирование</span>
-          </div>
-        </template>
-        <template #content>
-          <div class="stat-value">{{ categoryCounts.regulation || 0 }}</div>
-        </template>
-      </Card>
-
-      <Card class="stat-card">
-        <template #title>
-          <div class="stat-title">
-            <i class="pi pi-cog"></i>
-            <i class="pi pi-desktop"></i>
-            <span>Платформа</span>
-          </div>
-        </template>
-        <template #content>
-          <div class="stat-value">{{ categoryCounts.platform || 0 }}</div>
-        </template>
-      </Card>
+    <div class="gl-search-card">
+      <IconField iconPosition="left" class="gl-search-input">
+        <InputIcon><i class="pi pi-search" /></InputIcon>
+        <InputText v-model="searchQuery" placeholder="Поиск терминов по названию или описанию..." fluid />
+      </IconField>
+      <div class="gl-category-filters">
+        <Button
+          v-for="category in categories"
+          :key="category.id"
+          :label="category.label"
+          :icon="`pi ${category.icon}`"
+          :severity="selectedCategory === category.id ? 'primary' : 'secondary'"
+          :outlined="selectedCategory !== category.id"
+          size="small"
+          @click="toggleCategory(category.id)"
+        />
+        <Button v-if="selectedCategory" label="Сбросить" icon="pi pi-times" severity="secondary" outlined size="small" @click="selectedCategory = null" />
+      </div>
     </div>
 
     <!-- Terms Grid -->
@@ -182,15 +111,13 @@
     </div>
 
     <!-- Empty state -->
-    <Card v-if="filteredTerms.length === 0" class="empty-state">
-      <template #content>
-        <div class="text-center">
-          <i class="pi pi-search" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
-          <h3>Термины не найдены</h3>
-          <p>Попробуйте изменить поисковый запрос или фильтры</p>
-        </div>
-      </template>
-    </Card>
+    <div v-if="filteredTerms.length === 0" class="gl-empty">
+      <i class="pi pi-search" style="font-size: 3rem; color: var(--p-text-muted-color);"></i>
+      <div class="gl-empty-title">Термины не найдены</div>
+      <p style="color: var(--p-text-muted-color); margin: 0">Попробуйте изменить поисковый запрос или фильтры</p>
+    </div>
+
+    </div><!-- /gl-content -->
 
     <!-- Term Modal -->
     <TermModal
@@ -207,7 +134,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
-import Card from 'primevue/card'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
@@ -294,170 +220,59 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.fst-glossary-page {
-  padding: 1rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
+/* ── Header ── */
+.gl-title-group { display: flex; align-items: center; gap: 8px; }
+.gl-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--p-primary-color); flex-shrink: 0; animation: gl-pulse 2s infinite; }
+@keyframes gl-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.gl-title { font-size: 14px; font-weight: 600; color: var(--p-text-color); }
+.gl-sep { color: var(--p-text-muted-color); }
+.gl-sub { font-size: 0.82rem; color: var(--p-text-muted-color); font-weight: 400; }
 
-.page-header {
-  margin-bottom: 2rem;
-}
+/* ── Metrics flush ── */
+.gl-metrics { margin: -20px -20px 0; border-bottom: 1px solid var(--p-content-border-color); }
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
+/* ── Content wrapper ── */
+.gl-content { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; }
 
-.title-section {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.title-section h1 {
-  margin: 0;
-  font-size: 2rem;
-  color: var(--p-text-color);
-}
-
-.subtitle {
-  margin: 0.5rem 0 0 0;
-  color: var(--p-text-muted-color);
-  font-size: 1rem;
-}
-
-.header-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.search-card {
-  margin-bottom: 2rem;
-}
-
-.search-section {
+/* ── Search card ── */
+.gl-search-card {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
 }
+.gl-search-input { width: 100%; }
+.gl-category-filters { display: flex; flex-wrap: wrap; gap: 6px; }
 
-.search-input-wrapper {
-  width: 100%;
-}
-
-.category-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  text-align: center;
-}
-
-.stat-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--p-text-muted-color);
-}
-
-.stat-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--p-primary-color);
-  margin-top: 0.5rem;
-}
-
+/* ── Terms grid ── */
 .terms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
 }
 
-.term-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  height: 100%;
-}
+.term-card { cursor: pointer; transition: border-color 0.15s; }
+.term-card:hover { border-color: var(--p-primary-color); }
 
-.term-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px color-mix(in srgb, var(--p-text-color) 10%, transparent);
-}
+.term-card-header { padding: 12px 14px 0; }
+.term-card-title { font-size: 0.95rem; font-weight: 600; color: var(--p-text-color); margin-bottom: 6px; }
+.term-card-description { color: var(--p-text-muted-color); line-height: 1.5; margin: 0; font-size: 0.82rem; }
+.term-card-footer { display: flex; justify-content: space-between; align-items: center; }
+.related-count { font-size: 0.78rem; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 4px; }
 
-.term-card-header {
-  padding: 1rem 1rem 0;
-}
-
-.term-card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--p-text-color);
-  margin-bottom: 0.5rem;
-}
-
-.term-card-description {
-  color: var(--p-text-muted-color);
-  line-height: 1.5;
-  margin: 0;
-}
-
-.term-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.related-count {
-  font-size: 0.85rem;
-  color: var(--p-text-muted-color);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.empty-state {
+/* ── Empty state ── */
+.gl-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 40px;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px;
   text-align: center;
-  padding: 3rem;
 }
+.gl-empty-title { font-weight: 600; font-size: 0.95rem; color: var(--p-text-color); }
 
-.empty-state h3 {
-  margin-top: 1rem;
-  color: var(--p-text-color);
-}
-
-.empty-state p {
-  color: var(--p-text-muted-color);
-}
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
-  .terms-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .title-section h1 {
-    font-size: 1rem;
-  }
-
-  .stat-value {
-    font-size: 2rem;
-  }
+  .terms-grid { grid-template-columns: 1fr; }
 }
 </style>
