@@ -568,25 +568,31 @@
 
     <!-- ═══ Setup Screen ═══ -->
     <div v-else class="fst-setup">
-      <div class="fst-setup-header">
-        <div class="fst-setup-header-left">
-          <div class="fst-setup-brand">AI-Инвесткомитет</div>
-          <p class="fst-setup-desc">6 агентов · дебаты · решение с обоснованием</p>
+
+      <!-- Hub-style topbar -->
+      <div class="ck-topbar">
+        <div class="ck-topbar-left">
+          <span class="ck-live-dot"></span>
+          <span class="ck-title">AI-Инвесткомитет</span>
+          <span class="ck-sep">·</span>
+          <span class="ck-sub">6 агентов · дебаты · решение с обоснованием</span>
         </div>
-        <div class="fst-setup-header-right">
-          <div class="fst-setup-subfunds" v-if="Object.keys(SUBFUNDS).length">
-            <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
-              :style="{ borderColor: sf.color, color: sf.color }">
-              <span v-if="sf.svgIcon" v-html="sf.svgIcon" class="fst-subfund-svg"></span>
-              <i v-else :class="sf.icon"></i> {{ sf.name }}
-              <span class="fst-subfund-budget">{{ (sf.budget / 1e9).toFixed(1) }} млрд</span>
-            </div>
-          </div>
-          <Button icon="pi pi-clock" label="История" size="small" severity="secondary"
-            @click="$router.push('/fst-protocol')"
-            data-action="view-protocol"
-            data-description="Открывает историю заседаний инвестиционного комитета"
-          />
+        <div class="ck-topbar-actions">
+          <button class="ck-btn" @click="newProjectDialog = true" title="Новая заявка">
+            <i class="pi pi-file-plus"></i><span class="ck-btn-label"> Новая заявка</span>
+          </button>
+          <button class="ck-btn ck-btn--accent" @click="$router.push('/fst-protocol')" title="История заседаний">
+            <i class="pi pi-clock"></i><span class="ck-btn-label"> История</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI metrics strip -->
+      <div class="ck-metrics">
+        <div v-for="m in ckMetrics" :key="m.label" class="ck-metric" :style="{ borderBottomColor: m.color }">
+          <i :class="m.icon" class="ck-metric-icon" :style="{ color: m.color }"></i>
+          <div class="ck-metric-val">{{ m.val }}</div>
+          <div class="ck-metric-label">{{ m.label }}</div>
         </div>
       </div>
 
@@ -1196,6 +1202,23 @@ const projectView = ref('table') // 'table' | 'grid'
 const selectedRow = computed({
   get: () => PROJECTS_POOL.value?.find(p => p.id === selectedProjectId.value) ?? null,
   set: (p) => { if (p) selectedProjectId.value = p.id }
+})
+
+const ckMetrics = computed(() => {
+  const projects = PROJECTS_POOL.value || []
+  const avgTRL = projects.length
+    ? (projects.reduce((s, p) => s + (p.trl || 5), 0) / projects.length).toFixed(1)
+    : '—'
+  const avgIRR = projects.length
+    ? (projects.reduce((s, p) => s + (p.projectedIRR || 0), 0) / projects.length * 100).toFixed(0) + '%'
+    : '—'
+  const sfCount = Object.keys(SUBFUNDS.value || {}).length || 3
+  return [
+    { icon: 'pi pi-inbox',      color: '#38bdf8', val: projects.length || '...', label: 'Заявок в пайплайне' },
+    { icon: 'pi pi-sitemap',    color: '#a78bfa', val: sfCount,                  label: 'Субфондов' },
+    { icon: 'pi pi-microchip',  color: '#34d399', val: avgTRL,                   label: 'Средний TRL' },
+    { icon: 'pi pi-chart-line', color: '#fb923c', val: avgIRR,                   label: 'Средний IRR' },
+  ]
 })
 
 const filteredProjects = computed(() => {
@@ -2922,6 +2945,96 @@ onUnmounted(() => {
 @keyframes fst-dot-blink {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ── Committee Topbar (Hub-style) ────────────────────────── */
+.ck-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-section);
+  flex-shrink: 0;
+}
+.ck-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ck-live-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34,197,94,.25);
+  animation: ck-pulse 2s infinite;
+  flex-shrink: 0;
+}
+@keyframes ck-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.ck-title  { font-weight: 700; font-size: 14px; color: var(--p-text-color); }
+.ck-sep    { color: var(--p-text-muted-color); }
+.ck-sub    { font-size: 13px; color: var(--p-text-muted-color); }
+.ck-topbar-actions { display: flex; gap: 8px; }
+.ck-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-card);
+  color: var(--p-text-color);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.ck-btn:hover { background: var(--p-surface-hover); }
+.ck-btn--accent {
+  background: color-mix(in srgb, var(--p-primary-color) 15%, transparent);
+  border-color: color-mix(in srgb, var(--p-primary-color) 40%, transparent);
+  color: var(--p-primary-color);
+}
+.ck-btn--accent:hover { background: color-mix(in srgb, var(--p-primary-color) 25%, transparent); }
+.ck-btn-label { white-space: nowrap; }
+
+/* ── Committee KPI Metrics ───────────────────────────────── */
+.ck-metrics {
+  display: flex;
+  padding: 0 20px;
+  gap: 12px;
+  border-bottom: 1px solid var(--p-content-border-color);
+  flex-shrink: 0;
+}
+.ck-metric {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 8px;
+  border-bottom: 2px solid transparent;
+  transition: border-color .2s;
+  min-width: 0;
+}
+.ck-metric-icon {
+  font-size: 15px;
+  margin-bottom: 6px;
+  opacity: 0.75;
+}
+.ck-metric-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--p-text-color);
+  line-height: 1;
+}
+.ck-metric-label {
+  font-size: 10px;
+  color: var(--p-text-muted-color);
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 /* ── Setup Screen ─────────────────────────────────────────── */
