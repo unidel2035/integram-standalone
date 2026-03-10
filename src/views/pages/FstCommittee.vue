@@ -577,7 +577,8 @@
           <div class="fst-setup-subfunds" v-if="Object.keys(SUBFUNDS).length">
             <div v-for="sf in Object.values(SUBFUNDS)" :key="sf.id" class="fst-subfund-badge"
               :style="{ borderColor: sf.color, color: sf.color }">
-              <i :class="sf.icon"></i> {{ sf.name }}
+              <span v-if="sf.svgIcon" v-html="sf.svgIcon" class="fst-subfund-svg"></span>
+              <i v-else :class="sf.icon"></i> {{ sf.name }}
               <span class="fst-subfund-budget">{{ (sf.budget / 1e9).toFixed(1) }} млрд</span>
             </div>
           </div>
@@ -598,7 +599,8 @@
         <div v-if="previewProject" class="fst-pmodal">
           <div class="fst-pmodal-top">
             <div class="fst-pmodal-subfund" :style="{ background: SUBFUNDS[previewProject.subFund]?.color || '#666' }">
-              <i :class="SUBFUNDS[previewProject.subFund]?.icon"></i>
+              <span v-if="SUBFUNDS[previewProject.subFund]?.svgIcon" v-html="SUBFUNDS[previewProject.subFund].svgIcon" class="fst-subfund-svg"></span>
+              <i v-else :class="SUBFUNDS[previewProject.subFund]?.icon"></i>
               {{ SUBFUNDS[previewProject.subFund]?.name || previewProject.subFund }}
             </div>
             <div class="fst-pmodal-stage">{{ previewProject.stage }}</div>
@@ -3083,6 +3085,8 @@ onUnmounted(() => {
   cursor: default;
   user-select: none;
 }
+.fst-subfund-svg { display: inline-flex; align-items: center; line-height: 1; }
+.fst-subfund-svg svg { width: 1em; height: 1em; vertical-align: middle; }
 .fst-subfund-budget {
   font-size: 0.8125rem;
   opacity: 0.7;
