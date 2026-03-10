@@ -791,81 +791,57 @@
 
         <!-- Right: Settings -->
         <div class="fst-setup-col fst-setup-col--settings">
-          <div class="fst-section-title">
-            <i class="pi pi-gauge" style="color:#a78bfa"></i>
-            Скорость симуляции
-          </div>
-          <div class="fst-speed-cards">
-            <div v-for="sp in speedOptions" :key="sp.id"
-              :class="['fst-speed-card', { active: selectedSpeed === sp.id }]"
-              @click="selectedSpeed = sp.id">
-              <i :class="sp.icon" class="fst-speed-card-icon" />
-              <strong class="fst-speed-card-val">{{ sp.val }}</strong>
-              <span class="fst-speed-card-desc">{{ sp.desc }}</span>
+          <div class="fst-rp-section">
+            <span class="fst-rp-label">Скорость</span>
+            <div class="fst-speed-seg">
+              <div v-for="sp in speedOptions" :key="sp.id"
+                :class="['fst-speed-seg-btn', { active: selectedSpeed === sp.id }]"
+                @click="selectedSpeed = sp.id"
+                :title="sp.desc">
+                <strong>{{ sp.val }}</strong>
+                <span>{{ sp.desc }}</span>
+              </div>
             </div>
           </div>
 
-          <div class="fst-section-title" style="margin-top:20px">
-            <i class="pi pi-bolt" style="color:#a78bfa"></i>
-            Режим агентов
-          </div>
-          <div class="fst-toggle-row">
-            <i :class="useAI ? 'pi pi-bolt' : 'pi pi-server'" class="fst-toggle-icon" :style="{ color: useAI ? 'var(--p-purple-400)' : 'var(--p-text-muted-color)' }" />
-            <div class="fst-toggle-label">
-              <strong>{{ useAI ? 'Реальный AI' : 'Шаблоны' }}</strong>
-              <span>{{ useAI ? 'агенты думают и отвечают' : 'без API-вызовов' }}</span>
+          <div class="fst-rp-section">
+            <span class="fst-rp-label">Агенты</span>
+            <div class="fst-toggle-row">
+              <i :class="useAI ? 'pi pi-bolt' : 'pi pi-server'" class="fst-toggle-icon"
+                :style="{ color: useAI ? 'var(--p-purple-400)' : 'var(--p-text-muted-color)' }" />
+              <span class="fst-toggle-name">{{ useAI ? 'Реальный AI' : 'Шаблоны' }}</span>
+              <ToggleSwitch v-model="useAI" />
             </div>
-            <ToggleSwitch v-model="useAI" />
-          </div>
-
-          <div v-if="useAI" class="fst-toggle-row">
-            <i :class="useAgentLoop ? 'pi pi-sitemap' : 'pi pi-comments'" class="fst-toggle-icon" :style="{ color: useAgentLoop ? 'var(--p-orange-400)' : 'var(--p-text-muted-color)' }" />
-            <div class="fst-toggle-label">
-              <strong>{{ useAgentLoop ? 'Multi-Agent Loop' : 'Single-call' }}</strong>
-              <span>{{ useAgentLoop ? 'параллельно, видят зал' : 'один вызов на аргумент' }}</span>
+            <div v-if="useAI" class="fst-toggle-row">
+              <i :class="useAgentLoop ? 'pi pi-sitemap' : 'pi pi-comments'" class="fst-toggle-icon"
+                :style="{ color: useAgentLoop ? 'var(--p-orange-400)' : 'var(--p-text-muted-color)' }" />
+              <span class="fst-toggle-name">Multi-Agent Loop</span>
+              <ToggleSwitch v-model="useAgentLoop" />
             </div>
-            <ToggleSwitch v-model="useAgentLoop" />
-          </div>
-
-          <div v-if="useAI && useAgentLoop" class="fst-toggle-row">
-            <i :class="useOrchestrator ? 'pi pi-server' : 'pi pi-desktop'" class="fst-toggle-icon" :style="{ color: useOrchestrator ? 'var(--p-green-400)' : 'var(--p-text-muted-color)' }" />
-            <div class="fst-toggle-label">
-              <strong>{{ useOrchestrator ? 'Server' : 'Client-side' }}</strong>
-              <span>{{ useOrchestrator ? 'сервер → события в реальном времени' : 'в браузере (по умолчанию)' }}</span>
+            <div v-if="useAI && useAgentLoop" class="fst-toggle-row">
+              <i :class="useOrchestrator ? 'pi pi-server' : 'pi pi-desktop'" class="fst-toggle-icon"
+                :style="{ color: useOrchestrator ? 'var(--p-green-400)' : 'var(--p-text-muted-color)' }" />
+              <span class="fst-toggle-name">{{ useOrchestrator ? 'Серверный' : 'Client-side' }}</span>
+              <ToggleSwitch v-model="useOrchestrator" />
             </div>
-            <ToggleSwitch v-model="useOrchestrator" />
           </div>
 
           <!-- ═══ Режим голосования ═══ -->
-          <div v-if="useAI && useAgentLoop" style="margin-top:10px">
-            <div class="fst-ai-mode-row">
-              <div class="fst-voting-mode-select">
-                <i class="pi pi-chart-bar" style="color:#ab47bc; margin-right:6px"></i>
-                <strong style="margin-right:10px">Голосование:</strong>
-                <SelectButton v-model="votingMode" :options="[
-                  { label: 'Формула', value: 'formula' },
-                  { label: 'Гибрид', value: 'hybrid' },
-                  { label: 'LLM', value: 'llm' }
-                ]" optionLabel="label" optionValue="value" :allowEmpty="false"
-                  style="font-size:0.8rem" />
-              </div>
-            </div>
-            <div class="fst-voting-desc">
-              <span v-if="votingMode === 'formula'">Алгоритмические веса · быстро, предсказуемо</span>
-              <span v-else-if="votingMode === 'hybrid'">LLM stance + формульный score · баланс</span>
-              <span v-else>Чисто LLM · stance и confidence агента</span>
-            </div>
+          <div v-if="useAI && useAgentLoop" class="fst-rp-section">
+            <span class="fst-rp-label">Голосование</span>
+            <SelectButton v-model="votingMode" :options="[
+              { label: 'Формула', value: 'formula' },
+              { label: 'Гибрид', value: 'hybrid' },
+              { label: 'LLM', value: 'llm' }
+            ]" optionLabel="label" optionValue="value" :allowEmpty="false" fluid size="small" />
           </div>
 
           <!-- ═══ Настройки моделей оркестратора ═══ -->
-          <div v-if="useAI" class="fst-section-title" style="margin-top:20px">
-            <div class="fst-policy-toggle" @click="modelPanelExpanded = !modelPanelExpanded">
-              <i class="pi pi-microchip-ai" style="color:#42a5f5"></i>
-              <span>Модели агентов</span>
-              <span class="fst-policy-summary">{{ activeProfileLabel }}</span>
-              <i :class="modelPanelExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                style="margin-left:auto;font-size:0.8125rem;color:var(--p-text-muted-color)"></i>
-            </div>
+          <div v-if="useAI" class="fst-acc-row" @click="modelPanelExpanded = !modelPanelExpanded">
+            <i class="pi pi-microchip-ai fst-acc-icon" style="color:#42a5f5"></i>
+            <span class="fst-acc-label">Модели</span>
+            <span class="fst-acc-summary">{{ activeProfileLabel }}</span>
+            <i :class="modelPanelExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="fst-acc-chevron"></i>
           </div>
           <div v-if="useAI && modelPanelExpanded" class="fst-model-panel">
             <!-- Профили скорости -->
@@ -905,14 +881,11 @@
             </div>
           </div>
 
-          <div class="fst-section-title" style="margin-top:20px">
-            <div class="fst-policy-toggle" @click="policyExpanded = !policyExpanded">
-              <i class="pi pi-sliders-h" style="color:#ffa726"></i>
-              <span>Параметры оценки ФСТ</span>
-              <span class="fst-policy-summary">Сув. ≥ {{ fstPolicy.minSovereignty }}/9 · TRL ≥ {{ fstPolicy.minTRL }}</span>
-              <i :class="policyExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                style="margin-left:auto;font-size:0.8125rem;color:var(--p-text-muted-color)"></i>
-            </div>
+          <div class="fst-acc-row" @click="policyExpanded = !policyExpanded">
+            <i class="pi pi-sliders-h fst-acc-icon" style="color:#ffa726"></i>
+            <span class="fst-acc-label">Параметры ФСТ</span>
+            <span class="fst-acc-summary">Сув. ≥ {{ fstPolicy.minSovereignty }}/9 · TRL ≥ {{ fstPolicy.minTRL }}</span>
+            <i :class="policyExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="fst-acc-chevron"></i>
           </div>
           <div v-if="policyExpanded" class="fst-policy-grid">
             <div v-for="(range, key) in FST_POLICY_RANGES" :key="key" class="fst-policy-item">
@@ -932,12 +905,11 @@
 
           <!-- Issue #161: IC decision thresholds -->
           <div class="fst-ic-params">
-            <div class="fst-policy-toggle" @click="icParamsExpanded = !icParamsExpanded">
-              <i class="pi pi-sliders-v" style="color:#42a5f5"></i>
-              <span>Пороги решений ИК</span>
-              <span class="fst-policy-summary">Одобр. ≥ {{ icParams.approveThreshold }}% · Откл. &lt; {{ icParams.deferThreshold }}%</span>
-              <i :class="icParamsExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                style="margin-left:auto;font-size:0.8125rem;color:var(--p-text-muted-color)"></i>
+            <div class="fst-acc-row" @click="icParamsExpanded = !icParamsExpanded">
+              <i class="pi pi-sliders-v fst-acc-icon" style="color:#42a5f5"></i>
+              <span class="fst-acc-label">Пороги ИК</span>
+              <span class="fst-acc-summary">≥ {{ icParams.approveThreshold }}% / &lt; {{ icParams.deferThreshold }}%</span>
+              <i :class="icParamsExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="fst-acc-chevron"></i>
             </div>
             <div v-if="icParamsExpanded" class="fst-policy-grid">
               <div class="fst-policy-item">
@@ -2983,7 +2955,7 @@ onUnmounted(() => {
 }
 .fst-setup-body {
   display: grid;
-  grid-template-columns: 1fr 420px;
+  grid-template-columns: 1fr 340px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -3434,45 +3406,59 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 /* ── Speed cards ── */
-.fst-speed-cards { display: flex; gap: 8px; margin-bottom: 4px; }
-.fst-speed-card {
+/* ── Right panel sections ── */
+.fst-rp-section {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fst-rp-section:last-of-type { border-bottom: none; }
+.fst-rp-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--p-text-muted-color);
+}
+
+/* ── Speed segmented ── */
+.fst-speed-seg {
+  display: flex;
+  gap: 6px;
+}
+.fst-speed-seg-btn {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 12px 6px 10px;
-  border: 2px solid var(--p-content-border-color);
-  border-radius: 10px;
+  gap: 1px;
+  padding: 7px 4px;
+  border: 1.5px solid var(--p-content-border-color);
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s;
   background: transparent;
 }
-.fst-speed-card:hover {
+.fst-speed-seg-btn:hover {
   border-color: var(--p-primary-color);
   background: color-mix(in srgb, var(--p-primary-color) 6%, transparent);
 }
-.fst-speed-card.active {
+.fst-speed-seg-btn.active {
   border-color: var(--p-primary-color);
   background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
 }
-.fst-speed-card-icon {
-  font-size: 1.2rem;
-  color: var(--p-text-muted-color);
-  transition: color 0.15s;
-}
-.fst-speed-card.active .fst-speed-card-icon { color: var(--p-primary-color); }
-.fst-speed-card-val {
-  font-size: 1rem;
+.fst-speed-seg-btn strong {
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--p-text-color);
   line-height: 1;
 }
-.fst-speed-card.active .fst-speed-card-val { color: var(--p-primary-color); }
-.fst-speed-card-desc {
-  font-size: 0.6875rem;
+.fst-speed-seg-btn.active strong { color: var(--p-primary-color); }
+.fst-speed-seg-btn span {
+  font-size: 0.6rem;
   color: var(--p-text-muted-color);
-  text-align: center;
 }
 /* legacy */
 .fst-speed-btn {
@@ -4348,21 +4334,49 @@ onUnmounted(() => {
 .fst-toggle-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--p-content-border-color);
+  gap: 8px;
+  padding: 5px 0;
 }
-.fst-toggle-row:last-of-type { border-bottom: none; }
-.fst-toggle-icon { font-size: 1.05rem; flex-shrink: 0; width: 20px; text-align: center; }
-.fst-toggle-label {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+.fst-toggle-icon { font-size: 0.9rem; flex-shrink: 0; width: 16px; text-align: center; }
+.fst-toggle-name {
   flex: 1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--p-text-color);
   min-width: 0;
 }
-.fst-toggle-label strong { font-size: 0.8125rem; font-weight: 600; color: var(--p-text-color); }
-.fst-toggle-label span { font-size: 0.725rem; color: var(--p-text-muted-color); }
+
+/* ── Accordion rows (Models / Policy / IC thresholds) ── */
+.fst-acc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 0;
+  cursor: pointer;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+.fst-acc-row:hover .fst-acc-label { color: var(--p-text-color); }
+.fst-acc-icon { font-size: 0.875rem; flex-shrink: 0; }
+.fst-acc-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  white-space: nowrap;
+}
+.fst-acc-summary {
+  flex: 1;
+  font-size: 0.7rem;
+  color: var(--p-text-muted-color);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fst-acc-chevron {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  flex-shrink: 0;
+}
 .fst-profile-select { width: 100%; font-size: 0.8rem; }
 .fst-profile-select .p-selectbutton-option { flex: 1; justify-content: center; font-size: 0.8rem; }
 /* legacy kept for reference, unused */
