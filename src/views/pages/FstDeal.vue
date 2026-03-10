@@ -4,7 +4,7 @@
     <template #header>
       <div class="fst-deal-header-left">
         <div class="fst-deal-logo">
-          <i class="pi pi-file-edit" style="color:#ffa726;font-size:20px"></i>
+          <i class="pi pi-file-edit" style="color:var(--fst-brand);font-size:20px"></i>
           <span>ФСТ НТИ · <b>Доведение сделки</b></span>
           <Tag :value="dealStatus" :severity="dealStatusSeverity" style="font-size:11px" />
         </div>
@@ -48,6 +48,40 @@
       </div>
     </template>
 
+    <!-- ─── Metrics strip ─── -->
+    <div class="fst-deal-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-dollar fst-metric-item-icon" style="color:var(--fst-green)"></i>
+        <div class="fst-metric-item-val">{{ deal.totalAmount }} млн</div>
+        <div class="fst-metric-item-label">Сумма</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-percentage fst-metric-item-icon" style="color:var(--fst-blue)"></i>
+        <div class="fst-metric-item-val">{{ deal.type === 'equity' ? deal.equityShare + '%' : deal.type === 'cln' ? deal.clnRate + '%' : '—' }}</div>
+        <div class="fst-metric-item-label">{{ deal.type === 'equity' ? 'Доля' : deal.type === 'cln' ? 'Ставка CLN' : 'Тип' }}</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-building fst-metric-item-icon" style="color:var(--fst-purple)"></i>
+        <div class="fst-metric-item-val">{{ deal.type === 'equity' ? deal.preMoney + ' млн' : '—' }}</div>
+        <div class="fst-metric-item-label">Пре-мани</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-calendar fst-metric-item-icon" :style="{ color: remainingColor }"></i>
+        <div class="fst-metric-item-val">{{ deal.tranches.length }}</div>
+        <div class="fst-metric-item-label">Транши</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-clock fst-metric-item-icon" style="color:var(--fst-cyan)"></i>
+        <div class="fst-metric-item-val">{{ deal.termMonths }} мес</div>
+        <div class="fst-metric-item-label">Горизонт</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-chart-line fst-metric-item-icon" style="color:var(--fst-brand)"></i>
+        <div class="fst-metric-item-val">{{ aiMetrics[0].value }}</div>
+        <div class="fst-metric-item-label">IRR прогноз</div>
+      </div>
+    </div>
+
     <!-- Main Grid -->
     <div class="fst-deal-main">
 
@@ -55,7 +89,7 @@
       <div class="fst-deal-col">
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-building" style="color:#42a5f5"></i> Параметры компании
+            <i class="pi pi-building" style="color:var(--fst-blue)"></i> Параметры компании
           </div>
           <div class="fst-form-group">
             <label>Название компании</label>
@@ -95,7 +129,7 @@
 
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-dollar" style="color:#66bb6a"></i> Условия инвестиции
+            <i class="pi pi-dollar" style="color:var(--fst-green)"></i> Условия инвестиции
           </div>
           <div class="fst-form-row">
             <div class="fst-form-group">
@@ -142,7 +176,7 @@
         >
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-sitemap" style="color:#ab47bc"></i> Структура SPV
+            <i class="pi pi-sitemap" style="color:var(--fst-purple)"></i> Структура SPV
           </div>
           <div class="fst-form-row">
             <div class="fst-form-group">
@@ -172,7 +206,7 @@
       <div class="fst-deal-col">
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-calendar" style="color:#ffa726"></i> Транши
+            <i class="pi pi-calendar" style="color:var(--fst-brand)"></i> Транши
             <LearnTooltip
               label="Добавить транш"
               what="Добавляет новый транш финансирования с настраиваемыми условиями выплаты"
@@ -228,7 +262,7 @@
         <!-- KPI Targets -->
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-chart-bar" style="color:#26c6da"></i> KPI-цели проекта
+            <i class="pi pi-chart-bar" style="color:var(--fst-cyan)"></i> KPI-цели проекта
             <LearnTooltip
               label="Добавить KPI"
               what="Добавляет новую целевую метрику для отслеживания прогресса проекта"
@@ -265,7 +299,7 @@
         <!-- Rights & Conditions -->
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-shield" style="color:#ef5350"></i> Права и ограничения
+            <i class="pi pi-shield" style="color:var(--fst-red)"></i> Права и ограничения
           </div>
           <div class="fst-conditions-grid">
             <div v-for="c in conditions" :key="c.key" class="fst-condition-item">
@@ -281,7 +315,7 @@
         <!-- Term Sheet Preview -->
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-file-word" style="color:#42a5f5"></i> Term Sheet
+            <i class="pi pi-file-word" style="color:var(--fst-blue)"></i> Term Sheet
             <LearnTooltip
               v-if="termSheet"
               label="Копировать Term Sheet"
@@ -314,7 +348,7 @@
         <!-- Smart Contract Status -->
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-verified" style="color:#66bb6a"></i> Смарт-контракт
+            <i class="pi pi-verified" style="color:var(--fst-green)"></i> Смарт-контракт
           </div>
           <div class="fst-sc-timeline">
             <div v-for="step in scSteps" :key="step.id" class="fst-sc-step"
@@ -335,7 +369,7 @@
         <!-- AI Risk Analysis -->
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-brain" style="color:#ffa726"></i> AI-анализ сделки
+            <i class="pi pi-brain" style="color:var(--fst-brand)"></i> AI-анализ сделки
           </div>
           <div class="fst-ai-metrics">
             <div class="fst-ai-metric" v-for="m in aiMetrics" :key="m.key">
@@ -366,11 +400,11 @@
     <div class="fst-deal-finmodel-section">
       <div class="fst-deal-finmodel-header" @click="finmodelExpanded = !finmodelExpanded">
         <div class="fst-deal-finmodel-title">
-          <i class="pi pi-chart-bar" style="color:#66bb6a;font-size:16px"></i>
+          <i class="pi pi-chart-bar" style="color:var(--fst-green);font-size:16px"></i>
           <span>Финансовая модель компании</span>
-          <Tag value="Заполняет компания" style="font-size:10px;background:#1b5e20;color:#fff" />
+          <Tag value="Заполняет компания" severity="success" style="font-size:10px" />
           <span v-if="finmodelValues['NPV @ 15% (WACC)'] !== undefined"
-            class="fst-fm-quick" :style="{ color: (finmodelValues['NPV @ 15% (WACC)'] || 0) > 0 ? '#66bb6a' : '#ef5350' }">
+            class="fst-fm-quick" :style="{ color: (finmodelValues['NPV @ 15% (WACC)'] || 0) > 0 ? 'var(--fst-green)' : 'var(--fst-red)' }">
             NPV: {{ formatFmVal(finmodelValues['NPV @ 15% (WACC)']) }} тыс.₽ ·
             MOIC: {{ formatFmVal(finmodelValues['MOIC (5 лет)'], 2) }}x ·
             IRR≈{{ formatFmVal(finmodelValues['IRR (приближение) %']) }}%
@@ -382,7 +416,7 @@
 
       <div v-if="finmodelExpanded" class="fst-deal-finmodel-body">
         <div class="fst-fm-info">
-          <i class="pi pi-info-circle" style="color:#42a5f5;font-size:12px"></i>
+          <i class="pi pi-info-circle" style="color:var(--fst-blue);font-size:12px"></i>
           Финансовая модель загружается из базы api.ai2o.ru/fm. Подключите модель по ID или создайте новую.
           Результаты NPV / MOIC / IRR обновляют AI-оценку сделки.
         </div>
@@ -568,7 +602,7 @@ const totalTranches = computed(() =>
 )
 
 const remaining = computed(() => deal.value.totalAmount - totalTranches.value)
-const remainingColor = computed(() => remaining.value < 0 ? '#ef5350' : remaining.value > 0 ? '#ffa726' : '#66bb6a')
+const remainingColor = computed(() => remaining.value < 0 ? 'var(--fst-red)' : remaining.value > 0 ? 'var(--fst-brand)' : 'var(--fst-green)')
 
 // ─── Smart Contract Steps ────────────────────────────────────────────────────
 const scSteps = computed(() => [
@@ -582,16 +616,16 @@ const scSteps = computed(() => [
 
 // ─── AI Metrics ──────────────────────────────────────────────────────────────
 const aiMetrics = ref([
-  { key: 'irr', label: 'IRR прогноз', value: '38%', color: '#66bb6a' },
-  { key: 'moic', label: 'MOIC (5л)', value: '4.2x', color: '#42a5f5' },
-  { key: 'risk', label: 'Риск провала', value: '24%', color: '#ffa726' },
-  { key: 'exit', label: 'Горизонт выхода', value: '5 лет', color: '#ab47bc' },
-  { key: 'score', label: 'Скор ФСТ', value: '7.4 / 9', color: '#26c6da' },
-  { key: 'sovereign', label: 'Суверенность', value: '7 / 9', color: '#ef5350' },
+  { key: 'irr', label: 'IRR прогноз', value: '38%', color: 'var(--fst-green)' },
+  { key: 'moic', label: 'MOIC (5л)', value: '4.2x', color: 'var(--fst-blue)' },
+  { key: 'risk', label: 'Риск провала', value: '24%', color: 'var(--fst-brand)' },
+  { key: 'exit', label: 'Горизонт выхода', value: '5 лет', color: 'var(--fst-purple)' },
+  { key: 'score', label: 'Скор ФСТ', value: '7.4 / 9', color: 'var(--fst-cyan)' },
+  { key: 'sovereign', label: 'Суверенность', value: '7 / 9', color: 'var(--fst-red)' },
 ])
 
 const aiVerdict = ref('Высокий потенциал. Рекомендуется к финансированию при подтверждении TRL 6 в ходе DD. Ключевой риск — небольшая команда на посевной стадии. Целевой мультипликатор 4-5x при выходе в 2028-2030.')
-const verdictColor = ref('#66bb6a')
+const verdictColor = ref('var(--fst-green)')
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
 function addTranche() {
@@ -703,8 +737,8 @@ async function refreshAI() {
   aiMetrics.value[0].value = `${irr}%`
   aiMetrics.value[1].value = `${moic}x`
   aiMetrics.value[2].value = `${risk}%`
-  aiMetrics.value[2].color = risk > 30 ? '#ef5350' : risk > 20 ? '#ffa726' : '#66bb6a'
-  verdictColor.value = irr > 35 ? '#66bb6a' : irr > 20 ? '#ffa726' : '#ef5350'
+  aiMetrics.value[2].color = risk > 30 ? 'var(--fst-red)' : risk > 20 ? 'var(--fst-brand)' : 'var(--fst-green)'
+  verdictColor.value = irr > 35 ? 'var(--fst-green)' : irr > 20 ? 'var(--fst-brand)' : 'var(--fst-red)'
   aiLoading.value = false
   toast.add({ severity: 'success', summary: 'AI обновил оценку', life: 2000 })
 }
@@ -737,11 +771,11 @@ function applyFinmodelToAI() {
   const riskRaw = Math.max(5, Math.min(60, 100 - pi * 30))
 
   aiMetrics.value[0].value = `${Math.round(irr)}%`
-  aiMetrics.value[0].color = irr >= 25 ? '#66bb6a' : irr >= 15 ? '#ffa726' : '#ef5350'
+  aiMetrics.value[0].color = irr >= 25 ? 'var(--fst-green)' : irr >= 15 ? 'var(--fst-brand)' : 'var(--fst-red)'
   aiMetrics.value[1].value = `${moic.toFixed(1)}x`
-  aiMetrics.value[1].color = moic >= 3 ? '#42a5f5' : moic >= 1.5 ? '#ffa726' : '#ef5350'
+  aiMetrics.value[1].color = moic >= 3 ? 'var(--fst-blue)' : moic >= 1.5 ? 'var(--fst-brand)' : 'var(--fst-red)'
   aiMetrics.value[2].value = `${Math.round(riskRaw)}%`
-  aiMetrics.value[2].color = riskRaw > 35 ? '#ef5350' : riskRaw > 20 ? '#ffa726' : '#66bb6a'
+  aiMetrics.value[2].color = riskRaw > 35 ? 'var(--fst-red)' : riskRaw > 20 ? 'var(--fst-brand)' : 'var(--fst-green)'
 
   // Exit horizon from DPP
   const dpp = vals['DPP (дисконт.срок окуп., лет)'] ?? 4
@@ -752,10 +786,10 @@ function applyFinmodelToAI() {
     (irr / 40 * 3) + (Math.min(3, pi) * 1.5) + (Math.min(24, runway) / 24 * 2) + 1
   )).toFixed(1)
   aiMetrics.value[4].value = `${score} / 9`
-  aiMetrics.value[4].color = score >= 7 ? '#26c6da' : score >= 5 ? '#ffa726' : '#ef5350'
+  aiMetrics.value[4].color = score >= 7 ? 'var(--fst-cyan)' : score >= 5 ? 'var(--fst-brand)' : 'var(--fst-red)'
 
   const npvSign = npv > 0 ? 'положительный' : 'отрицательный'
-  verdictColor.value = irr >= 25 && npv > 0 ? '#66bb6a' : irr >= 15 ? '#ffa726' : '#ef5350'
+  verdictColor.value = irr >= 25 && npv > 0 ? 'var(--fst-green)' : irr >= 15 ? 'var(--fst-brand)' : 'var(--fst-red)'
   aiVerdict.value = `Финмодель: NPV @ 15% = ${formatFmVal(npv)} тыс.₽ (${npvSign}). MOIC ${moic.toFixed(1)}x, IRR ≈ ${Math.round(irr)}%, Runway ${Math.round(runway)} мес. ${npv > 0 && irr >= 20 ? 'Проект инвестиционно привлекателен.' : 'Требуется доработка финансовой модели.'}`
 
   toast.add({ severity: 'success', summary: 'AI-оценка обновлена из финмодели', life: 2500 })
@@ -1003,7 +1037,7 @@ onMounted(async () => {
   flex-shrink: 0;
   font-size: 11px;
 }
-.fst-sc-step.done .fst-sc-dot { background: #66bb6a; color: #fff; }
+.fst-sc-step.done .fst-sc-dot { background: var(--fst-green); color: #fff; }
 .fst-sc-step.active .fst-sc-dot { background: var(--p-primary-color); color: #fff; }
 .fst-sc-info { flex: 1; }
 .fst-sc-label { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
@@ -1041,7 +1075,7 @@ onMounted(async () => {
 .fst-ai-verdict-text {
   font-size: 12px;
   color: var(--p-text-color);
-  border-left: 3px solid #66bb6a;
+  border-left: 3px solid var(--fst-green);
   padding-left: 10px;
   line-height: 1.5;
 }
@@ -1142,9 +1176,9 @@ onMounted(async () => {
   color: var(--p-text-muted-color);
   margin-bottom: 12px;
   padding: 8px 12px;
-  background: rgba(66, 165, 245, 0.06);
+  background: color-mix(in srgb, var(--fst-blue) 6%, transparent);
   border-radius: 6px;
-  border-left: 3px solid #42a5f5;
+  border-left: 3px solid var(--fst-blue);
 }
 .fst-fm-actions {
   display: flex;
