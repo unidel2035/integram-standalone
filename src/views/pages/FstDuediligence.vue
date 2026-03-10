@@ -1,5 +1,5 @@
 <template>
-  <FstPageLayout title="AI Due Diligence" subtitle="Ускоренная проверка с правовым, финансовым и технологическим анализом">
+  <FstPageLayout title="AI Due Diligence" subtitle="Due Diligence — углублённая проверка перед инвестицией">
     <template #actions>
       <Button label="Экспорт DD-отчёта" severity="secondary" @click="exportDd" />
       <Button label="+ Новая проверка" @click="showNewDd = true" />

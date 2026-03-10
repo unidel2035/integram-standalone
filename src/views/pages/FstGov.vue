@@ -2170,21 +2170,22 @@ onMounted(async () => {
 /* Radar tooltip — глобально поверх всего */
 .radar-tip-global {
   position: fixed; z-index: 9999; pointer-events: none;
-  background: #1e1e2e; color: #e2e8f0;
-  border: 1px solid rgba(255,255,255,0.12);
+  background: var(--p-surface-overlay);
+  color: var(--p-text-color);
+  border: 1px solid color-mix(in srgb, var(--p-text-color) 12%, transparent);
   border-radius: 10px; padding: 11px 14px;
   min-width: 210px; max-width: 260px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--p-text-color) 55%, transparent);
 }
 .radar-tip-global .radar-tip-code { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
-.radar-tip-global .radar-tip-name { font-size: 13px; font-weight: 600; line-height: 1.35; margin-bottom: 5px; color: #f1f5f9; }
-.radar-tip-global .radar-tip-desc { font-size: 11px; color: #94a3b8; line-height: 1.45; margin-bottom: 7px; }
+.radar-tip-global .radar-tip-name { font-size: 13px; font-weight: 600; line-height: 1.35; margin-bottom: 5px; color: var(--p-text-color); }
+.radar-tip-global .radar-tip-desc { font-size: 11px; color: var(--p-text-muted-color); line-height: 1.45; margin-bottom: 7px; }
 .radar-tip-global .radar-tip-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 11px; font-weight: 600; margin-bottom: 6px; }
-.radar-tip-global .radar-tip-date { color: #64748b; font-weight: 400; }
-.radar-tip-global .radar-tip-hint { font-size: 10px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; margin-top: 2px; }
-.radar-tip-global .risk-high  { color: #f87171; }
-.radar-tip-global .risk-medium { color: #fb923c; }
-.radar-tip-global .risk-low   { color: #4ade80; }
+.radar-tip-global .radar-tip-date { color: var(--p-text-muted-color); font-weight: 400; }
+.radar-tip-global .radar-tip-hint { font-size: 10px; color: var(--p-text-muted-color); border-top: 1px solid color-mix(in srgb, var(--p-text-color) 8%, transparent); padding-top: 5px; margin-top: 2px; }
+.radar-tip-global .risk-high  { color: var(--fst-red); }
+.radar-tip-global .risk-medium { color: var(--fst-brand); }
+.radar-tip-global .risk-low   { color: var(--fst-green); }
 
 /* ─── Timeline tab toolbar ─── */
 .gr-tl-toolbar {

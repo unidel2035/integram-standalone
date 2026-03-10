@@ -18,7 +18,7 @@
       <div v-for="year in years" :key="year.y" class="np-year" :class="{ current: year.current, past: year.y < 2026 }">
         <div class="ny-label">{{ year.y }}</div>
         <div class="ny-bar">
-          <div class="ny-fill" :style="{ height: year.pct + '%', background: year.current ? 'var(--p-primary-color)' : year.y < 2026 ? 'var(--fst-green)' : 'var(--surface-border)' }"></div>
+          <div class="ny-fill" :style="{ height: year.pct + '%', background: year.current ? 'var(--p-primary-color)' : year.y < 2026 ? 'var(--fst-green)' : 'var(--p-content-border-color)' }"></div>
         </div>
         <div class="ny-pct">{{ year.pct }}%</div>
       </div>
@@ -160,41 +160,41 @@ function exportReport() { alert('Экспорт отчёта соответст�
 </script>
 
 <style scoped>
-.np-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--surface-ground); }
+.np-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
 .np-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .np-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .np-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
 
-.np-timeline { display: flex; align-items: flex-end; gap: 8px; background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px; height: 160px; }
+.np-timeline { display: flex; align-items: flex-end; gap: 8px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; height: 160px; }
 .np-year { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; height: 100%; }
 .ny-label { font-size: 0.75rem; font-weight: 600; color: var(--p-text-color); }
-.ny-bar { flex: 1; width: 32px; background: var(--surface-border); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.ny-bar { flex: 1; width: 32px; background: var(--p-content-border-color); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
 .ny-fill { width: 100%; border-radius: 4px; transition: height 0.5s; }
 .np-year.current .ny-bar { border: 2px solid var(--p-primary-color); }
 .ny-pct { font-size: 0.68rem; color: var(--p-text-muted-color); }
 
 .np-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-.np-kpi-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.np-kpi-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .nk-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .nk-label { font-weight: 600; font-size: 0.83rem; color: var(--p-text-color); flex: 1; }
 .nk-status { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
 .nk-status.on-track { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
 .nk-status.lagging  { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
 .nk-status.critical { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
-.nk-bar-track { position: relative; height: 10px; background: var(--surface-border); border-radius: 5px; overflow: hidden; }
+.nk-bar-track { position: relative; height: 10px; background: var(--p-content-border-color); border-radius: 5px; overflow: hidden; }
 .nk-bar { height: 100%; border-radius: 5px; transition: width 0.5s; }
 .nk-target-mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--p-text-muted-color); border-radius: 1px; }
 .nk-vals { display: flex; gap: 10px; font-size: 0.72rem; flex-wrap: wrap; }
 .nk-current { color: var(--p-text-color); }
 .nk-current strong { color: var(--p-primary-color); }
 .nk-target26, .nk-target30 { color: var(--p-text-muted-color); }
-.nk-portfolio { font-size: 0.72rem; color: var(--p-primary-color); font-weight: 600; border-top: 1px solid var(--surface-border); padding-top: 6px; }
+.nk-portfolio { font-size: 0.72rem; color: var(--p-primary-color); font-weight: 600; border-top: 1px solid var(--p-content-border-color); padding-top: 6px; }
 
-.np-section { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 18px; overflow-x: auto; }
+.np-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; overflow-x: auto; }
 .np-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
 .np-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 640px; }
-.np-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--surface-border); font-size: 0.72rem; }
-.np-table td { padding: 8px 10px; border-bottom: 1px solid var(--surface-border); color: var(--p-text-color); }
+.np-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.72rem; }
+.np-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
 .m-name { font-weight: 600; }
 .m-co { font-size: 0.75rem; color: var(--p-primary-color); font-weight: 600; }
 .m-role, .m-contrib { font-size: 0.75rem; color: var(--p-text-muted-color); }
@@ -202,11 +202,11 @@ function exportReport() { alert('Экспорт отчёта соответст�
 .m-status { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
 .m-status.active  { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
 .m-status.review  { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
-.m-status.planned { background: var(--surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--surface-border); }
+.m-status.planned { background: var(--p-surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); }
 .m-status.done    { background: color-mix(in srgb, var(--fst-green) 20%, transparent); color: var(--fst-green); }
 
 .fp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.fp-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
+.fp-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
 .fp-code { font-weight: 900; font-size: 0.82rem; color: var(--p-primary-color); }
 .fp-name { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
 .fp-budget { font-size: 1rem; font-weight: 700; color: var(--p-text-color); }
