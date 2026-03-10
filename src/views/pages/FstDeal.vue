@@ -827,6 +827,10 @@ onMounted(async () => {
   padding-top: 16px;
   min-width: 0;
 }
+.fst-deal-col {
+  min-width: 0;
+  overflow: hidden;
+}
 
 /* Panel */
 .fst-deal-panel {
