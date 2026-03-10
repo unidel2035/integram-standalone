@@ -242,36 +242,41 @@
         <!-- KPI Targets -->
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
-            <i class="pi pi-chart-bar" style="color:var(--fst-cyan)"></i> KPI-цели проекта
-            <LearnTooltip
-              label="Добавить KPI"
-              what="Добавляет новую целевую метрику для отслеживания прогресса проекта"
-              when="Для определения измеримых показателей успеха проекта на горизонте инвестирования"
-              :terms="['KPI', 'Целевые показатели', 'Мониторинг портфеля']"
-            >
-              <Button icon="pi pi-plus" size="small" text severity="success" @click="addKpi" style="margin-left:auto" />
-            </LearnTooltip>
+            <i class="pi pi-chart-bar"></i> KPI-цели проекта
+            <Button icon="pi pi-plus" size="small" text severity="success" @click="addKpi" class="fst-deal-panel-btn" />
           </div>
-          <div v-for="(kpi, idx) in deal.kpis" :key="idx" class="fst-kpi-row">
-            <div class="fst-kpi-meta">
-              <InputText v-model="kpi.name" placeholder="Метрика" class="fst-input" style="font-size:12px;width:130px" />
-              <Select v-model="kpi.unit" :options="kpiUnits" placeholder="ед." class="fst-input" style="font-size:12px;width:90px" />
-            </div>
-            <div class="fst-kpi-targets">
-              <InputNumber v-model="kpi.target2025" :min="0" placeholder="2025" class="fst-input" style="font-size:12px;width:80px" />
-              <InputNumber v-model="kpi.target2026" :min="0" placeholder="2026" class="fst-input" style="font-size:12px;width:80px" />
-              <InputNumber v-model="kpi.target2027" :min="0" placeholder="2027" class="fst-input" style="font-size:12px;width:80px" />
-              <LearnTooltip
-                label="Удалить KPI"
-                what="Удаляет метрику из списка целевых показателей проекта"
-                when="Когда метрика больше не актуальна для оценки успеха проекта"
-                :terms="['KPI', 'Целевые показатели']"
-              >
-                <Button icon="pi pi-times" size="small" text severity="secondary" @click="removeKpi(idx)" />
-              </LearnTooltip>
-            </div>
-          </div>
-          <div v-if="!deal.kpis.length" style="font-size:12px;color:var(--p-text-muted-color);padding:8px">
+          <table class="fst-kpi-table" v-if="deal.kpis.length">
+            <colgroup>
+              <col style="width:38%">
+              <col style="width:18%">
+              <col style="width:13%">
+              <col style="width:13%">
+              <col style="width:13%">
+              <col style="width:5%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Метрика</th>
+                <th>Ед.</th>
+                <th>2025</th>
+                <th>2026</th>
+                <th>2027</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(kpi, idx) in deal.kpis" :key="idx">
+                <td><InputText v-model="kpi.name" placeholder="Выручка, TRL…" class="fst-input" /></td>
+                <td><Select v-model="kpi.unit" :options="kpiUnits" placeholder="ед." class="fst-input" /></td>
+                <td><InputNumber v-model="kpi.target2025" :min="0" class="fst-input" /></td>
+                <td><InputNumber v-model="kpi.target2026" :min="0" class="fst-input" /></td>
+                <td><InputNumber v-model="kpi.target2027" :min="0" class="fst-input" /></td>
+                <td><Button icon="pi pi-times" size="small" text severity="secondary" @click="removeKpi(idx)" /></td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="fst-deal-empty">
+            <i class="pi pi-chart-bar" />
             Добавьте KPI-цели проекта
           </div>
         </div>
@@ -820,8 +825,7 @@ onMounted(async () => {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
   padding-top: 16px;
-  flex: 1;
-  overflow: auto;
+  min-width: 0;
 }
 
 /* Panel */
@@ -905,22 +909,36 @@ onMounted(async () => {
   color: var(--p-text-color);
 }
 
-/* KPI */
-.fst-kpi-row {
+/* KPI table */
+.fst-kpi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fst-text-xs);
+}
+.fst-kpi-table th {
+  text-align: left;
+  font-size: var(--fst-text-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--p-text-muted-color);
+  padding: 0 6px 8px;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+.fst-kpi-table td {
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+.fst-kpi-table td:last-child { width: 32px; text-align: center; }
+.fst-kpi-table td .fst-input { width: 100%; }
+.fst-deal-panel-btn { margin-left: auto; }
+.fst-deal-empty {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-.fst-kpi-meta {
-  display: flex;
-  gap: 4px;
-  flex: 0 0 auto;
-}
-.fst-kpi-targets {
-  display: flex;
-  gap: 4px;
-  align-items: center;
+  gap: 8px;
+  font-size: var(--fst-text-xs);
+  color: var(--p-text-muted-color);
+  padding: 12px 0 4px;
 }
 
 /* Conditions */
