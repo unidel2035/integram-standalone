@@ -174,44 +174,44 @@ const metrics = computed(() => {
   const sessionCount = Math.max(s?.committeeCount ?? 0, evSessionCount.value)
   const dealsCount   = Math.max(s?.dealsCount ?? 0, evDealsCount.value)
   return [
-    { icon: 'pi pi-users',        color: '#a78bfa', val: statsLoading.value ? '...' : `${sessionCount}`,   label: 'Заседаний ИК' },
-    { icon: 'pi pi-sitemap',      color: '#38bdf8', val: statsLoading.value ? '...' : `${s?.subfundCount ?? 3}`, label: 'Субфонда' },
-    { icon: 'pi pi-briefcase',    color: '#34d399', val: statsLoading.value ? '...' : `${s?.portfolioCount ?? 0}`, label: 'Компаний в портфеле' },
-    { icon: 'pi pi-check-circle', color: '#fb923c', val: statsLoading.value ? '...' : `${dealsCount}`,     label: 'Закрытых сделок' },
-    { icon: 'pi pi-chart-line',   color: '#f87171', val: statsLoading.value ? '...' : `${s?.avgIRR ? (s.avgIRR * 100).toFixed(0) + '%' : '—'}`, label: 'Средний IRR' },
+    { icon: 'pi pi-users',        color: 'var(--fst-purple)', val: statsLoading.value ? '...' : `${sessionCount}`,   label: 'Заседаний ИК' },
+    { icon: 'pi pi-sitemap',      color: 'var(--fst-blue)',   val: statsLoading.value ? '...' : `${s?.subfundCount ?? 3}`, label: 'Субфонда' },
+    { icon: 'pi pi-briefcase',    color: 'var(--fst-green)',  val: statsLoading.value ? '...' : `${s?.portfolioCount ?? 0}`, label: 'Компаний в портфеле' },
+    { icon: 'pi pi-check-circle', color: 'var(--fst-brand)',  val: statsLoading.value ? '...' : `${dealsCount}`,     label: 'Закрытых сделок' },
+    { icon: 'pi pi-chart-line',   color: 'var(--fst-red)',    val: statsLoading.value ? '...' : `${s?.avgIRR ? (s.avgIRR * 100).toFixed(0) + '%' : '—'}`, label: 'Средний IRR' },
   ]
 })
 
 const pipeline = [
-  { id: 1, name: 'Заявка',        sub: 'Подача проекта',          icon: 'pi pi-file-plus',    color: '#38bdf8', path: '/fst-apply' },
-  { id: 2, name: 'Инвесткомитет', sub: '6 AI-агентов дебатируют', icon: 'pi pi-users',        color: '#a78bfa', path: '/fst-committee' },
-  { id: 3, name: 'Сделка',        sub: 'Term Sheet · SPV',        icon: 'pi pi-file-edit',    color: '#fb923c', path: '/fst-deal' },
-  { id: 4, name: 'Исполнение',    sub: 'KPI · Транши',            icon: 'pi pi-list-check',   color: '#34d399', path: '/fst-execution' },
-  { id: 5, name: 'Мониторинг',    sub: 'Светофор рисков',         icon: 'pi pi-chart-scatter',color: '#22d3ee', path: '/fst-portfolio' },
-  { id: 6, name: 'Выход',         sub: 'MOIC · IRR · DPI',        icon: 'pi pi-flag',         color: '#f87171', path: '/fst-fund' },
+  { id: 1, name: 'Заявка',        sub: 'Подача проекта',          icon: 'pi pi-file-plus',    color: 'var(--fst-blue)',   path: '/fst-apply' },
+  { id: 2, name: 'Инвесткомитет', sub: '6 AI-агентов дебатируют', icon: 'pi pi-users',        color: 'var(--fst-purple)', path: '/fst-committee' },
+  { id: 3, name: 'Сделка',        sub: 'Term Sheet · SPV',        icon: 'pi pi-file-edit',    color: 'var(--fst-brand)',  path: '/fst-deal' },
+  { id: 4, name: 'Исполнение',    sub: 'KPI · Транши',            icon: 'pi pi-list-check',   color: 'var(--fst-green)', path: '/fst-execution' },
+  { id: 5, name: 'Мониторинг',    sub: 'Светофор рисков',         icon: 'pi pi-chart-scatter',color: 'var(--fst-cyan)',   path: '/fst-portfolio' },
+  { id: 6, name: 'Выход',         sub: 'MOIC · IRR · DPI',        icon: 'pi pi-flag',         color: 'var(--fst-red)',    path: '/fst-fund' },
 ]
 
 const modules = [
-  { id: 'startuper',      name: 'Стартапер',              phase: 'Фаза 0 — Поиск',           icon: '',        svgIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em"><path d="M9.19 6.35c-2.04 2.29-3.44 5.58-3.57 5.89L2 10.69l4.05-4.05c.47-.47 1.15-.68 1.81-.55l1.33.26zM11.17 17c.31-.13 3.58-1.53 5.87-3.57l.26 1.33c.13.66-.08 1.34-.55 1.81L12.7 20.59l-1.53-3.59zm6.48-14.34C12.01-.04 6.27 4.64 5.68 5.23L7.98 9.7l-.13.13c-1.13 1.13-1.93 3.04-2.55 4.74.6 1.5 1.57 2.88 2.88 4.19 1.31 1.31 2.71 2.29 4.22 2.89 1.7-.62 3.58-1.43 4.71-2.56l.13-.13 4.47 2.3c.59-.59 5.28-6.32 1.93-11.97zm-7.48 7.38c-1.17-1.17-1.17-3.07 0-4.24 1.17-1.17 3.07-1.17 4.24 0 1.17 1.17 1.17 3.07 0 4.24-1.17 1.17-3.07 1.17-4.24 0zM3.01 18.99c-.78.78-.78 2.04 0 2.83 1.1 1.1 8.15.38 8.15.38s.71-7.05-.38-8.15c-.79-.79-2.05-.79-2.83 0l-4.94 4.94z"/></svg>',  color: '#f59e0b', path: '/fst-startuper',      status: 'live' },
-  { id: 'sourcing',       name: 'AI Deal Sourcing',       phase: 'Фаза 0 — Поиск',           icon: 'pi pi-search',        color: '#667eea', path: '/fst-sourcing',       status: 'live' },
-  { id: 'committee',      name: 'AI Инвесткомитет',       phase: 'Фаза 1 — Оценка',          icon: 'pi pi-users',         color: '#a78bfa', path: '/fst-committee',      status: 'live' },
-  { id: 'protocol',       name: 'Протоколы ИК',           phase: 'Фаза 1 — Оценка',          icon: 'pi pi-file-check',    color: '#ffa726', path: '/fst-protocol',       status: 'live' },
-  { id: 'deal',           name: 'Доведение сделки',       phase: 'Фаза 2 — Структурирование', icon: 'pi pi-file-edit',     color: '#fb923c', path: '/fst-deal',           status: 'live' },
-  { id: 'execution',      name: 'Исполнение сделки',      phase: 'Фаза 3 — Постинвест',      icon: 'pi pi-list-check',    color: '#34d399', path: '/fst-execution',      status: 'live' },
-  { id: 'twin',           name: 'Цифровой двойник',       phase: 'Фаза 3 — Микро-монит.',    icon: 'pi pi-desktop',       color: '#f87171', path: '/fst-twin',           status: 'live' },
-  { id: 'portfolio',      name: 'Портфельный монитор',    phase: 'Фаза 4 — Мониторинг',      icon: 'pi pi-chart-scatter', color: '#22d3ee', path: '/fst-portfolio',      status: 'live' },
-  { id: 'intelligence',   name: 'Portfolio Intelligence', phase: 'Фаза 4 — Мониторинг',      icon: 'pi pi-chart-line',    color: '#5c6bc0', path: '/fst-intelligence',   status: 'live' },
-  { id: 'benchmark',      name: 'Бенчмаркинг портфеля',  phase: 'Фаза 4 — Мониторинг',      icon: 'pi pi-chart-bar',     color: '#ff9800', path: '/fst-benchmark',      status: 'live' },
-  { id: 'founders',       name: 'Founders CRM',           phase: 'Фаза 4 — Мониторинг',      icon: 'pi pi-users',         color: '#667eea', path: '/fst-founders',       status: 'live' },
-  { id: 'allocation',     name: 'Оптимизация аллокации',  phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-chart-pie',     color: '#ab47bc', path: '/fst-allocation',     status: 'live' },
-  { id: 'transparency',   name: 'Публичная витрина',      phase: 'Фаза 5 — LP Relations',    icon: 'pi pi-shield',        color: '#42a5f5', path: '/fst-transparency',   status: 'live' },
-  { id: 'administration', name: 'Бэк-офис фонда',         phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-building',      color: '#7c3aed', path: '/fst-administration', status: 'live' },
-  { id: 'gov',            name: 'GR · Меры поддержки',   phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-building-columns', color: '#26c6da', path: '/fst-gov',            status: 'live' },
-  { id: 'secondary',      name: 'Secondary Market',       phase: 'Фаза 6 — Ликвидность',    icon: 'pi pi-refresh',       color: '#26c6da', path: '/fst-secondary',      status: 'live' },
-  { id: 'fund',           name: 'Цифровой двойник фонда', phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-building',      color: '#38bdf8', path: '/fst-fund',           status: 'live' },
-  { id: 'pitch',          name: 'Инвестиционный питч',    phase: 'Фаза 0 — Поиск',           icon: 'pi pi-star',          color: '#f59e0b', path: '/fst-pitch',          status: 'live' },
-  { id: 'room',           name: 'Agent Room',             phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-comments',      color: '#10b981', path: '/fst-room',           status: 'live' },
-  { id: 'soft-model',     name: 'Software Ontology',      phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-sitemap',       color: '#a855f7', path: '/fst-soft-model',     status: 'live' },
+  { id: 'startuper',      name: 'Стартапер',              phase: 'Фаза 0 — Поиск',           icon: '',        svgIcon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em"><path d="M9.19 6.35c-2.04 2.29-3.44 5.58-3.57 5.89L2 10.69l4.05-4.05c.47-.47 1.15-.68 1.81-.55l1.33.26zM11.17 17c.31-.13 3.58-1.53 5.87-3.57l.26 1.33c.13.66-.08 1.34-.55 1.81L12.7 20.59l-1.53-3.59zm6.48-14.34C12.01-.04 6.27 4.64 5.68 5.23L7.98 9.7l-.13.13c-1.13 1.13-1.93 3.04-2.55 4.74.6 1.5 1.57 2.88 2.88 4.19 1.31 1.31 2.71 2.29 4.22 2.89 1.7-.62 3.58-1.43 4.71-2.56l.13-.13 4.47 2.3c.59-.59 5.28-6.32 1.93-11.97zm-7.48 7.38c-1.17-1.17-1.17-3.07 0-4.24 1.17-1.17 3.07-1.17 4.24 0 1.17 1.17 1.17 3.07 0 4.24-1.17 1.17-3.07 1.17-4.24 0zM3.01 18.99c-.78.78-.78 2.04 0 2.83 1.1 1.1 8.15.38 8.15.38s.71-7.05-.38-8.15c-.79-.79-2.05-.79-2.83 0l-4.94 4.94z"/></svg>',  color: 'var(--fst-brand)',       path: '/fst-startuper',      status: 'live' },
+  { id: 'sourcing',       name: 'AI Deal Sourcing',       phase: 'Фаза 0 — Поиск',           icon: 'pi pi-search',        color: 'var(--fst-purple)',      path: '/fst-sourcing',       status: 'live' },
+  { id: 'committee',      name: 'AI Инвесткомитет',       phase: 'Фаза 1 — Оценка',          icon: 'pi pi-users',         color: 'var(--fst-purple)',      path: '/fst-committee',      status: 'live' },
+  { id: 'protocol',       name: 'Протоколы ИК',           phase: 'Фаза 1 — Оценка',          icon: 'pi pi-file-check',    color: 'var(--fst-brand)',       path: '/fst-protocol',       status: 'live' },
+  { id: 'deal',           name: 'Доведение сделки',       phase: 'Фаза 2 — Структурирование', icon: 'pi pi-file-edit',     color: 'var(--fst-brand)',       path: '/fst-deal',           status: 'live' },
+  { id: 'execution',      name: 'Исполнение сделки',      phase: 'Фаза 3 — Постинвест',      icon: 'pi pi-list-check',    color: 'var(--fst-green)',       path: '/fst-execution',      status: 'live' },
+  { id: 'twin',           name: 'Цифровой двойник',       phase: 'Фаза 3 — Микро-монит.',    icon: 'pi pi-desktop',       color: 'var(--fst-red)',         path: '/fst-twin',           status: 'live' },
+  { id: 'portfolio',      name: 'Портфельный монитор',    phase: 'Фаза 4 — Мониторинг',      icon: 'pi pi-chart-scatter', color: 'var(--fst-cyan)',        path: '/fst-portfolio',      status: 'live' },
+  { id: 'intelligence',   name: 'Portfolio Intelligence', phase: 'Фаза 4 — Мониторинг',      icon: 'pi pi-chart-line',    color: 'var(--fst-blue)',        path: '/fst-intelligence',   status: 'live' },
+  { id: 'benchmark',      name: 'Бенчмаркинг портфеля',  phase: 'Фаза 4 — Мониторинг',      icon: 'pi pi-chart-bar',     color: 'var(--fst-brand)',       path: '/fst-benchmark',      status: 'live' },
+  { id: 'founders',       name: 'Founders CRM',           phase: 'Фаза 4 — Мониторинг',      icon: 'pi pi-users',         color: 'var(--fst-purple)',      path: '/fst-founders',       status: 'live' },
+  { id: 'allocation',     name: 'Оптимизация аллокации',  phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-chart-pie',     color: 'var(--fst-purple)',      path: '/fst-allocation',     status: 'live' },
+  { id: 'transparency',   name: 'Публичная витрина',      phase: 'Фаза 5 — LP Relations',    icon: 'pi pi-shield',        color: 'var(--fst-blue)',        path: '/fst-transparency',   status: 'live' },
+  { id: 'administration', name: 'Бэк-офис фонда',         phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-building',      color: 'var(--fst-purple-dark)', path: '/fst-administration', status: 'live' },
+  { id: 'gov',            name: 'GR · Меры поддержки',   phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-building-columns', color: 'var(--fst-cyan)',     path: '/fst-gov',            status: 'live' },
+  { id: 'secondary',      name: 'Secondary Market',       phase: 'Фаза 6 — Ликвидность',    icon: 'pi pi-refresh',       color: 'var(--fst-cyan)',        path: '/fst-secondary',      status: 'live' },
+  { id: 'fund',           name: 'Цифровой двойник фонда', phase: 'Фаза 5 — Фонд-индекс',    icon: 'pi pi-building',      color: 'var(--fst-blue)',        path: '/fst-fund',           status: 'live' },
+  { id: 'pitch',          name: 'Инвестиционный питч',    phase: 'Фаза 0 — Поиск',           icon: 'pi pi-star',          color: 'var(--fst-brand)',       path: '/fst-pitch',          status: 'live' },
+  { id: 'room',           name: 'Agent Room',             phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-comments',      color: 'var(--fst-green)',       path: '/fst-room',           status: 'live' },
+  { id: 'soft-model',     name: 'Software Ontology',      phase: 'Фаза 5 — Fund Operations', icon: 'pi pi-sitemap',       color: 'var(--fst-purple)',      path: '/fst-soft-model',     status: 'live' },
 ]
 
 const phaseNames = {
@@ -256,8 +256,6 @@ const modulesByPhase = computed(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
-  color: var(--p-text-muted-color);
 }
 .hub-live-dot {
   width: 7px;
@@ -303,17 +301,17 @@ const modulesByPhase = computed(() => {
   font-weight: 600;
 }
 .hub-btn-sandbox.active {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  border-color: #d97706;
-  color: #78350f;
+  background: linear-gradient(135deg, var(--fst-brand), var(--fst-brand-dark));
+  border-color: var(--fst-brand-dark);
+  color: color-mix(in srgb, var(--fst-brand-dark) 60%, black);
 }
 .hub-btn-sandbox.active:hover {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, var(--fst-brand-dark), color-mix(in srgb, var(--fst-brand-dark) 70%, black));
 }
 
 /* Sandbox mode styling */
 .hub.sandbox-mode {
-  box-shadow: inset 0 0 0 4px #fbbf24;
+  box-shadow: inset 0 0 0 4px var(--fst-brand);
 }
 
 /* ═══════════════════════════════════════════════ METRICS */
@@ -374,11 +372,11 @@ const modulesByPhase = computed(() => {
 }
 .hub-pipe-step:last-child { border-right: none; }
 .hub-pipe-step:hover {
-  background: color-mix(in srgb, var(--c, #38bdf8) 8%, var(--surface-card));
-  box-shadow: inset 0 -3px 0 var(--c, #38bdf8);
+  background: color-mix(in srgb, var(--c, var(--fst-blue)) 8%, var(--surface-card));
+  box-shadow: inset 0 -3px 0 var(--c, var(--fst-blue));
 }
 .hub-pipe-step:hover .hub-pipe-name {
-  color: var(--c, #38bdf8);
+  color: var(--c, var(--fst-blue));
 }
 .hub-pipe-num {
   font-size: 10px;
@@ -388,7 +386,7 @@ const modulesByPhase = computed(() => {
 }
 .hub-pipe-icon {
   font-size: 18px;
-  color: var(--c, #38bdf8);
+  color: var(--c, var(--fst-blue));
   margin-bottom: 6px;
 }
 .hub-pipe-name {
@@ -445,12 +443,12 @@ const modulesByPhase = computed(() => {
   transition: all 0.15s;
 }
 .hub-mod:hover {
-  background: color-mix(in srgb, var(--mc, #38bdf8) 8%, var(--surface-card));
-  border-left-color: var(--mc, #38bdf8);
-  border-right-color: var(--mc, #38bdf8);
+  background: color-mix(in srgb, var(--mc, var(--fst-blue)) 8%, var(--surface-card));
+  border-left-color: var(--mc, var(--fst-blue));
+  border-right-color: var(--mc, var(--fst-blue));
 }
 .hub-mod:hover .hub-mod-name {
-  color: var(--mc, #38bdf8);
+  color: var(--mc, var(--fst-blue));
 }
 .hub-mod-left {
   flex-shrink: 0;
@@ -465,9 +463,9 @@ const modulesByPhase = computed(() => {
   align-items: center;
   justify-content: center;
   font-size: 15px;
-  color: var(--mc, #38bdf8);
+  color: var(--mc, var(--fst-blue));
 }
-.hub-mod-svg-icon { display: flex; align-items: center; justify-content: center; line-height: 0; color: var(--mc, #f59e0b); }
+.hub-mod-svg-icon { display: flex; align-items: center; justify-content: center; line-height: 0; color: var(--mc, var(--fst-brand)); }
 .hub-mod-svg-icon svg { width: 1em; height: 1em; fill: currentColor; }
 .hub-mod-body { flex: 1; min-width: 0; }
 .hub-mod-name {
@@ -490,14 +488,14 @@ const modulesByPhase = computed(() => {
   letter-spacing: 0.05em;
 }
 .hub-mod-status--live {
-  background: rgba(34,211,238,0.15);
-  color: #22d3ee;
-  border: 1px solid rgba(34,211,238,0.3);
+  background: color-mix(in srgb, var(--fst-cyan) 15%, transparent);
+  color: var(--fst-cyan);
+  border: 1px solid color-mix(in srgb, var(--fst-cyan) 30%, transparent);
 }
 .hub-mod-status--beta {
-  background: rgba(251,191,36,0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(251,191,36,0.3);
+  background: color-mix(in srgb, var(--fst-brand) 15%, transparent);
+  color: var(--fst-brand);
+  border: 1px solid color-mix(in srgb, var(--fst-brand) 30%, transparent);
 }
 .hub-mod-arrow {
   color: var(--p-text-muted-color);

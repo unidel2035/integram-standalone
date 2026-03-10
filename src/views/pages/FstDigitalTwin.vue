@@ -6,7 +6,7 @@
         <i class="pi pi-circle-fill fdt-live-dot" :style="{ color: liveColor }"></i>
         <span>ЦД · <b>{{ company.name }}</b></span>
         <Tag :value="company.stage" severity="info" class="fsp-tag" />
-        <Tag :value="company.subFund" :style="{ background: 'var(--fst-blue)', color:'#fff', fontSize:'11px' }" />
+        <Tag :value="company.subFund" :style="{ background: 'var(--fst-blue)', color: 'white', fontSize:'11px' }" />
       </div>
       <div class="fdt-updated">Обновлено: {{ lastUpdate }} · Тик {{ tick }}</div>
     </template>
@@ -1048,7 +1048,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   animation: ob-dot-blink 1s step-start infinite;
 }
 .fdt-ticker-live {
-  background: var(--fst-red); color: #fff;
+  background: var(--fst-red); color: white;
   font-size: 0.55rem; font-weight: 900;
   padding: 1px 5px; border-radius: 3px; letter-spacing: 1px;
 }
@@ -1116,8 +1116,8 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
   background: var(--p-primary-color);
   border-radius: 8px; padding: 4px 10px; flex-shrink: 0;
 }
-.fdt-ach-lvl { font-size: 1.5rem; font-weight: 900; color: #fff; }
-.fdt-ach-max { font-size: 0.7rem; color: rgba(255,255,255,0.65); }
+.fdt-ach-lvl { font-size: 1.5rem; font-weight: 900; color: white; }
+.fdt-ach-max { font-size: 0.7rem; color: color-mix(in srgb, white 65%, transparent); }
 .fdt-ach-text { flex: 1; min-width: 0; }
 .fdt-ach-title { font-size: 0.78rem; font-weight: 700; color: var(--p-text-color); margin-bottom: 3px; }
 .fdt-ach-body { font-size: 0.62rem; color: var(--p-text-muted-color); line-height: 1.4; }

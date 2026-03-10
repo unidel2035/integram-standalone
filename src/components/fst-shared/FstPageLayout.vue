@@ -5,7 +5,8 @@
         <slot name="header">
           <div class="fst-page-title-block">
             <div class="fst-page-title-row">
-              <i v-if="icon" :class="icon" class="fst-page-icon" />
+              <span v-if="live" class="fst-page-live-dot" />
+              <i v-else-if="icon" :class="icon" class="fst-page-icon" />
               <h1 class="fst-page-title">{{ title }}</h1>
             </div>
             <p v-if="subtitle" class="fst-page-subtitle">{{ subtitle }}</p>
@@ -34,6 +35,7 @@ defineProps({
   title: { type: String, default: '' },
   subtitle: { type: String, default: '' },
   icon: { type: String, default: '' },
+  live: { type: Boolean, default: true },
   bodyClass: { type: [String, Object, Array], default: '' }
 });
 </script>
@@ -63,7 +65,7 @@ defineProps({
 .fst-page-title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .fst-page-icon {
@@ -72,9 +74,24 @@ defineProps({
   flex-shrink: 0;
 }
 
+.fst-page-live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--p-primary-color);
+  box-shadow: 0 0 6px var(--p-primary-color);
+  flex-shrink: 0;
+  animation: fst-dot-pulse 2s infinite;
+}
+@keyframes fst-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
 .fst-page-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 600;
   color: var(--p-text-color);
   line-height: 1.3;

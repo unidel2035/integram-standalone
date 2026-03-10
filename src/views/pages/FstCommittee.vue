@@ -97,6 +97,8 @@
             :project="session.project"
             :session="session"
             :decision="session.conditionalDecision || session.decision"
+            :initial-chain="sessionChain"
+            :chain-generating="sessionChainLoading"
           />
         </div>
 
@@ -145,7 +147,7 @@
         <OntologyNextSteps entity-type="session" :entity-id="session.id" style="margin:12px 0" />
 
         <div v-if="session.decision.humanApproval" class="fst-human-result">
-          <i class="pi pi-check-circle" style="color:#4caf50"></i>
+          <i class="pi pi-check-circle" style="color:var(--fst-green)"></i>
           Решение комитета утверждено:
           <strong>{{ VERDICTS[session.decision.humanApproval.verdict]?.label }}</strong>
         </div>
@@ -162,7 +164,7 @@
               severity="info" size="small" :loading="kagSaving" @click="saveToKag" />
           </LearnTooltip>
           <span v-if="kagSaved" class="fst-kag-saved">
-            <i class="pi pi-check-circle" style="color:#4caf50"></i>
+            <i class="pi pi-check-circle" style="color:var(--fst-green)"></i>
             Сохранено в KAG ({{ kagSavedCount }} сущностей)
           </span>
           <LearnTooltip
@@ -175,7 +177,7 @@
               severity="secondary" size="small" :loading="intSaving" @click="saveToIntegram" />
           </LearnTooltip>
           <span v-if="intSaved" class="fst-kag-saved">
-            <i class="pi pi-check-circle" style="color:#7e57c2"></i>
+            <i class="pi pi-check-circle" style="color:var(--fst-purple)"></i>
             СОД #{{ intEventId }}
           </span>
           <LearnTooltip
@@ -200,10 +202,10 @@
       <!-- ── Header ───────────────────────────────────────────── -->
       <div class="fst-header">
         <div class="fst-header-project">
-          <i class="pi pi-building" style="color:#ffa726"></i>
+          <i class="pi pi-building" style="color:var(--fst-brand)"></i>
           <span class="fst-header-title">{{ session.project.title }}</span>
           <span class="fst-header-subfund"
-            :style="{ background: SUBFUNDS[session.project.subFund]?.color || '#666' }">
+            :style="{ background: SUBFUNDS[session.project.subFund]?.color || 'var(--p-text-muted-color)' }">
             {{ SUBFUNDS[session.project.subFund]?.shortName || session.project.subFund }}
           </span>
         </div>
@@ -266,7 +268,7 @@
           </div>
 
           <div v-if="portfolioOverlaps.length && debateTab !== 'links'" class="fst-overlap-alert">
-            <i class="pi pi-exclamation-triangle" style="color:#ffa726"></i>
+            <i class="pi pi-exclamation-triangle" style="color:var(--fst-brand)"></i>
             Пересечение с портфелем:
             <span v-for="(o, i) in portfolioOverlaps.slice(0,3)" :key="i" class="fst-overlap-pill">
               {{ o.companyName }} → {{ o.conceptName }}
@@ -278,7 +280,7 @@
           <div v-if="running && Object.keys(agentActivity).length" class="fst-activity-feed">
             <div v-for="(act, agId) in agentActivity" :key="agId"
               :class="['fst-activity-item', { 'fst-activity-item--result': act.result }]">
-              <span class="fst-activity-dot" :style="{ background: AGENTS.find(a=>a.id===agId)?.color || '#888' }"></span>
+              <span class="fst-activity-dot" :style="{ background: AGENTS.find(a=>a.id===agId)?.color || 'var(--p-text-muted-color)' }"></span>
               <span class="fst-activity-agent">{{ AGENTS.find(a=>a.id===agId)?.shortName }}</span>
               <span class="fst-activity-tool">{{ act.tool }}</span>
               <span v-if="act.result" class="fst-activity-result-arrow">→</span>
@@ -298,7 +300,7 @@
           <div v-if="startuperTwin" class="fst-rs fst-rs--briefing">
             <div class="fst-rs-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center"
               @click="briefingOpen = !briefingOpen">
-              <span><i class="pi pi-bolt" style="color:#ffa726"></i> Брифинг: {{ startuperTwin.company }}</span>
+              <span><i class="pi pi-bolt" style="color:var(--fst-brand)"></i> Брифинг: {{ startuperTwin.company }}</span>
               <span style="display:flex;align-items:center;gap:6px">
                 <i :class="briefingOpen ? 'pi pi-angle-up' : 'pi pi-angle-down'"
                   style="font-size:11px;color:var(--p-text-muted-color)"></i>
@@ -319,7 +321,7 @@
                 <span class="fst-briefing-score-lbl">Скоринг</span>
                 <div class="fst-briefing-score-bar">
                   <div :style="{ width: startuperTwin.scoring + '%',
-                    background: startuperTwin.scoring > 65 ? '#66bb6a' : startuperTwin.scoring > 40 ? '#ffa726' : '#ef5350'
+                    background: startuperTwin.scoring > 65 ? 'var(--fst-green)' : startuperTwin.scoring > 40 ? 'var(--fst-brand)' : 'var(--fst-red)'
                   }"></div>
                 </div>
                 <span class="fst-briefing-score-val">{{ startuperTwin.scoring }}/100</span>
@@ -328,7 +330,7 @@
               <div v-if="startuperTwin.psychoProfile" class="fst-briefing-psycho">
                 <span class="fst-briefing-psycho-mbti">{{ startuperTwin.psychoProfile.mbti || '—' }}</span>
                 <span class="fst-briefing-psycho-conf" :style="{
-                  color: (startuperTwin.psychoProfile.confidence || 0) > 0.7 ? '#66bb6a' : '#ffa726'
+                  color: (startuperTwin.psychoProfile.confidence || 0) > 0.7 ? 'var(--fst-green)' : 'var(--fst-brand)'
                 }">уверенность {{ Math.round((startuperTwin.psychoProfile.confidence || 0) * 100) }}%</span>
               </div>
               <div v-if="startuperTwin.psychoProfile?.redFlags?.length" class="fst-briefing-flags">
@@ -347,7 +349,7 @@
               <div v-if="startuperTwin.beacons?.length" class="fst-briefing-beacons">
                 <div v-for="b in startuperTwin.beacons.slice(0,3)" :key="b.text"
                   class="fst-briefing-beacon"
-                  :style="{ borderLeft: '3px solid ' + (b.severity === 'critical' ? '#ef5350' : b.severity === 'warning' ? '#ffa726' : '#66bb6a') }">
+                  :style="{ borderLeft: '3px solid ' + (b.severity === 'critical' ? 'var(--fst-red)' : b.severity === 'warning' ? 'var(--fst-brand)' : 'var(--fst-green)') }">
                   <div class="fst-briefing-beacon-text">{{ b.text }}</div>
                   <div v-if="b.recommendation" class="fst-briefing-beacon-rec">{{ b.recommendation }}</div>
                 </div>
@@ -400,7 +402,7 @@
                 :x2="100 + Math.cos(ax.angle - Math.PI/2) * 80"
                 :y2="100 + Math.sin(ax.angle - Math.PI/2) * 80"
                 stroke="var(--surface-border)" stroke-width="0.5"/>
-              <polygon :points="radarPoints" fill="rgba(66,165,245,0.15)" stroke="#42a5f5" stroke-width="1.5"/>
+              <polygon :points="radarPoints" :style="{ fill: 'color-mix(in srgb, var(--fst-blue) 15%, transparent)', stroke: 'var(--fst-blue)' }" stroke-width="1.5"/>
               <text v-for="(ax, i) in radarAxes" :key="'l'+i"
                 :x="100 + Math.cos(ax.angle - Math.PI/2) * 95"
                 :y="100 + Math.sin(ax.angle - Math.PI/2) * 95"
@@ -427,7 +429,7 @@
             <div class="fst-vote-grid">
               <div v-for="vote in session.votes" :key="vote.id" class="fst-vc"
                 :style="{ borderColor: VERDICTS[vote.verdict]?.color,
-                  background: (VERDICTS[vote.verdict]?.color || '#888') + '18' }">
+                  background: VERDICTS[vote.verdict]?.color ? `color-mix(in srgb, ${VERDICTS[vote.verdict].color} 10%, transparent)` : 'var(--p-surface-section)' }">
                 <i :class="VERDICTS[vote.verdict]?.icon"
                   :style="{ color: VERDICTS[vote.verdict]?.color, fontSize: '10px' }"></i>
                 <span class="fst-vc-n">{{ agentById(vote.agentId)?.shortName }}</span>
@@ -450,11 +452,11 @@
             </div>
             <ul v-if="session.decision.conditions?.length" class="fst-decision-conds">
               <li v-for="c in session.decision.conditions.slice(0, 3)" :key="c">
-                <i class="pi pi-angle-right" style="color:#ffa726;font-size:0.6875rem"></i> {{ c }}
+                <i class="pi pi-angle-right" style="color:var(--fst-brand);font-size:0.6875rem"></i> {{ c }}
               </li>
             </ul>
             <div v-if="session.decision.humanApproval" class="fst-human-result">
-              <i class="pi pi-check-circle" style="color:#4caf50"></i>
+              <i class="pi pi-check-circle" style="color:var(--fst-green)"></i>
               Утверждено: <strong>{{ VERDICTS[session.decision.humanApproval.verdict]?.label }}</strong>
             </div>
             <Button label="Полный отчёт" icon="pi pi-arrow-right" icon-pos="right"
@@ -468,7 +470,7 @@
 
           <!-- Human Approval -->
           <div v-if="session.phase === 'HUMAN_APPROVAL'" class="fst-rs fst-rs--approval">
-            <div class="fst-rs-title" style="color:#ffa726">
+            <div class="fst-rs-title" style="color:var(--fst-brand)">
               <i class="pi pi-users"></i> Утверждение ИК
             </div>
             <p class="fst-approval-hint">AI-агенты вынесли рекомендацию. Примите финальное решение:</p>
@@ -563,13 +565,13 @@
             {{ stanceEmoji(session.positionDeltas[agent.id].from) }}→{{ stanceEmoji(session.positionDeltas[agent.id].to) }}
           </span>
           <span v-else-if="agentStatus(agent.id).done" class="fst-ac-status">
-            <i class="pi pi-check" style="font-size:0.6875rem;color:#4caf50"></i>
+            <i class="pi pi-check" style="font-size:0.6875rem;color:var(--fst-green)"></i>
           </span>
           <div class="fst-ac-pipe">
-            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.integram, '#42a5f5')" title="Данные"></span>
-            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.calc, '#ff9800')" title="Расчёт"></span>
-            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.llm, '#ab47bc')" title="LLM"></span>
-            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.save, '#66bb6a')" title="Сохр."></span>
+            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.integram, 'var(--fst-blue)')" title="Данные"></span>
+            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.calc, 'var(--fst-brand)')" title="Расчёт"></span>
+            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.llm, 'var(--fst-purple)')" title="LLM"></span>
+            <span class="fst-pd" :style="fstPipeNodeStyle(agentStatus(agent.id).pipeline?.save, 'var(--fst-green)')" title="Сохр."></span>
           </div>
         </div>
       </div>
@@ -611,10 +613,10 @@
         :closable="true" :dismissable-mask="true"
         :style="{ width: '560px', maxWidth: '95vw' }"
         :header="previewProject?.title || ''"
-        :pt="{ header: { style: 'border-bottom: 3px solid ' + (SUBFUNDS[previewProject?.subFund]?.color || '#ffa726') } }">
+        :pt="{ header: { style: 'border-bottom: 3px solid ' + (SUBFUNDS[previewProject?.subFund]?.color || 'var(--fst-brand)') } }">
         <div v-if="previewProject" class="fst-pmodal">
           <div class="fst-pmodal-top">
-            <div class="fst-pmodal-subfund" :style="{ background: SUBFUNDS[previewProject.subFund]?.color || '#666' }">
+            <div class="fst-pmodal-subfund" :style="{ background: SUBFUNDS[previewProject.subFund]?.color || 'var(--p-text-muted-color)' }">
               <span v-if="SUBFUNDS[previewProject.subFund]?.svgIcon" v-html="SUBFUNDS[previewProject.subFund].svgIcon" class="fst-subfund-svg"></span>
               <i v-else :class="SUBFUNDS[previewProject.subFund]?.icon"></i>
               {{ SUBFUNDS[previewProject.subFund]?.name || previewProject.subFund }}
@@ -734,7 +736,7 @@
             </template>
             <Column style="width:60px">
               <template #body="{ data }">
-                <span class="fst-tbl-subfund" :style="{ background: SUBFUNDS[data.subFund]?.color || '#667eea' }">
+                <span class="fst-tbl-subfund" :style="{ background: SUBFUNDS[data.subFund]?.color || 'var(--fst-purple)' }">
                   {{ SUBFUNDS[data.subFund]?.shortName || data.subFund?.toUpperCase().slice(0,3) }}
                 </span>
               </template>
@@ -780,7 +782,7 @@
             <div
               v-for="p in filteredProjects" :key="p.id"
               :class="['fst-pcard2', { 'fst-pcard2--selected': p.id === selectedProjectId }]"
-              :style="{ '--card-accent': SUBFUNDS[p.subFund]?.color || '#667eea' }"
+              :style="{ '--card-accent': SUBFUNDS[p.subFund]?.color || 'var(--fst-purple)' }"
               @click="selectedProjectId = p.id"
             >
               <div class="fst-pcard2-body">
@@ -870,7 +872,7 @@
 
           <!-- ═══ Настройки моделей оркестратора ═══ -->
           <div v-if="useAI" class="fst-acc-row" @click="modelPanelExpanded = !modelPanelExpanded">
-            <i class="pi pi-microchip-ai fst-acc-icon" style="color:#42a5f5"></i>
+            <i class="pi pi-microchip-ai fst-acc-icon" style="color:var(--fst-blue)"></i>
             <span class="fst-acc-label">Модели</span>
             <span class="fst-acc-summary">{{ activeProfileLabel }}</span>
             <i :class="modelPanelExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="fst-acc-chevron"></i>
@@ -914,7 +916,7 @@
           </div>
 
           <div class="fst-acc-row" @click="policyExpanded = !policyExpanded">
-            <i class="pi pi-sliders-h fst-acc-icon" style="color:#ffa726"></i>
+            <i class="pi pi-sliders-h fst-acc-icon" style="color:var(--fst-brand)"></i>
             <span class="fst-acc-label">Параметры ФСТ</span>
             <span class="fst-acc-summary">Сув. ≥ {{ fstPolicy.minSovereignty }}/9 · TRL ≥ {{ fstPolicy.minTRL }}</span>
             <i :class="policyExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="fst-acc-chevron"></i>
@@ -938,7 +940,7 @@
           <!-- Issue #161: IC decision thresholds -->
           <div class="fst-ic-params">
             <div class="fst-acc-row" @click="icParamsExpanded = !icParamsExpanded">
-              <i class="pi pi-sliders-v fst-acc-icon" style="color:#42a5f5"></i>
+              <i class="pi pi-sliders-v fst-acc-icon" style="color:var(--fst-blue)"></i>
               <span class="fst-acc-label">Пороги ИК</span>
               <span class="fst-acc-summary">≥ {{ icParams.approveThreshold }}% / &lt; {{ icParams.deferThreshold }}%</span>
               <i :class="icParamsExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="fst-acc-chevron"></i>
@@ -1149,6 +1151,7 @@ import DebateGraphPanel from '@/components/fst-committee/DebateGraphPanel.vue'
 import DebateTimeline from '@/components/fst-committee/DebateTimeline.vue'
 import ScenarioNodesPanel from '@/components/fst-committee/ScenarioNodesPanel.vue'
 import ScenarioEventChainPanel from '@/components/fst-committee/ScenarioEventChainPanel.vue'
+import { generateEventChain } from '@/composables/useEventChain.js'
 import LinksGraphViz from '@/components/links/LinksGraphViz.vue'
 import { useFstData } from '@/composables/useFstData.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
@@ -1225,10 +1228,10 @@ const ckMetrics = computed(() => {
     : '—'
   const sfCount = Object.keys(SUBFUNDS.value || {}).length || 3
   return [
-    { icon: 'pi pi-inbox',      color: '#38bdf8', val: projects.length || '...', label: 'Заявок в пайплайне' },
-    { icon: 'pi pi-sitemap',    color: '#a78bfa', val: sfCount,                  label: 'Субфондов' },
-    { icon: 'pi pi-microchip',  color: '#34d399', val: avgTRL,                   label: 'Средний TRL' },
-    { icon: 'pi pi-chart-line', color: '#fb923c', val: avgIRR,                   label: 'Средний IRR' },
+    { icon: 'pi pi-inbox',      color: 'var(--fst-blue)',   val: projects.length || '...', label: 'Заявок в пайплайне' },
+    { icon: 'pi pi-sitemap',    color: 'var(--fst-purple)', val: sfCount,                  label: 'Субфондов' },
+    { icon: 'pi pi-microchip',  color: 'var(--fst-green)',  val: avgTRL,                   label: 'Средний TRL' },
+    { icon: 'pi pi-chart-line', color: 'var(--fst-brand)',  val: avgIRR,                   label: 'Средний IRR' },
   ]
 })
 
@@ -1400,6 +1403,10 @@ const humanComment = ref('')
 const session = ref(null)
 const running = ref(false)
 
+// Событийная цепочка — генерируется параллельно с дебатами при старте сессии
+const sessionChain        = ref([])
+const sessionChainLoading = ref(false)
+
 // Живая активность агентов: { [agentId]: { tool, iter, type, ts } }
 const agentActivity = ref({})
 const timelineEl = ref(null)
@@ -1565,7 +1572,7 @@ function agentStatus(agentId) {
 function fstPipeNodeStyle(state, color) {
   if (state === 'done')   return { background: color, borderColor: color }
   if (state === 'active') return { background: color + '88', borderColor: color, animation: 'fst-dot-blink 1s infinite' }
-  if (state === 'error')  return { background: '#ef5350', borderColor: '#ef5350' }
+  if (state === 'error')  return { background: 'var(--fst-red)', borderColor: 'var(--fst-red)' }
   return {}
 }
 
@@ -1589,9 +1596,9 @@ function voteBarWidth(verdictId) {
 }
 
 function scoreColor(score) {
-  if (score >= 72) return '#4caf50'
-  if (score >= 50) return '#ffa726'
-  return '#ef5350'
+  if (score >= 72) return 'var(--fst-green)'
+  if (score >= 50) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
 }
 
 function trlClass(v) {
@@ -1694,6 +1701,14 @@ function startSession() {
 
   engine = new FstCommitteeEngine(sess, handleEvent)
   running.value = true
+
+  // ─── Событийная цепочка — генерируется параллельно с дебатами ────────────
+  sessionChain.value = []
+  sessionChainLoading.value = true
+  generateEventChain(project, null)
+    .then(chain => { sessionChain.value = chain })
+    .catch(e => { console.warn('[FstCommittee] event chain gen failed:', e) })
+    .finally(() => { sessionChainLoading.value = false })
 
   // Фиксируем старт сессии ИК
   const _evtProject = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
@@ -1935,7 +1950,7 @@ function handleEvent(event) {
 
 function agentColor(id) {
   const a = AGENTS.value.find(a => a.id === id)
-  return a?.color || '#64748b'
+  return a?.color || 'var(--p-text-muted-color)'
 }
 function agentAvatar(id) {
   const a = AGENTS.value.find(a => a.id === id)
@@ -1946,9 +1961,9 @@ function agentShortName(id) {
   return a?.shortName || id
 }
 function stanceColor(stance) {
-  if (stance === 'APPROVE') return '#4caf50'
-  if (stance === 'REJECT') return '#ef5350'
-  return '#ffa726'
+  if (stance === 'APPROVE') return 'var(--fst-green)'
+  if (stance === 'REJECT') return 'var(--fst-red)'
+  return 'var(--fst-brand)'
 }
 
 async function saveDecisionToFst(sess) {
@@ -2195,7 +2210,7 @@ onUnmounted(() => {
   transition: all 0.3s;
 }
 .fst-step--active .fst-step-dot {
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
+  box-shadow: 0 0 0 3px color-mix(in srgb, white 12%, transparent);
 }
 .fst-step-label {
   font-size: 0.625rem;
@@ -2293,7 +2308,7 @@ onUnmounted(() => {
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.25);
+  background: color-mix(in srgb, white 25%, transparent);
 }
 .fst-tab-count--red { background: var(--p-red-500); color: #fff; }
 .fst-panel-fill {
@@ -2426,8 +2441,8 @@ onUnmounted(() => {
 
 /* ── Issue #192: Briefing panel ── */
 .fst-rs--briefing {
-  border-left: 3px solid #ffa726;
-  background: color-mix(in srgb, #ffa726 6%, var(--p-surface-card));
+  border-left: 3px solid var(--fst-brand);
+  background: color-mix(in srgb, var(--fst-brand) 6%, var(--p-surface-card));
 }
 .fst-briefing-metrics {
   display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;
@@ -2453,8 +2468,8 @@ onUnmounted(() => {
   display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
 }
 .fst-briefing-psycho-mbti {
-  background: #7c4dff22; color: #ce93d8;
-  border: 1px solid #ce93d855;
+  background: color-mix(in srgb, var(--fst-purple) 13%, transparent); color: var(--fst-purple);
+  border: 1px solid color-mix(in srgb, var(--fst-purple) 33%, transparent);
   border-radius: 4px; padding: 1px 7px;
   font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;
 }
@@ -2464,8 +2479,8 @@ onUnmounted(() => {
   font-size: 0.65rem; padding: 2px 6px; border-radius: 3px;
   display: flex; align-items: center; gap: 4px;
 }
-.fst-briefing-flag--red { background: #ef535020; color: #ef9a9a; }
-.fst-briefing-flag--green { background: #66bb6a20; color: #a5d6a7; }
+.fst-briefing-flag--red { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
+.fst-briefing-flag--green { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
 .fst-briefing-beacons { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; }
 .fst-briefing-beacon {
   padding: 4px 8px;
@@ -2546,9 +2561,9 @@ onUnmounted(() => {
   border-radius: 8px;
   font-weight: 600;
 }
-.fst-contradiction-severity.sev-high { background: color-mix(in srgb, #ef5350 15%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
-.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, #ff9800 10%, var(--surface-card)); color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
-.fst-contradiction-severity.sev-low { background: color-mix(in srgb, #66bb6a 10%, var(--surface-card)); color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-high { background: color-mix(in srgb, var(--fst-red) 15%, var(--surface-card)); color: color-mix(in srgb, var(--fst-red) 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, var(--fst-brand) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-low { background: color-mix(in srgb, var(--fst-green) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-green) 70%, var(--p-text-color)); }
 .fst-contradiction-thesis { margin-top: 4px; color: var(--p-text-color); }
 .fst-contradiction-antithesis { color: var(--p-text-muted-color); font-style: italic; }
 
@@ -2567,9 +2582,9 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
 }
-.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, #42a5f5 10%, var(--surface-card)); color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
-.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
+.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, var(--fst-blue) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-blue) 70%, var(--p-text-color)); }
+.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, var(--fst-purple) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-purple) 70%, var(--p-text-color)); }
+.fst-cond-type.type-RISK { background: color-mix(in srgb, var(--fst-red) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-red) 70%, var(--p-text-color)); }
 .fst-cond-text { flex: 1; color: var(--p-text-color); }
 .fst-cond-metric { color: var(--p-text-muted-color); font-size: 0.8125rem; }
 
@@ -2608,8 +2623,8 @@ onUnmounted(() => {
   font-size: 0.75rem;
   padding: 1px 5px;
   border-radius: 6px;
-  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
-  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-brand) 10%, var(--surface-card));
+  color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color));
   font-weight: 600;
   margin-left: auto;
 }
@@ -2643,8 +2658,8 @@ onUnmounted(() => {
   margin-top: 4px;
   color: var(--p-text-muted-color);
 }
-.fst-drift-delta.positive { color: #4caf50; }
-.fst-drift-delta.negative { color: #ef5350; }
+.fst-drift-delta.positive { color: var(--fst-green); }
+.fst-drift-delta.negative { color: var(--fst-red); }
 
 .fst-human-result {
   display: flex;
@@ -2657,8 +2672,8 @@ onUnmounted(() => {
 
 /* Approval */
 .fst-rs--approval {
-  background: color-mix(in srgb, #ffa726 6%, transparent);
-  border-color: color-mix(in srgb, #ffa726 25%, transparent);
+  background: color-mix(in srgb, var(--fst-brand) 6%, transparent);
+  border-color: color-mix(in srgb, var(--fst-brand) 25%, transparent);
 }
 .fst-approval-hint {
   font-size: 0.875rem;
@@ -2721,15 +2736,15 @@ onUnmounted(() => {
 }
 .fst-veto-panel,
 .fst-revision-panel {
-  background: color-mix(in srgb, #ef5350 6%, var(--p-surface-card));
-  border: 1px solid color-mix(in srgb, #ef5350 30%, transparent);
+  background: color-mix(in srgb, var(--fst-red) 6%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--fst-red) 30%, transparent);
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 8px;
 }
 .fst-revision-panel {
-  background: color-mix(in srgb, #ffa726 6%, var(--p-surface-card));
-  border-color: color-mix(in srgb, #ffa726 30%, transparent);
+  background: color-mix(in srgb, var(--fst-brand) 6%, var(--p-surface-card));
+  border-color: color-mix(in srgb, var(--fst-brand) 30%, transparent);
 }
 .fst-veto-title {
   font-size: 0.82rem;
@@ -2749,14 +2764,14 @@ onUnmounted(() => {
 
 /* ── Contradiction Map ────────────────────── */
 .fst-rs--contradictions {
-  background: color-mix(in srgb, #ef5350 5%, transparent);
-  border-color: color-mix(in srgb, #ef5350 25%, transparent);
+  background: color-mix(in srgb, var(--fst-red) 5%, transparent);
+  border-color: color-mix(in srgb, var(--fst-red) 25%, transparent);
 }
 .fst-badge-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #ef5350;
+  background: var(--fst-red);
   color: #fff;
   border-radius: 10px;
   font-size: 0.7rem;
@@ -2794,7 +2809,7 @@ onUnmounted(() => {
 .fst-cmap-vs {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #ef5350;
+  color: var(--fst-red);
   padding: 1px 5px;
 }
 .fst-cmap-meta {
@@ -2805,20 +2820,20 @@ onUnmounted(() => {
 }
 .fst-cmap-thesis {
   font-size: 0.78rem;
-  color: color-mix(in srgb, #4caf50 80%, var(--p-text-color));
+  color: color-mix(in srgb, var(--fst-green) 80%, var(--p-text-color));
   margin-bottom: 2px;
 }
 .fst-cmap-antithesis {
   font-size: 0.78rem;
-  color: color-mix(in srgb, #ef5350 80%, var(--p-text-color));
+  color: color-mix(in srgb, var(--fst-red) 80%, var(--p-text-color));
   margin-bottom: 2px;
 }
 .fst-cmap-synthesis {
   font-size: 0.78rem;
-  color: #4caf50;
+  color: var(--fst-green);
   margin-top: 4px;
   padding: 4px 6px;
-  background: color-mix(in srgb, #4caf50 8%, var(--p-surface-card));
+  background: color-mix(in srgb, var(--fst-green) 8%, var(--p-surface-card));
   border-radius: 4px;
 }
 
@@ -2905,7 +2920,7 @@ onUnmounted(() => {
 .fst-activity-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .fst-activity-agent { font-weight: 600; color: var(--p-text-color); }
 .fst-activity-arrow { opacity: .5; }
-.fst-activity-tool { color: #ff9800; font-family: monospace; flex-shrink: 0; }
+.fst-activity-tool { color: var(--fst-brand); font-family: monospace; flex-shrink: 0; }
 .fst-activity-reason {
   color: var(--p-text-color);
   opacity: .8;
@@ -2914,9 +2929,9 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   max-width: 280px;
 }
-.fst-activity-item--result { background: color-mix(in srgb, #4caf50 8%, var(--surface-card)); }
-.fst-activity-item--result .fst-activity-tool { color: #4caf50; }
-.fst-activity-result-arrow { color: #4caf50; font-weight: bold; flex-shrink: 0; }
+.fst-activity-item--result { background: color-mix(in srgb, var(--fst-green) 8%, var(--surface-card)); }
+.fst-activity-item--result .fst-activity-tool { color: var(--fst-green); }
+.fst-activity-result-arrow { color: var(--fst-green); font-weight: bold; flex-shrink: 0; }
 .fst-ac-delta {
   font-size: 0.6875rem;
   opacity: 0.85;
@@ -2960,9 +2975,7 @@ onUnmounted(() => {
 
 /* ── Committee Topbar (Hub-style) ────────────────────────── */
 /* base layout: .fst-topbar (fst.css) */
-.ck-topbar {
-  background: var(--p-surface-section); /* override transparent default */
-}
+.ck-topbar {}
 .ck-topbar-left {
   display: flex;
   align-items: center;
@@ -2971,8 +2984,8 @@ onUnmounted(() => {
 .ck-live-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 2px rgba(34,197,94,.25);
+  background: var(--p-primary-color);
+  box-shadow: 0 0 6px var(--p-primary-color);
   animation: ck-pulse 2s infinite;
   flex-shrink: 0;
 }
@@ -2980,7 +2993,7 @@ onUnmounted(() => {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.4; }
 }
-.ck-title  { font-weight: 700; font-size: 14px; color: var(--p-text-color); }
+.ck-title  { font-weight: 600; font-size: 14px; color: var(--p-text-color); }
 .ck-sep    { color: var(--p-text-muted-color); }
 .ck-sub    { font-size: 13px; color: var(--p-text-muted-color); }
 .ck-topbar-actions { display: flex; gap: 8px; }
@@ -3218,7 +3231,7 @@ onUnmounted(() => {
 .fst-selected-badge {
   margin-left: 10px;
   font-size: 0.8125rem;
-  color: #4caf50;
+  color: var(--fst-green);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -3503,17 +3516,17 @@ onUnmounted(() => {
   gap: 8px;
   font-size: 0.875rem;
 }
-.fst-pmodal-check-item.pass { color: #4caf50; }
-.fst-pmodal-check-item.fail { color: #ef5350; }
+.fst-pmodal-check-item.pass { color: var(--fst-green); }
+.fst-pmodal-check-item.fail { color: var(--fst-red); }
 .fst-metric {
   font-size: 0.8125rem;
   padding: 2px 7px;
   border-radius: 4px;
   font-weight: 500;
 }
-.metric--good { background: rgba(76,175,80,0.15); color: #4caf50; }
-.metric--warn { background: rgba(255,167,38,0.15); color: #ffa726; }
-.metric--bad  { background: rgba(239,83,80,0.15);  color: #ef5350; }
+.metric--good { background: color-mix(in srgb, var(--fst-green) 15%, transparent); color: var(--fst-green); }
+.metric--warn { background: color-mix(in srgb, var(--fst-brand) 15%, transparent); color: var(--fst-brand); }
+.metric--bad  { background: color-mix(in srgb, var(--fst-red) 15%, transparent);   color: var(--fst-red); }
 
 .fst-overlap-alert {
   display: flex;
@@ -3521,13 +3534,13 @@ onUnmounted(() => {
   gap: 8px;
   flex-wrap: wrap;
   padding: 6px 12px;
-  background: rgba(255,167,38,0.08);
-  border-bottom: 1px solid rgba(255,167,38,0.25);
+  background: color-mix(in srgb, var(--fst-brand) 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--fst-brand) 25%, transparent);
   font-size: 0.78rem;
 }
 .fst-overlap-pill {
-  background: rgba(239,68,68,0.12);
-  color: #ef4444;
+  background: color-mix(in srgb, var(--fst-red) 12%, transparent);
+  color: var(--fst-red);
   border-radius: 4px;
   padding: 2px 7px;
   font-size: 0.73rem;
@@ -3786,7 +3799,7 @@ onUnmounted(() => {
 }
 .fst-agent-card--thinking {
   border-color: var(--agent-color);
-  box-shadow: 0 0 8px rgba(66,165,245,0.15);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--fst-blue) 15%, transparent);
 }
 .fst-agent-card--voted {
   opacity: 0.85;
@@ -3802,7 +3815,7 @@ onUnmounted(() => {
   top: -2px; right: -2px;
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: var(--agent-color, #42a5f5);
+  background: var(--agent-color, var(--fst-blue));
   animation: pulse 1s infinite;
 }
 @keyframes pulse {
@@ -3855,7 +3868,7 @@ onUnmounted(() => {
   border: 1px solid transparent; opacity: 0.3; transition: all 0.3s; cursor: default;
 }
 .fst-pnode.done, .fst-pnode.active { opacity: 1; }
-.fst-pnode.error { border-color: #ef5350 !important; background: #ef535011 !important; opacity: 1; }
+.fst-pnode.error { border-color: var(--fst-red) !important; background: color-mix(in srgb, var(--fst-red) 7%, transparent) !important; opacity: 1; }
 .fst-parrow {
   font-size: 0.6rem; color: var(--p-text-muted-color); opacity: 0.6;
   white-space: nowrap; user-select: none; letter-spacing: -1px;
@@ -3863,7 +3876,7 @@ onUnmounted(() => {
 @keyframes fst-pulse { 0%,100% { box-shadow: 0 0 0 0 currentColor; } 50% { box-shadow: 0 0 4px 1px currentColor; } }
 .fst-agent-ready {
   font-size: 0.75rem;
-  color: #4caf50;
+  color: var(--fst-green);
   margin-top: 3px;
   display: flex;
   align-items: center;
@@ -3968,17 +3981,17 @@ onUnmounted(() => {
 }
 .fst-argument--counter {
   margin-left: 20px;
-  border-left: 2px solid #7e57c2;
+  border-left: 2px solid var(--fst-purple);
   background: var(--p-surface-section);
 }
 .fst-arg-type--challenge {
-  border-color: rgba(239,83,80,0.3);
+  border-color: color-mix(in srgb, var(--fst-red) 30%, transparent);
 }
 .fst-arg-type--counter {
-  border-color: rgba(126,87,194,0.3);
+  border-color: color-mix(in srgb, var(--fst-purple) 30%, transparent);
 }
 .fst-arg-type--summary {
-  border-color: rgba(102,187,106,0.2);
+  border-color: color-mix(in srgb, var(--fst-green) 20%, transparent);
   background: var(--surface-ground);
 }
 .fst-arg-header {
@@ -4000,9 +4013,9 @@ onUnmounted(() => {
   margin-left: auto;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #a78bfa;
-  background: rgba(167,139,250,0.12);
-  border: 1px solid rgba(167,139,250,0.3);
+  color: var(--fst-purple);
+  background: color-mix(in srgb, var(--fst-purple) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-purple) 30%, transparent);
   border-radius: 4px;
   padding: 1px 5px;
   display: inline-flex;
@@ -4257,10 +4270,10 @@ onUnmounted(() => {
 
 /* Human approval panel */
 .fst-human-panel {
-  border: 1px solid rgba(255,167,38,0.3);
+  border: 1px solid color-mix(in srgb, var(--fst-brand) 30%, transparent);
   border-radius: 10px;
   padding: 12px;
-  background: rgba(255,167,38,0.05);
+  background: color-mix(in srgb, var(--fst-brand) 5%, transparent);
   margin-top: auto;
 }
 .fst-human-prompt {
@@ -4358,9 +4371,9 @@ onUnmounted(() => {
   border-radius: 8px;
   font-weight: 600;
 }
-.fst-contradiction-severity.sev-high { background: color-mix(in srgb, #ef5350 15%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
-.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, #ff9800 10%, var(--surface-card)); color: color-mix(in srgb, #ff9800 70%, var(--p-text-color)); }
-.fst-contradiction-severity.sev-low { background: color-mix(in srgb, #66bb6a 10%, var(--surface-card)); color: color-mix(in srgb, #66bb6a 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-high { background: color-mix(in srgb, var(--fst-red) 15%, var(--surface-card)); color: color-mix(in srgb, var(--fst-red) 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-medium { background: color-mix(in srgb, var(--fst-brand) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color)); }
+.fst-contradiction-severity.sev-low { background: color-mix(in srgb, var(--fst-green) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-green) 70%, var(--p-text-color)); }
 .fst-contradiction-thesis { margin-top: 4px; color: var(--p-text-color); }
 .fst-contradiction-antithesis { color: var(--p-text-muted-color); font-style: italic; }
 
@@ -4379,9 +4392,9 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
 }
-.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, #42a5f5 10%, var(--surface-card)); color: color-mix(in srgb, #42a5f5 70%, var(--p-text-color)); }
-.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, #ab47bc 10%, var(--surface-card)); color: color-mix(in srgb, #ab47bc 70%, var(--p-text-color)); }
-.fst-cond-type.type-RISK { background: color-mix(in srgb, #e91e63 10%, var(--surface-card)); color: color-mix(in srgb, #ef5350 70%, var(--p-text-color)); }
+.fst-cond-type.type-MILESTONE { background: color-mix(in srgb, var(--fst-blue) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-blue) 70%, var(--p-text-color)); }
+.fst-cond-type.type-GOVERNANCE { background: color-mix(in srgb, var(--fst-purple) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-purple) 70%, var(--p-text-color)); }
+.fst-cond-type.type-RISK { background: color-mix(in srgb, var(--fst-red) 10%, var(--surface-card)); color: color-mix(in srgb, var(--fst-red) 70%, var(--p-text-color)); }
 .fst-cond-text { flex: 1; color: var(--p-text-color); }
 .fst-cond-metric { color: var(--p-text-muted-color); font-size: 0.8125rem; }
 
@@ -4420,8 +4433,8 @@ onUnmounted(() => {
   font-size: 0.75rem;
   padding: 1px 5px;
   border-radius: 6px;
-  background: color-mix(in srgb, #ff9800 10%, var(--surface-card));
-  color: color-mix(in srgb, #ff9800 70%, var(--p-text-color));
+  background: color-mix(in srgb, var(--fst-brand) 10%, var(--surface-card));
+  color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color));
   font-weight: 600;
   margin-left: auto;
 }
@@ -4455,15 +4468,15 @@ onUnmounted(() => {
   margin-top: 4px;
   color: var(--p-text-muted-color);
 }
-.fst-drift-delta.positive { color: #4caf50; }
-.fst-drift-delta.negative { color: #ef5350; }
+.fst-drift-delta.positive { color: var(--fst-green); }
+.fst-drift-delta.negative { color: var(--fst-red); }
 
 .fst-human-result {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.875rem;
-  color: #4caf50;
+  color: var(--fst-green);
   margin-top: 12px;
   justify-content: center;
 }
@@ -4570,7 +4583,7 @@ onUnmounted(() => {
   transition: background 0.2s;
   flex-shrink: 0;
 }
-.fst-ai-toggle--on { background: #7c3aed; }
+.fst-ai-toggle--on { background: var(--fst-purple-dark); }
 .fst-ai-toggle-knob {
   position: absolute;
   top: 3px; left: 3px;
@@ -4610,12 +4623,12 @@ onUnmounted(() => {
   color: var(--p-text-color);
 }
 .fst-dtab--active {
-  background: var(--p-primary-color, #42a5f5);
+  background: var(--p-primary-color);
   color: #fff;
   border-color: transparent;
 }
 .fst-dtab--active .fst-arg-count {
-  background: rgba(255,255,255,0.25);
+  background: color-mix(in srgb, white 25%, transparent);
   color: #fff;
 }
 
@@ -4633,18 +4646,18 @@ onUnmounted(() => {
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   margin-top: 0.75rem;
-  background: var(--p-green-50, rgba(76, 175, 80, 0.08));
-  border: 1px solid var(--p-green-200, rgba(76, 175, 80, 0.3));
+  background: color-mix(in srgb, var(--fst-green) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-green) 30%, transparent);
   border-radius: var(--p-content-border-radius, 6px);
-  color: var(--p-green-700, #2e7d32);
+  color: var(--fst-green-dark);
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 :root.dark .fst-contract-saved {
-  background: rgba(76, 175, 80, 0.12);
-  border-color: rgba(76, 175, 80, 0.25);
-  color: var(--p-green-400, #66bb6a);
+  background: color-mix(in srgb, var(--fst-green) 12%, transparent);
+  border-color: color-mix(in srgb, var(--fst-green) 25%, transparent);
+  color: var(--fst-green);
 }
 
 
@@ -4664,8 +4677,8 @@ onUnmounted(() => {
 }
 .fst-rec-item.priority-critical,
 .fst-rec-item.priority-high {
-  border-left-color: var(--p-red-500);
-  background: rgba(244, 67, 54, 0.05);
+  border-left-color: var(--fst-red);
+  background: color-mix(in srgb, var(--fst-red) 5%, transparent);
 }
 .fst-rec-item.priority-medium {
   border-left-color: var(--p-orange-500);
@@ -4745,7 +4758,7 @@ onUnmounted(() => {
   background: var(--surface-hover);
 }
 .fst-profile-btn--active {
-  background: var(--p-primary-color, #42a5f5);
+  background: var(--p-primary-color);
   color: #fff;
   border-color: transparent;
 }
@@ -4859,7 +4872,7 @@ onUnmounted(() => {
   color: var(--p-text-color);
   margin-bottom: 6px;
 }
-.fst-debug-title i { color: #ef5350; font-size: 0.875rem; }
+.fst-debug-title i { color: var(--fst-red); font-size: 0.875rem; }
 .fst-debug-summary {
   font-weight: 400;
   color: var(--p-text-muted-color);
@@ -4886,11 +4899,11 @@ onUnmounted(() => {
   padding: 1px 4px;
   border-radius: 3px;
 }
-.fst-debug-mode.ok { background: #1b5e2040; color: #66bb6a; }
-.fst-debug-mode.warn { background: #e6511040; color: #ff7043; }
+.fst-debug-mode.ok { background: color-mix(in srgb, var(--fst-green-dark) 25%, transparent); color: var(--fst-green); }
+.fst-debug-mode.warn { background: color-mix(in srgb, var(--fst-brand-dark) 25%, transparent); color: var(--fst-brand); }
 .fst-debug-val { color: var(--p-text-muted-color); font-size: 0.75rem; }
-.fst-debug-model { color: #ab47bc; font-size: 0.6875rem; }
-.fst-debug-forced { color: #ff9800; font-size: 0.6875rem; font-weight: 600; }
+.fst-debug-model { color: var(--fst-purple); font-size: 0.6875rem; }
+.fst-debug-forced { color: var(--fst-brand); font-size: 0.6875rem; font-weight: 600; }
 
 /* Issue #163: New project button & form */
 .fst-new-project-btn {
