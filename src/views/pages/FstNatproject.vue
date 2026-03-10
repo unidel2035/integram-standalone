@@ -1,15 +1,24 @@
 <template>
   <FstPageLayout title="Нацпроект БАС 2024–2030" subtitle="Соответствие портфеля ФСТ НТИ целевым показателям Национального проекта">
     <template #actions>
-      <button class="np-btn secondary" @click="exportReport">Отчёт соответствия</button>
+      <Button icon="pi pi-download" label="Отчёт соответствия" size="small" severity="secondary" @click="exportReport" />
     </template>
+
+    <!-- Метрики -->
+    <div class="fst-metrics-strip">
+      <div v-for="m in npMetrics" :key="m.label" class="fst-metric-item">
+        <i :class="m.icon" class="fst-metric-item-icon" :style="{ color: m.color }"></i>
+        <div class="fst-metric-item-val">{{ m.val }}</div>
+        <div class="fst-metric-item-label">{{ m.label }}</div>
+      </div>
+    </div>
 
     <!-- Прогресс по годам -->
     <div class="np-timeline">
       <div v-for="year in years" :key="year.y" class="np-year" :class="{ current: year.current, past: year.y < 2026 }">
         <div class="ny-label">{{ year.y }}</div>
         <div class="ny-bar">
-          <div class="ny-fill" :style="{ height: year.pct + '%', background: year.current ? 'var(--p-primary-color)' : year.y < 2026 ? '#66bb6a' : 'var(--surface-border)' }"></div>
+          <div class="ny-fill" :style="{ height: year.pct + '%', background: year.current ? 'var(--p-primary-color)' : year.y < 2026 ? 'var(--fst-green)' : 'var(--surface-border)' }"></div>
         </div>
         <div class="ny-pct">{{ year.pct }}%</div>
       </div>
@@ -83,8 +92,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import Button from 'primevue/button'
 
 const years = ref([
   { y: 2024, pct: 100, current: false },
@@ -114,8 +124,17 @@ function kpiStatusLabel(k) {
 }
 function kpiColor(k) {
   const s = kpiStatus(k)
-  return { 'on-track': '#66bb6a', lagging: '#ff9800', critical: '#ef5350' }[s]
+  return { 'on-track': 'var(--fst-green)', lagging: 'var(--fst-brand)', critical: 'var(--fst-red)' }[s]
 }
+
+const npMetrics = computed(() => [
+  { icon: 'pi pi-calendar',     color: 'var(--fst-blue)',        val: '2026: 42%', label: 'Прогресс плана' },
+  { icon: 'pi pi-list-check',   color: 'var(--fst-green)',       val: measures.value.filter(m => m.status === 'active').length, label: 'Активных меропр.' },
+  { icon: 'pi pi-chart-bar',    color: 'var(--fst-brand)',       val: natkpis.value.length, label: 'KPI Нацпроекта' },
+  { icon: 'pi pi-building',     color: 'var(--p-primary-color)', val: fedProjects.value.length, label: 'Федпроектов' },
+  { icon: 'pi pi-check-circle', color: 'var(--fst-cyan)',        val: fedProjects.value.filter(fp => fp.fstRelevant).length, label: 'ФСТ участвует' },
+  { icon: 'pi pi-briefcase',    color: 'var(--fst-purple)',      val: measures.value.length, label: 'Мероприятий' }
+])
 
 const measures = ref([
   { id: 1, measure: 'Создание производственных кластеров БАС',    company: 'АгроДрон',       role: 'Резидент кластера',    contribution: 'БПЛА для АПК',       status: 'active',  deadline: '2027-12' },
@@ -145,9 +164,6 @@ function exportReport() { alert('Экспорт отчёта соответст�
 .np-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .np-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .np-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
-.np-actions { display: flex; gap: 8px; }
-.np-btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
-.np-btn.secondary { background: var(--surface-card); color: var(--p-text-color); border: 1px solid var(--surface-border); }
 
 .np-timeline { display: flex; align-items: flex-end; gap: 8px; background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px; height: 160px; }
 .np-year { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; height: 100%; }
@@ -162,9 +178,9 @@ function exportReport() { alert('Экспорт отчёта соответст�
 .nk-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .nk-label { font-weight: 600; font-size: 0.83rem; color: var(--p-text-color); flex: 1; }
 .nk-status { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
-.nk-status.on-track { background: #66bb6a22; color: #66bb6a; }
-.nk-status.lagging  { background: #ff980022; color: #ff9800; }
-.nk-status.critical { background: #ef535022; color: #ef5350; }
+.nk-status.on-track { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.nk-status.lagging  { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
+.nk-status.critical { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 .nk-bar-track { position: relative; height: 10px; background: var(--surface-border); border-radius: 5px; overflow: hidden; }
 .nk-bar { height: 100%; border-radius: 5px; transition: width 0.5s; }
 .nk-target-mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--p-text-muted-color); border-radius: 1px; }
@@ -184,10 +200,10 @@ function exportReport() { alert('Экспорт отчёта соответст�
 .m-role, .m-contrib { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .m-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .m-status { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
-.m-status.active  { background: #66bb6a22; color: #66bb6a; }
-.m-status.review  { background: #42a5f522; color: #42a5f5; }
+.m-status.active  { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
+.m-status.review  { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
 .m-status.planned { background: var(--surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--surface-border); }
-.m-status.done    { background: #66bb6a44; color: #66bb6a; }
+.m-status.done    { background: color-mix(in srgb, var(--fst-green) 20%, transparent); color: var(--fst-green); }
 
 .fp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .fp-card { background: var(--surface-ground); border: 1px solid var(--surface-border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
@@ -195,7 +211,7 @@ function exportReport() { alert('Экспорт отчёта соответст�
 .fp-name { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
 .fp-budget { font-size: 1rem; font-weight: 700; color: var(--p-text-color); }
 .fp-desc { font-size: 0.72rem; color: var(--p-text-muted-color); }
-.fp-badge { display: inline-block; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; background: var(--p-primary-color); color: #fff; margin-top: 4px; }
+.fp-badge { display: inline-block; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; background: color-mix(in srgb, var(--p-primary-color) 15%, transparent); color: var(--p-primary-color); margin-top: 4px; }
 
 /* ── Mobile adaptive ── */
 @media (max-width: 768px) {
