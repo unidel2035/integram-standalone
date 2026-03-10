@@ -300,16 +300,6 @@ onBeforeUnmount(() => {
 
     <div class="layout-topbar-actions">
       <button
-        @click="toggleShortcuts"
-        type="button"
-        class="layout-topbar-action"
-        :class="{ 'active': isShortcutsModalOpen }"
-        title="Горячие клавиши (?)"
-      >
-        <i class="pi pi-desktop"/>
-      </button>
-
-      <button
         @click="handleChat()"
         type="button"
         class="layout-topbar-action"
@@ -317,6 +307,16 @@ onBeforeUnmount(() => {
         :title="chatTooltip"
       >
         <i class="pi pi-comments"/>
+      </button>
+
+      <button
+        @click="toggleShortcuts"
+        type="button"
+        class="layout-topbar-action"
+        :class="{ 'active': isShortcutsModalOpen }"
+        title="Горячие клавиши (?)"
+      >
+        <i class="pi pi-desktop"/>
       </button>
 
       <div class="layout-config-menu">
