@@ -29,6 +29,9 @@ import grMeasuresRouter from './api/routes/grMeasures.js'
 import roomRouter from './api/routes/room.js'
 import eventsRouter from './api/routes/events.js'
 import aiTokensRouter from './api/routes/ai-tokens.js'
+import factorModelRouter from './api/routes/factorModel.js'
+import eventGraphRouter from './api/routes/eventGraph.js'
+import docParserRouter from './api/routes/docParser.js'
 import { authenticateApiToken, validateWebhookSecret } from './api/middleware/auth.js'
 import { startAgentSchoolTrainer } from './schedulers/agentSchoolTrainer.js'
 
@@ -118,6 +121,15 @@ app.use('/api', eventsRouter)
 
 // AI gateway — POST /api/ai-tokens/chat (роутит к Anthropic/DeepSeek/OpenAI/Yandex)
 app.use('/api', aiTokensRouter)
+
+// Factor Model engine — FST "Aladdin": score, portfolio-impact, stress-test
+app.use('/api/factor', factorModelRouter)
+
+// Event Graph — граф событий, матрица переходов, каузальные цепочки
+app.use('/api/fst', eventGraphRouter)
+
+// Doc Parser — парсинг PDF/PPTX документов проектов → события в type 2451
+app.use('/api/fst', docParserRouter)
 
 // 404 handler
 app.use((req, res) => {

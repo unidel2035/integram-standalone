@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '@/layout/AppLayout.vue'
+import { useRoleStore } from '@/stores/roleStore'
 
 const routes = [
   { path: '/', component: () => import('@/views/pages/FstRoot.vue'), meta: { title: 'ФСТ НТИ', public: true } },
@@ -54,9 +55,15 @@ const routes = [
       { path: 'fst-terminal', component: () => import('@/views/pages/FstTerminal.vue'), meta: { title: 'Claude Code CLI' } },
       { path: 'fst-startuper', component: () => import('@/views/pages/FstStartuper.vue'), meta: { title: 'Стартапер' } },
       { path: 'fst-expert', component: () => import('@/views/pages/FstExpert.vue'), meta: { title: 'Аватар Эксперта' } },
+      { path: 'fst-factor', component: () => import('@/views/pages/FstFactorModel.vue'), meta: { title: 'Факторная модель T·S·M·G·E' } },
+      { path: 'fst-event-graph', component: () => import('@/views/pages/FstEventGraph.vue'), meta: { title: 'Событийный граф' } },
+      { path: 'fst-project/:id?', component: () => import('@/views/pages/FstProject.vue'), meta: { title: 'Хаб проекта' } },
+      { path: 'fst-cc', component: () => import('@/views/pages/FstCommandCenter.vue'), meta: { title: 'Command Center — состояние платформы' } },
+      { path: 'fst-pipeline', component: () => import('@/views/pages/FstPipeline.vue'), meta: { title: 'Регуляторный конвейер ПП-1→ПП-6' } },
       { path: 'fst-pitch', component: () => import('@/views/pages/FstPitch.vue'), meta: { title: 'ai2fund — Инвестиционный питч' } },
       { path: 'fst-room', component: () => import('@/views/pages/FstRoom.vue'), meta: { title: 'Agent Room — живой чат агентов' } },
       { path: 'fst-soft-model', component: () => import('@/views/pages/FstSoftModel.vue'), meta: { title: 'Software Ontology Model' } },
+      { path: 'fst-flow', component: () => import('@/views/pages/FstFlow.vue'), meta: { title: 'Моя панель' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },
@@ -73,6 +80,18 @@ router.beforeEach((to) => {
   const token = localStorage.getItem('token')
   if (to.meta.public) return true
   if (!token) return { path: '/login', query: { redirect: to.fullPath } }
+
+  // Внешние роли (startup, investor) → на /fst-flow вместо /fst-hub
+  try {
+    const roleStore = useRoleStore()
+    const EXTERNAL_ROLES = ['startup', 'investor']
+    if (roleStore.availableRoles.length > 0) {
+      const roles = roleStore.availableRoles.map(r => r.id)
+      const isExternal = roles.every(r => EXTERNAL_ROLES.includes(r))
+      if (isExternal && to.path === '/fst-hub') return { path: '/fst-flow' }
+    }
+  } catch { /* store not ready yet — let it pass */ }
+
   return true
 })
 

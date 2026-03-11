@@ -17,9 +17,20 @@ import RoleSelectionModal from '@/components/RoleSelectionModal.vue'
 import { isRoleSelected } from '@/config/learningPaths'
 import ShortcutsModal from '@/components/fst-shared/ShortcutsModal.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { useRoleStore } from '@/stores/roleStore'
 
 const route = useRoute()
 const { layoutConfig, layoutState, isSidebarActive } = useLayout()
+const roleStore = useRoleStore()
+
+// Сайдбар скрыт только для внешних ролей (startup, investor).
+// Внутренние сотрудники (admin, director, analyst, expert) видят полное меню.
+const EXTERNAL_ROLES = ['startup', 'investor']
+const hideSidebar = computed(() => {
+  if (roleStore.availableRoles.length === 0) return false // роли ещё не загружены
+  const roles = roleStore.availableRoles.map(r => r.id)
+  return roles.every(r => EXTERNAL_ROLES.includes(r))
+})
 
 // Global keyboard shortcuts — registers listeners for the whole app
 useKeyboardShortcuts()
@@ -41,6 +52,17 @@ const isMobileDevice = () => {
 }
 
 onMounted(() => {
+  // Сбрасываем collapsed-состояние сайдбара — убираем "каждый второй клик"
+  // layoutState.sidebarCollapsed = false сделает сайдбар полностью раскрытым
+  if (layoutState.sidebarCollapsed) {
+    layoutState.sidebarCollapsed = false
+    localStorage.setItem('sidebarCollapsed', 'false')
+  }
+  // Убираем staticMenuDesktopInactive чтобы меню было видно при входе
+  layoutState.staticMenuDesktopInactive = false
+  // Раскрываем все группы меню — убираем необходимость двойного клика
+  localStorage.removeItem('sidebar_collapsed_groups')
+
   const chatState = window.localStorage.getItem('chat')
 
   // Если состояние чата не сохранено, используем дефолтное значение
@@ -106,15 +128,17 @@ watch(isSidebarActive, newVal => {
 
 const containerClass = computed(() => {
   return {
-    'layout-overlay': layoutConfig.menuMode === 'overlay',
-    'layout-static': layoutConfig.menuMode === 'static',
+    'layout-overlay': !hideSidebar.value && layoutConfig.menuMode === 'overlay',
+    'layout-static': !hideSidebar.value && layoutConfig.menuMode === 'static',
     'layout-static-inactive':
+      !hideSidebar.value &&
       layoutState.staticMenuDesktopInactive &&
       layoutConfig.menuMode === 'static',
-    'layout-overlay-active': layoutState.overlayMenuActive,
-    'layout-mobile-active': layoutState.staticMenuMobileActive,
+    'layout-overlay-active': !hideSidebar.value && layoutState.overlayMenuActive,
+    'layout-mobile-active': !hideSidebar.value && layoutState.staticMenuMobileActive,
     'chat-active': isChatActive.value && layoutConfig.menuMode === 'static',
-    'sidebar-collapsed': layoutState.sidebarCollapsed,
+    'sidebar-collapsed': !hideSidebar.value && layoutState.sidebarCollapsed,
+    'no-sidebar': hideSidebar.value,
   }
 })
 
@@ -142,11 +166,13 @@ function isOutsideClicked(event) {
   const sidebarEl = document.querySelector('.layout-sidebar')
   const topbarEl = document.querySelector('.layout-menu-button')
 
+  if (!sidebarEl) return true // sidebar скрыт — всё снаружи
+
   return !(
     sidebarEl.isSameNode(event.target) ||
     sidebarEl.contains(event.target) ||
-    topbarEl.isSameNode(event.target) ||
-    topbarEl.contains(event.target)
+    topbarEl?.isSameNode(event.target) ||
+    topbarEl?.contains(event.target)
   )
 }
 
@@ -166,17 +192,17 @@ const chatMargin = computed(() => {
 <template>
   <div class="layout-wrapper" :class="containerClass">
     <app-topbar @chat-toggle="updateChatState" />
-    <app-sidebar />
-    <!-- Suspense boundary for lazy-loaded Chat component -->
+    <app-sidebar v-if="!hideSidebar" />
+    <!-- Suspense boundary for lazy-loaded Chat component — hidden on expert page -->
     <Transition name="slide-in-right">
-      <Suspense v-if="isChatActive">
+      <Suspense v-if="isChatActive && route.path !== '/fst-expert'">
         <Chat />
         <template #fallback>
           <div class="chat-loading" :style="{ width: chatWidth + 'px' }"></div>
         </template>
       </Suspense>
     </Transition>
-    <div class="layout-main-container" :style="isChatActive && layoutConfig.menuMode === 'static' ? { marginRight: chatMargin } : {}">
+    <div class="layout-main-container" :style="isChatActive && layoutConfig.menuMode === 'static' && route.path !== '/fst-expert' ? { marginRight: chatMargin } : {}">
       <div class="layout-main">
         <router-view v-slot="{ Component, route: matchedRoute }">
             <component :is="Component" :key="matchedRoute.fullPath" />
@@ -238,4 +264,12 @@ const chatMargin = computed(() => {
 @keyframes chat-spin {
   to { transform: rotate(360deg); }
 }
+
+/* No-sidebar layout: full width for non-admin users */
+.no-sidebar .layout-main-container {
+  margin-left: 0 !important;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
 </style>

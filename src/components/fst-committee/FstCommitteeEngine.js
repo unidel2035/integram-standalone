@@ -51,14 +51,33 @@ function normalizeScore(value, min, max) {
 }
 
 function computeDimScores(project) {
+  // Если перед стартом сессии были вычислены факторы T·S·M·G·E — используем их.
+  // Они точнее: рассчитаны по реальным данным + AI-обогащение через /api/factor/score.
+  // Маппинг: T→trl, S→sovereignty, M→finance, G→risk, E→market
+  const F = project._factorScores
+  if (F) {
+    const baseMarket = normalizeScore(Math.log10((project.marketSize || 1e10) / 1e8), 0, Math.log10(100))
+    return {
+      trl:         F.T,                          // T: TRL Momentum (0-1)
+      mrl:         normalizeScore(project.mrl, 1, 10),
+      sovereignty: F.S,                          // S: Sovereign Score (0-1) — главный фильтр
+      market:      F.E * 0.4 + baseMarket * 0.6, // E модифицирует market score
+      finance:     F.M * 0.6 + normalizeScore(project.projectedIRR || 0.25, 0.10, 0.60) * 0.4,
+      risk:        F.G * 0.5 + (1 - normalizeScore(F.S < 0.4 ? 0.7 : 0.3, 0, 1)) * 0.5,
+      team:        project.teamStrength || 0.7,
+      // Composite фактора — дополнительный сигнал для агентов
+      factorComposite: (F.T * 0.25 + F.S * 0.35 + F.M * 0.20 + F.G * 0.10 + F.E * 0.10),
+    }
+  }
+  // Fallback: старая формула если факторы не были рассчитаны
   return {
     trl:         normalizeScore(project.trl, 1, 9),
     mrl:         normalizeScore(project.mrl, 1, 10),
     sovereignty: normalizeScore(project.sovereigntyScore, 0, 9),
-    market:      normalizeScore(Math.log10(project.marketSize / 1e8), 0, Math.log10(100)),
-    finance:     normalizeScore(project.projectedIRR, 0.10, 0.60),
+    market:      normalizeScore(Math.log10((project.marketSize || 1e10) / 1e8), 0, Math.log10(100)),
+    finance:     normalizeScore(project.projectedIRR || 0.25, 0.10, 0.60),
     risk:        1 - normalizeScore(project.trl < 5 ? 0.7 : project.sovereigntyScore < 5 ? 0.5 : 0.3, 0, 1),
-    team:        project.teamStrength,
+    team:        project.teamStrength || 0.7,
   }
 }
 

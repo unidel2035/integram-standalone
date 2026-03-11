@@ -22,9 +22,29 @@ import { useRoleStore } from '@/stores/roleStore'
 import { useI18n } from 'vue-i18n'
 import { onMounted, onBeforeUnmount, ref, watch, computed, nextTick } from 'vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { useNotificationStore } from '@/stores/notificationStore.js'
+import { useRouter as useAppRouter } from 'vue-router'
 
 // Issue #6934: Route detection for block-editor
 const route = useRoute()
+const appRouter = useAppRouter()
+
+// ── Уведомления ───────────────────────────────────────────────────────────────
+const notifStore    = useNotificationStore()
+const notifOpen     = ref(false)
+const notifEl       = ref(null)
+
+function toggleNotif() { notifOpen.value = !notifOpen.value }
+
+function clickNotifAction(notif) {
+  notifStore.dismiss(notif.id)
+  notifOpen.value = false
+  if (notif.action?.route) appRouter.push(notif.action.route)
+}
+
+function onClickOutsideNotif(e) {
+  if (notifEl.value && !notifEl.value.contains(e.target)) notifOpen.value = false
+}
 
 const { t } = useI18n()
 const { toggleMenu, toggleDarkMode, isDarkTheme, layoutState } = useLayout()
@@ -229,6 +249,7 @@ const paletteBtn = ref(null)
 onMounted(() => {
   updateFavicon()
   roleStore.init()
+  document.addEventListener('click', onClickOutsideNotif)
   // Close config panel when clicking outside it
   const handleConfigClickOutside = (e) => {
     if (configVisible.value && configPanelRef.value && !configPanelRef.value.contains(e.target)) {
@@ -278,6 +299,7 @@ onBeforeUnmount(() => {
   if (chatStorageCleanup) chatStorageCleanup()
   if (pendingCheckInterval) clearInterval(pendingCheckInterval)
   if (configClickOutsideCleanup) configClickOutsideCleanup()
+  document.removeEventListener('click', onClickOutsideNotif)
 })
 
 </script>
@@ -312,6 +334,43 @@ onBeforeUnmount(() => {
       >
         <i class="pi pi-comments"/>
       </button>
+
+      <!-- Уведомления -->
+      <div class="notif-wrap" ref="notifEl">
+        <button
+          type="button"
+          class="layout-topbar-action notif-btn"
+          :class="{ 'active': notifOpen }"
+          title="Уведомления"
+          @click.stop="toggleNotif"
+        >
+          <i class="pi pi-bell"/>
+          <span v-if="notifStore.unreadCount > 0" class="notif-badge">{{ notifStore.unreadCount }}</span>
+        </button>
+        <div v-if="notifOpen" class="notif-panel">
+          <div class="notif-panel-header">
+            Уведомления
+            <button v-if="notifStore.notifications.length" class="notif-clear" @click="notifStore.clearAll()">
+              Очистить всё
+            </button>
+          </div>
+          <div v-if="notifStore.notifications.length === 0" class="notif-empty">
+            <i class="pi pi-check-circle" style="color:var(--fst-green)"></i>
+            Всё под контролем
+          </div>
+          <div v-for="n in notifStore.notifications" :key="n.id" class="notif-item" :class="'notif-' + n.severity">
+            <i :class="n.icon" class="notif-item-icon"></i>
+            <div class="notif-item-body">
+              <div class="notif-item-title">{{ n.title }}</div>
+              <div class="notif-item-msg">{{ n.message }}</div>
+            </div>
+            <div class="notif-item-actions">
+              <button v-if="n.action" class="notif-action-btn" @click="clickNotifAction(n)">{{ n.action.label }}</button>
+              <button class="notif-dismiss-btn" @click="notifStore.dismiss(n.id)">×</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <button
         @click="toggleShortcuts"
@@ -520,6 +579,50 @@ onBeforeUnmount(() => {
 .is-active .hamburger-line:nth-child(3) {
   transform: rotate(-45deg);
 }
+</style>
+
+<style scoped>
+/* ── Уведомления ────────────────────────────────────────────── */
+.notif-wrap { position: relative; }
+.notif-btn  { position: relative; }
+.notif-badge {
+  position: absolute; top: 2px; right: 2px;
+  background: var(--fst-red); color: white;
+  font-size: 9px; font-weight: 700; line-height: 1;
+  padding: 2px 4px; border-radius: 8px; min-width: 14px; text-align: center;
+}
+.notif-panel {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 320px; max-height: 400px; overflow-y: auto;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 12px; box-shadow: 0 8px 32px color-mix(in srgb, var(--p-text-color) 15%, transparent);
+  z-index: 1000;
+}
+.notif-panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 14px; font-size: 12px; font-weight: 700;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+.notif-clear { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--p-text-muted-color); }
+.notif-empty { display: flex; align-items: center; gap: 8px; padding: 20px 14px; font-size: 13px; color: var(--p-text-muted-color); }
+.notif-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 14px; border-bottom: 1px solid var(--p-content-border-color);
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item-icon { font-size: 14px; margin-top: 2px; flex-shrink: 0; }
+.notif-danger .notif-item-icon { color: var(--fst-red); }
+.notif-warn   .notif-item-icon { color: var(--fst-brand); }
+.notif-item-body { flex: 1; min-width: 0; }
+.notif-item-title { font-size: 12px; font-weight: 700; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notif-item-msg   { font-size: 11px; color: var(--p-text-muted-color); margin-top: 2px; }
+.notif-item-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.notif-action-btn {
+  background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color);
+  border-radius: 6px; padding: 2px 8px; font-size: 10px; cursor: pointer; color: var(--p-text-color);
+}
+.notif-action-btn:hover { background: var(--p-surface-hover); }
+.notif-dismiss-btn { background: none; border: none; cursor: pointer; color: var(--p-text-muted-color); font-size: 14px; padding: 0 4px; }
 </style>
 
 <style>

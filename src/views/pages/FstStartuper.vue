@@ -200,14 +200,21 @@
           </div>
         </template>
 
-        <!-- Document viewer -->
-        <template v-else-if="activeItem?.type === 'doc'">
+        <!-- Document viewer — BLOCK EDITOR (doc + doc-gost unified) -->
+        <template v-else-if="activeView === 'block-doc'">
           <div class="spw-doc-view">
             <div class="spw-doc-topbar">
               <span class="spw-doc-title"><i :class="activeItem.icon"></i> {{ activeItem.label }}</span>
               <div class="spw-doc-actions">
-                <button class="spw-btn spw-btn--primary" @click="fillDocWithAI(activeItem)">
-                  <i class="pi pi-magic"></i> Заполнить с AI
+                <button v-if="!activeItem.blockDocId" class="spw-btn spw-btn--primary" :disabled="creatingDoc" @click="createBlockDoc(activeItem)">
+                  <i :class="creatingDoc ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"></i>
+                  {{ creatingDoc ? 'Создаю...' : 'Создать в редакторе' }}
+                </button>
+                <button v-if="activeItem.blockDocId" class="spw-btn spw-btn--primary" @click="openBlockEditor(activeItem.blockDocId)">
+                  <i class="pi pi-pencil"></i> Открыть редактор
+                </button>
+                <button class="spw-btn spw-btn--ghost" @click="fillDocWithAI(activeItem)">
+                  <i class="pi pi-magic"></i> AI заполнить
                 </button>
                 <a v-if="activeItem.url" :href="activeItem.url" target="_blank" class="spw-btn spw-btn--outline">
                   <i class="pi pi-external-link"></i> Открыть
@@ -217,56 +224,16 @@
                 </a>
               </div>
             </div>
-            <div class="spw-doc-body">
-              <iframe v-if="activeItem.url && activeItem.url.endsWith('.pdf')"
-                :src="activeItem.url" class="spw-doc-iframe" />
-              <div v-else class="spw-doc-placeholder">
-                <i class="pi pi-file-word" style="font-size:56px;color:var(--p-primary-color);opacity:.4"></i>
-                <h3>{{ activeItem.label }}</h3>
-                <p>Нажмите «Заполнить с AI» — агент автоматически заполнит документ<br>данными вашей компании и запросит недостающее</p>
-                <div v-if="activeItem.fields?.length" class="spw-doc-fields">
-                  <div v-for="f in activeItem.fields" :key="f.key" class="spw-doc-field">
-                    <label>{{ f.label }}</label>
-                    <input v-model="docValues[f.key]" :placeholder="f.placeholder" class="spw-field-input" />
-                  </div>
-                </div>
-              </div>
-              <!-- AI response for this doc -->
-              <div v-if="docAiResponse" class="spw-doc-ai-resp" v-html="md(docAiResponse)"></div>
-            </div>
-          </div>
-        </template>
-
-        <!-- GOST Tech Doc -->
-        <template v-else-if="activeItem?.type === 'doc-gost'">
-          <div class="spw-gost-wrap">
-            <div class="spw-doc-topbar">
-              <span class="spw-doc-title"><i :class="activeItem.icon"></i> {{ activeItem.label }}</span>
-              <div class="spw-doc-actions">
-                <button class="spw-btn spw-btn--primary" :disabled="gostGenerating" @click="generateGostDoc(activeItem)">
-                  <i :class="gostGenerating ? 'pi pi-spin pi-spinner' : 'pi pi-sparkles'"></i>
-                  {{ gostGenerating ? 'Генерирую...' : gostDoc[activeItem.key] ? 'Перегенерировать' : 'Сгенерировать с AI' }}
-                </button>
-                <button v-if="gostDoc[activeItem.key]" class="spw-btn spw-btn--ghost" @click="copyGostDoc(activeItem.key)" title="Скопировать">
-                  <i class="pi pi-copy"></i>
-                </button>
-              </div>
-            </div>
-            <div class="spw-gost-body">
-              <div v-if="!gostDoc[activeItem.key] && !gostGenerating" class="spw-doc-placeholder">
-                <i :class="activeItem.icon" style="font-size:48px;opacity:.3"></i>
-                <h3>{{ activeItem.label }}</h3>
-                <p>{{ gostDescription(activeItem.gostType) }}</p>
-                <button class="spw-btn spw-btn--primary" @click="generateGostDoc(activeItem)">
-                  <i class="pi pi-sparkles"></i> Сгенерировать с AI
-                </button>
-              </div>
-              <div v-else-if="gostGenerating" class="spw-gost-loading">
-                <i class="pi pi-spin pi-spinner" style="font-size:28px;color:var(--p-primary-color)"></i>
-                <div style="font-size:14px;font-weight:600">AI пишет документ по ГОСТ...</div>
-                <div style="font-size:11px;color:var(--p-text-muted-color)">{{ gostLoadingStep }}</div>
-              </div>
-              <pre v-else class="spw-gost-pre">{{ gostDoc[activeItem.key] }}</pre>
+            <!-- Block editor iframe -->
+            <iframe v-if="activeItem.blockDocId && showDocFrame"
+              :src="`/block-editor?docId=${activeItem.blockDocId}&database=kval&embed=1`"
+              class="spw-doc-iframe spw-doc-iframe--block"
+              frameborder="0"
+            />
+            <div v-else class="spw-doc-placeholder-mini">
+              <i :class="activeItem.icon || 'pi pi-file'" style="font-size:40px;opacity:.2"></i>
+              <p>{{ activeItem.label }}</p>
+              <p style="font-size:12px;color:var(--p-text-muted-color)">Нажмите «Создать в редакторе» чтобы открыть блочный редактор</p>
             </div>
           </div>
         </template>
@@ -478,6 +445,289 @@
           </div>
         </template>
 
+        <!-- ══ Digital Twin: Модель / Формулы ══ -->
+        <template v-else-if="activeView === 'twin-model'">
+          <div class="spw-twin-wrap">
+            <div class="spw-doc-topbar">
+              <span class="spw-doc-title"><i class="pi pi-calculator"></i> Цифровой двойник — Формульная модель</span>
+              <div class="spw-doc-actions">
+                <span v-if="twinLoadError" style="font-size:11px;color:var(--fst-red)">{{ twinLoadError }}</span>
+                <span class="spw-twin-stage-badge" :style="{ background: STAGE_GRAPH[twinCalc.currentStageIndex]?.color }">
+                  {{ STAGE_GRAPH[twinCalc.currentStageIndex]?.label }}
+                </span>
+                <button class="spw-btn spw-btn--outline" :disabled="twinSaving" @click="saveTwinToIntegram">
+                  <i :class="twinSaving ? 'pi pi-spin pi-spinner' : 'pi pi-save'"></i>
+                  {{ twinSaving ? 'Сохраняю...' : 'В базу' }}
+                </button>
+              </div>
+            </div>
+            <div class="spw-twin-body">
+
+              <!-- Inputs (левая колонка) -->
+              <div class="spw-twin-inputs">
+                <div class="spw-twin-inputs-head">Входные параметры</div>
+                <div class="spw-ti-row">
+                  <label>MRR (₽/мес)</label>
+                  <input type="number" v-model.number="twinModel.mrr" min="0" step="100000" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Рост MoM (%)</label>
+                  <input type="number" v-model.number="twinModel.growthMom" min="0" max="200" step="1" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Клиентов</label>
+                  <input type="number" v-model.number="twinModel.customers" min="0" step="1" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Burn/мес (₽)</label>
+                  <input type="number" v-model.number="twinModel.burn" min="0" step="50000" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Cash (₽)</label>
+                  <input type="number" v-model.number="twinModel.cash" min="0" step="500000" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Churn/мес (%)</label>
+                  <input type="number" v-model.number="twinModel.churn" min="0" max="100" step="0.5" class="spw-ti-input" />
+                </div>
+                <div class="spw-twin-inputs-head" style="margin-top:12px">Параметры сделки</div>
+                <div class="spw-ti-row">
+                  <label>Инвестиция (₽)</label>
+                  <input type="number" v-model.number="twinModel.investAmount" min="0" step="1000000" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Целевая доля (%)</label>
+                  <input type="number" v-model.number="twinModel.targetEquity" min="1" max="49" step="1" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Мультипл. выхода (×)</label>
+                  <input type="number" v-model.number="twinModel.exitMultiple" min="1" max="30" step="1" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Ставка диск. (%)</label>
+                  <input type="number" v-model.number="twinModel.discountRate" min="10" max="80" step="5" class="spw-ti-input" />
+                </div>
+                <div class="spw-ti-row">
+                  <label>Горизонт (лет)</label>
+                  <input type="number" v-model.number="twinModel.horizon" min="2" max="10" step="1" class="spw-ti-input" />
+                </div>
+              </div>
+
+              <!-- Formula waterfall (правая колонка) -->
+              <div class="spw-twin-chain">
+                <div class="spw-twin-inputs-head">Формульная цепочка — каскад расчётов</div>
+
+                <!-- Блок 1: Операционные метрики -->
+                <div class="spw-tw-group">
+                  <div class="spw-tw-group-label">Операционные метрики</div>
+                  <div class="spw-tw-row">
+                    <span class="spw-tw-key">MRR</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val">{{ fmtRub(twinModel.mrr) }}</span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">ARR = MRR × 12</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val spw-tw-val--hi">{{ fmtRub(twinCalc.arr) }}</span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">Runway = Cash / Burn</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val" :style="{ color: twinCalc.runway < 6 ? 'var(--fst-red)' : twinCalc.runway < 12 ? 'var(--fst-brand)' : 'var(--fst-green)' }">
+                      {{ twinCalc.runway === 999 ? '∞' : twinCalc.runway + ' мес' }}
+                    </span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">Growth Annual = (1+MoM)¹²−1</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val">{{ twinCalc.growthAnnual }}%</span>
+                  </div>
+                </div>
+
+                <!-- Блок 2: Прогноз ARR -->
+                <div class="spw-tw-group">
+                  <div class="spw-tw-group-label">Прогноз ARR (5 лет)</div>
+                  <div class="spw-tw-arr-row">
+                    <div v-for="(v, i) in twinCalc.arrByYear" :key="i" class="spw-tw-arr-col">
+                      <div class="spw-tw-arr-bar">
+                        <div class="spw-tw-arr-fill"
+                          :style="{ height: Math.min(v / Math.max(...twinCalc.arrByYear) * 80, 80) + 'px', background: 'var(--fst-blue)' }">
+                        </div>
+                      </div>
+                      <div class="spw-tw-arr-val">{{ (v/1e6).toFixed(1) }}M</div>
+                      <div class="spw-tw-arr-label">Y{{ i+1 }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Блок 3: Оценка -->
+                <div class="spw-tw-group">
+                  <div class="spw-tw-group-label">Оценка (формульная цепочка)</div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">Terminal Value = ARR_Y5 × {{ twinModel.exitMultiple }}×</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val">{{ fmtRub(twinCalc.tv) }}</span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">PV(TV) = TV / (1+{{ twinModel.discountRate }}%)^{{ twinModel.horizon }}</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val">{{ fmtRub(twinCalc.tvPV) }}</span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">VC Method pre-money = Invest / {{ twinModel.targetEquity }}%</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val">{{ fmtRub(twinCalc.vcPre) }}</span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--total">
+                    <span class="spw-tw-key">Pre-money (взвешенная)</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val spw-tw-val--hi">{{ fmtRub(twinCalc.preMoney) }}</span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">Post-money = Pre + {{ fmtRub(twinCalc.inv) }}</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val">{{ fmtRub(twinCalc.postMoney) }}</span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">Доля фонда = Invest / Post-money</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val" style="color:var(--fst-purple)">{{ twinCalc.actualEquity.toFixed(1) }}%</span>
+                  </div>
+                </div>
+
+                <!-- Блок 4: Доходность -->
+                <div class="spw-tw-group">
+                  <div class="spw-tw-group-label">Доходность фонда</div>
+                  <div class="spw-tw-row spw-tw-row--derived">
+                    <span class="spw-tw-key">Стоимость доли на выходе</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val">{{ fmtRub(twinCalc.fundAtExit) }}</span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--total">
+                    <span class="spw-tw-key">MOIC = Exit / Invest</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val spw-tw-val--hi" :style="{ color: twinCalc.moic >= 3 ? 'var(--fst-green)' : twinCalc.moic >= 1 ? 'var(--fst-brand)' : 'var(--fst-red)' }">
+                      {{ twinCalc.moic.toFixed(1) }}×
+                    </span>
+                  </div>
+                  <div class="spw-tw-row spw-tw-row--total">
+                    <span class="spw-tw-key">IRR = MOIC^(1/{{ twinModel.horizon }}) − 1</span>
+                    <span class="spw-tw-arrow">→</span>
+                    <span class="spw-tw-val spw-tw-val--hi" :style="{ color: twinCalc.irr >= 30 ? 'var(--fst-green)' : twinCalc.irr >= 15 ? 'var(--fst-brand)' : 'var(--fst-red)' }">
+                      {{ twinCalc.irr.toFixed(0) }}%
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Блок 5: Предсказательная сила — вероятность выживания -->
+                <div class="spw-tw-group">
+                  <div class="spw-tw-group-label">Предсказательная модель — вероятность выживания</div>
+                  <div class="spw-tw-survival-row">
+                    <div v-for="(prob, label) in { '12 мес': twinCalc.survival12m, '24 мес': twinCalc.survival24m, '36 мес': twinCalc.survival36m }" :key="label" class="spw-tw-survival-col">
+                      <div class="spw-tw-surv-ring">
+                        <svg viewBox="0 0 36 36" class="spw-tw-ring-svg">
+                          <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--p-content-border-color)" stroke-width="2.5"/>
+                          <circle cx="18" cy="18" r="15.9" fill="none"
+                            :stroke="prob >= 0.7 ? 'var(--fst-green)' : prob >= 0.45 ? 'var(--fst-brand)' : 'var(--fst-red)'"
+                            stroke-width="2.5"
+                            stroke-dasharray="100" :stroke-dashoffset="100 - prob * 100"
+                            stroke-linecap="round"
+                            transform="rotate(-90 18 18)"
+                          />
+                        </svg>
+                        <div class="spw-tw-ring-val">{{ (prob * 100).toFixed(0) }}%</div>
+                      </div>
+                      <div class="spw-tw-surv-label">{{ label }}</div>
+                    </div>
+                  </div>
+                  <div class="spw-twin-hint">
+                    <i class="pi pi-info-circle"></i>
+                    Модель учитывает: Runway ({{ twinCalc.runway === 999 ? '∞' : twinCalc.runway }} мес), ARR ({{ fmtRub(twinCalc.arr) }}), рост ({{ twinCalc.growthAnnual }}%/год). Измените входные данные — вероятности пересчитаются.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- ══ Digital Twin: График событий ══ -->
+        <template v-else-if="activeView === 'twin-stages'">
+          <div class="spw-twin-wrap">
+            <div class="spw-doc-topbar">
+              <span class="spw-doc-title"><i class="pi pi-sitemap"></i> График событий — Путь стартапа</span>
+              <div class="spw-doc-actions">
+                <span style="font-size:11px;color:var(--p-text-muted-color)">Текущая стадия: </span>
+                <span class="spw-twin-stage-badge" :style="{ background: STAGE_GRAPH[twinCalc.currentStageIndex]?.color }">
+                  {{ STAGE_GRAPH[twinCalc.currentStageIndex]?.label }}
+                </span>
+              </div>
+            </div>
+            <div class="spw-stages-body">
+
+              <!-- Stage pipeline (горизонтальный граф) -->
+              <div class="spw-stage-pipeline">
+                <template v-for="(stage, si) in twinCalc.stageReqStatus" :key="stage.key">
+                  <!-- Нода -->
+                  <div :class="['spw-stage-node', { 'spw-stage-node--active': stage.active, 'spw-stage-node--done': si < twinCalc.currentStageIndex, 'spw-stage-node--locked': si > twinCalc.currentStageIndex }]">
+                    <div class="spw-sn-circle" :style="{ background: stage.unlocked ? stage.color : 'var(--p-surface-ground)', borderColor: stage.color }">
+                      <i v-if="si < twinCalc.currentStageIndex" class="pi pi-check"></i>
+                      <span v-else>{{ si + 1 }}</span>
+                    </div>
+                    <div class="spw-sn-label" :style="{ color: stage.active ? stage.color : '' }">{{ stage.label }}</div>
+                    <!-- Требования -->
+                    <div class="spw-sn-reqs">
+                      <div v-for="req in stage.reqs" :key="req.key" :class="['spw-sn-req', req.met ? 'spw-sn-req--ok' : '']">
+                        <i :class="req.met ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                        <span>{{ req.label }}</span>
+                      </div>
+                    </div>
+                    <!-- Прогресс к следующей ноде -->
+                    <div v-if="stage.nextLabel && stage.active" class="spw-sn-next">
+                      <div class="spw-sn-next-label">→ {{ stage.nextLabel }}</div>
+                    </div>
+                  </div>
+                  <!-- Коннектор между нодами -->
+                  <div v-if="si < twinCalc.stageReqStatus.length - 1"
+                    :class="['spw-stage-conn', si < twinCalc.currentStageIndex ? 'spw-stage-conn--done' : '']">
+                  </div>
+                </template>
+              </div>
+
+              <!-- Требования текущей стадии (детальный список) -->
+              <div class="spw-stage-detail">
+                <div class="spw-sd-head">
+                  <i class="pi pi-list-check"></i>
+                  Чек-лист текущей стадии: <strong>{{ STAGE_GRAPH[twinCalc.currentStageIndex]?.label }}</strong>
+                </div>
+                <div v-for="req in twinCalc.stageReqStatus[twinCalc.currentStageIndex]?.reqs" :key="req.key"
+                  :class="['spw-sd-req', req.met ? 'spw-sd-req--ok' : 'spw-sd-req--open']">
+                  <i :class="req.met ? 'pi pi-check-circle' : 'pi pi-exclamation-circle'"></i>
+                  <div class="spw-sd-req-body">
+                    <span class="spw-sd-req-label">{{ req.label }}</span>
+                    <span v-if="!req.met && req.doc" class="spw-sd-req-hint">
+                      → открыть в <a @click.prevent="openView({ key: req.doc, type: req.doc.startsWith('doc') ? 'doc-gost' : req.doc })" href="#">DataRoom</a>
+                    </span>
+                    <span v-else-if="req.met" class="spw-sd-req-hint" style="color:var(--fst-green)">выполнено</span>
+                    <span v-else class="spw-sd-req-hint">требует заполнения</span>
+                  </div>
+                </div>
+
+                <!-- Следующий триггер -->
+                <div v-if="STAGE_GRAPH[twinCalc.currentStageIndex]?.nextLabel" class="spw-sd-trigger">
+                  <i class="pi pi-flag" style="color:var(--fst-brand)"></i>
+                  <div>
+                    <div style="font-weight:600;font-size:12px;color:var(--fst-brand)">Триггер перехода на следующую стадию</div>
+                    <div style="font-size:13px">{{ STAGE_GRAPH[twinCalc.currentStageIndex]?.nextLabel }}</div>
+                    <div style="font-size:11px;color:var(--p-text-muted-color);margin-top:4px">
+                      Измените MRR или количество клиентов в разделе «Модель / Формулы» — статус обновится автоматически
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
       </div><!-- /spw-main -->
 
       <!-- ─── RIGHT: Agents + Events ─── -->
@@ -526,6 +776,7 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import FstFinModelBlock from '@/components/finmodel/FstFinModelBlock.vue'
 import { buildArtifactTree, logEvent, fetchEvents, syncCompanyTwin } from '@/services/workspaceOntologyService.js'
+import { fetchTwinModel, saveTwinModel } from '@/services/fstApi.js'
 import { vegaTwin, vegaTermSheet, vegaSmartContract, vegaGostDocs, vegaEvents, vegaFinmodel } from '@/data/vegaDemoData.js'
 
 const router = useRouter()
@@ -569,6 +820,67 @@ const SCORE_LABELS = {
   ip: 'IP', risk: 'Риски',
 }
 
+// ─── Digital Twin: stage graph ───────────────────────────────────────────────
+const STAGE_GRAPH = [
+  {
+    key: 'pre-seed', label: 'Pre-Seed', color: 'var(--fst-purple)',
+    requirements: [
+      { key: 'pitch',  label: 'Питч-дек',         doc: 'doc-teaser' },
+      { key: 'nda',    label: 'NDA',               doc: 'doc-nda' },
+      { key: 'tz',     label: 'ТЗ / Архитектура',  doc: 'doc-tz' },
+      { key: 'team3',  label: 'Команда ≥ 3 чел',   formula: m => m.teamSize >= 3 },
+      { key: 'trl5',   label: 'TRL ≥ 5',           formula: m => (m.trl||0) >= 5 },
+    ],
+    nextLabel: 'ARR > 2 млн ₽ или клиентов > 3',
+    nextFormula: m => (m.mrr * 12 >= 2_000_000) || m.customers >= 3,
+  },
+  {
+    key: 'seed', label: 'Seed', color: 'var(--fst-blue)',
+    requirements: [
+      { key: 'finmodel',  label: 'Финансовая модель',   doc: 'finmodel' },
+      { key: 'termsheet', label: 'Term Sheet',           doc: 'doc-termsheet' },
+      { key: 'captable',  label: 'Cap Table / Оценка',   doc: 'doc-invest' },
+      { key: 'arr2m',     label: 'ARR ≥ 2 млн ₽',       formula: m => m.mrr * 12 >= 2_000_000 },
+      { key: 'cust3',     label: 'Клиентов ≥ 3',         formula: m => m.customers >= 3 },
+      { key: 'runway12',  label: 'Runway ≥ 12 мес',      formula: m => m.burn > 0 && m.cash / m.burn >= 12 },
+    ],
+    nextLabel: 'ARR > 20 млн ₽ и churn < 5%',
+    nextFormula: m => m.mrr * 12 >= 20_000_000 && m.churn < 5,
+  },
+  {
+    key: 'series-a', label: 'Series A', color: 'var(--fst-green)',
+    requirements: [
+      { key: 'audit',     label: 'Аудиторский отчёт',    doc: 'doc-nma' },
+      { key: 'dd',        label: 'Due Diligence пакет',   doc: 'doc-dataroom' },
+      { key: 'valuation', label: 'Отчёт об оценке',       doc: 'doc-exec' },
+      { key: 'arr20m',    label: 'ARR ≥ 20 млн ₽',        formula: m => m.mrr * 12 >= 20_000_000 },
+      { key: 'churn5',    label: 'Churn < 5%',             formula: m => m.churn < 5 },
+      { key: 'cust20',    label: 'Клиентов ≥ 20',          formula: m => m.customers >= 20 },
+    ],
+    nextLabel: 'ARR > 100 млн ₽',
+    nextFormula: m => m.mrr * 12 >= 100_000_000,
+  },
+  {
+    key: 'series-b', label: 'Series B', color: 'var(--fst-cyan)',
+    requirements: [
+      { key: 'esop',    label: 'ESOP план',               doc: 'doc-corp' },
+      { key: 'intl',    label: 'Международные продажи',   doc: 'doc-letter' },
+      { key: 'arr100m', label: 'ARR ≥ 100 млн ₽',         formula: m => m.mrr * 12 >= 100_000_000 },
+    ],
+    nextLabel: 'MOIC ≥ 3× или стратег',
+    nextFormula: m => m.mrr * 12 >= 300_000_000,
+  },
+  {
+    key: 'exit', label: 'Exit / IPO', color: 'var(--fst-brand)',
+    requirements: [
+      { key: 'waterfall', label: 'Waterfall расчёт',       doc: 'doc-invest' },
+      { key: 'liqpref',   label: 'Ликв. привилегия',       doc: 'doc-corp' },
+    ],
+    nextLabel: null,
+    nextFormula: null,
+  },
+]
+
 // Artifacts tree — SIRIN документы + наши
 const ARTIFACTS_ALL = [
   {
@@ -581,45 +893,46 @@ const ARTIFACTS_ALL = [
   {
     key: 'dataroom', label: 'DataRoom', icon: 'pi pi-folder-open', roles: ['founder','investor','expert'],
     items: [
-      { key: 'doc-nav',      label: 'Навигатор по пакету', icon: 'pi pi-map',              type: 'doc', required: true,
-        downloadUrl: 'https://ai2o.ru/download/fst/7ac404839/47442f27815.zip' },
-      { key: 'doc-teaser',   label: 'Тизер',               icon: 'pi pi-bolt',             type: 'doc-gost', gostType: 'doc-teaser', roles: ['founder','investor','expert'] },
-      { key: 'doc-exec',     label: 'Executive Summary',    icon: 'pi pi-file',             type: 'doc-gost', gostType: 'doc-exec', required: true },
-      { key: 'doc-faq',      label: 'FAQ для инвестора',    icon: 'pi pi-question-circle',  type: 'doc-gost', gostType: 'doc-faq' },
-      { key: 'doc-nda',      label: 'NDA',                  icon: 'pi pi-lock',             type: 'doc-gost', gostType: 'doc-nda', required: true },
-      { key: 'doc-dataroom', label: 'Data Room (полный)',   icon: 'pi pi-database',         type: 'doc' },
-      { key: 'doc-letter',   label: 'Письмо инвестору',    icon: 'pi pi-envelope',         type: 'doc' },
+      { key: 'doc-nav',      label: 'Навигатор по пакету', icon: 'pi pi-map',              type: 'doc', required: true,  blockDocId: '1777620', filled: true },
+      { key: 'doc-exec',     label: 'Executive Summary',    icon: 'pi pi-file',             type: 'doc', required: true,  blockDocId: '66192',   integramId: '66075', filled: true },
+      { key: 'doc-teaser',   label: 'Тизер / Pitch Deck',  icon: 'pi pi-bolt',             type: 'doc',                    blockDocId: '66194',   integramId: '66079', filled: true },
+      { key: 'doc-nda',      label: 'NDA',                  icon: 'pi pi-lock',             type: 'doc', required: true,  blockDocId: '67260',   integramId: '66095', filled: true },
+      { key: 'doc-dd',       label: 'Due Diligence',        icon: 'pi pi-search',           type: 'doc',                    blockDocId: '1777618', integramId: '66099', filled: true },
+      { key: 'doc-faq',      label: 'FAQ для инвестора',    icon: 'pi pi-question-circle',  type: 'doc',                    blockDocId: '1777621', filled: true },
+      { key: 'doc-dataroom', label: 'Data Room (полный)',   icon: 'pi pi-database',         type: 'doc',                    blockDocId: '1777622', filled: true },
+      { key: 'doc-letter',   label: 'Письмо инвестору',    icon: 'pi pi-envelope',         type: 'doc',                    blockDocId: '1777623', filled: true },
     ],
   },
   {
     key: 'finance', label: 'Финансы', icon: 'pi pi-chart-line', roles: ['founder','investor'],
     items: [
-      { key: 'finmodel',    label: 'Финансовая модель',  icon: 'pi pi-table',    type: 'finmodel', required: true },
-      { key: 'doc-bizplan', label: 'Бизнес-план',        icon: 'pi pi-book',     type: 'doc-gost', gostType: 'doc-bizplan', required: true },
-      { key: 'doc-nma',     label: 'Отчёт по НМА',       icon: 'pi pi-star',     type: 'doc' },
-      { key: 'doc-founder', label: 'Справка основателя', icon: 'pi pi-id-card',  type: 'doc' },
+      { key: 'finmodel',    label: 'Финансовая модель',  icon: 'pi pi-table',    type: 'doc', required: true, blockDocId: '66630',   integramId: '66087', filled: true },
+      { key: 'doc-bizplan', label: 'Бизнес-план',        icon: 'pi pi-book',     type: 'doc', required: true, blockDocId: '66333',   integramId: '66083', filled: true },
+      { key: 'doc-captable',label: 'Cap Table',          icon: 'pi pi-sitemap',  type: 'doc',                   blockDocId: '1777619', integramId: '66103', filled: true },
+      { key: 'doc-nma',     label: 'Отчёт по НМА',       icon: 'pi pi-star',     type: 'doc',                   blockDocId: '1777624', filled: true },
+      { key: 'doc-founder', label: 'Справка основателя', icon: 'pi pi-id-card',  type: 'doc',                   blockDocId: '1777625', filled: true },
     ],
   },
   {
     key: 'deal', label: 'Сделка', icon: 'pi pi-handshake', roles: ['founder','investor'],
     items: [
-      { key: 'doc-termsheet',  label: 'Term Sheet (фонд)', icon: 'pi pi-file-edit',  type: 'doc', required: true },
+      { key: 'doc-termsheet',  label: 'Term Sheet (фонд)', icon: 'pi pi-file-edit',  type: 'doc', required: true, blockDocId: '66974',   integramId: '66091', filled: true },
       { key: 'doc-ts-own',     label: 'Term Sheet (конструктор)', icon: 'pi pi-file-edit',  type: 'termsheet' },
-      { key: 'doc-invest',     label: 'Договор инвестирования', icon: 'pi pi-verified',  type: 'doc', required: true },
-      { key: 'doc-corp',       label: 'Корпоративный договор',  icon: 'pi pi-users',     type: 'doc', required: true },
-      { key: 'doc-protocol',   label: 'Протокол собрания',      icon: 'pi pi-list',      type: 'doc' },
-      { key: 'doc-application',label: 'Заявление о вступлении', icon: 'pi pi-user-plus', type: 'doc', required: true },
-      { key: 'doc-spouse',     label: 'Согласие супруга',       icon: 'pi pi-heart',     type: 'doc' },
+      { key: 'doc-invest',     label: 'Договор инвестирования', icon: 'pi pi-verified',  type: 'doc', required: true, blockDocId: '1777626', filled: true },
+      { key: 'doc-corp',       label: 'Корпоративный договор',  icon: 'pi pi-users',     type: 'doc', required: true, blockDocId: '1777627', filled: true },
+      { key: 'doc-protocol',   label: 'Протокол собрания',      icon: 'pi pi-list',      type: 'doc',                   blockDocId: '1777628', filled: true },
+      { key: 'doc-application',label: 'Заявление о вступлении', icon: 'pi pi-user-plus', type: 'doc', required: true, blockDocId: '1777629', filled: true },
+      { key: 'doc-spouse',     label: 'Согласие супруга',       icon: 'pi pi-heart',     type: 'doc',                   blockDocId: '1777630', filled: true },
       { key: 'smart-contract', label: 'Smart Contract сделки',  icon: 'pi pi-verified',  type: 'smart-contract' },
     ],
   },
   {
     key: 'tech', label: 'Тех. документация', icon: 'pi pi-cog', roles: ['founder', 'expert'],
     items: [
-      { key: 'doc-tz',      label: 'ТЗ (ГОСТ 34.602)',    icon: 'pi pi-file-edit',  type: 'doc-gost', gostType: 'tz',      required: true },
-      { key: 'doc-techdoc', label: 'Описание ПО (ГОСТ)',   icon: 'pi pi-book',       type: 'doc-gost', gostType: 'techdoc' },
-      { key: 'doc-trl',     label: 'TRL-паспорт',          icon: 'pi pi-chart-bar',  type: 'doc-gost', gostType: 'trl' },
-      { key: 'doc-sysarch', label: 'Архитектура системы',  icon: 'pi pi-sitemap',    type: 'doc-gost', gostType: 'arch' },
+      { key: 'doc-tz',      label: 'ТЗ (ГОСТ 34.602)',    icon: 'pi pi-file-edit',  type: 'doc-gost', gostType: 'tz',      required: true, blockDocId: '1777631', filled: true },
+      { key: 'doc-techdoc', label: 'Описание ПО (ГОСТ)',   icon: 'pi pi-book',       type: 'doc-gost', gostType: 'techdoc',              blockDocId: '1777632', filled: true },
+      { key: 'doc-trl',     label: 'TRL-паспорт',          icon: 'pi pi-chart-bar',  type: 'doc-gost', gostType: 'trl',                  blockDocId: '1777633', filled: true },
+      { key: 'doc-sysarch', label: 'Архитектура системы',  icon: 'pi pi-sitemap',    type: 'doc-gost', gostType: 'arch',                 blockDocId: '1777634', filled: true },
     ],
   },
   {
@@ -635,6 +948,13 @@ const ARTIFACTS_ALL = [
     key: 'agents', label: 'Агент', icon: 'pi pi-android', roles: ['founder','expert'],
     items: [
       { key: 'agent', label: 'AI-ассистент', icon: 'pi pi-comments', type: 'chat' },
+    ],
+  },
+  {
+    key: 'twin', label: 'Цифровой двойник', icon: 'pi pi-share-alt', roles: ['founder','investor'],
+    items: [
+      { key: 'twin-model',   label: 'Модель / Формулы',  icon: 'pi pi-calculator',  type: 'twin-model' },
+      { key: 'twin-stages',  label: 'График событий',    icon: 'pi pi-sitemap',     type: 'twin-stages' },
     ],
   },
 ]
@@ -698,6 +1018,10 @@ const gostDoc = ref({})
 const gostGenerating = ref(false)
 const gostLoadingStep = ref('')
 
+// Block editor state
+const creatingDoc = ref(false)
+const showDocFrame = ref(true)
+
 // Term Sheet constructor
 const termSheet = ref({})
 const tsGenerating = ref(false)
@@ -720,6 +1044,28 @@ const beacons = ref([])
 const research = ref({ grants: { grants: [] } })
 const chatMessages = ref([])
 const events = ref([])
+
+// ID проекта ВентурОС в Integram (объект type 1155)
+const VENTUREOS_PROJECT_ID = '7300'
+
+const twinSaving = ref(false)
+const twinLoadError = ref('')
+
+// ─── Digital Twin: formula engine inputs ─────────────────────────────────────
+const twinModel = ref({
+  mrr: 0,           // Monthly Recurring Revenue, руб
+  growthMom: 15,    // Month-over-month growth rate, %
+  burn: 500_000,    // Monthly burn rate, руб
+  cash: 5_000_000,  // Cash on hand, руб
+  customers: 0,     // Paying customers
+  churn: 5,         // Monthly churn, %
+  arpu: 500_000,    // ARPU per customer per year, руб
+  investAmount: 15_000_000, // Investment amount, руб
+  targetEquity: 15, // Target equity, %
+  exitMultiple: 8,  // Exit multiple on Revenue
+  horizon: 5,       // Investment horizon, years
+  discountRate: 40, // Discount rate, %
+})
 
 // ═══════════════════════════════════════════
 // COMPUTED
@@ -754,6 +1100,125 @@ const completenessColor = computed(() => {
   return 'var(--p-red-400)'
 })
 
+// ─── Digital Twin: formula chain (все зависимые метрики) ─────────────────────
+const twinCalc = computed(() => {
+  const m = {
+    ...twinModel.value,
+    teamSize: twinModel.value.teamSize || twin.value.teamSize || 0,
+    trl: twinModel.value.trl ?? twin.value.trl ?? 0,
+  }
+  const arr = (m.mrr || 0) * 12
+  const growthAnnual = Math.pow(1 + (m.growthMom || 15) / 100, 12) - 1
+  const runway = m.burn > 0 ? Math.floor(m.cash / m.burn) : 999
+
+  // ARR projection: 5 лет
+  const arrByYear = Array.from({ length: 5 }, (_, i) =>
+    Math.round(arr * Math.pow(1 + growthAnnual, i + 1))
+  )
+  const arrY5 = arrByYear[4] || 0
+
+  // Выход
+  const tv = arrY5 * (m.exitMultiple || 8)
+  const r = (m.discountRate || 40) / 100
+  const n = m.horizon || 5
+  const tvPV = tv / Math.pow(1 + r, n)
+
+  // VC Method: post = invest / equity%
+  const inv = m.investAmount || 15_000_000
+  const eq = (m.targetEquity || 15) / 100
+  const vcPost = eq > 0 ? inv / eq : 0
+  const vcPre = vcPost - inv
+
+  // Взвешенная: если есть ARR — 40% DCF + 60% VC, иначе — только VC
+  const preMoney = arr > 1000 ? tvPV * 0.4 + vcPre * 0.6 : vcPre
+  const postMoney = preMoney + inv
+  const actualEquity = postMoney > 0 ? (inv / postMoney) * 100 : 0
+
+  // Доходность фонда
+  const fundAtExit = tv * (actualEquity / 100)
+  const moic = inv > 0 ? fundAtExit / inv : 0
+  const irr = moic > 0 && n > 0 ? (Math.pow(moic, 1 / n) - 1) * 100 : 0
+
+  // FCF цепочка (упрощённая)
+  const fcf = [
+    -(m.burn * 12),
+    Math.max(arrByYear[1] * 0.15, 0),
+    arrByYear[2] * 0.40,
+    arrByYear[3] * 0.58,
+    arrByYear[4] * 0.70,
+  ]
+
+  // Текущая стадия — определяется формулой
+  const currentStageKey = (() => {
+    if (m.mrr * 12 >= 100_000_000) return 'series-b'
+    if (m.mrr * 12 >= 20_000_000 && m.churn < 5) return 'series-a'
+    if (m.mrr * 12 >= 2_000_000 || m.customers >= 3) return 'seed'
+    return 'pre-seed'
+  })()
+  const currentStageIndex = STAGE_GRAPH.findIndex(s => s.key === currentStageKey)
+
+  // Требования текущей стадии
+  const stageReqStatus = STAGE_GRAPH.map(stage => ({
+    ...stage,
+    reqs: stage.requirements.map(req => ({
+      ...req,
+      met: req.formula ? req.formula(m) : false,
+    })),
+    unlocked: STAGE_GRAPH.indexOf(stage) <= currentStageIndex,
+    active: stage.key === currentStageKey,
+  }))
+
+  // Вероятность выживания по сценариям (логистическая модель)
+  const survivalBase = runway >= 12 ? 0.72 : runway >= 6 ? 0.50 : 0.28
+  const arrFactor = arr >= 2_000_000 ? 1.2 : arr >= 500_000 ? 1.05 : 0.85
+  const survival12m = Math.min(survivalBase * arrFactor, 0.97)
+  const survival24m = Math.min(survival12m * 0.75, 0.95)
+  const survival36m = Math.min(survival24m * 0.70, 0.90)
+
+  return {
+    arr, arrByYear, arrY5, runway, growthAnnual: (growthAnnual * 100).toFixed(1),
+    tv, tvPV, vcPre, preMoney, postMoney, actualEquity,
+    fundAtExit, moic, irr, fcf, inv,
+    currentStageKey, currentStageIndex, stageReqStatus,
+    survival12m, survival24m, survival36m,
+  }
+})
+
+// Вспомогательная: форматирование числа в млн/K₽
+function fmtRub(n) {
+  if (!n || isNaN(n)) return '0'
+  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1) + ' млн ₽'
+  if (Math.abs(n) >= 1_000) return (n / 1_000).toFixed(0) + 'k ₽'
+  return n.toFixed(0) + ' ₽'
+}
+
+async function loadTwinFromIntegram(projectId) {
+  twinLoadError.value = ''
+  const data = await fetchTwinModel(projectId)
+  if (Object.keys(data).length) {
+    // Мержим только непустые значения — не затираем дефолты нулями
+    for (const [key, val] of Object.entries(data)) {
+      if (val !== undefined && val !== null && val !== 0 && key in twinModel.value) {
+        twinModel.value[key] = val
+      }
+    }
+    addEvent('info', `Цифровой двойник загружен из Integram (проект ${projectId})`)
+  }
+}
+
+async function saveTwinToIntegram() {
+  twinSaving.value = true
+  try {
+    const projectId = companyId.value || VENTUREOS_PROJECT_ID
+    await saveTwinModel(projectId, { ...twinModel.value })
+    addEvent('info', `Цифровой двойник сохранён в Integram`)
+  } catch (e) {
+    twinLoadError.value = 'Ошибка сохранения: ' + e.message
+  } finally {
+    twinSaving.value = false
+  }
+}
+
 const companyMetrics = computed(() => [
   { key: 'founder',  label: 'Основатель',  val: twin.value.founder },
   { key: 'inn',      label: 'ИНН',         val: twin.value.inn },
@@ -787,26 +1252,23 @@ function openView(item) {
   activeView.value = item.key
   activeItem.value = item
   docAiResponse.value = ''
-  // Switch to agent if type=chat
-  if (item.type === 'chat') {
-    activeView.value = 'agent'
-  }
-  if (item.type === 'finmodel') {
-    activeView.value = 'finmodel'
-    addEvent('doc', `Открыта финансовая модель VentureOS`)
-  }
-  if (item.type === 'grants') {
-    activeView.value = 'grants'
-  }
+
+  if (item.type === 'chat') { activeView.value = 'agent' }
+  if (item.type === 'grants') { activeView.value = 'grants' }
   if (item.type === 'smart-contract') {
     activeView.value = 'smart-contract'
     addEvent('deal', `Открыт Smart Contract ${smartContract.value?.id || ''}`)
   }
-  if (item.type === 'termsheet') {
-    addEvent('deal', `Открыт Term Sheet конструктор`)
-  }
-  if (item.type === 'doc-gost' && gostDoc.value[item.key]) {
-    addEvent('doc', `Документ открыт онтодвижком: ${item.label}`)
+  if (item.type === 'termsheet') { addEvent('deal', `Открыт Term Sheet конструктор`) }
+  if (item.type === 'twin-model') { activeView.value = 'twin-model' }
+  if (item.type === 'twin-stages') { activeView.value = 'twin-stages' }
+
+  // doc / doc-gost — единый блочный редактор
+  if (item.type === 'doc' || item.type === 'doc-gost') {
+    activeView.value = 'block-doc'
+    if (item.blockDocId) {
+      addEvent('doc', `Открыт: ${item.label} (blockDoc: ${item.blockDocId})`)
+    }
   }
 }
 
@@ -821,6 +1283,38 @@ function activateAgent(a) {
       })
     }
   })
+}
+
+async function createBlockDoc(item) {
+  creatingDoc.value = true
+  try {
+    const res = await fetch('/api/doc-blocks/new/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        html: `<h1>${item.label}</h1><p>Документ создан для ${twin.value.company || 'VentureOS'}</p>`,
+        title: item.label,
+        author: currentUserEmail,
+        database: 'kval',
+      }),
+    })
+    const { documentId } = await res.json()
+    // Persist docId on the item itself (reactive update via activeItem reassignment)
+    for (const sec of ARTIFACTS_ALL) {
+      const found = sec.items?.find(i => i.key === item.key)
+      if (found) { found.blockDocId = documentId; break }
+    }
+    activeItem.value = { ...activeItem.value, blockDocId: documentId }
+    addEvent('doc', `Создан документ в редакторе: ${item.label} (${documentId})`)
+  } catch (e) {
+    console.error('[createBlockDoc]', e)
+  } finally {
+    creatingDoc.value = false
+  }
+}
+
+function openBlockEditor(docId) {
+  window.open(`/block-editor?docId=${docId}&database=kval`, '_blank')
 }
 
 async function fillDocWithAI(item) {
@@ -1361,6 +1855,19 @@ onMounted(async () => {
 
   initSession()
 
+  // Синхронизируем twinModel с данными twin (revenue → MRR, burnRate → burn)
+  watch(twin, (t) => {
+    if (t.revenue && !twinModel.value.mrr) twinModel.value.mrr = Math.round(t.revenue / 12)
+    if (t.burnRate && !twinModel.value.burn) twinModel.value.burn = t.burnRate
+    if (t.teamSize) twinModel.value.teamSize = t.teamSize
+    if (t.trl) twinModel.value.trl = t.trl
+    if (t.askRub) twinModel.value.investAmount = t.askRub
+  }, { immediate: true, deep: true })
+
+  // Загружаем twinModel из Integram (реальные данные из БД перезапишут дефолты)
+  const projectId = companyId.value || VENTUREOS_PROJECT_ID
+  loadTwinFromIntegram(projectId)
+
   // Try loading artifact tree from Integram ontology
   const tree = await buildArtifactTree()
   if (tree) artifactsFromOntology.value = tree
@@ -1383,6 +1890,140 @@ onMounted(async () => {
 
 <style scoped>
 /* ══ Root ══ */
+/* ══ Digital Twin ══ */
+.spw-twin-wrap { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.spw-twin-body {
+  display: grid; grid-template-columns: 240px 1fr;
+  flex: 1; overflow: hidden; gap: 0;
+}
+.spw-twin-inputs {
+  border-right: 1px solid var(--p-content-border-color);
+  overflow-y: auto; padding: 12px;
+  background: var(--p-surface-card);
+}
+.spw-twin-inputs-head {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--p-text-muted-color); margin-bottom: 10px;
+}
+.spw-ti-row { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.spw-ti-row label { font-size: 11px; color: var(--p-text-muted-color); }
+.spw-ti-input {
+  border: 1px solid var(--p-content-border-color); border-radius: 6px;
+  padding: 5px 8px; font-size: 13px; background: var(--p-surface-ground);
+  color: var(--p-text-color); width: 100%;
+}
+.spw-ti-input:focus { outline: none; border-color: var(--p-primary-color); }
+
+.spw-twin-chain { overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+.spw-tw-group {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 12px 14px;
+}
+.spw-tw-group-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--p-text-muted-color); margin-bottom: 10px;
+}
+.spw-tw-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; padding: 4px 0; border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 50%, transparent);
+}
+.spw-tw-row:last-child { border-bottom: none; }
+.spw-tw-row--derived { padding-left: 8px; }
+.spw-tw-row--total { padding-top: 8px; font-weight: 600; }
+.spw-tw-key { flex: 1; color: var(--p-text-muted-color); font-size: 11px; }
+.spw-tw-arrow { color: var(--p-text-muted-color); flex-shrink: 0; }
+.spw-tw-val { font-weight: 700; font-size: 13px; white-space: nowrap; }
+.spw-tw-val--hi { font-size: 15px; color: var(--p-primary-color); }
+
+/* ARR bar chart */
+.spw-tw-arr-row { display: flex; gap: 8px; align-items: flex-end; height: 100px; padding-top: 8px; }
+.spw-tw-arr-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.spw-tw-arr-bar { display: flex; align-items: flex-end; height: 80px; }
+.spw-tw-arr-fill { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height .3s; opacity: .85; }
+.spw-tw-arr-val { font-size: 10px; font-weight: 700; }
+.spw-tw-arr-label { font-size: 10px; color: var(--p-text-muted-color); }
+
+/* Survival rings */
+.spw-tw-survival-row { display: flex; gap: 20px; justify-content: center; padding: 12px 0; }
+.spw-tw-survival-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.spw-tw-surv-ring { position: relative; width: 64px; height: 64px; }
+.spw-tw-ring-svg { width: 100%; height: 100%; }
+.spw-tw-ring-val {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+}
+.spw-tw-surv-label { font-size: 11px; color: var(--p-text-muted-color); }
+.spw-twin-hint {
+  font-size: 11px; color: var(--p-text-muted-color); margin-top: 8px;
+  display: flex; gap: 6px; align-items: flex-start; line-height: 1.4;
+}
+.spw-twin-stage-badge {
+  font-size: 11px; font-weight: 700; color: #fff;
+  padding: 3px 10px; border-radius: 12px;
+}
+
+/* ═══ Stage graph ═══ */
+.spw-stages-body { display: flex; flex-direction: column; flex: 1; overflow: auto; padding: 16px; gap: 16px; }
+.spw-stage-pipeline {
+  display: flex; align-items: flex-start; gap: 0; overflow-x: auto; padding: 8px 0;
+}
+.spw-stage-node {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 160px; max-width: 200px; flex: 1;
+  opacity: .5; transition: opacity .2s;
+}
+.spw-stage-node--active { opacity: 1; }
+.spw-stage-node--done { opacity: .8; }
+.spw-sn-circle {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: #fff;
+  border: 3px solid; flex-shrink: 0;
+  box-shadow: 0 0 0 3px var(--p-surface-ground);
+}
+.spw-stage-node--active .spw-sn-circle { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 30%, transparent); }
+.spw-sn-label { font-size: 13px; font-weight: 700; margin-top: 6px; margin-bottom: 8px; }
+.spw-sn-reqs { display: flex; flex-direction: column; gap: 4px; padding: 0 8px; width: 100%; }
+.spw-sn-req {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--p-text-muted-color);
+}
+.spw-sn-req--ok { color: var(--fst-green); }
+.spw-sn-next { font-size: 10px; color: var(--fst-brand); margin-top: 8px; text-align: center; padding: 0 6px; }
+.spw-stage-conn {
+  flex-shrink: 0; width: 32px; height: 3px; margin-top: 20px;
+  background: var(--p-content-border-color); border-radius: 2px;
+  transition: background .3s;
+}
+.spw-stage-conn--done { background: var(--fst-green); }
+
+/* Stage detail */
+.spw-stage-detail {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 16px;
+}
+.spw-sd-head {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; margin-bottom: 12px;
+}
+.spw-sd-req {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 50%, transparent);
+}
+.spw-sd-req:last-of-type { border-bottom: none; }
+.spw-sd-req--ok { color: var(--fst-green); }
+.spw-sd-req--open .spw-sd-req-label { font-weight: 600; }
+.spw-sd-req-body { display: flex; flex-direction: column; gap: 2px; }
+.spw-sd-req-label { font-size: 13px; }
+.spw-sd-req-hint { font-size: 11px; color: var(--p-text-muted-color); }
+.spw-sd-req-hint a { color: var(--p-primary-color); cursor: pointer; text-decoration: none; }
+.spw-sd-trigger {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+  background: color-mix(in srgb, var(--fst-brand) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-brand) 25%, transparent);
+}
+
 .spw {
   display: flex; flex-direction: column;
   height: 100vh; overflow: hidden;
@@ -1611,6 +2252,11 @@ onMounted(async () => {
 .spw-doc-actions { display: flex; gap: 6px; }
 .spw-doc-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 .spw-doc-iframe { flex: 1; border: none; width: 100%; min-height: 500px; }
+.spw-doc-iframe--block { height: 100%; min-height: 600px; border: none; }
+.spw-doc-placeholder-mini {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 300px; gap: 12px; color: var(--p-text-muted-color);
+}
 .spw-doc-placeholder {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 12px;

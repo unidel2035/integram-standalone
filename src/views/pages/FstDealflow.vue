@@ -1,11 +1,12 @@
 <template>
   <FstPageLayout title="Воронка входящих заявок" subtitle="Deal Flow — управление потоком заявок от первичного контакта до ИК">
     <template #actions>
+      <Button icon="pi pi-refresh" size="small" severity="secondary" :loading="loading" @click="reload" />
       <Button icon="pi pi-plus" label="Новая заявка" size="small" severity="success" @click="showNewDeal = true" />
       <Button icon="pi pi-download" label="CSV" size="small" severity="secondary" @click="exportCsv" />
     </template>
 
-    <!-- ─── Metrics strip (flush к краям) ─── -->
+    <!-- ─── Metrics strip ─── -->
     <div class="df-metrics fst-metrics-strip">
       <div v-for="m in pipelineMetrics" :key="m.label" class="fst-metric-item">
         <i :class="m.icon" class="fst-metric-item-icon"></i>
@@ -42,8 +43,11 @@
                 </div>
                 <div class="df-card-desc">{{ deal.description }}</div>
                 <div class="df-card-footer">
-                  <span>{{ deal.askMln }} млн ₽</span>
-                  <span>{{ deal.receivedDate }}</span>
+                  <span>{{ deal.askMln > 0 ? deal.askMln + ' млн ₽' : '—' }}</span>
+                  <span class="df-card-footer-right">
+                    <i v-if="deal.hasMedia" class="pi pi-file df-media-icon" title="Питч-дек прикреплён"></i>
+                    {{ deal.receivedDate || '—' }}
+                  </span>
                 </div>
                 <div v-if="deal.score" class="df-card-score">
                   <div class="df-score-bar" :style="{ width: deal.score + '%', background: scoreColor(deal.score) }"></div>
@@ -72,9 +76,11 @@
         </div>
       </div>
       <template #footer>
-        <Button label="Перевести →" icon="pi pi-arrow-right" @click="moveToNext(selectedDeal)" />
-        <Button label="Отклонить" severity="danger" icon="pi pi-times" @click="rejectDeal(selectedDeal)" />
-        <Button label="На ИК" severity="success" icon="pi pi-send" @click="sendToIC(selectedDeal)" />
+        <Button label="История" icon="pi pi-history" severity="secondary" text
+          @click="goToHub(selectedDeal)" />
+        <Button label="Перевести →" icon="pi pi-arrow-right" :loading="saving" @click="moveToNext(selectedDeal)" />
+        <Button label="Отклонить" severity="danger" icon="pi pi-times" :loading="saving" @click="rejectDeal(selectedDeal)" />
+        <Button label="На ИК" severity="success" icon="pi pi-send" :loading="saving" @click="sendToIC(selectedDeal)" />
       </template>
     </Dialog>
 
@@ -115,14 +121,15 @@
         </div>
       </div>
       <template #footer>
-        <Button label="Создать заявку" icon="pi pi-check" severity="success" fluid @click="createDeal" />
+        <Button label="Создать заявку" icon="pi pi-check" severity="success" fluid @click="createDeal" :loading="creating" />
       </template>
     </Dialog>
   </FstPageLayout>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
 import Button from 'primevue/button'
@@ -131,8 +138,49 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
+import { useProjectStore } from '@/stores/projectStore.js'
+import { useFstData } from '@/composables/useFstData.js'
+import { createProject, updateProject, SUBFUNDS, STATUSES } from '@/services/fstApi.js'
 
+const router    = useRouter()
+const projStore = useProjectStore()
+const { projects: rawProjects, loadProjects } = useFstData()
+
+// ── Справочники ───────────────────────────────────────────────────────────────
 const subfundOptions = ['БАС', 'РОБО', 'МЭ']
+
+// Integram statusId → kanban stage
+const STATUS_TO_STAGE = {
+  [STATUSES['Новый']]:                 'new',
+  [STATUSES['На рассмотрении ИК']]:    'ic',
+  [STATUSES['Одобрен']]:               'approved',
+  [STATUSES['На доработке']]:          'analysis',
+  [STATUSES['В работе']]:              'approved',
+  [STATUSES['Закрыт']]:                'rejected',
+}
+
+// Kanban stage → Integram statusId (только для важных переходов)
+const STAGE_TO_STATUS = {
+  ic:       STATUSES['На рассмотрении ИК'],
+  approved: STATUSES['Одобрен'],
+  rejected: STATUSES['Закрыт'],
+}
+
+// Subfund id → name
+const SUBFUND_ID_TO_NAME = {
+  [SUBFUNDS['БАС']]:  'БАС',
+  [SUBFUNDS['РОБО']]: 'РОБО',
+  [SUBFUNDS['МЭ']]:   'МЭ',
+}
+
+// Промежуточные стадии (не сохраняются в Integram, только локально)
+const LS_STAGES_KEY = 'fst_dealflow_stages'
+function loadLocalStages() { return JSON.parse(localStorage.getItem(LS_STAGES_KEY) || '{}') }
+function saveLocalStage(id, stage) {
+  const map = loadLocalStages()
+  map[id] = stage
+  localStorage.setItem(LS_STAGES_KEY, JSON.stringify(map))
+}
 
 const columns = [
   { id: 'new',       label: 'Новые',        color: 'var(--p-text-muted-color)' },
@@ -144,20 +192,64 @@ const columns = [
   { id: 'rejected',  label: 'Отклонено',     color: 'var(--fst-red)'    },
 ]
 
-const deals = ref([
-  { id: 1, company: 'ООО ДронСервис',  subfund: 'БАС',  stage: 'screening', askMln: 80,  trl: 5, sovereignty: 7, score: 72, receivedDate: '2026-02-10', contact: 'Петров Д.А.',    source: 'Партнёр',           description: 'Сервисное обслуживание БПЛА для нефтегаза. LOI с Лукойл.' },
-  { id: 2, company: 'АО НейроПилот',   subfund: 'БАС',  stage: 'analysis',  askMln: 150, trl: 6, sovereignty: 8, score: 85, receivedDate: '2026-02-05', contact: 'Соколова М.В.', source: 'Конференция',        description: 'AI-система управления роем БПЛА. 3 патента, партнёрство с МФТИ.' },
-  { id: 3, company: 'ООО РоботМед',    subfund: 'РОБО', stage: 'ic_prep',   askMln: 200, trl: 7, sovereignty: 6, score: 79, receivedDate: '2026-01-28', contact: 'Карпов И.С.',    source: 'ФРИИ',              description: 'Хирургические роботы для минимально инвазивных операций. CE Mark получен.' },
-  { id: 4, company: 'АО ЧипРус',       subfund: 'МЭ',   stage: 'new',       askMln: 300, trl: 4, sovereignty: 9, score: 61, receivedDate: '2026-02-18', contact: 'Новиков А.Р.',   source: 'Прямое обращение',  description: 'Производство микросхем памяти DDR5 на отечественной элементной базе.' },
-  { id: 5, company: 'ООО АгроВижн',    subfund: 'РОБО', stage: 'ic',        askMln: 120, trl: 7, sovereignty: 7, score: 88, receivedDate: '2026-01-15', contact: 'Сидорова П.К.',  source: 'Акселератор',       description: 'Компьютерное зрение для сельского хозяйства. Выручка 45 млн/год.' },
-  { id: 6, company: 'ООО КиберЗащита', subfund: 'МЭ',   stage: 'rejected',  askMln: 50,  trl: 3, sovereignty: 4, score: 35, receivedDate: '2026-01-20', contact: 'Попов Р.В.',     source: 'Email',             description: 'Отклонено: низкий TRL, нет продаж.' },
-  { id: 7, company: 'АО ФотонКС',      subfund: 'МЭ',   stage: 'approved',  askMln: 180, trl: 8, sovereignty: 8, score: 91, receivedDate: '2025-12-10', contact: 'Беляев А.М.',    source: 'ВЭБ.РФ',           description: 'Фотонные интегральные схемы для телекоммуникаций.' },
-])
-
+// ── State ─────────────────────────────────────────────────────────────────────
+const loading      = ref(false)
+const saving       = ref(false)
+const creating     = ref(false)
 const selectedDeal = ref(null)
 const showNewDeal  = ref(false)
 const newDeal = ref({ company: '', subfund: 'БАС', askMln: 100, trl: 5, sovereignty: 6, description: '', source: '', contact: '' })
 
+// Чистим мусорные даты из Integram (год 5500, эпоха 1970 и т.д.)
+function cleanDate(raw) {
+  if (!raw) return ''
+  const match = String(raw).match(/(\d{2})\.(\d{2})\.(\d{4})/)
+  if (!match) return String(raw).slice(0, 10)
+  const year = parseInt(match[3])
+  if (year < 1990 || year > 2100) return ''
+  return `${match[3]}-${match[2]}-${match[1]}`
+}
+
+// ── Нормализация проекта из Integram → dealflow-карточка ──────────────────────
+function normalize(p) {
+  const localStages = loadLocalStages()
+  const integramStage = STATUS_TO_STAGE[p.statusId] || 'new'
+  const stage = localStages[p.id] || integramStage
+
+  return {
+    id:           p.id,
+    company:      p.name || p.company || '',
+    subfund:      SUBFUND_ID_TO_NAME[p.subfundId] || p.subfund || '—',
+    stage,
+    askMln:       p.amount ? Math.round(p.amount / 1_000_000) : 0,
+    trl:          p.trl || 0,
+    sovereignty:  p.sovereigntyScore || 0,
+    score:        p.trl ? Math.round(40 + p.trl * 5 + (p.sovereigntyScore || 0) * 2) : null,
+    receivedDate: cleanDate(p.submittedAt),
+    contact:      p.ceoName || '',
+    source:       p.source || '',
+    description:  (p.description || '').replace(/<[^>]+>/g, '').slice(0, 120),
+    hasMedia:     !!p.mediaRef,   // есть прикреплённый документ (питч-дек)
+    _statusId:    p.statusId,
+  }
+}
+
+// ── Deals — реактивный список ─────────────────────────────────────────────────
+const deals = computed(() => rawProjects.value.map(normalize))
+
+// ── Загрузка ──────────────────────────────────────────────────────────────────
+onMounted(async () => {
+  loading.value = true
+  try { await loadProjects() } catch { /* offline → deals останутся пустыми */ }
+  finally { loading.value = false }
+})
+
+async function reload() {
+  loading.value = true
+  try { await loadProjects(true) } finally { loading.value = false }
+}
+
+// ── Computed ──────────────────────────────────────────────────────────────────
 const detailVisible = computed({
   get: () => selectedDeal.value !== null,
   set: v => { if (!v) selectedDeal.value = null },
@@ -166,17 +258,84 @@ const detailVisible = computed({
 const pipelineMetrics = computed(() => {
   const active = deals.value.filter(d => d.stage !== 'rejected')
   return [
-    { icon: 'pi pi-inbox',     val: active.length,                                              label: 'В воронке' },
-    { icon: 'pi pi-users',     val: dealsInStage('ic').length,                                  label: 'На ИК'     },
-    { icon: 'pi pi-check',     val: dealsInStage('approved').length,                            label: 'Одобрено'  },
-    { icon: 'pi pi-chart-bar', val: active.reduce((s, d) => s + (d.askMln || 0), 0) + ' млн',  label: 'Объём'     },
+    { icon: 'pi pi-inbox',     val: active.length,                                             label: 'В воронке' },
+    { icon: 'pi pi-users',     val: dealsInStage('ic').length,                                 label: 'На ИК'     },
+    { icon: 'pi pi-check',     val: dealsInStage('approved').length,                           label: 'Одобрено'  },
+    { icon: 'pi pi-chart-bar', val: active.reduce((s, d) => s + (d.askMln || 0), 0) + ' млн', label: 'Объём'     },
   ]
 })
 
 function dealsInStage(stage) { return deals.value.filter(d => d.stage === stage) }
-
 function openDetail(deal) { selectedDeal.value = deal }
 
+// ── Переходы ──────────────────────────────────────────────────────────────────
+const stageOrder = ['new', 'screening', 'analysis', 'ic_prep', 'ic', 'approved']
+
+async function setStage(deal, newStage) {
+  saveLocalStage(deal.id, newStage)
+  // Обновляем Integram если это значимый этап
+  if (STAGE_TO_STATUS[newStage]) {
+    saving.value = true
+    try {
+      const body = new URLSearchParams({ t1184: STAGE_TO_STATUS[newStage], _xsrf: '' })
+      await updateProject(deal.id, body)
+    } catch { /* silent — локальное изменение всё равно сохранено */ }
+    finally { saving.value = false }
+  }
+  // Принудительно обновляем кэш useFstData
+  await loadProjects(true)
+  selectedDeal.value = null
+}
+
+function moveToNext(deal) {
+  const idx = stageOrder.indexOf(deal.stage)
+  if (idx < stageOrder.length - 1) setStage(deal, stageOrder[idx + 1])
+  else selectedDeal.value = null
+}
+
+function rejectDeal(deal)  { setStage(deal, 'rejected') }
+
+async function sendToIC(deal) {
+  await setStage(deal, 'ic')
+  projStore.setActive({ ...deal, _source: 'dealflow' })
+  router.push('/fst-committee')
+}
+
+function goToHub(deal) {
+  if (!deal) return
+  projStore.setActive({ ...deal, _source: 'dealflow' })
+  selectedDeal.value = null
+  router.push('/fst-project/' + deal.id)
+}
+
+// ── Создание новой заявки ────────────────────────────────────────────────────
+async function createDeal() {
+  creating.value = true
+  try {
+    const subfundId = SUBFUNDS[newDeal.value.subfund] || null
+    await createProject({
+      name:             newDeal.value.company,
+      amount:           (newDeal.value.askMln || 0) * 1_000_000,
+      description:      newDeal.value.description,
+      subfundId,
+      statusId:         STATUSES['Новый'],
+      trl:              newDeal.value.trl,
+      sovereigntyScore: newDeal.value.sovereignty,
+      submittedAt:      new Date().toISOString(),
+    })
+    showNewDeal.value = false
+    newDeal.value = { company: '', subfund: 'БАС', askMln: 100, trl: 5, sovereignty: 6, description: '', source: '', contact: '' }
+    await loadProjects(true)
+  } catch (e) {
+    console.warn('[Dealflow] createProject failed:', e.message)
+    // Fallback: добавляем локально
+    showNewDeal.value = false
+  } finally {
+    creating.value = false
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function subfundColor(s) {
   return { БАС: 'var(--fst-blue)', РОБО: 'var(--fst-green)', МЭ: 'var(--fst-purple)' }[s] || 'var(--p-text-muted-color)'
 }
@@ -185,25 +344,7 @@ function scoreColor(s) {
   if (s >= 50) return 'var(--fst-brand)'
   return 'var(--fst-red)'
 }
-function moveToNext(deal) {
-  const order = ['new', 'screening', 'analysis', 'ic_prep', 'ic', 'approved']
-  const idx = order.indexOf(deal.stage)
-  if (idx < order.length - 1) deal.stage = order[idx + 1]
-  selectedDeal.value = null
-}
-function rejectDeal(deal) { deal.stage = 'rejected'; selectedDeal.value = null }
-function sendToIC(deal)   { deal.stage = 'ic';       selectedDeal.value = null }
-function createDeal() {
-  deals.value.push({
-    ...newDeal.value,
-    id: Date.now(),
-    stage: 'new',
-    score: Math.round(40 + Math.random() * 40),
-    receivedDate: new Date().toISOString().slice(0, 10),
-  })
-  showNewDeal.value = false
-  newDeal.value = { company: '', subfund: 'БАС', askMln: 100, trl: 5, sovereignty: 6, description: '', source: '', contact: '' }
-}
+
 function exportCsv() {
   const rows = [['ID', 'Компания', 'Субфонд', 'Этап', 'Запрос', 'TRL', 'Суверенность', 'Score']]
   deals.value.forEach(d => rows.push([d.id, d.company, d.subfund, d.stage, d.askMln, d.trl, d.sovereignty, d.score]))
@@ -237,7 +378,9 @@ function exportCsv() {
 .df-card-name   { font-size: 0.82rem; font-weight: 700; color: var(--p-text-color); }
 .df-card-subfund{ font-size: 0.65rem; color: white; padding: 2px 6px; border-radius: 4px; }
 .df-card-desc   { font-size: 0.75rem; color: var(--p-text-muted-color); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.df-card-footer { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--p-text-muted-color); }
+.df-card-footer       { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--p-text-muted-color); }
+.df-card-footer-right { display: flex; align-items: center; gap: 4px; }
+.df-media-icon        { font-size: 0.68rem; color: var(--fst-cyan); opacity: 0.8; }
 .df-card-score  { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
 .df-score-bar   { height: 4px; border-radius: 2px; transition: width .3s; }
 .df-score-val   { font-size: 0.68rem; color: var(--p-text-muted-color); }

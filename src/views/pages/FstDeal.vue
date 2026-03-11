@@ -344,6 +344,38 @@
           </div>
         </div>
 
+        <!-- Factor Model T·S·M·G·E -->
+        <div class="fst-deal-panel">
+          <div class="fst-deal-panel-title">
+            <i class="pi pi-chart-bar" style="color:var(--fst-purple)"></i> Факторная модель T·S·M·G·E
+          </div>
+          <div v-if="!factorResult && !factorLoading" class="fst-term-empty">
+            <i class="pi pi-chart-bar" style="font-size:28px;color:var(--p-text-muted-color)"></i>
+            <div style="font-size:12px;text-align:center">Оценка сделки по 5 факторам: TRL, Суверенность, Мультипликатор, GR, Экспорт</div>
+            <Button label="Рассчитать" icon="pi pi-play" size="small" severity="secondary" @click="runFactorScore" />
+          </div>
+          <div v-else-if="factorLoading" class="fst-term-loading">
+            <ProgressSpinner style="width:36px;height:36px" />
+            <div style="font-size:12px">Расчёт факторов...</div>
+          </div>
+          <template v-else-if="factorResult">
+            <FactorRadar
+              :factors="factorResult.factors"
+              :composite="factorResult.composite"
+              :grade="factorResult.grade"
+            />
+            <div v-if="factorResult.redFlags?.length" style="margin-top:10px">
+              <div style="font-size:11px;color:var(--fst-red);font-weight:600;margin-bottom:4px">Красные флаги</div>
+              <div v-for="f in factorResult.redFlags" :key="f" style="font-size:11px;color:var(--p-text-muted-color);padding:2px 0">⚠ {{ f }}</div>
+            </div>
+            <div v-if="factorResult.strengths?.length" style="margin-top:8px">
+              <div style="font-size:11px;color:var(--fst-green);font-weight:600;margin-bottom:4px">Сильные стороны</div>
+              <div v-for="s in factorResult.strengths" :key="s" style="font-size:11px;color:var(--p-text-muted-color);padding:2px 0">✓ {{ s }}</div>
+            </div>
+            <Button label="Пересчитать" icon="pi pi-refresh" size="small" severity="secondary" text @click="runFactorScore" :loading="factorLoading" style="margin-top:8px;width:100%" />
+          </template>
+        </div>
+
         <!-- AI Risk Analysis -->
         <div class="fst-deal-panel">
           <div class="fst-deal-panel-title">
@@ -451,13 +483,16 @@ import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
 import CounterfactualPanel from '@/components/ontology/CounterfactualPanel.vue'
 import CausalExplanation from '@/components/ontology/CausalExplanation.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
+import FactorRadar from '@/components/fst-factor/FactorRadar.vue'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import PageHelpDrawer from '@/components/PageHelpDrawer.vue'
 import { usePageHelp } from '@/composables/usePageHelp'
 import { buildEntityContext, buildContextPrompt } from '@/services/ontologyContextBuilder.js'
+import { useProjectStore } from '@/stores/projectStore.js'
 
-const toast = useToast()
+const toast      = useToast()
 const eventStore = useEventStore()
+const projStore  = useProjectStore()
 
 // ── Page Help ─────────────────────────────────────────────────
 const { isOpen: helpOpen, pageHelp, toggleHelp } = usePageHelp('fst-deal')
@@ -511,6 +546,15 @@ const deal = ref({
     { name: 'Патенты', unit: 'шт.', target2025: 2, target2026: 4, target2027: 7 },
     { name: 'Контракты', unit: 'шт.', target2025: 1, target2026: 3, target2027: 6 },
   ],
+  // Факторная модель T·S·M·G·E
+  trl:              5,
+  trlGrowth:        1,
+  sovereignPercent: 60,
+  fstAmount:        50,
+  grChainCoverage:  0.5,
+  exportPotential:  'medium',
+  description:      '',
+
   conditions: {
     antiDilution: true,
     dragAlong: true,
@@ -531,6 +575,40 @@ const icConditions = ref([])   // условия от ИК (из TERM_SHEET_PROP
 const termSheet = ref('')
 const aiLoading = ref(false)
 const scCurrentStep = ref(2)
+
+// ─── Factor Model (T·S·M·G·E) ────────────────────────────────────────────────
+const factorLoading = ref(false)
+const factorResult = ref(null)
+
+async function runFactorScore() {
+  factorLoading.value = true
+  try {
+    const resp = await fetch('/api/factor/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dealId: deal.value?.id || null,
+        deal: {
+          companyName:      deal.value.companyName,
+          description:      deal.value.description,
+          trl:              deal.value.trl,
+          trlGrowth:        deal.value.trlGrowth,
+          sovereignPercent: deal.value.sovereignPercent,
+          totalInvestment:  deal.value.totalAmount,
+          fstInvestment:    deal.value.fstAmount,
+          grChainCoverage:  deal.value.grChainCoverage,
+          exportPotential:  deal.value.exportPotential,
+          sector:           deal.value.subFund,
+        },
+      }),
+    })
+    if (resp.ok) factorResult.value = await resp.json()
+  } catch (e) {
+    console.error('[FactorScore]', e)
+  } finally {
+    factorLoading.value = false
+  }
+}
 
 // ─── Options ────────────────────────────────────────────────────────────────
 const subFunds = ['БАС', 'РОБО', 'МЭ', 'Крос-секторный']
@@ -776,6 +854,18 @@ function applyFinmodelToAI() {
 // ─── Event tracking ──────────────────────────────────────────────────────────
 
 onMounted(async () => {
+  // Если пришли из ИК или dealflow — применяем данные активного проекта
+  const ap = projStore.activeProject
+  if (ap) {
+    if (ap.company || ap.name)  deal.value.companyName  = ap.company || ap.name
+    if (ap.inn)                 deal.value.inn           = ap.inn
+    if (ap.subfund)             deal.value.subFund       = ap.subfund
+    if (ap.stage)               deal.value.stage         = ap.stage
+    if (ap.trl)                 deal.value.trl           = ap.trl
+    if (ap.askMln)              deal.value.totalAmount   = ap.askMln
+    if (ap.sovereignty)         deal.value.sovereignPercent = ap.sovereignty * 11  // 0-9 → 0-99%
+  }
+
   await eventStore.load('deal', dealId.value)
   const timeline = eventStore.getTimeline('deal', dealId.value)
   // Если есть TERM_SHEET_PROPOSED от ИК — предзаполняем форму

@@ -1,8 +1,10 @@
+import 'dotenv/config'
 import { bayesianUpdate, dcf, irr, kelly, brierScore, monteCarloVaR, sharpeRatio, blackScholes, nashEquilibrium, shapleyValue, unitEconomics, portfolioRisk } from './calc.mjs'
 import express from 'express'
 import { createServer } from 'http'
 import { WebSocketServer } from 'ws'
 import { execSync } from 'child_process'
+import * as nodePty from 'node-pty'
 import platformRoutes    from './src/api/routes/platform.js'
 import portfolioRoutes  from './src/api/routes/portfolio.js'
 import startuperRoutes  from './src/api/routes/startuper.js'
@@ -12,11 +14,136 @@ import roomRoutes       from './src/api/routes/room.js'
 import eventsRoutes     from './src/api/routes/events.js'
 import aiTokensRoutes   from './src/api/routes/ai-tokens.js'
 import expertRoutes     from './src/api/routes/expert.js'
+import factorRoutes     from './src/api/routes/factorModel.js'
 import userRoutes       from './src/api/routes/user.js'
+import eventGraphRoutes from './src/api/routes/eventGraph.js'
+import docParserRoutes  from './src/api/routes/docParser.js'
+import { refreshConfig } from './src/services/fstConfigService.js'
 
 const app = express()
 const server = createServer(app)
-const wss = new WebSocketServer({ server, path: '/ws' })
+
+// Both WS servers use noServer so we can route upgrades manually
+const wss = new WebSocketServer({ noServer: true })
+const wssClaude = new WebSocketServer({ noServer: true })
+const claudeSessions = new Map() // clientId → { pty, ws }
+
+server.on('upgrade', (request, socket, head) => {
+  const url = new URL(request.url, 'http://localhost')
+  if (url.pathname === '/ws') {
+    wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request))
+  } else if (url.pathname === '/wsclaude') {
+    wssClaude.handleUpgrade(request, socket, head, (ws) => wssClaude.emit('connection', ws, request))
+  } else {
+    socket.destroy()
+  }
+})
+
+wssClaude.on('connection', (ws, req) => {
+  const url = new URL(req.url, 'http://localhost')
+  const workspaceId = url.searchParams.get('workspaceId') || 'default'
+  const mode        = url.searchParams.get('mode') || 'auto'
+  const inClientId  = url.searchParams.get('clientId')
+  console.log(`[wsclaude] connection workspaceId=${workspaceId} mode=${mode}`)
+
+  // Reconnect to existing session?
+  if (inClientId && claudeSessions.has(inClientId)) {
+    const sess = claudeSessions.get(inClientId)
+    if (sess.ws && sess.ws.readyState === 1) sess.ws.close(1000, 'replaced')
+    sess.ws = ws
+    ws.send(JSON.stringify({ type: 'session', clientId: inClientId, mode: 'reconnect' }))
+    ws.on('message', (raw) => handleClaudeInput(ws, sess.pty, raw))
+    ws.on('close', () => { if (claudeSessions.get(inClientId)?.ws === ws) sess.ws = null })
+    return
+  }
+
+  // New session
+  const clientId = `client_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+  const claudePath = process.env.CLAUDE_BINARY || '/home/hive/.local/bin/claude'
+  const claudeArgs = claudePath.endsWith('claude') ? (mode === 'continue' ? ['--continue'] : []) : []
+  const projectDir = '/home/hive/fund'
+
+  // Create isolated git worktree for each new session (not continue)
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const shortId = clientId.slice(-7)
+  const sessionBranch = `expert/${dateStr}-${shortId}`
+  const worktreeDir = `/tmp/fst-wt-${shortId}`
+  let cwd = projectDir
+
+  if (mode !== 'continue') {
+    try {
+      execSync(`git -C ${projectDir} worktree add ${worktreeDir} -b ${sessionBranch} 2>&1`, { stdio: 'pipe' })
+      cwd = worktreeDir
+      console.log(`[wsclaude] worktree ${worktreeDir} → branch ${sessionBranch}`)
+    } catch (err) {
+      console.error('[wsclaude] worktree create failed, using main dir:', err.message)
+    }
+  }
+
+  let pty
+  try {
+    // Strip Claude Code session env vars so nested claude can start
+    const childEnv = { ...process.env, TERM: 'xterm-256color', COLORTERM: 'truecolor' }
+    delete childEnv.CLAUDECODE
+    delete childEnv.CLAUDE_CODE_ENTRYPOINT
+    delete childEnv.CLAUDE_CODE_IDE_NAME
+    delete childEnv.CLAUDE_CODE_IDE_VERSION
+    delete childEnv.CLAUDE_CODE_SESSION_ID
+
+    pty = nodePty.spawn(claudePath, claudeArgs, {
+      name: 'xterm-256color',
+      cols: 120, rows: 30,
+      cwd,
+      env: childEnv
+    })
+  } catch (err) {
+    console.error('[wsclaude] spawn error:', err.message)
+    // Clean up worktree if spawn failed
+    if (cwd !== projectDir) {
+      try { execSync(`git -C ${projectDir} worktree remove --force ${worktreeDir}`) } catch {}
+    }
+    ws.send(JSON.stringify({ type: 'error', error: `Failed to start claude: ${err.message}`, fatal: true }))
+    ws.close()
+    return
+  }
+  console.log(`[wsclaude] spawned PTY pid=${pty.pid} cwd=${cwd}`)
+
+  const sess = { pty, ws, clientId, cwd, branch: cwd !== projectDir ? sessionBranch : null }
+  claudeSessions.set(clientId, sess)
+  ws.send(JSON.stringify({ type: 'session', clientId, mode, branch: sess.branch }))
+
+  pty.onData((data) => {
+    if (ws.readyState === 1) ws.send(JSON.stringify({ type: 'output', data }))
+  })
+
+  pty.onExit(({ exitCode }) => {
+    if (ws.readyState === 1) ws.send(JSON.stringify({ type: 'exit', code: exitCode }))
+    claudeSessions.delete(clientId)
+    // Remove worktree dir but keep the branch for review/merge
+    if (cwd !== projectDir) {
+      try { execSync(`git -C ${projectDir} worktree remove --force ${worktreeDir}`) } catch {}
+    }
+  })
+
+  ws.on('message', (raw) => handleClaudeInput(ws, pty, raw))
+  ws.on('close', (code) => {
+    if (code !== 1000 && code !== 1001) return // keep PTY alive for reconnect
+    pty.kill()
+    claudeSessions.delete(clientId)
+    if (cwd !== projectDir) {
+      try { execSync(`git -C ${projectDir} worktree remove --force ${worktreeDir}`) } catch {}
+    }
+  })
+})
+
+function handleClaudeInput(ws, pty, raw) {
+  try {
+    const msg = JSON.parse(raw)
+    if (msg.type === 'input')        pty.write(msg.data)
+    else if (msg.type === 'resize')  pty.resize(Math.max(1, msg.cols), Math.max(1, msg.rows))
+    else if (msg.type === 'ping')    ws.send(JSON.stringify({ type: 'pong' }))
+  } catch {}
+}
 
 app.use(express.json())
 
@@ -121,10 +248,21 @@ const AI_PROVIDERS = {
   'anthropic/claude-sonnet-4-20250514': { url: 'https://api.anthropic.com/v1/messages', key: process.env.ANTHROPIC_API_KEY, model: 'claude-sonnet-4-6-20251001', anthropic: true },
   'openai/gpt-4o': { url: 'https://api.openai.com/v1/chat/completions', key: process.env.OPENAI_API_KEY, model: 'gpt-4o' }
 }
+const POLZA_URL = 'https://api.polza.ai/api/v1/chat/completions'
+
+function resolveProvider(modelId = '') {
+  if (AI_PROVIDERS[modelId]) return AI_PROVIDERS[modelId]
+  // polza/* модели
+  if (modelId.startsWith('polza/')) {
+    const model = modelId.replace(/^polza\//, '')
+    return { url: POLZA_URL, key: process.env.POLZA_API_KEY, model }
+  }
+  return AI_PROVIDERS['deepseek/deepseek-chat']
+}
 
 app.post('/api/ai-tokens/chat', async (req, res) => {
   const { modelId, prompt, systemPrompt, application } = req.body
-  const provider = AI_PROVIDERS[modelId] || AI_PROVIDERS['deepseek/deepseek-chat']
+  const provider = resolveProvider(modelId)
   if (!provider.key) return res.status(503).json({ error: `No API key for ${modelId}` })
   try {
     const isAnthropic = provider.anthropic
@@ -185,12 +323,94 @@ app.use('/api/platform',  platformRoutes)
 app.use('/api/fst',       portfolioRoutes)
 app.use('/api/startuper', startuperRoutes)
 app.use('/api/expert',   expertRoutes)
+app.use('/api/factor',   factorRoutes)
 app.use('/api/user',     userRoutes)
 app.use('/api/glossary',  glossaryRoutes)
 app.use('/api/fst',       grMeasuresRoutes)
+app.use('/api/fst',       eventGraphRoutes)
+app.use('/api/fst',       docParserRoutes)
 app.use('/api',           roomRoutes)
 app.use('/api',           eventsRoutes)
 app.use('/api',           aiTokensRoutes)
 
+// ── Doc Blocks — create/sync document in Integram kval ───────────────────────
+// Simplified: creates type 1022 Document in kval and returns documentId.
+const _docBlocksIntegram = 'https://ai2o.ru'
+const _docBlocksLogin = 'unidel@yandex.ru'
+const _docBlocksPassword = 'Denver2035'
+const _docBlocksFolderId = '1777613'  // VentureOS — Инвест-пакет Pre-Seed 2026
+let _docBlocksSession = null
+
+async function _docBlocksAuth(database) {
+  if (_docBlocksSession && _docBlocksSession.database === database) return _docBlocksSession
+  const body = `login=${encodeURIComponent(_docBlocksLogin)}&pwd=${encodeURIComponent(_docBlocksPassword)}`
+  const resp = await fetch(`${_docBlocksIntegram}/${database}/auth?JSON_KV=`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body
+  })
+  const text = await resp.text()
+  let data
+  try { data = JSON.parse(text) } catch(e) { throw new Error(`Integram auth parse error: ${text.slice(0, 200)}`) }
+  if (Array.isArray(data)) data = data[0]
+  if (!data.token) throw new Error(`Integram auth failed: ${JSON.stringify(data)}`)
+  _docBlocksSession = { token: data.token, xsrf: data._xsrf, database }
+  return _docBlocksSession
+}
+
+async function _docBlocksPost(database, path, params) {
+  const sess = await _docBlocksAuth(database)
+  const parts = [`_xsrf=${encodeURIComponent(sess.xsrf)}`]
+  for (const [k, v] of Object.entries(params)) {
+    parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+  }
+  const resp = await fetch(`${_docBlocksIntegram}/${database}/${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-Authorization': sess.token,
+      'Cookie': `token=${sess.token}`
+    },
+    body: parts.join('&')
+  })
+  const text = await resp.text()
+  try { return JSON.parse(text) }
+  catch(e) { throw new Error(`Integram response parse error: ${text.slice(0, 200)}`) }
+}
+
+// POST /api/doc-blocks/:docId/sync  (docId = 'new' to create)
+app.post('/api/doc-blocks/:docId/sync', async (req, res) => {
+  try {
+    const { docId } = req.params
+    const database = req.body.database || req.query.database || 'kval'
+    const { html = '', title = 'Без названия' } = req.body
+
+    let documentId
+    if (docId === 'new' || !docId) {
+      const created = await _docBlocksPost(database, '_m_new/1022?JSON_KV=', {
+        t1022: title,
+        r1093: _docBlocksFolderId,
+        r1090: '1163',
+        up: '1'
+      })
+      const d = Array.isArray(created) ? created[0] : created
+      if (d.error) throw new Error(JSON.stringify(d))
+      documentId = String(d.id || d.obj)
+    } else {
+      documentId = docId
+      await _docBlocksPost(database, `_m_set/${documentId}?JSON_KV=`, { t1022: title })
+    }
+
+    res.json({ documentId, blocksCreated: 1, blocksUpdated: 0, blocksDeleted: 0, success: true })
+  } catch (err) {
+    console.error('[DocBlocks] sync error:', err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
 const PORT = parseInt(process.env.FST_API_PORT || '8082')
-server.listen(PORT, () => console.log(`[FST API] Listening on port ${PORT}`))
+server.listen(PORT, () => {
+  console.log(`[FST API] Listening on port ${PORT}`)
+  // Загружаем конфиг из Integram в фоне (с fallback на дефолты)
+  refreshConfig().catch(err => console.warn('[FstConfig] Initial load failed:', err.message))
+})

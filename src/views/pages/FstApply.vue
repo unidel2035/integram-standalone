@@ -367,7 +367,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
-import { createProjectFromApplication, createApplication, createCompany, getApplications } from '@/services/fstApi'
+import { createProjectFromApplication, createApplication, getApplications } from '@/services/fstApi'
 import { useStartuperStore } from '@/stores/startuperStore'
 import { useEventStore } from '@/stores/eventStore.js'
 
@@ -499,33 +499,9 @@ async function submitApplication() {
   if (!canSubmit.value || submitting.value) return
   submitting.value = true
   try {
-    // 1. Создаём Компания (7828)
-    const companyResult = await createCompany({
-      name:         form.value.companyName,
-      legalForm:    form.value.legalForm,
-      inn:          form.value.inn,
-      ogrn:         form.value.ogrn,
-      kpp:          form.value.kpp,
-      email:        form.value.email,
-      phone:        form.value.phone,
-      website:      form.value.website,
-      region:       form.value.city,
-      legalAddress: form.value.legalAddress,
-      ceoName:      form.value.ceoName,
-      ceoTitle:     form.value.ceoTitle,
-      foundedYear:  form.value.foundedYear,
-      teamSize:     form.value.teamSize,
-      sector:       form.value.sector,
-      residency:    form.value.residency,
-      teamDesc:     form.value.teamDesc,
-      revenue3y:    form.value.revenue3y,
-    })
-    const companyId = companyResult?.obj || companyResult?.id
-
-    // 2. Создаём Заявка (1956) со ссылкой на Компанию
+    // Создаём Заявка (1956) — все данные компании и проекта в одной записи
     const appResult = await createApplication({
       companyName:  form.value.companyName,
-      companyId,
       inn:          form.value.inn,
       email:        form.value.email,
       description:  form.value.description,

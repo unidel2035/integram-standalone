@@ -1,9 +1,14 @@
 <template>
-  <FstPageLayout
-    title="Центр обучения ФСТ НТИ"
-    subtitle="Центр обучения — путь развития в венчурной экосистеме"
-    icon="pi pi-graduation-cap"
-  >
+  <FstPageLayout>
+    <template #header>
+      <div class="dg-title-group">
+        <span class="dg-live-dot" />
+        <span class="dg-title">Центр обучения</span>
+        <span class="dg-sep">·</span>
+        <span class="dg-sub">путь развития в венчурной экосистеме</span>
+      </div>
+    </template>
+
     <template #actions>
       <Button
         label="Мой прогресс"
@@ -22,6 +27,30 @@
         @click="handleResetTour"
       />
     </template>
+
+    <!-- Metrics strip -->
+    <div class="dg-metrics fst-metrics-strip">
+      <div class="fst-metric-item">
+        <i class="pi pi-graduation-cap fst-metric-item-icon"></i>
+        <div class="fst-metric-item-val">{{ learningStore.overallProgress }}%</div>
+        <div class="fst-metric-item-label">Общий прогресс</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-map fst-metric-item-icon" style="color: var(--p-primary-color)"></i>
+        <div class="fst-metric-item-val">{{ learningStore.completedTours.length }} / {{ learningStore.tours.length }}</div>
+        <div class="fst-metric-item-label">Туров пройдено</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-question-circle fst-metric-item-icon" style="color: var(--fst-cyan)"></i>
+        <div class="fst-metric-item-val">{{ learningStore.completedQuizzes.length }} / {{ learningStore.quizzes.length }}</div>
+        <div class="fst-metric-item-label">Квизов сдано</div>
+      </div>
+      <div class="fst-metric-item">
+        <i class="pi pi-video fst-metric-item-icon" style="color: var(--fst-brand)"></i>
+        <div class="fst-metric-item-val">{{ learningStore.completedVideos.length }} / {{ learningStore.videos.length }}</div>
+        <div class="fst-metric-item-label">Видео просмотрено</div>
+      </div>
+    </div>
 
     <div class="dg-page">
 
@@ -63,14 +92,6 @@
               size="small"
               @click="activeTab = 'tours'"
             />
-          </div>
-        </div>
-        <div class="dg-hero-right">
-          <div class="dg-stats-mini">
-            <div class="dg-stat-mini" v-for="stat in heroStats" :key="stat.label">
-              <div class="dg-stat-mini-val" :style="{ color: stat.color }">{{ stat.value }}</div>
-              <div class="dg-stat-mini-label">{{ stat.label }}</div>
-            </div>
           </div>
         </div>
       </div>
@@ -128,19 +149,13 @@
         </div>
 
         <!-- Tabs -->
-        <div class="dg-tabs">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            class="dg-tab"
-            :class="{ active: activeTab === tab.id }"
-            @click="activeTab = tab.id"
-          >
-            <i :class="tab.icon"></i>
-            {{ tab.label }}
-            <span class="dg-tab-badge">{{ tab.count }}</span>
-          </button>
-        </div>
+        <SelectButton v-model="activeTab" :options="tabs" optionValue="id" :allowEmpty="false" size="small">
+          <template #option="slotProps">
+            <i :class="slotProps.option.icon" />
+            {{ slotProps.option.label }}
+            <span v-if="slotProps.option.count" class="dg-tab-badge">{{ slotProps.option.count }}</span>
+          </template>
+        </SelectButton>
 
         <!-- Tours tab -->
         <div v-if="activeTab === 'tours'" class="dg-catalog-grid">
@@ -264,9 +279,13 @@
             </div>
             <div class="dg-cc-title">{{ scenario.title }}</div>
             <div class="dg-cc-meta"><i class="pi pi-list"></i> {{ scenario.steps }} шагов</div>
-            <button class="dg-cc-btn" @click="learningStore.completeScenario(scenario.id)">
-              {{ learningStore.completedScenarios.includes(scenario.id) ? 'Повторить' : 'Запустить' }}
-            </button>
+            <Button
+              :label="learningStore.completedScenarios.includes(scenario.id) ? 'Повторить' : 'Запустить'"
+              size="small"
+              outlined
+              class="dg-cc-primebtn"
+              @click="learningStore.completeScenario(scenario.id)"
+            />
           </div>
         </div>
 
@@ -316,7 +335,7 @@
       </div>
 
       <!-- ── Для AI-агентов ── -->
-      <div class="dg-section dg-ai-section">
+      <div class="dg-section">
         <div class="dg-section-header">
           <div class="dg-section-title">
             <i class="pi pi-microchip-ai"></i>
@@ -417,6 +436,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
+import SelectButton from 'primevue/selectbutton'
 import Dialog from 'primevue/dialog'
 import { useLearningStore } from '@/stores/learningStore'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
@@ -478,24 +498,6 @@ const tabs = computed(() => [
   { id: 'glossary',  label: 'Глоссарий', icon: 'pi pi-book',           count: null },
 ])
 
-const heroStats = computed(() => [
-  {
-    label: 'Туров',
-    value: learningStore.completedTours.length + ' / ' + learningStore.tours.length,
-    color: 'var(--p-primary-color)',
-  },
-  {
-    label: 'Квизов',
-    value: learningStore.completedQuizzes.length + ' / ' + learningStore.quizzes.length,
-    color: 'var(--fst-cyan)',
-  },
-  {
-    label: 'Видео',
-    value: learningStore.completedVideos.length + ' / ' + learningStore.videos.length,
-    color: 'var(--fst-brand)',
-  },
-])
-
 const currentRoleLabel = computed(() => {
   const role = learningStore.availableRoles.find(r => r.id === learningStore.userRole)
   return role?.label || ''
@@ -540,6 +542,17 @@ function formatTime(iso) {
 </script>
 
 <style scoped>
+/* ── Header ── */
+.dg-title-group { display: flex; align-items: center; gap: 8px; }
+.dg-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--p-primary-color); flex-shrink: 0; animation: dg-pulse 2s infinite; }
+@keyframes dg-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.dg-title { font-size: 14px; font-weight: 600; color: var(--p-text-color); }
+.dg-sep { color: var(--p-text-muted-color); }
+.dg-sub { font-size: 0.82rem; color: var(--p-text-muted-color); font-weight: 400; }
+
+/* ── Metrics flush ── */
+.dg-metrics { margin: -20px -20px 0; border-bottom: 1px solid var(--p-content-border-color); }
+
 .dg-page {
   display: flex;
   flex-direction: column;
@@ -558,7 +571,7 @@ function formatTime(iso) {
     var(--p-surface-card) 100%
   );
   border: 1px solid var(--p-content-border-color);
-  border-radius: 1.25rem;
+  border-radius: 12px;
 }
 
 .dg-hero-left {
@@ -568,35 +581,35 @@ function formatTime(iso) {
 .dg-hero-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 6px;
   background: var(--p-primary-color);
   color: white;
-  padding: 0.25rem 0.875rem;
+  padding: 4px 14px;
   border-radius: 2rem;
   font-size: 0.78rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.875rem;
+  margin-bottom: 14px;
 }
 
 .dg-hero-title {
   font-size: 1.6rem;
   font-weight: 800;
-  margin: 0 0 0.625rem;
+  margin: 0 0 10px;
   line-height: 1.25;
   color: var(--p-text-color);
 }
 
 .dg-hero-sub {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
-  margin: 0 0 1.25rem;
+  margin: 0 0 20px;
   line-height: 1.6;
 }
 
 .dg-progress-block {
-  margin-bottom: 1.25rem;
+  margin-bottom: 20px;
 }
 
 .dg-progress-header {
@@ -604,7 +617,7 @@ function formatTime(iso) {
   justify-content: space-between;
   font-size: 0.8rem;
   font-weight: 600;
-  margin-bottom: 0.4rem;
+  margin-bottom: 6px;
 }
 
 .dg-progress-pct {
@@ -632,35 +645,8 @@ function formatTime(iso) {
 
 .dg-hero-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 8px;
   flex-wrap: wrap;
-}
-
-.dg-hero-right {
-  flex-shrink: 0;
-}
-
-.dg-stats-mini {
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-  min-width: 130px;
-}
-
-.dg-stat-mini {
-  text-align: right;
-}
-
-.dg-stat-mini-val {
-  font-size: 1.2rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.dg-stat-mini-label {
-  font-size: 0.72rem;
-  color: var(--p-text-muted-color);
-  margin-top: 0.2rem;
 }
 
 /* ── Section ── */
@@ -674,33 +660,31 @@ function formatTime(iso) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .dg-section-title {
-  font-size: 1rem;
+  font-size: 11px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--p-text-muted-color);
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--p-text-color);
-}
-
-.dg-section-title i {
-  color: var(--p-primary-color);
+  gap: 6px;
 }
 
 .dg-role-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 6px;
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--p-primary-color);
   border: 1px solid var(--p-primary-color);
   border-radius: 2rem;
-  padding: 0.2rem 0.75rem;
+  padding: 3px 12px;
   cursor: pointer;
   user-select: none;
 }
@@ -714,19 +698,19 @@ function formatTime(iso) {
 .dg-quickstart-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.875rem;
+  gap: 12px;
 }
 
 .dg-qs-card {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 0.875rem;
-  padding: 1rem;
+  border-radius: 12px;
+  padding: 14px;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 6px;
   position: relative;
 }
 
@@ -743,7 +727,7 @@ function formatTime(iso) {
 .dg-qs-icon {
   width: 36px;
   height: 36px;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
   display: flex;
   align-items: center;
@@ -762,81 +746,45 @@ function formatTime(iso) {
 .dg-qs-check {
   color: var(--fst-green);
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 10px;
+  right: 10px;
   font-size: 1rem;
 }
 
 .dg-qs-arrow {
   color: var(--p-text-muted-color);
   position: absolute;
-  top: 0.875rem;
-  right: 0.875rem;
+  top: 12px;
+  right: 12px;
   font-size: 0.85rem;
 }
 
-/* ── Tabs ── */
-.dg-tabs {
-  display: flex;
-  gap: 0.375rem;
-  flex-wrap: wrap;
-  padding: 0.375rem;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 0.75rem;
-  width: fit-content;
-  max-width: 100%;
-}
-
-.dg-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.375rem 0.875rem;
-  border-radius: 0.5rem;
-  border: none;
-  background: transparent;
-  color: var(--p-text-muted-color);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.dg-tab:hover {
-  background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
-  color: var(--p-text-color);
-}
-
-.dg-tab.active {
-  background: var(--p-primary-color);
-  color: white;
-}
-
+/* ── Tab badge (inside SelectButton option) ── */
 .dg-tab-badge {
   background: color-mix(in srgb, currentColor 15%, transparent);
   border-radius: 99px;
-  padding: 0 0.4rem;
+  padding: 0 5px;
   font-size: 0.7rem;
   min-width: 1.2em;
   text-align: center;
+  margin-left: 3px;
 }
 
 /* ── Catalog grid ── */
 .dg-catalog-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: 12px;
 }
 
 .dg-catalog-card {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 0.875rem;
-  padding: 1.125rem;
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 8px;
   transition: border-color 0.15s;
 }
 
@@ -851,13 +799,13 @@ function formatTime(iso) {
 .dg-cc-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .dg-cc-icon {
   width: 36px;
   height: 36px;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
   display: flex;
   align-items: center;
@@ -873,7 +821,7 @@ function formatTime(iso) {
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 3px;
   margin-left: auto;
 }
 
@@ -881,7 +829,7 @@ function formatTime(iso) {
   font-size: 0.7rem;
   color: var(--p-primary-color);
   background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
-  padding: 0.1rem 0.5rem;
+  padding: 1px 8px;
   border-radius: 2rem;
   font-weight: 600;
   margin-left: auto;
@@ -900,14 +848,14 @@ function formatTime(iso) {
   color: var(--p-text-muted-color);
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 5px;
 }
 
 .dg-cc-btn {
   display: inline-block;
   text-align: center;
-  padding: 0.4rem 1rem;
-  border-radius: 0.5rem;
+  padding: 6px 14px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
   color: var(--p-primary-color);
   border: 1px solid var(--p-primary-color);
@@ -923,21 +871,23 @@ function formatTime(iso) {
   background: color-mix(in srgb, var(--p-primary-color) 22%, transparent);
 }
 
+.dg-cc-primebtn { margin-top: auto; width: 100%; justify-content: center; }
+
 /* ── Glossary promo ── */
 .dg-glossary-promo {
   display: flex;
-  gap: 1.5rem;
+  gap: 20px;
   align-items: flex-start;
-  padding: 1.5rem;
+  padding: 20px;
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 1rem;
+  border-radius: 12px;
 }
 
 .dg-gp-icon {
   width: 56px;
   height: 56px;
-  border-radius: 0.875rem;
+  border-radius: 12px;
   background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
   display: flex;
   align-items: center;
@@ -950,31 +900,31 @@ function formatTime(iso) {
 .dg-gp-title {
   font-size: 1rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
 }
 
 .dg-gp-desc {
   font-size: 0.875rem;
   color: var(--p-text-muted-color);
   line-height: 1.6;
-  margin: 0 0 0.875rem;
+  margin: 0 0 14px;
 }
 
 /* ── Videos section ── */
 .dg-videos-section {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 12px;
 }
 
 .dg-video-summary {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
+  gap: 12px;
+  padding: 10px 14px;
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 0.75rem;
+  border-radius: 8px;
   font-size: 0.85rem;
 }
 
@@ -982,7 +932,7 @@ function formatTime(iso) {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 6px;
   color: var(--p-text-muted-color);
 }
 
@@ -1005,7 +955,7 @@ function formatTime(iso) {
 .dg-playlist {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 0.875rem;
+  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -1013,10 +963,10 @@ function formatTime(iso) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.875rem 1rem;
+  padding: 12px 14px;
   cursor: pointer;
   transition: background 0.15s;
-  gap: 1rem;
+  gap: 12px;
   user-select: none;
 }
 
@@ -1027,13 +977,13 @@ function formatTime(iso) {
 .dg-playlist-title-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 10px;
 }
 
 .dg-playlist-icon {
   width: 40px;
   height: 40px;
-  border-radius: 0.625rem;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
   display: flex;
   align-items: center;
@@ -1044,7 +994,7 @@ function formatTime(iso) {
 }
 
 .dg-playlist-label {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--p-text-color);
 }
@@ -1052,13 +1002,13 @@ function formatTime(iso) {
 .dg-playlist-meta {
   font-size: 0.75rem;
   color: var(--p-text-muted-color);
-  margin-top: 0.1rem;
+  margin-top: 2px;
 }
 
 .dg-playlist-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 10px;
 }
 
 .dg-playlist-progress {
@@ -1066,7 +1016,7 @@ function formatTime(iso) {
   font-weight: 600;
   color: var(--p-primary-color);
   background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
-  padding: 0.1rem 0.5rem;
+  padding: 1px 8px;
   border-radius: 2rem;
 }
 
@@ -1079,27 +1029,26 @@ function formatTime(iso) {
 .dg-playlist-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
-  padding: 0 1rem 1rem;
+  gap: 12px;
+  padding: 12px 14px 14px;
   border-top: 1px solid var(--p-content-border-color);
-  padding-top: 1rem;
 }
 
 /* ── Activity ── */
 .dg-activity-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
 .dg-activity-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.875rem;
+  gap: 10px;
+  padding: 8px 12px;
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 0.625rem;
+  border-radius: 8px;
   font-size: 0.875rem;
 }
 
@@ -1133,17 +1082,17 @@ function formatTime(iso) {
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 4px;
 }
 
 .dg-next-rec {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.75rem 1rem;
+  gap: 10px;
+  padding: 10px 14px;
   background: color-mix(in srgb, var(--p-primary-color) 8%, var(--p-surface-card));
   border: 1px solid color-mix(in srgb, var(--p-primary-color) 25%, var(--p-content-border-color));
-  border-radius: 0.625rem;
+  border-radius: 8px;
   font-size: 0.875rem;
   color: var(--p-text-color);
 }
@@ -1154,33 +1103,26 @@ function formatTime(iso) {
 }
 
 /* ── AI section ── */
-.dg-ai-section {
-  padding: 1.5rem;
-  background: var(--p-surface-card);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 1.25rem;
-}
-
 .dg-ai-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
+  gap: 12px;
 }
 
 .dg-ai-card {
-  padding: 1.125rem;
-  background: color-mix(in srgb, var(--p-primary-color) 4%, var(--p-surface-card));
+  padding: 16px;
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 0.875rem;
+  border-radius: 12px;
 }
 
 .dg-ai-card-title {
   font-size: 0.875rem;
   font-weight: 700;
-  margin-bottom: 0.625rem;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 6px;
   color: var(--p-text-color);
 }
 
@@ -1192,16 +1134,16 @@ function formatTime(iso) {
   font-size: 0.8rem;
   color: var(--p-text-muted-color);
   line-height: 1.5;
-  margin: 0 0 0.5rem;
+  margin: 0 0 8px;
 }
 
 .dg-ai-code {
   display: block;
   font-family: monospace;
   font-size: 0.78rem;
-  padding: 0.4rem 0.625rem;
+  padding: 6px 10px;
   background: color-mix(in srgb, var(--p-text-color) 8%, transparent);
-  border-radius: 0.375rem;
+  border-radius: 6px;
   color: var(--p-text-color);
   word-break: break-all;
 }
@@ -1209,23 +1151,23 @@ function formatTime(iso) {
 .dg-ai-examples {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 5px;
 }
 
 .dg-ai-code-sm {
   display: block;
   font-family: monospace;
   font-size: 0.72rem;
-  padding: 0.3rem 0.5rem;
+  padding: 5px 8px;
   background: color-mix(in srgb, var(--p-text-color) 8%, transparent);
-  border-radius: 0.375rem;
+  border-radius: 6px;
   color: var(--p-text-color);
   word-break: break-all;
 }
 
 .dg-ai-steps {
   margin: 0;
-  padding-left: 1.2rem;
+  padding-left: 18px;
   font-size: 0.8rem;
   color: var(--p-text-muted-color);
   line-height: 1.7;
@@ -1234,8 +1176,8 @@ function formatTime(iso) {
 .dg-ai-steps code {
   font-family: monospace;
   background: color-mix(in srgb, var(--p-text-color) 10%, transparent);
-  padding: 0.1em 0.35em;
-  border-radius: 0.25rem;
+  padding: 1px 5px;
+  border-radius: 4px;
   font-size: 0.78em;
 }
 
@@ -1243,14 +1185,14 @@ function formatTime(iso) {
 .dg-role-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.875rem;
-  padding-top: 0.25rem;
+  gap: 12px;
+  padding-top: 4px;
 }
 
 .dg-role-card {
-  padding: 1.125rem;
+  padding: 16px;
   border: 2px solid var(--p-content-border-color);
-  border-radius: 0.875rem;
+  border-radius: 12px;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
   text-align: center;
@@ -1269,13 +1211,13 @@ function formatTime(iso) {
 .dg-role-icon {
   font-size: 1.5rem;
   color: var(--p-primary-color);
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
 }
 
 .dg-role-label {
   font-size: 0.875rem;
   font-weight: 700;
-  margin-bottom: 0.3rem;
+  margin-bottom: 4px;
 }
 
 .dg-role-desc {
@@ -1284,23 +1226,39 @@ function formatTime(iso) {
   line-height: 1.4;
 }
 
+/* ── Hints section ── */
+.dg-hints-desc {
+  font-size: 0.875rem;
+  color: var(--p-text-muted-color);
+  line-height: 1.5;
+  margin: 0;
+}
+.dg-hints-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.dg-hints-count {
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dg-hints-ok {
+  font-size: 0.875rem;
+  color: var(--fst-green);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .dg-hero {
     flex-direction: column;
-    gap: 1.25rem;
-    padding: 1.25rem;
-  }
-  .dg-hero-right {
-    width: 100%;
-  }
-  .dg-stats-mini {
-    flex-direction: row;
-    justify-content: space-around;
-    min-width: unset;
-  }
-  .dg-stat-mini {
-    text-align: center;
+    gap: 16px;
+    padding: 16px;
   }
   .dg-hero-title {
     font-size: 1.25rem;
@@ -1314,18 +1272,8 @@ function formatTime(iso) {
 }
 
 @media (max-width: 480px) {
-  .dg-catalog-grid {
-    grid-template-columns: 1fr;
-  }
-  .dg-quickstart-grid {
-    grid-template-columns: 1fr;
-  }
-  .dg-ai-grid {
-    grid-template-columns: 1fr;
-  }
-  .dg-tabs {
-    width: 100%;
-    justify-content: center;
-  }
+  .dg-catalog-grid { grid-template-columns: 1fr; }
+  .dg-quickstart-grid { grid-template-columns: 1fr; }
+  .dg-ai-grid { grid-template-columns: 1fr; }
 }
 </style>

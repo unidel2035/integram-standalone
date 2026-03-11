@@ -186,7 +186,22 @@
             when="После просмотра результатов текущей сессии инвесткомитета"
             :terms="['Сессия комитета', 'Инвесткомитет']"
           >
-            <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession"
+            <Button
+            v-if="session?.decision?.recommendation === 'APPROVE' || session?.decision?.recommendation === 'CONDITIONAL'"
+            label="Открыть сделку"
+            icon="pi pi-file-edit"
+            severity="success"
+            size="small"
+            @click="openDealFromCommittee"
+          />
+          <Button
+            label="История проекта"
+            icon="pi pi-history"
+            severity="secondary"
+            size="small"
+            @click="openProjectHub"
+          />
+          <Button label="Новая сессия" icon="pi pi-refresh" severity="secondary" @click="resetSession"
               style="margin-left:auto"
               data-action="reset-session"
               data-description="Сбрасывает текущую сессию и возвращает к выбору проекта"
@@ -663,6 +678,35 @@
             <span v-for="t in previewProject.tags" :key="t" class="fst-pmodal-tag">{{ t }}</span>
           </div>
 
+          <!-- Факторная модель T·S·M·G·E — если уже рассчитана -->
+          <div v-if="previewProject._factorResult" class="fst-pmodal-factor">
+            <div class="fst-pmodal-factor-title">
+              Факторная оценка
+              <span class="fst-pmodal-factor-grade"
+                :style="{ color: previewProject._factorResult.grade <= 'B' ? 'var(--fst-green)' : 'var(--fst-brand)' }">
+                {{ previewProject._factorResult.grade }}
+              </span>
+              <span class="fst-pmodal-factor-composite">{{ previewProject._factorResult.composite?.toFixed(1) }}/10</span>
+            </div>
+            <div class="fst-pmodal-factor-bars">
+              <div v-for="(f, key) in previewProject._factorResult.factors" :key="key" class="fst-pmodal-factor-row">
+                <span class="fst-pmodal-fkey">{{ key }}</span>
+                <div class="fst-pmodal-fbar">
+                  <div class="fst-pmodal-fbar-fill"
+                    :style="{
+                      width: ((f.score||0)/10*100) + '%',
+                      background: f.score >= 7 ? 'var(--fst-green)' : f.score >= 4 ? 'var(--fst-brand)' : 'var(--fst-red)'
+                    }">
+                  </div>
+                </div>
+                <span class="fst-pmodal-fscore"
+                  :style="{ color: (f.score||0) >= 7 ? 'var(--fst-green)' : (f.score||0) >= 4 ? 'var(--fst-brand)' : 'var(--fst-red)' }">
+                  {{ f.score != null ? f.score.toFixed(1) : '—' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <!-- Policy check -->
           <div class="fst-pmodal-check">
             <div :class="['fst-pmodal-check-item', previewProject.trl >= fstPolicy.minTRL ? 'pass' : 'fail']">
@@ -997,6 +1041,30 @@
               />
             </FeatureHint>
             <div v-if="!selectedProjectId" class="fst-launch-hint">Выберите проект слева</div>
+
+            <!-- ── Гейт: Sovereign Score слишком низкий ── -->
+            <div v-if="factorGateBlocked" class="fst-factor-gate">
+              <div class="fst-factor-gate-title">
+                <i class="pi pi-lock" style="color:var(--fst-red)"></i>
+                Проект заблокирован: Sovereign Score {{ (factorGateBlocked.factorResult?.factors?.S?.score ?? 0).toFixed(1) }}/10
+              </div>
+              <div class="fst-factor-gate-body">
+                ФСТ НТИ требует суверенности компонентов ≥ 40%. По факторной модели:
+                <strong style="color:var(--fst-red)">S = {{ (factorGateBlocked.factorResult?.factors?.S?.score ?? 0).toFixed(1) }}</strong>
+                — критическая зависимость от импорта.
+              </div>
+              <div class="fst-factor-gate-flags">
+                <div v-for="f in factorGateBlocked.factorResult?.redFlags" :key="f" style="font-size:11px;color:var(--p-text-muted-color);padding:2px 0">
+                  ⚠ {{ f }}
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <Button label="Всё равно запустить" size="small" severity="danger" text
+                  @click="_doStartSession(factorGateBlocked.project); factorGateBlocked = null" />
+                <Button label="Отменить" size="small" severity="secondary"
+                  @click="factorGateBlocked = null" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1154,6 +1222,7 @@ import ScenarioEventChainPanel from '@/components/fst-committee/ScenarioEventCha
 import { generateEventChain } from '@/composables/useEventChain.js'
 import LinksGraphViz from '@/components/links/LinksGraphViz.vue'
 import { useFstData } from '@/composables/useFstData.js'
+import { useProjectStore } from '@/stores/projectStore.js'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
 import FeatureHint from '@/components/FeatureHint.vue'
@@ -1164,8 +1233,9 @@ import { logger } from '@/utils/logger'
 // ── Load FST Data ─────────────────────────────────────────────────
 
 const { projects: PROJECTS_POOL, subfunds: SUBFUNDS, loadProjects, loadSubfunds } = useFstData()
-const toast = useToast()
-const router = useRouter()
+const toast      = useToast()
+const router     = useRouter()
+const projStore  = useProjectStore()
 
 // Load data on component mount
 onMounted(async () => {
@@ -1181,6 +1251,16 @@ onMounted(async () => {
     )
     if (match) selectedProjectId.value = match.id
     // НЕ удаляем — briefing должен оставаться пока пользователь сам не закроет
+  }
+  // Если пришли из другой страницы с активным проектом — пре-выбираем его
+  const ap = projStore.activeProject
+  if (ap && !selectedProjectId.value) {
+    const match = PROJECTS_POOL.value.find(p =>
+      p.id === ap.id ||
+      p.name?.toLowerCase() === ap.name?.toLowerCase() ||
+      p.company?.toLowerCase() === ap.company?.toLowerCase()
+    )
+    if (match) selectedProjectId.value = match.id
   }
   // Set initial project after data loads (if nothing matched above)
   if (PROJECTS_POOL.value.length > 0 && !selectedProjectId.value) {
@@ -1402,6 +1482,8 @@ onMounted(() => { loadPresets() })
 const humanComment = ref('')
 const session = ref(null)
 const running = ref(false)
+// Гейт факторной модели: { project, factorResult } если S < 0.4
+const factorGateBlocked = ref(null)
 
 // Событийная цепочка — генерируется параллельно с дебатами при старте сессии
 const sessionChain        = ref([])
@@ -1656,10 +1738,56 @@ function resetPolicy() {
 
 // ── Session Management ────────────────────────────────────────
 
-function startSession() {
+async function startSession() {
   const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
   if (!project) return
 
+  // ─── Факторная модель T·S·M·G·E — считаем до старта ──────────────────────
+  // Результат патчит project._factorScores → используется в computeDimScores()
+  if (!project._factorScores) {
+    try {
+      const fr = await fetch('/api/factor/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deal: {
+            companyName:      project.company || project.title,
+            description:      project.description,
+            trl:              project.trl,
+            trlGrowth:        (project.trl || 5) - 4,
+            sovereignPercent: (project.sovereigntyScore || 5) / 9 * 100,
+            totalInvestment:  (project.requestedAmount || 50) * 3,
+            fstInvestment:    project.requestedAmount || 50,
+            grChainCoverage:  project.localizationRatio || 0.5,
+            exportPotential:  'medium',
+          },
+        }),
+      })
+      if (fr.ok) {
+        const fd = await fr.json()
+        project._factorResult = fd
+        project._factorScores = {
+          T: (fd.factors.T?.score ?? 5) / 10,
+          S: (fd.factors.S?.score ?? 5) / 10,
+          M: (fd.factors.M?.score ?? 5) / 10,
+          G: (fd.factors.G?.score ?? 5) / 10,
+          E: (fd.factors.E?.score ?? 5) / 10,
+        }
+        // Гейт: S < 0.4 (Sovereign Score < 4/10) — жёсткий фильтр ФСТ
+        if (project._factorScores.S < 0.4) {
+          factorGateBlocked.value = { project, factorResult: fd }
+          return
+        }
+      }
+    } catch (e) {
+      console.warn('[FstCommittee] factor score failed, using raw dims:', e.message)
+    }
+  }
+
+  _doStartSession(project)
+}
+
+function _doStartSession(project) {
   const sess = createSession(project, {
     speed:          selectedSpeed.value,
     policy:         { ...fstPolicy.value },
@@ -1744,7 +1872,43 @@ function startSession() {
         conditions: session.value.decision.conditions || [],
       })
 
-      // ─── Цепочка: решение → deal / project ───────────────────────────────
+      // ─── Регламентные события ИК ──────────────────────────────────────────
+    // Определяем тип заседания ИК (1, 2 или 3) по контексту
+    // По умолчанию — ИК-1 (первичное рассмотрение). ИК-2 активируется если deal уже в фазе DD.
+    const dealTimeline = eventStore.getTimeline('deal', sess.id)
+    const hasIC1Done = dealTimeline.some(e => e.type === 'IC1_DECISION_APPROVED')
+    const hasIC2Done = dealTimeline.some(e => e.type === 'IC2_DECISION_APPROVED')
+    const hasFinClosed = dealTimeline.some(e => e.type === 'FINANCIAL_CLOSING')
+
+    let icRound = 1
+    if (hasIC1Done && !hasIC2Done) icRound = 2
+    else if (hasIC2Done && hasFinClosed) icRound = 3
+
+    // Добавляем регламентное событие "Созвано заседание ИК-N"
+    const icConvenedType = icRound === 1 ? 'IC1_CONVENED' : icRound === 2 ? 'IC2_CONVENED' : 'IC3_CONVENED'
+    eventStore.add('session', sess.id, icConvenedType, { projectId, icRound, sessionId: sess.id })
+
+    // Добавляем решение ИК-N в ленту сделки (регламентное событие)
+    if (verdict === 'APPROVE' || verdict === 'CONDITIONAL') {
+      const icApprovedType = icRound === 1 ? 'IC1_DECISION_APPROVED' : icRound === 2 ? 'IC2_DECISION_APPROVED' : 'IC3_DECISION_CONTINUE'
+      eventStore.add('deal', sess.id, icApprovedType, {
+        projectId, verdict, score: session.value.decision.aggregatedScore,
+        sessionId: sess.id, conditions: session.value.decision.conditions || [],
+      })
+    } else if (verdict === 'REJECT') {
+      const icRejectedType = icRound === 1 ? 'IC1_DECISION_REJECTED' : icRound === 2 ? 'IC2_DECISION_REJECTED' : 'IC3_DECISION_EXIT'
+      eventStore.add('deal', sess.id, icRejectedType, {
+        projectId, verdict, score: session.value.decision.aggregatedScore, sessionId: sess.id,
+      })
+    } else {
+      // REVISION → доработка
+      const icRevType = icRound === 1 ? 'IC1_DECISION_REVISION' : 'IC2_DECISION_REVISION'
+      eventStore.add('deal', sess.id, icRevType, {
+        projectId, verdict, sessionId: sess.id,
+      })
+    }
+
+    // ─── Цепочка: решение → deal / project ───────────────────────────────
       if (verdict === 'APPROVE' || verdict === 'CONDITIONAL') {
         // 1. Term Sheet в ленте сделки (entityType = deal, id = sess.id)
         eventStore.add('deal', sess.id, 'TERM_SHEET_PROPOSED', {
@@ -1768,6 +1932,17 @@ function startSession() {
         }
       }
     }
+
+    // ─── Фиксируем факторную оценку в событийной цепочке ─────────────────
+    if (project._factorResult) {
+      eventStore.add('deal', sess.id, 'FACTOR_SCORED', {
+        projectId,
+        grade:     project._factorResult.grade,
+        composite: project._factorResult.composite,
+        factors:   project._factorResult.factors,
+        redFlags:  project._factorResult.redFlags,
+      })
+    }
   }).catch(() => {
     running.value = false
   })
@@ -1776,6 +1951,22 @@ function startSession() {
 function pauseSession() {
   if (engine) engine.stop()
   running.value = false
+}
+
+function openDealFromCommittee() {
+  const projectId = selectedProjectId.value
+  const project   = PROJECTS_POOL.value.find(p => p.id === projectId) || {}
+  projStore.setActive({ ...project, _source: 'committee' })
+  conclusionVisible.value = false
+  router.push('/fst-deal')
+}
+
+function openProjectHub() {
+  const projectId = selectedProjectId.value
+  const project   = PROJECTS_POOL.value.find(p => p.id === projectId) || {}
+  projStore.setActive({ ...project, _source: 'committee' })
+  conclusionVisible.value = false
+  router.push('/fst-project/' + projectId)
 }
 
 function resetSession() {
@@ -3138,6 +3329,28 @@ onUnmounted(() => {
 }
 .fst-launch-btn { width: 100%; justify-content: center; }
 .fst-launch-hint { text-align: center; font-size: 0.875rem; color: var(--p-text-muted-color); }
+.fst-factor-gate {
+  margin-top: 10px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--fst-red) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-red) 35%, transparent);
+  border-radius: 8px;
+}
+.fst-factor-gate-title {
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.fst-factor-gate-body {
+  font-size: 12px;
+  color: var(--p-text-muted-color);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.fst-factor-gate-flags { margin-top: 4px; }
 .fst-policy-summary {
   font-size: 0.8125rem;
   color: var(--p-text-muted-color);
@@ -3518,6 +3731,25 @@ onUnmounted(() => {
 }
 .fst-pmodal-check-item.pass { color: var(--fst-green); }
 .fst-pmodal-check-item.fail { color: var(--fst-red); }
+.fst-pmodal-factor {
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--fst-purple) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-purple) 25%, transparent);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.fst-pmodal-factor-title {
+  font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.fst-pmodal-factor-grade { font-size: 18px; font-weight: 800; }
+.fst-pmodal-factor-composite { font-size: 11px; color: var(--p-text-muted-color); margin-left: auto; }
+.fst-pmodal-factor-bars { display: flex; flex-direction: column; gap: 5px; }
+.fst-pmodal-factor-row { display: grid; grid-template-columns: 16px 1fr 28px; align-items: center; gap: 6px; }
+.fst-pmodal-fkey { font-size: 10px; font-weight: 700; color: var(--p-text-muted-color); }
+.fst-pmodal-fbar { height: 5px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden; }
+.fst-pmodal-fbar-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.fst-pmodal-fscore { font-size: 10px; font-weight: 700; text-align: right; }
 .fst-metric {
   font-size: 0.8125rem;
   padding: 2px 7px;

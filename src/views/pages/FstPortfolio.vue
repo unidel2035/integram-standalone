@@ -113,6 +113,11 @@
                 <i :class="alertIcon(a.type)" style="font-size:10px"></i> {{ a.msg }}
               </div>
             </div>
+            <div class="fsp-card-footer-actions">
+              <button class="fsp-hist-btn" @click.stop="openProjectHub(c)">
+                <i class="pi pi-history" style="font-size:10px"></i> История
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -286,7 +291,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
+import { useProjectStore } from '@/stores/projectStore.js'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
@@ -787,8 +794,25 @@ async function refreshSources() {
   toast.add({ severity: 'info', summary: 'Источники обновлены', life: 2000 })
 }
 
+const router    = useRouter()
+const projStore = useProjectStore()
+
 function callCommittee() {
   toast.add({ severity: 'warn', summary: 'ИК созывается', detail: 'Уведомление отправлено членам Инвестиционного Комитета', life: 3500 })
+}
+
+function openProjectHub(company) {
+  projStore.setActive({
+    id:          company.id,
+    name:        company.name,
+    company:     company.name,
+    subfund:     company.subfund,
+    trl:         company.trl,
+    stage:       company.stage,
+    inn:         company.inn,
+    _source:     'portfolio',
+  })
+  router.push('/fst-project/' + company.id)
 }
 
 async function generateAiReport() {
@@ -1172,6 +1196,14 @@ async function generateAiReport() {
 }
 
 /* ─── GR-badge ─── */
+.fsp-card-footer-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
+.fsp-hist-btn {
+  background: none; border: 1px solid var(--p-content-border-color); border-radius: 6px;
+  padding: 2px 8px; font-size: 10px; color: var(--p-text-muted-color); cursor: pointer;
+  display: flex; align-items: center; gap: 4px; transition: background .15s, color .15s;
+}
+.fsp-hist-btn:hover { background: var(--p-surface-ground); color: var(--p-text-color); }
+
 .fsp-gr-badge {
   display: flex;
   align-items: center;

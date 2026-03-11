@@ -43,7 +43,7 @@ export default defineConfig({
         ws: true
       },
       '/wsclaude': {
-        target: 'http://127.0.0.1:8084',
+        target: 'http://127.0.0.1:8082',
         changeOrigin: true,
         ws: true
       }

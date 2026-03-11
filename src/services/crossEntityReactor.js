@@ -118,6 +118,85 @@ export const CROSS_ENTITY_LINKS = [
     cardinality:  '1:1',
     condition:    null,
   },
+
+  // ── Регламентные связи ПП-1→ПП-6 ─────────────────────────────────────────
+
+  // ПП-1 → ПП-2: ИК принял ПИ → Назначение РП (смена сущности: сессия не нужна, deal→deal)
+  {
+    id: 'reglament:pp1→pp2',
+    trigger:      { entityType: 'deal',    eventType: 'PI_ACCEPTED' },
+    enables:      { entityType: 'deal',    eventType: 'RP_ASSIGNED' },
+    label:        'ПИ принята → Назначение руководителя проекта (ПП-2)',
+    description:  'УТ открыл работы по ПП-1 → руководитель проекта уведомляет Инициатора. Срок: 3 р.д.',
+    cardinality:  '1:1',
+    condition:    null,
+  },
+
+  // ПП-3: ИК-1 одобрил → Специализированные экспертизы (ПП-4)
+  {
+    id: 'reglament:ic1→pp4',
+    trigger:      { entityType: 'session', eventType: 'IC1_DECISION_APPROVED' },
+    enables:      { entityType: 'deal',    eventType: 'EXPERT_ASSESSMENT_ORDERED' },
+    label:        'ИК-1 одобрил → Заказ экспертиз (ПП-4)',
+    description:  'После одобрения ИК-1 УТ переходит к ПП-4: заказывает финансово-экономическую, правовую и TRL-экспертизы. Срок: 3 р.д.',
+    cardinality:  '1:1',
+    condition:    null,
+  },
+
+  // ПП-4: ИК-2 одобрил → Юридическое закрытие (ПП-5)
+  {
+    id: 'reglament:ic2→pp5',
+    trigger:      { entityType: 'session', eventType: 'IC2_DECISION_APPROVED' },
+    enables:      { entityType: 'deal',    eventType: 'LEGAL_CLOSING' },
+    label:        'ИК-2 одобрил → Юридическое закрытие (ПП-5)',
+    description:  'После одобрения ИК-2 УТ переходит к ПП-5: подписание и нотариальное заверение договоров. Срок: 3 р.д.',
+    cardinality:  '1:1',
+    condition:    null,
+  },
+
+  // ПП-5: Финансовое закрытие → Capital Call фонда (fund entity)
+  {
+    id: 'reglament:financial_closing→capital_call',
+    trigger:      { entityType: 'deal',    eventType: 'FINANCIAL_CLOSING' },
+    enables:      { entityType: 'fund',    eventType: 'CAPITAL_CALLED' },
+    label:        'Финзакрытие сделки → Capital Call фонда',
+    description:  'Перевод денег Портфельной компании активирует drawdown из фонда в пользу Товарищей',
+    cardinality:  '1:1',
+    condition:    null,
+  },
+
+  // ПП-5: Финансовое закрытие → Компания в портфеле (дублирует deal→company, но теперь через регламент)
+  {
+    id: 'reglament:financial_closing→company_added',
+    trigger:      { entityType: 'deal',    eventType: 'FINANCIAL_CLOSING' },
+    enables:      { entityType: 'company', eventType: 'COMPANY_ADDED' },
+    label:        'Финзакрытие → Компания в портфельном мониторе',
+    description:  'После финансового закрытия Портфельная компания появляется в мониторинге ПП-6',
+    cardinality:  '1:1',
+    condition:    null,
+  },
+
+  // ПП-6: ИК-3 решил выйти → Инициация выхода (exit flow)
+  {
+    id: 'reglament:ic3_exit→exit_initiated',
+    trigger:      { entityType: 'session', eventType: 'IC3_DECISION_EXIT' },
+    enables:      { entityType: 'deal',    eventType: 'EXIT_INITIATED' },
+    label:        'ИК-3 решил выходить → Инициация выхода (ПП-6)',
+    description:  'Решение ИК-3 о выходе из инвестиций активирует переговоры о продаже доли Товарищества',
+    cardinality:  '1:1',
+    condition:    null,
+  },
+
+  // ПП-6: Финансовое закрытие выхода → фонд получил деньги
+  {
+    id: 'reglament:exit_financial→distribution',
+    trigger:      { entityType: 'deal',    eventType: 'EXIT_FINANCIAL_CLOSING' },
+    enables:      { entityType: 'fund',    eventType: 'DISTRIBUTION_MADE' },
+    label:        'Финзакрытие выхода → Распределение доходов Товарищам',
+    description:  'Деньги от продажи доли распределяются между Товарищами согласно Договору',
+    cardinality:  '1:1',
+    condition:    null,
+  },
 ]
 
 // ─── API ──────────────────────────────────────────────────────────────────────

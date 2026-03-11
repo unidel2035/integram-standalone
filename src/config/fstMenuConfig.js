@@ -52,6 +52,7 @@ export const fstMenuConfig = [
     icon: 'pi pi-eye',
     items: [
       { label: 'Главная',      icon: 'pi pi-home',     to: '/fst-hub' },
+      { label: 'Command Center', icon: 'pi pi-sitemap', to: '/fst-cc', roles: ['director', 'analyst', 'admin'] },
       { label: 'Портфель',     icon: 'pi pi-briefcase', to: '/fst-portfolio', roles: ['investor', 'director', 'analyst', 'admin'] },
       { label: 'Digital Twin', svgIcon: svgLayers,      to: '/fst-twin',      roles: ['director', 'analyst', 'admin'] },
     ]
@@ -61,7 +62,10 @@ export const fstMenuConfig = [
     svgIcon: svgHandshake,
     items: [
       { label: 'Аватар Эксперта',    icon: 'pi pi-user-edit', to: '/fst-expert',    roles: ['investor', 'expert', 'director', 'admin'] },
+      { label: 'Факторная модель',   icon: 'pi pi-chart-bar', to: '/fst-factor',      roles: ['investor', 'expert', 'director', 'analyst', 'admin'] },
+      { label: 'Событийный граф',    icon: 'pi pi-share-alt', to: '/fst-event-graph', roles: ['director', 'analyst', 'admin'] },
       { label: 'Инвесткомитет',      icon: 'pi pi-users',     to: '/fst-committee', roles: ['investor', 'expert', 'director', 'admin'] },
+      { label: 'Конвейер ПП-1→6',    icon: 'pi pi-map',       to: '/fst-pipeline',  roles: ['director', 'analyst', 'admin'] },
       { label: 'Дилфлоу',           icon: 'pi pi-filter',    to: '/fst-dealflow',  roles: ['investor', 'director', 'analyst', 'admin'] },
       { label: 'Меморандум',         icon: 'pi pi-file',      to: '/fst-memo',      roles: ['investor', 'director', 'admin'] },
       { label: 'Сделка',             svgIcon: svgHandshake,   to: '/fst-deal',      roles: ['director', 'analyst', 'admin'] },

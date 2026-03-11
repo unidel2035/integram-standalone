@@ -24,30 +24,43 @@ router.get('/me', async (req, res) => {
   }
 
   try {
-    // Читаем edit-форму пользователя — там есть multiselect ролей
-    const resp = await fetch(`${FST_API}/${FST_DB}/object/${userId}?form&edit&JSON`, {
-      headers: { 'X-Authorization': token }
-    })
-
-    if (!resp.ok) throw new Error(`Integram ${resp.status}`)
-    const html = await resp.text()
-
-    // Парсим роли из multiselect поля 115
-    // Integram возвращает: name="F_52536" для каждой выбранной роли
-    const roles = parseRoles(html)
-    const displayName = parseDisplayName(html)
-
-    return res.json({ roles, displayName, userId })
+    // Читаем роли из таблицы пользователей (object/18) — самый надёжный способ
+    // Формат: reqs[userId]['115'] = "investor,expert,admin"
+    //         reqs[userId]['ref_115'] = "42:52536,52559,145"
+    const result = await readUserViaTable(token, userId)
+    return res.json(result)
   } catch (e) {
-    // Fallback: читаем через другой эндпоинт
-    try {
-      const result = await readUserViaReqs(token, userId)
-      return res.json(result)
-    } catch {
-      return res.status(500).json({ error: e.message })
-    }
+    return res.status(500).json({ error: e.message })
   }
 })
+
+// Читаем роли и имя из таблицы пользователей (object/18)
+async function readUserViaTable(token, userId) {
+  const resp = await fetch(`${FST_API}/${FST_DB}/object/18?JSON_KV`, {
+    headers: { 'X-Authorization': token }
+  })
+  if (!resp.ok) throw new Error(`Integram ${resp.status}`)
+  const data = await resp.json()
+
+  const userReqs = data.reqs?.[userId] || {}
+
+  // Имя из поля 33
+  const displayName = userReqs['33'] || userReqs['name'] || ''
+
+  // Роли: ref_115 = "42:52536,52559,145" ИЛИ 115 = "investor,expert,admin"
+  let roles = []
+  const refStr = userReqs['ref_115'] || ''
+  if (refStr) {
+    const ids = refStr.replace(/^\d+:/, '').split(',')
+    roles = ids.map(id => ROLE_ID_MAP[id.trim()]).filter(Boolean)
+  }
+  if (!roles.length) {
+    const nameStr = userReqs['115'] || ''
+    roles = nameStr.split(',').map(r => ROLE_NAME_MAP[r.trim().toLowerCase()]).filter(Boolean)
+  }
+
+  return { roles, displayName, userId }
+}
 
 // Парсим имя из HTML edit-формы
 function parseDisplayName(html) {
@@ -58,12 +71,20 @@ function parseDisplayName(html) {
 // Парсим роли из HTML edit-формы
 function parseRoles(html) {
   const roles = []
-  // Integram multiselect role names появляются как ссылки с классом ms-link
-  const re = /class="ms-link"[^>]*>([^<]+)<\/A>/g
+  // Integram multiselect: выбранные роли как ссылки class="ms-link"
+  const re = /class="ms-link"[^>]*>([^<]+)<\/A>/gi
   let m
   while ((m = re.exec(html)) !== null) {
-    const name = m[1].trim().toLowerCase()
-    if (VALID_ROLES.includes(name)) roles.push(name)
+    const name = m[1].trim()
+    const mapped = ROLE_NAME_MAP[name.toLowerCase()] || ROLE_NAME_MAP[name]
+    if (mapped && !roles.includes(mapped)) roles.push(mapped)
+  }
+  // Fallback: multiselect выбранные объекты часто рендерятся как name="F_{id}"
+  // <input ... name="F_52536" checked> — парсим id напрямую
+  const reId = /name="F_(\d+)"/g
+  while ((m = reId.exec(html)) !== null) {
+    const mapped = ROLE_ID_MAP[m[1]]
+    if (mapped && !roles.includes(mapped)) roles.push(mapped)
   }
   return roles
 }
@@ -88,17 +109,48 @@ async function readUserViaReqs(token, userId) {
     }
   }
 
-  // Роли из req_type с base_typ=42 — берём val из req_attrs
+  // Роли из ref_type с base_typ=42 — reqAttrs[id] = ID объекта роли
   const roles = []
   const refType = pd?.ref_type || {}
   for (const [id, refTypeId] of Object.entries(refType)) {
     if (refTypeId === '42' && reqAttrs[id]) {
-      const val = String(reqAttrs[id]).toLowerCase()
-      if (VALID_ROLES.includes(val)) roles.push(val)
+      // reqAttrs[id] может быть ID объекта ("52536") или русским именем
+      const val = String(reqAttrs[id])
+      const byId   = ROLE_ID_MAP[val]
+      const byName = ROLE_NAME_MAP[val.toLowerCase()]
+      const mapped = byId || byName
+      if (mapped && !roles.includes(mapped)) roles.push(mapped)
     }
   }
 
   return { roles, displayName, userId }
+}
+
+// Маппинг ID объектов ролей type 42 → английский идентификатор
+const ROLE_ID_MAP = {
+  '145':   'admin',
+  '164':   'admin',    // user → admin fallback
+  '52536': 'investor',
+  '52559': 'expert',
+  '52560': 'director',
+  '52561': 'analyst',
+  '52562': 'startup',
+}
+
+// Маппинг русских/английских названий ролей → идентификатор
+const ROLE_NAME_MAP = {
+  'admin':          'admin',
+  'администратор':  'admin',
+  'investor':       'investor',
+  'инвестор':       'investor',
+  'expert':         'expert',
+  'эксперт':        'expert',
+  'director':       'director',
+  'директор':       'director',
+  'analyst':        'analyst',
+  'аналитик':       'analyst',
+  'startup':        'startup',
+  'стартап':        'startup',
 }
 
 const VALID_ROLES = ['investor', 'expert', 'director', 'analyst', 'startup', 'admin']

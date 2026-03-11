@@ -76,7 +76,9 @@ watch(isDark, () => {
 // WebSocket URL
 function getWsUrl(mode = 'auto') {
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-  let wsUrl = `${protocol}//${location.host}/wsclaude?workspaceId=${workspaceId.value}&mode=${mode}`
+  // In dev mode Vite v8 proxy breaks WS upgrades — connect directly to the backend port
+  const host = import.meta.env.DEV ? `${location.hostname}:8082` : location.host
+  let wsUrl = `${protocol}//${host}/wsclaude?workspaceId=${workspaceId.value}&mode=${mode}`
   if (clientId.value) {
     wsUrl += `&clientId=${clientId.value}`
   }

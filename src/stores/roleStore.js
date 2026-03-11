@@ -116,7 +116,7 @@ export const useRoleStore = defineStore('role', () => {
 
   function hasMenuAccess(itemRoles) {
     if (!itemRoles || itemRoles.length === 0) return true
-    if (canSeeFullMenu.value) return true
+    if (activeRole.value === 'admin') return true  // роль admin → полное меню
     return itemRoles.includes(activeRole.value)
   }
 

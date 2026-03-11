@@ -1,15 +1,27 @@
+/**
+ * Expert Digital Twin API
+ *
+ * Эксперт — агент в событийной онтологии:
+ *   1. Читает event-timeline сделки как контекст (не JSON-снапшот)
+ *   2. Каждое решение записывается в EventStore (entityType='expert')
+ *   3. Паттерны обучаются из его event-лога
+ *   4. Prediction score считается по паттернам до вопроса
+ */
+
 import { Router } from 'express'
 import fetch from 'node-fetch'
+import { getConfig } from '../../services/fstConfigService.js'
 
 const router = Router()
 
 // ── AI call helper ─────────────────────────────────────────────
 async function callAI(prompt, systemPrompt, modelId = 'deepseek/deepseek-chat') {
-  const apiBase = process.env.BACKEND_URL || 'http://localhost:8082'
+  const port = process.env.FST_API_PORT || process.env.BACKEND_PORT || '8084'
+  const apiBase = process.env.BACKEND_URL || `http://localhost:${port}`
   const r = await fetch(`${apiBase}/api/ai-tokens/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ modelId, prompt, systemPrompt, application: 'ExpertAvatar' }),
+    body: JSON.stringify({ modelId, prompt, systemPrompt, application: 'ExpertDigitalTwin' }),
     signal: AbortSignal.timeout(60000)
   })
   if (!r.ok) throw new Error(`AI call failed: ${r.status}`)
@@ -17,7 +29,129 @@ async function callAI(prompt, systemPrompt, modelId = 'deepseek/deepseek-chat') 
   return d.response || d.content || ''
 }
 
-// ── Expert registry ─────────────────────────────────────────────
+// ── EventStore writer ──────────────────────────────────────────
+async function emitExpertEvent(expertId, eventType, data = {}, apiBase) {
+  try {
+    const EXPERT_EVENT_META = {
+      EXPERT_SESSION_STARTED:      { label: 'Сессия начата',          icon: 'pi pi-user',         color: '#8b5cf6' },
+      EXPERT_CONTEXT_LOADED:       { label: 'Контекст загружен',       icon: 'pi pi-download',     color: '#3b82f6' },
+      EXPERT_PATTERN_FIRED:        { label: 'Паттерн сработал',        icon: 'pi pi-bolt',         color: '#f97316' },
+      EXPERT_QUESTION_ASKED:       { label: 'Вопрос задан',            icon: 'pi pi-question-circle', color: '#06b6d4' },
+      EXPERT_ARGUMENT_RAISED:      { label: 'Тезис сформирован',       icon: 'pi pi-comment',      color: '#8b5cf6' },
+      EXPERT_CONDITION_PROPOSED:   { label: 'Условие предложено',      icon: 'pi pi-list-check',   color: '#3b82f6' },
+      EXPERT_EVALUATED:            { label: 'Вердикт дан',             icon: 'pi pi-verified',     color: '#22c55e' },
+      EXPERT_PATTERN_LEARNED:      { label: 'Паттерн извлечён',        icon: 'pi pi-sitemap',      color: '#8b5cf6' },
+      EXPERT_PREDICTION_GENERATED: { label: 'Прогноз сгенерирован',    icon: 'pi pi-chart-bar',    color: '#06b6d4' },
+    }
+    const meta = EXPERT_EVENT_META[eventType] || { label: eventType, icon: 'pi pi-circle', color: '#888' }
+    await fetch(`${apiBase}/api/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        entityType: 'expert',
+        entityId:   expertId,
+        type:       eventType,
+        label:      meta.label,
+        icon:       meta.icon,
+        color:      meta.color,
+        subject:    `expert:${expertId}`,
+        data,
+        ts:         Date.now(),
+      })
+    })
+  } catch (e) {
+    console.warn('[expert] emitEvent failed:', e.message)
+  }
+}
+
+// ── Load deal timeline from EventStore ───────────────────────
+async function loadDealTimeline(dealId, apiBase) {
+  if (!dealId) return []
+  try {
+    const r = await fetch(`${apiBase}/api/events/deal/${dealId}`)
+    if (!r.ok) return []
+    return await r.json()
+  } catch { return [] }
+}
+
+// ── Load expert's own decision history ───────────────────────
+async function loadExpertTimeline(expertId, apiBase) {
+  try {
+    const r = await fetch(`${apiBase}/api/events/expert/${expertId}`, {
+      signal: AbortSignal.timeout(5000)
+    })
+    if (!r.ok) return []
+    return await r.json()
+  } catch { return [] }
+}
+
+// ── Build deal context from event timeline (text for prompt) ─
+function buildDealTimelineContext(timeline) {
+  if (!timeline.length) return ''
+
+  // Phase labels
+  const PHASE_ORDER = ['source', 'negotiate', 'dd', 'close', 'post-close']
+  const events = timeline.map(e => {
+    const daysAgo = Math.floor((Date.now() - e.ts) / 86400000)
+    const when = daysAgo === 0 ? 'сегодня' : daysAgo === 1 ? '1 день назад' : `${daysAgo} дн. назад`
+    return `  • ${e.label || e.type} (${when})${e.data?.note ? ' — ' + e.data.note : ''}`
+  })
+
+  // Current phase = last event's phase
+  const lastEvt = timeline[timeline.length - 1]
+  const currentPhase = lastEvt?.phase || '?'
+
+  // Risk signals
+  const risks = timeline.filter(e => ['RISK_ELEVATED', 'DD_FAILED', 'TEAM_CHANGE'].includes(e.type))
+  const positives = timeline.filter(e => ['MILESTONE_ACHIEVED', 'REVENUE_MILESTONE', 'DD_COMPLETED'].includes(e.type))
+
+  let ctx = `ИСТОРИЯ СДЕЛКИ (${timeline.length} событий, текущая фаза: ${currentPhase}):\n`
+  ctx += events.join('\n')
+
+  if (risks.length) {
+    ctx += `\n\nСИГНАЛЫ РИСКА:\n${risks.map(e => `  ⚠️ ${e.label || e.type}`).join('\n')}`
+  }
+  if (positives.length) {
+    ctx += `\n\nПОЗИТИВНЫЕ СОБЫТИЯ:\n${positives.map(e => `  ✓ ${e.label || e.type}`).join('\n')}`
+  }
+
+  return ctx
+}
+
+// ── Build expert's behavioral memory from his own event log ──
+function buildExpertMemoryContext(expertTimeline, expertName) {
+  const verdicts = expertTimeline.filter(e => e.type === 'EXPERT_EVALUATED')
+  if (!verdicts.length) return ''
+
+  const stats = { ОДОБРИТЬ: 0, ОТЛОЖИТЬ: 0, ОТКЛОНИТЬ: 0 }
+  const patterns = []
+  for (const v of verdicts) {
+    const d = v.data?.decision
+    if (d && stats[d] !== undefined) stats[d]++
+    if (v.data?.conditions?.length) {
+      patterns.push(`${expertName} поставил условия: ${v.data.conditions.slice(0, 2).join('; ')}`)
+    }
+  }
+
+  const total = verdicts.length
+  const learnedPatterns = expertTimeline
+    .filter(e => e.type === 'EXPERT_PATTERN_LEARNED')
+    .flatMap(e => e.data?.patterns || [])
+    .slice(-10)
+
+  let ctx = `\nПОВЕДЕНЧЕСКАЯ ПАМЯТЬ ${expertName.toUpperCase()} (${total} решений):\n`
+  ctx += `  Одобрено: ${stats['ОДОБРИТЬ']} | Отложено: ${stats['ОТЛОЖИТЬ']} | Отклонено: ${stats['ОТКЛОНИТЬ']}\n`
+  if (learnedPatterns.length) {
+    ctx += `\nИЗВЛЕЧЁННЫЕ ПАТТЕРНЫ:\n${learnedPatterns.map((p, i) => `  ${i + 1}. ${p}`).join('\n')}`
+  }
+  if (patterns.length) {
+    ctx += `\nТИПИЧНЫЕ УСЛОВИЯ:\n${[...new Set(patterns)].slice(0, 5).map(p => `  - ${p}`).join('\n')}`
+  }
+
+  return ctx
+}
+
+// ── Expert registry ─────────────────────────────────────────────────────────
 const EXPERTS = {
   gordin: {
     id: 'gordin',
@@ -47,6 +181,19 @@ const EXPERTS = {
       'TRL < 4 при крупном запросе',
       'Только R&D без пути к серийному производству',
     ],
+    // Cognitive style for pattern recognition
+    cognitiveStyle: {
+      primaryFocus:   ['sovereignty', 'multiplier', 'production_readiness'],
+      decisionWeight: { trl: 0.25, market: 0.20, team: 0.20, sovereignty: 0.35 },
+      riskTolerance:  'medium',
+      typicalQuestions: [
+        'Какова доля российских компонентов в критических узлах?',
+        'Кто со-инвесторы? Есть ли частные деньги?',
+        'Дорожная карта от прототипа до серии?',
+        'TRL сейчас и через 18 месяцев?',
+        'Есть ли потенциал для рынков БРИКС+?',
+      ],
+    },
     systemPrompt: `Ты — цифровой аватар Диониса Сергеевича Гордина, инвестиционного директора Фонда НТИ / ФСТ НТИ.
 
 БИОГРАФИЯ:
@@ -104,6 +251,16 @@ const EXPERTS = {
       'Слабая управленческая команда',
       'Отсутствие государственного или промышленного партнёра',
     ],
+    cognitiveStyle: {
+      primaryFocus:   ['ecosystem', 'state_alignment', 'commercialization'],
+      decisionWeight: { strategy: 0.40, team: 0.30, state_fit: 0.30 },
+      riskTolerance:  'low',
+      typicalQuestions: [
+        'Какие государственные программы поддерживают проект?',
+        'Есть ли промышленный партнёр для серийного производства?',
+        'Как проект вписывается в экосистему НТИ?',
+      ],
+    },
     systemPrompt: `Ты — цифровой аватар Вадима Медведева, генерального директора Фонда поддержки проектов НТИ.
 
 РОЛЬ И СТИЛЬ:
@@ -146,6 +303,18 @@ const EXPERTS = {
       'Только один прототип без дорожной карты к серии',
       'TRL < 5 при запросе на производство',
     ],
+    cognitiveStyle: {
+      primaryFocus:   ['trl', 'certification', 'russian_components'],
+      decisionWeight: { trl: 0.40, certification: 0.30, components: 0.30 },
+      riskTolerance:  'low',
+      typicalQuestions: [
+        'Каков текущий TRL и MRL?',
+        'Есть ли план сертификации по ГОСТ Р / АР МАК?',
+        'Полётный контроллер — российский или иностранный?',
+        'Сколько часов налёта у прототипа?',
+        'Есть ли договорённости с операторами?',
+      ],
+    },
     systemPrompt: `Ты — цифровой аватар Глеба Бабинцева, генерального директора Ассоциации «Аэронекст» НТИ.
 
 ЭКСПЕРТИЗА:
@@ -176,6 +345,35 @@ const EXPERTS = {
   }
 }
 
+// ── Факторный контекст T·S·M·G·E для системного промпта эксперта ─
+function buildFactorContext(factorResult) {
+  if (!factorResult?.factors) return ''
+
+  const { factors, composite, grade, redFlags = [], strengths = [], recommendation } = factorResult
+  const lines = Object.entries(factors).map(([k, f]) => {
+    const bar = '█'.repeat(Math.round((f.score || 0)))
+    return `  ${k} (${f.label}): ${bar} ${f.score?.toFixed(1)}/10${f.reasoning ? ` — ${f.reasoning}` : ''}`
+  })
+
+  let ctx = `\n\n--- ФАКТОРНАЯ ОЦЕНКА СДЕЛКИ (T·S·M·G·E) ---\n`
+  ctx += `Composite: ${composite?.toFixed(2)}/10 | Grade: ${grade} | Рекомендация: ${recommendation}\n`
+  ctx += lines.join('\n')
+  if (redFlags.length) {
+    ctx += `\n\nКРАСНЫЕ ФЛАГИ:\n${redFlags.map(f => `  ⚠ ${f}`).join('\n')}`
+  }
+  if (strengths.length) {
+    ctx += `\n\nСИЛЬНЫЕ СТОРОНЫ:\n${strengths.map(s => `  ✓ ${s}`).join('\n')}`
+  }
+  ctx += '\n---\n'
+  ctx += 'Используй эти данные при оценке сделки — они дополняют твой анализ.'
+  return ctx
+}
+
+// ── Expert registry: Integram DB → fallback на EXPERTS ──────────
+function getExperts() {
+  return getConfig('expert_registry', EXPERTS)
+}
+
 // ── Username → expert mapping ────────────────────────────────────
 const USERNAME_EXPERT_MAP = {
   gordin: 'gordin', dgordin: 'gordin', 'д.гордин': 'gordin',
@@ -183,29 +381,74 @@ const USERNAME_EXPERT_MAP = {
   babincev: 'babincev', gbabincev: 'babincev',
 }
 
-// ── In-memory sessions
+// ── In-memory sessions ────────────────────────────────────────
 const sessions = new Map()
 
-// ── POST /api/expert/session ────────────────────────────────────
-router.post('/session', (req, res) => {
-  const { expertId = 'gordin' } = req.body
-  const expert = EXPERTS[expertId]
+// ── Helpers ───────────────────────────────────────────────────
+function getApiBase(req) {
+  const port = process.env.FST_API_PORT || process.env.BACKEND_PORT || '8084'
+  return process.env.BACKEND_URL || `http://localhost:${port}`
+}
+
+// ── POST /api/expert/session ──────────────────────────────────
+router.post('/session', async (req, res) => {
+  const { expertId = 'gordin', dealId = null, factorResult = null, dealData = null } = req.body
+  const expert = getExperts()[expertId]
   if (!expert) return res.status(404).json({ error: 'Expert not found' })
 
   const id = `exp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  const apiBase = getApiBase(req)
+
+  // Session created synchronously — timeline loaded in background (Integram can be slow)
   sessions.set(id, {
     id,
     expertId,
     expert,
-    messages: [],
+    messages:        [],
     learnedPatterns: [],
-    dealContext: null,
-    createdAt: Date.now()
+    dealContext:     dealData || null,
+    dealId,
+    dealTimeline:    [],
+    expertTimeline:  [],
+    factorResult:    factorResult || null,  // T·S·M·G·E — используется в buildFactorContext
+    createdAt:       Date.now()
   })
-  res.json({ sessionId: id, expert: { id: expert.id, name: expert.name, title: expert.title, avatar: expert.avatar, color: expert.color, bio: expert.bio, investmentPrinciples: expert.investmentPrinciples, redFlags: expert.redFlags } })
+
+  // Non-blocking: если factorResult не передан — попробуем рассчитать сами
+  if (!factorResult && dealData) {
+    const port = process.env.FST_API_PORT || '8082'
+    const base = process.env.BACKEND_URL || `http://localhost:${port}`
+    fetch(`${base}/api/factor/score`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deal: dealData }),
+      signal: AbortSignal.timeout(15000),
+    }).then(r => r.ok ? r.json() : null)
+      .then(fd => { if (fd) { const s = sessions.get(id); if (s) s.factorResult = fd } })
+      .catch(() => {})
+  }
+
+  // Non-blocking: load expert history and emit session-start event in background
+  loadExpertTimeline(expertId, apiBase).then(t => {
+    const s = sessions.get(id)
+    if (s) s.expertTimeline = t
+  }).catch(() => {})
+  emitExpertEvent(expertId, 'EXPERT_SESSION_STARTED', { sessionId: id, dealId }, apiBase).catch(() => {})
+
+  res.json({
+    sessionId: id,
+    expert: {
+      id: expert.id, name: expert.name, title: expert.title,
+      avatar: expert.avatar, color: expert.color, bio: expert.bio,
+      investmentPrinciples: expert.investmentPrinciples,
+      redFlags: expert.redFlags,
+      cognitiveStyle: expert.cognitiveStyle,
+    },
+    expertTimeline: [], // loaded async in background
+  })
 })
 
-// ── GET /api/expert/profiles ─────────────────────────────────────
+// ── GET /api/expert/profiles ──────────────────────────────────
 router.get('/profiles', (req, res) => {
   const profiles = Object.values(EXPERTS).map(e => ({
     id: e.id, name: e.name, title: e.title, avatar: e.avatar, color: e.color
@@ -213,12 +456,11 @@ router.get('/profiles', (req, res) => {
   res.json({ profiles })
 })
 
-// ── GET /api/expert/for-user/:username ──────────────────────────
-// Возвращает expertId по имени пользователя из Integram
+// ── GET /api/expert/for-user/:username ───────────────────────
 router.get('/for-user/:username', (req, res) => {
   const name = (req.params.username || '').toLowerCase().trim()
   const expertId = USERNAME_EXPERT_MAP[name] || null
-  const expert = expertId ? EXPERTS[expertId] : null
+  const expert = expertId ? getExperts()[expertId] : null
   res.json({
     expertId,
     found: !!expertId,
@@ -226,7 +468,141 @@ router.get('/for-user/:username', (req, res) => {
   })
 })
 
-// ── POST /api/expert/chat ───────────────────────────────────────
+// ── GET /api/expert/timeline/:expertId ───────────────────────
+// Лента событий конкретного эксперта (его поведенческая история)
+router.get('/timeline/:expertId', async (req, res) => {
+  const apiBase = getApiBase(req)
+  try {
+    const timeline = await loadExpertTimeline(req.params.expertId, apiBase)
+    const verdicts = timeline.filter(e => e.type === 'EXPERT_EVALUATED')
+    const stats = { ОДОБРИТЬ: 0, ОТЛОЖИТЬ: 0, ОТКЛОНИТЬ: 0, total: verdicts.length }
+    for (const v of verdicts) {
+      const d = v.data?.decision
+      if (d && stats[d] !== undefined) stats[d]++
+    }
+    const patterns = timeline
+      .filter(e => e.type === 'EXPERT_PATTERN_LEARNED')
+      .flatMap(e => e.data?.patterns || [])
+    res.json({ timeline, stats, patterns })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── POST /api/expert/load-deal ────────────────────────────────
+// Загрузить event-timeline сделки в контекст сессии
+router.post('/load-deal', async (req, res) => {
+  const { sessionId, dealId } = req.body
+  const s = sessions.get(sessionId)
+  if (!s) return res.status(404).json({ error: 'Session not found' })
+
+  const apiBase = getApiBase(req)
+  const dealTimeline = await loadDealTimeline(dealId, apiBase)
+  s.dealId = dealId
+  s.dealTimeline = dealTimeline
+
+  // Emit: context loaded
+  await emitExpertEvent(s.expertId, 'EXPERT_CONTEXT_LOADED', {
+    sessionId, dealId, eventCount: dealTimeline.length
+  }, apiBase)
+
+  // Check if any patterns fire
+  const firedPatterns = checkPatternFiring(s.expert, s.learnedPatterns, dealTimeline)
+  if (firedPatterns.length) {
+    for (const p of firedPatterns) {
+      await emitExpertEvent(s.expertId, 'EXPERT_PATTERN_FIRED', {
+        sessionId, dealId, pattern: p.text, confidence: p.confidence
+      }, apiBase)
+    }
+  }
+
+  const dealContextText = buildDealTimelineContext(dealTimeline)
+
+  res.json({
+    ok: true,
+    dealTimeline,
+    dealContextText,
+    firedPatterns,
+  })
+})
+
+// ── POST /api/expert/predict ──────────────────────────────────
+// Предсказать вердикт эксперта ДО диалога — на основе паттернов
+router.post('/predict', async (req, res) => {
+  const { sessionId, dealData, dealId } = req.body
+  const s = sessions.get(sessionId)
+  if (!s) return res.status(404).json({ error: 'Session not found' })
+
+  const expert = s.expert
+  const apiBase = getApiBase(req)
+
+  // If dealId provided, use timeline; otherwise use dealData JSON
+  let dealTimeline = s.dealTimeline
+  if (dealId && !dealTimeline.length) {
+    dealTimeline = await loadDealTimeline(dealId, apiBase)
+    s.dealTimeline = dealTimeline
+  }
+
+  const dealCtx = dealTimeline.length
+    ? buildDealTimelineContext(dealTimeline)
+    : (dealData ? `ДАННЫЕ СДЕЛКИ:\n${JSON.stringify(dealData, null, 2)}` : '')
+
+  const memCtx = buildExpertMemoryContext(s.expertTimeline, expert.name)
+  const patternsCtx = s.learnedPatterns.length
+    ? `\nВЫУЧЕНЫЕ ПАТТЕРНЫ:\n${s.learnedPatterns.map((p, i) => `${i+1}. ${p}`).join('\n')}`
+    : ''
+
+  const systemPrompt = `Ты — аналитическая система предсказания решений.
+Используй когнитивный профиль эксперта и его историю решений.
+Верни ТОЛЬКО JSON.`
+
+  const prompt = `На основе когнитивного стиля ${expert.name} и его истории решений, предскажи вероятность одобрения.
+
+КОГНИТИВНЫЙ ПРОФИЛЬ:
+- Ключевые фокусы: ${expert.cognitiveStyle?.primaryFocus?.join(', ') || 'нет данных'}
+- Типичные вопросы: ${expert.cognitiveStyle?.typicalQuestions?.slice(0,3).join(' / ') || ''}
+- Риск-толерантность: ${expert.cognitiveStyle?.riskTolerance || 'medium'}
+
+${dealCtx}
+${memCtx}
+${patternsCtx}
+
+Верни JSON:
+{
+  "approvalProbability": число 0-1,
+  "decision": "ОДОБРИТЬ|ОТЛОЖИТЬ|ОТКЛОНИТЬ",
+  "confidence": число 0-1,
+  "firedPatterns": ["паттерн 1", "паттерн 2"],
+  "redFlagsDetected": ["флаг 1"],
+  "strengthsDetected": ["сила 1"],
+  "likelyQuestions": ["вопрос 1", "вопрос 2", "вопрос 3"],
+  "reasoning": "краткое обоснование в 2-3 предложениях"
+}`
+
+  try {
+    const raw = await callAI(prompt, systemPrompt, 'deepseek/deepseek-chat')
+    let prediction = {}
+    try {
+      const match = raw.match(/\{[\s\S]*\}/)
+      if (match) prediction = JSON.parse(match[0])
+    } catch { prediction = { approvalProbability: 0.5, decision: 'ОТЛОЖИТЬ', confidence: 0.3, reasoning: raw.slice(0, 200) } }
+
+    // Emit prediction event
+    await emitExpertEvent(expert.id, 'EXPERT_PREDICTION_GENERATED', {
+      sessionId, dealId: s.dealId,
+      decision: prediction.decision,
+      approvalProbability: prediction.approvalProbability,
+      confidence: prediction.confidence,
+    }, apiBase)
+
+    res.json({ prediction })
+  } catch (err) {
+    console.error('[expert/predict]', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── POST /api/expert/chat ─────────────────────────────────────
 router.post('/chat', async (req, res) => {
   try {
     const { sessionId, message } = req.body
@@ -235,18 +611,26 @@ router.post('/chat', async (req, res) => {
     let s = sessions.get(sessionId)
     if (!s) return res.status(404).json({ error: 'Session not found' })
 
-    const { expert, messages, learnedPatterns, dealContext } = s
+    const { expert, messages, learnedPatterns } = s
+    const apiBase = getApiBase(req)
 
-    // Build context for the avatar
-    const learnedCtx = learnedPatterns.length > 0
-      ? `\nИЗВЛЕЧЁННЫЕ ПАТТЕРНЫ ИЗ ЗАГРУЖЕННЫХ ДОКУМЕНТОВ:\n${learnedPatterns.map((p, i) => `${i + 1}. ${p}`).join('\n')}`
+    // Build rich context from event timelines
+    const dealCtx = s.dealTimeline.length
+      ? `\n\n${buildDealTimelineContext(s.dealTimeline)}`
+      : (s.dealContext ? `\n\nТЕКУЩАЯ СДЕЛКА:\n${JSON.stringify(s.dealContext, null, 2)}` : '')
+
+    // Факторный контекст T·S·M·G·E — если был рассчитан при создании сессии
+    const factorCtx = s.factorResult
+      ? buildFactorContext(s.factorResult)
       : ''
 
-    const dealCtx = dealContext
-      ? `\nТЕКУЩАЯ СДЕЛКА НА РАССМОТРЕНИИ:\n${JSON.stringify(dealContext, null, 2)}`
+    const memCtx = buildExpertMemoryContext(s.expertTimeline, expert.name)
+
+    const learnedCtx = learnedPatterns.length
+      ? `\n\nИЗВЛЕЧЁННЫЕ ПАТТЕРНЫ ИЗ ДОКУМЕНТОВ:\n${learnedPatterns.map((p, i) => `${i + 1}. ${p}`).join('\n')}`
       : ''
 
-    const fullSystemPrompt = expert.systemPrompt + learnedCtx + dealCtx
+    const fullSystemPrompt = expert.systemPrompt + factorCtx + dealCtx + memCtx + learnedCtx
 
     const historyCtx = messages.slice(-8)
       .map(m => `${m.role === 'user' ? 'Собеседник' : expert.name}: ${m.content}`)
@@ -256,10 +640,27 @@ router.post('/chat', async (req, res) => {
       ? `История диалога:\n${historyCtx}\n\nСобеседник: ${message}`
       : message
 
-    const reply = await callAI(prompt, fullSystemPrompt, 'anthropic/claude-sonnet-4-20250514')
+    const reply = await callAI(prompt, fullSystemPrompt, 'deepseek/deepseek-chat')
 
     messages.push({ role: 'user', content: message, timestamp: Date.now() })
     messages.push({ role: 'assistant', content: reply, timestamp: Date.now() })
+
+    // Detect if message contains a question → emit EXPERT_QUESTION_ASKED
+    if (reply.includes('?')) {
+      await emitExpertEvent(expert.id, 'EXPERT_QUESTION_ASKED', {
+        sessionId, dealId: s.dealId,
+        question: reply.match(/[^.!]*\?[^.!]*/)?.[0]?.trim().slice(0, 200) || ''
+      }, apiBase)
+    }
+
+    // Detect if message contains argument/thesis → emit EXPERT_ARGUMENT_RAISED
+    const hasArgument = /вижу|считаю|полагаю|обращаю внимание|настораживает|интересно|сильная сторона/i.test(reply)
+    if (hasArgument) {
+      await emitExpertEvent(expert.id, 'EXPERT_ARGUMENT_RAISED', {
+        sessionId, dealId: s.dealId,
+        excerpt: reply.slice(0, 200)
+      }, apiBase)
+    }
 
     res.json({ reply, messages: s.messages })
   } catch (err) {
@@ -268,7 +669,7 @@ router.post('/chat', async (req, res) => {
   }
 })
 
-// ── POST /api/expert/learn ──────────────────────────────────────
+// ── POST /api/expert/learn ────────────────────────────────────
 // Upload IC protocols, past decisions, interviews to extract patterns
 router.post('/learn', async (req, res) => {
   try {
@@ -279,6 +680,7 @@ router.post('/learn', async (req, res) => {
     if (!s) return res.status(404).json({ error: 'Session not found' })
 
     const expert = s.expert
+    const apiBase = getApiBase(req)
 
     const systemPrompt = `Ты — аналитик поведенческих паттернов инвесторов.
 Твоя задача: извлечь из документа конкретные паттерны поведения, критерии принятия решений и типичные реакции эксперта ${expert.name}.
@@ -301,16 +703,23 @@ router.post('/learn', async (req, res) => {
 Текст документа:
 ${text.slice(0, 8000)}`
 
-    const raw = await callAI(prompt, systemPrompt, 'anthropic/claude-sonnet-4-20250514')
+    const raw = await callAI(prompt, systemPrompt, 'deepseek/deepseek-chat')
     let extracted = {}
     try {
       const match = raw.match(/\{[\s\S]*\}/)
       if (match) extracted = JSON.parse(match[0])
     } catch { extracted = { patterns: [], summary: raw.slice(0, 300) } }
 
-    // Merge patterns into session
     if (extracted.patterns?.length) {
       s.learnedPatterns.push(...extracted.patterns)
+
+      // Emit: patterns learned → persist to expert's event log
+      await emitExpertEvent(expert.id, 'EXPERT_PATTERN_LEARNED', {
+        sessionId,
+        source: filename || 'документ',
+        patterns: extracted.patterns.slice(0, 5),
+        count: extracted.patterns.length,
+      }, apiBase)
     }
 
     res.json({
@@ -325,8 +734,8 @@ ${text.slice(0, 8000)}`
   }
 })
 
-// ── POST /api/expert/evaluate ───────────────────────────────────
-// Expert gives IC verdict on a startup
+// ── POST /api/expert/evaluate ─────────────────────────────────
+// Expert gives IC verdict — writes to EventStore
 router.post('/evaluate', async (req, res) => {
   try {
     const { sessionId, dealData } = req.body
@@ -336,13 +745,21 @@ router.post('/evaluate', async (req, res) => {
     if (!s) return res.status(404).json({ error: 'Session not found' })
 
     s.dealContext = dealData
-
     const expert = s.expert
-    const learnedCtx = s.learnedPatterns.length > 0
-      ? `\nДОПОЛНИТЕЛЬНЫЕ ПАТТЕРНЫ ИЗ ДОКУМЕНТОВ:\n${s.learnedPatterns.map((p, i) => `${i + 1}. ${p}`).join('\n')}`
+    const apiBase = getApiBase(req)
+
+    // Inject event-timeline context if available
+    const dealCtx = s.dealTimeline.length
+      ? buildDealTimelineContext(s.dealTimeline)
+      : `ДАННЫЕ СДЕЛКИ:\n${JSON.stringify(dealData, null, 2)}`
+
+    const memCtx = buildExpertMemoryContext(s.expertTimeline, expert.name)
+
+    const learnedCtx = s.learnedPatterns.length
+      ? `\n\nДОПОЛНИТЕЛЬНЫЕ ПАТТЕРНЫ ИЗ ДОКУМЕНТОВ:\n${s.learnedPatterns.map((p, i) => `${i + 1}. ${p}`).join('\n')}`
       : ''
 
-    const fullSystemPrompt = expert.systemPrompt + learnedCtx + `
+    const fullSystemPrompt = expert.systemPrompt + `\n\n` + memCtx + learnedCtx + `
 
 ФОРМАТ ВЕРДИКТА:
 Дай развёрнутое заключение как на заседании инвесткомитета. Структура:
@@ -353,15 +770,13 @@ router.post('/evaluate', async (req, res) => {
 5. Предварительный вердикт: ОДОБРИТЬ / ОТЛОЖИТЬ / ОТКЛОНИТЬ с обоснованием
 6. Условия (если ОДОБРИТЬ или ОТЛОЖИТЬ)`
 
-    const prompt = `Оцени следующий стартап с позиции инвестиционного директора ФСТ НТИ:
-
-${JSON.stringify(dealData, null, 2)}
+    const prompt = `${dealCtx}
 
 Дай полноценное заключение для инвесткомитета.`
 
-    const verdict = await callAI(prompt, fullSystemPrompt, 'anthropic/claude-sonnet-4-20250514')
+    const verdict = await callAI(prompt, fullSystemPrompt, 'deepseek/deepseek-chat')
 
-    // Also extract structured verdict
+    // Structured verdict extraction
     const structuredPrompt = `На основе этого заключения эксперта, верни структурированный JSON-вердикт:
 ${verdict}
 
@@ -384,19 +799,33 @@ JSON:
       if (match) structured = JSON.parse(match[0])
     } catch {}
 
-    // Add to chat history
-    s.messages.push({
-      role: 'user',
-      content: `[Запрос на оценку стартапа: ${dealData?.company || 'проект'}]`,
-      timestamp: Date.now()
-    })
-    s.messages.push({
-      role: 'assistant',
-      content: verdict,
-      timestamp: Date.now(),
-      isVerdict: true,
-      structured
-    })
+    // ── KEY: emit verdict as event into expert's timeline ──────
+    await emitExpertEvent(expert.id, 'EXPERT_EVALUATED', {
+      sessionId,
+      dealId: s.dealId || dealData?.id,
+      dealName: dealData?.company || dealData?.name || 'проект',
+      decision: structured.decision || 'ОТЛОЖИТЬ',
+      confidence: structured.confidence || 0.5,
+      sovereigntyScore: structured.sovereigntyScore,
+      sectorFit: structured.sectorFit,
+      conditions: structured.conditions || [],
+      keyStrengths: structured.keyStrengths || [],
+      keyWeaknesses: structured.keyWeaknesses || [],
+    }, apiBase)
+
+    // If conditions → emit EXPERT_CONDITION_PROPOSED
+    if (structured.conditions?.length) {
+      await emitExpertEvent(expert.id, 'EXPERT_CONDITION_PROPOSED', {
+        sessionId,
+        conditions: structured.conditions,
+      }, apiBase)
+    }
+
+    // Update expert timeline in session cache
+    s.expertTimeline = await loadExpertTimeline(expert.id, apiBase)
+
+    s.messages.push({ role: 'user',      content: `[Запрос на оценку: ${dealData?.company || 'проект'}]`, timestamp: Date.now() })
+    s.messages.push({ role: 'assistant', content: verdict, timestamp: Date.now(), isVerdict: true, structured })
 
     res.json({ verdict, structured, messages: s.messages })
   } catch (err) {
@@ -405,21 +834,204 @@ JSON:
   }
 })
 
-// ── GET /api/expert/session/:id ─────────────────────────────────
+// ── GET /api/expert/session/:id ───────────────────────────────
 router.get('/session/:id', (req, res) => {
   const s = sessions.get(req.params.id)
   if (!s) return res.status(404).json({ error: 'Session not found' })
   res.json({
-    messages: s.messages,
+    messages:        s.messages,
     learnedPatterns: s.learnedPatterns,
-    dealContext: s.dealContext,
+    dealContext:     s.dealContext,
+    dealTimeline:    s.dealTimeline,
+    expertTimeline:  s.expertTimeline.slice(-20),
     expert: {
       id: s.expert.id, name: s.expert.name, title: s.expert.title,
       avatar: s.expert.avatar, color: s.expert.color,
       investmentPrinciples: s.expert.investmentPrinciples,
-      redFlags: s.expert.redFlags
+      redFlags: s.expert.redFlags,
+      cognitiveStyle: s.expert.cognitiveStyle,
     }
   })
+})
+
+// ── Pattern firing detection ──────────────────────────────────
+function checkPatternFiring(expert, learnedPatterns, dealTimeline) {
+  const fired = []
+  const eventTypes = new Set(dealTimeline.map(e => e.type))
+
+  // Built-in pattern checks based on cognitiveStyle
+  if (expert.id === 'gordin') {
+    if (eventTypes.has('RISK_ELEVATED')) {
+      fired.push({ text: 'РИСК_ФЛАГ: обнаружено событие повышения риска', confidence: 0.9 })
+    }
+    if (eventTypes.has('MILESTONE_ACHIEVED')) {
+      fired.push({ text: 'ПОЗИТИВ: milestone достигнут — признак исполнительности команды', confidence: 0.75 })
+    }
+    if (!eventTypes.has('DD_COMPLETED') && eventTypes.has('TERM_SHEET_PROPOSED')) {
+      fired.push({ text: 'ПРОБЕЛ: Term Sheet подписан, но DD ещё не завершён', confidence: 0.85 })
+    }
+  }
+  if (expert.id === 'babincev') {
+    if (!eventTypes.has('DD_COMPLETED')) {
+      fired.push({ text: 'TRL-ВОПРОС: нет завершённого DD — уровень TRL/MRL неизвестен', confidence: 0.8 })
+    }
+  }
+
+  // Add learned patterns (simple keyword matching)
+  for (const p of learnedPatterns) {
+    if (p.length > 10) {
+      fired.push({ text: `Паттерн: ${p.slice(0, 100)}`, confidence: 0.6, learned: true })
+    }
+  }
+
+  return fired.slice(0, 5) // max 5 patterns
+}
+
+// ── POST /api/expert/debate ───────────────────────────────────
+// BlackRock challenger model: два эксперта дебатируют по сделке
+// Streaming SSE response: data: {json}\n\n
+router.post('/debate', async (req, res) => {
+  const {
+    dealData   = null,
+    dealId     = null,
+    expertAId  = 'gordin',
+    expertBId  = 'babincev',
+  } = req.body
+
+  const expertA = getExperts()[expertAId]
+  const expertB = getExperts()[expertBId]
+
+  // SSE headers
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.flushHeaders()
+
+  const apiBase = getApiBase(req)
+
+  function send(obj) {
+    if (!res.writableEnded) res.write(`data: ${JSON.stringify(obj)}\n\n`)
+  }
+
+  if (!expertA || !expertB) {
+    send({ step: 'error', error: 'Expert not found' })
+    return res.end()
+  }
+
+  // Load deal context
+  let dealTimeline = []
+  if (dealId) dealTimeline = await loadDealTimeline(dealId, apiBase)
+  const dealCtx = dealTimeline.length
+    ? buildDealTimelineContext(dealTimeline)
+    : dealData
+      ? `ДАННЫЕ СДЕЛКИ:\n${JSON.stringify(dealData, null, 2)}`
+      : 'Сделка не указана — дебаты по общим принципам ФСТ НТИ'
+
+  // Announce participants
+  send({
+    step: 'start',
+    expertA: { id: expertA.id, name: expertA.name, avatar: expertA.avatar, color: expertA.color, title: expertA.title },
+    expertB: { id: expertB.id, name: expertB.name, avatar: expertB.avatar, color: expertB.color, title: expertB.title },
+    dealCtxPreview: dealCtx.slice(0, 200),
+  })
+
+  try {
+    // ── Раунд 1: Тезис A ─────────────────────────────────────
+    send({ step: 'thinking', expertId: expertAId, label: 'Формирует инвестиционный тезис...' })
+
+    const thesisA = await callAI(
+      `${dealCtx}\n\nДай первоначальный инвестиционный тезис по этой сделке с позиции своей роли. Будь конкретен: что нравится, что настораживает. 4-6 предложений. Отвечай от первого лица.`,
+      expertA.systemPrompt + `\n\nТы на заседании инвесткомитета ФСТ НТИ. Твой коллега — ${expertB.name} (${expertB.title}), он будет оппонировать твоей позиции. Сформулируй первоначальный тезис.`
+    )
+    send({ step: 'thesis_a', expertId: expertAId, name: expertA.name, avatar: expertA.avatar, color: expertA.color, title: expertA.title, text: thesisA, eventType: 'EXPERT_ARGUMENT_RAISED', round: 1 })
+    emitExpertEvent(expertAId, 'EXPERT_ARGUMENT_RAISED', { context: 'debate', excerpt: thesisA.slice(0, 200), opponent: expertBId }, apiBase).catch(() => {})
+
+    // ── Раунд 2: Оппозиция B ─────────────────────────────────
+    send({ step: 'thinking', expertId: expertBId, label: 'Изучает тезис, готовит оппозицию...' })
+
+    const challengeB = await callAI(
+      `${dealCtx}\n\nТезис коллеги ${expertA.name} (${expertA.title}):\n"${thesisA}"\n\nТвоя задача — challenger. Оспорь конкретные утверждения коллеги с позиции своей экспертизы и добавь то, что он упустил. 4-6 предложений. Отвечай от первого лица.`,
+      expertB.systemPrompt + `\n\nТы в роли challenger на заседании ИК по модели BlackRock. Найди слабые места в аргументах ${expertA.name} и представь альтернативный взгляд. Будь конкретен и технически точен.`
+    )
+    send({ step: 'challenge_b', expertId: expertBId, name: expertB.name, avatar: expertB.avatar, color: expertB.color, title: expertB.title, text: challengeB, eventType: 'ARGUMENT_CHALLENGED', round: 2 })
+    emitExpertEvent(expertBId, 'EXPERT_ARGUMENT_RAISED', { context: 'debate_challenge', excerpt: challengeB.slice(0, 200), opponent: expertAId }, apiBase).catch(() => {})
+
+    // ── Раунд 3: Ребаттал A + финальная позиция ──────────────
+    send({ step: 'thinking', expertId: expertAId, label: 'Отвечает на критику...' })
+
+    const rebuttalA = await callAI(
+      `${dealCtx}\n\nТвой тезис:\n"${thesisA}"\n\nОппонент ${expertB.name} ответил:\n"${challengeB}"\n\nОтветь на критику: с чем согласен, с чем нет и почему. Затем дай финальную позицию: ОДОБРИТЬ / ОТЛОЖИТЬ / ОТКЛОНИТЬ с обязательными условиями если нужны. 4-5 предложений.`,
+      expertA.systemPrompt
+    )
+    send({ step: 'rebuttal_a', expertId: expertAId, name: expertA.name, avatar: expertA.avatar, color: expertA.color, title: expertA.title, text: rebuttalA, eventType: 'EXPERT_EVALUATED', round: 3 })
+
+    // ── Раунд 4: Финальная позиция B ─────────────────────────
+    send({ step: 'thinking', expertId: expertBId, label: 'Формирует финальную позицию...' })
+
+    const positionB = await callAI(
+      `${dealCtx}\n\nИтог дискуссии:\n${expertA.name}: "${thesisA}"\n${expertB.name} (ты): "${challengeB}"\n${expertA.name}: "${rebuttalA}"\n\nДай финальную позицию: ОДОБРИТЬ / ОТЛОЖИТЬ / ОТКЛОНИТЬ. С чем согласен, что остаётся вопросом. 3-4 предложения.`,
+      expertB.systemPrompt
+    )
+    send({ step: 'position_b', expertId: expertBId, name: expertB.name, avatar: expertB.avatar, color: expertB.color, title: expertB.title, text: positionB, eventType: 'EXPERT_EVALUATED', round: 4 })
+
+    // Emit verdicts to EventStore
+    emitExpertEvent(expertAId, 'EXPERT_EVALUATED', { context: 'debate', opponent: expertBId, excerpt: rebuttalA.slice(0, 200) }, apiBase).catch(() => {})
+    emitExpertEvent(expertBId, 'EXPERT_EVALUATED', { context: 'debate', opponent: expertAId, excerpt: positionB.slice(0, 200) }, apiBase).catch(() => {})
+
+    // ── Раунд 5: Синтез (председатель) ───────────────────────
+    send({ step: 'thinking', expertId: 'synthesis', label: 'Председатель синтезирует решение...' })
+
+    const synthesisRaw = await callAI(
+      `Дебаты на инвесткомитете ФСТ НТИ завершены.\n\nСДЕЛКА:\n${dealCtx.slice(0, 600)}\n\n${expertA.name}: "${rebuttalA}"\n${expertB.name}: "${positionB}"\n\nКак председатель ИК синтезируй решение. Верни JSON:\n{\n  "decision": "ОДОБРИТЬ|ОТЛОЖИТЬ|ОТКЛОНИТЬ",\n  "confidence": 0.0-1.0,\n  "consensus": true|false,\n  "consensusScore": 0.0-1.0,\n  "conditions": ["условие 1", "условие 2"],\n  "keyInsight": "главный вывод из дебатов (1 предложение)",\n  "summary": "итог дебатов (2-3 предложения)"\n}`,
+      'Ты — председатель инвесткомитета ФСТ НТИ. Анализируй позиции экспертов и синтезируй единое решение. Консенсус = оба эксперта пришли к одному вердикту. Верни ТОЛЬКО JSON.'
+    )
+
+    let synthesis = {}
+    try {
+      const m = synthesisRaw.match(/\{[\s\S]*\}/)
+      if (m) synthesis = JSON.parse(m[0])
+    } catch { synthesis = { decision: 'ОТЛОЖИТЬ', confidence: 0.5, consensus: false, consensusScore: 0.5, summary: synthesisRaw.slice(0, 300) } }
+
+    send({
+      step: 'synthesis',
+      decision:      synthesis.decision || 'ОТЛОЖИТЬ',
+      confidence:    synthesis.confidence || 0.5,
+      consensus:     synthesis.consensus ?? false,
+      consensusScore: synthesis.consensusScore || 0.5,
+      conditions:    synthesis.conditions || [],
+      keyInsight:    synthesis.keyInsight || '',
+      summary:       synthesis.summary || '',
+      eventType:     'DECISION_MADE',
+    })
+
+    send({ step: 'done' })
+
+  } catch (err) {
+    console.error('[expert/debate]', err)
+    send({ step: 'error', error: err.message })
+  }
+
+  res.end()
+})
+
+/**
+ * GET /api/expert/registry
+ * Список экспертов (из Integram DB или встроенный реестр).
+ * Фронтенд читает отсюда, а не хардкодит.
+ */
+router.get('/registry', (_req, res) => {
+  const experts = getExperts()
+  const list = Object.values(experts).map(e => ({
+    id:     e.id,
+    name:   e.name,
+    title:  e.title,
+    avatar: e.avatar,
+    color:  e.color,
+    riskTolerance: e.cognitiveStyle?.riskTolerance,
+    typicalQuestions: e.cognitiveStyle?.typicalQuestions?.slice(0, 3) || [],
+  }))
+  res.json({ experts: list, total: list.length })
 })
 
 export default router

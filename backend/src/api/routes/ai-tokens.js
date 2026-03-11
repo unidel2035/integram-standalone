@@ -97,7 +97,7 @@ async function callOpenAICompatible(provider, modelId, prompt, systemPrompt) {
   const model = provider === 'deepseek'
     ? (modelId.replace('deepseek/', '') || 'deepseek-chat')
     : provider === 'polza'
-      ? (modelId || 'qwen/qwen-turbo')  // polza accepts model IDs as-is
+      ? (modelId.replace(/^polza\//, '') || 'qwen/qwen-turbo')  // strip polza/ prefix
       : (modelId.replace('openai/', '') || 'gpt-4o')
 
   const res = await fetch(cfg.url, {
@@ -249,7 +249,7 @@ async function callOpenAICompatibleStream(provider, modelId, prompt, systemPromp
   const model = provider === 'deepseek'
     ? (modelId.replace('deepseek/', '') || 'deepseek-chat')
     : provider === 'polza'
-      ? (modelId || 'qwen/qwen-turbo')  // polza accepts model IDs as-is
+      ? (modelId.replace(/^polza\//, '') || 'qwen/qwen-turbo')  // strip polza/ prefix
       : (modelId.replace('openai/', '') || 'gpt-4o')
 
   const upstream = await fetch(cfg.url, {

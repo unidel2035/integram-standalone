@@ -156,6 +156,14 @@ export const TYPE_PROJECTS = 1155
 /**
  * Возвращает нормализованный массив проектов.
  */
+// Parse fullApplication JSON blob embedded in the description field
+function parseFullApplication(description) {
+  if (!description) return {}
+  const m = description.match(/<!--FST_FULL_APPLICATION:([\s\S]*?)-->/)
+  if (!m) return {}
+  try { return JSON.parse(m[1]) } catch { return {} }
+}
+
 export async function getProjects() {
   // Use object/{typeId} endpoint (GET, no _xsrf needed)
   const data = await api(`object/${TYPE_PROJECTS}?JSON_KV`)
@@ -171,13 +179,19 @@ export async function getProjects() {
   }
 
   return objects.map(obj => {
-    const r = reqs[obj.id] || {}
+    const r    = reqs[obj.id] || {}
+    const desc = r['1158'] || ''
+    const fa   = parseFullApplication(desc)
     return {
       id:          obj.id,
       name:        obj.val,
-      ogrn:        r['2237'] || '',              // SHORT
-      amount:      Number(r['2238'] || 0),       // NUMBER
-      description: r['1158'] || '',
+      inn:         fa.inn    || '',
+      ogrn:        fa.ogrn   || '',
+      kpp:         fa.kpp    || '',
+      legalForm:   fa.legalForm   || '',
+      legalAddress: fa.legalAddress || '',
+      amount:      fa.amount ? (fa.amount * 1_000_000) : 0,  // форма хранит млн → руб
+      description: desc,
       submittedAt: r['1159'] || null,
       subfundId:   refId(r, '1178'),             // ref→1082
       stageId:     refId(r, '1180'),             // ref→1084
@@ -192,6 +206,7 @@ export async function getProjects() {
       employees:        Number(r['6167'] || 0),
       patents:          Number(r['6169'] || 0),
       foundedYear:      Number(r['6171'] || 0),
+      mediaRef:         Number(r['53253'] || 0),   // Медиа (arr_id 53253) — прикреплённый питч-дек
     }
   })
 }
@@ -200,12 +215,77 @@ export async function getProject(id) {
   return api(`object/${id}?JSON_KV`)
 }
 
+// ── Digital Twin Model ─────────────────────────────────────────────────────
+
+/**
+ * Читает twinModel из Integram.
+ * Данные хранятся двумя способами:
+ *   1. Числовые поля типа 1155: trl(6155), employees(6167), projectedIRR(6161), marketSizeMln(6163)
+ *   2. JSON-блоб в описании проекта: <!--FST_TWIN_MODEL:{...}-->
+ *
+ * @param {string|number} projectId  — ID объекта типа 1155
+ * @returns {Promise<Object>}        — поля twinModel (mergeable с дефолтами)
+ */
+export async function fetchTwinModel(projectId) {
+  try {
+    const data = await api(`object/${projectId}?JSON_KV`)
+    const r = data.reqs?.[projectId] || {}
+    const desc = r['1158'] || ''
+
+    // Числовые реквизиты типа 1155
+    const fromFields = {
+      trl:          Number(r['6155'] || 0),
+      teamSize:     Number(r['6167'] || 0),
+      projectedIRR: Number(r['6161'] || 0),
+    }
+
+    // JSON-блоб
+    const m = desc.match(/<!--FST_TWIN_MODEL:([\s\S]*?)-->/)
+    const fromBlob = m ? (() => { try { return JSON.parse(m[1]) } catch { return {} } })() : {}
+
+    // Сливаем: блоб приоритетнее числовых полей (более актуальные данные)
+    return { ...fromFields, ...fromBlob }
+  } catch {
+    return {}
+  }
+}
+
+/**
+ * Сохраняет twinModel обратно в Integram.
+ * Числовые поля пишет в реквизиты, остальные — в JSON-блоб внутри описания.
+ *
+ * @param {string|number} projectId
+ * @param {Object}        twinData  — twinModel.value
+ */
+export async function saveTwinModel(projectId, twinData) {
+  // 1. Читаем текущее описание чтобы не затереть fullApplication
+  const cur = await api(`object/${projectId}?JSON_KV`)
+  const r = cur.reqs?.[projectId] || {}
+  let desc = r['1158'] || ''
+
+  // Вырезаем старый блоб twin если есть
+  desc = desc.replace(/<!--FST_TWIN_MODEL:[\s\S]*?-->/, '')
+
+  // Сериализуем twinData без реквизитных полей (они в t*)
+  const { trl, teamSize, projectedIRR, ...rest } = twinData
+  const blob = JSON.stringify(rest)
+  desc = desc.trimEnd() + `\n<!--FST_TWIN_MODEL:${blob}-->`
+
+  // 2. Собираем форму
+  const body = new URLSearchParams({
+    t1158: desc,
+    ...(trl        ? { t6155: trl }        : {}),
+    ...(teamSize   ? { t6167: teamSize }   : {}),
+    ...(projectedIRR ? { t6161: projectedIRR } : {}),
+  })
+
+  return api(`_m_set/${projectId}?JSON_KV`, { method: 'POST', body })
+}
+
 export async function createProject(data) {
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: data.name,
     up: 1, // Required for independent (top-level) objects in Integram
-    t2237: data.ogrn || '',
-    t2238: data.amount || 0,
     t1158: data.description || '',
     t1159: data.submittedAt || new Date().toISOString(),
     ...(data.subfundId ? { t1178: data.subfundId } : {}),
@@ -281,6 +361,10 @@ export async function createProjectFromApplication(application) {
   const fullApplication = {
     companyName: application.companyName,
     inn: application.inn,
+    ogrn: application.ogrn,
+    kpp: application.kpp,
+    legalForm: application.legalForm,
+    legalAddress: application.legalAddress,
     sector: application.sector,
     stage: application.stage,
     foundedYear: application.foundedYear,
@@ -318,8 +402,6 @@ export async function createProjectFromApplication(application) {
   const body = new URLSearchParams({
     [`t${TYPE_PROJECTS}`]: application.companyName,
     up: 1, // Required for independent (top-level) objects in Integram
-    t2237: application.inn || '',
-    t2238: (application.amount || 0) * 1_000_000,
     t1158: descriptionWithExtended,
     t1159: new Date().toISOString(),
     ...(subfundId ? { t1178: subfundId } : {}),
@@ -513,16 +595,21 @@ export async function getDeals(projectId) {
 }
 
 export async function saveDeal(data) {
+  // Embed sharePercent + spvName in Term Sheet JSON block (type 1164 has no dedicated numeric fields for these)
+  const termSheetContent = data.termSheet
+    ? `${data.termSheet}\n<!--FST_DEAL_META:${JSON.stringify({ sharePercent: data.sharePercent, spvName: data.spvName })}-->`
+    : (data.sharePercent || data.spvName)
+      ? `<!--FST_DEAL_META:${JSON.stringify({ sharePercent: data.sharePercent, spvName: data.spvName })}-->`
+      : ''
+
   const body = new URLSearchParams({
     [`t${TYPE_DEALS}`]: data.name || `Сделка ${data.companyName}`,
-    t1165: data.sharePercent || 0,
-    t1166: data.spvName || '',
-    t1167: data.termSheet || '',
-    t1168: data.signDate || new Date().toISOString(),
-    ...(data.projectId  ? { t1185: data.projectId  } : {}),
-    ...(data.decisionId ? { t1190: data.decisionId } : {}),
-    ...(data.finTypeId  ? { t1181: data.finTypeId  } : {}),
-    ...(data.statusId   ? { t1193: data.statusId   } : {})
+    t3505: termSheetContent,                               // Term Sheet (type 2 text)
+    t3506: data.signDate || new Date().toISOString(),      // Дата подписания (type 5 date)
+    ...(data.projectId  ? { t1189: data.projectId  } : {}), // Проект (REF→1155)
+    ...(data.decisionId ? { t1191: data.decisionId } : {}), // Решение ИК (REF→1160)
+    ...(data.finTypeId  ? { t1192: data.finTypeId  } : {}), // Тип финансирования (REF→1086)
+    ...(data.statusId   ? { t1194: data.statusId   } : {}), // Статус сделки (REF→1092)
   })
   return api(`_m_new/${TYPE_DEALS}?JSON_KV`, { method: 'POST', body })
 }
@@ -563,18 +650,19 @@ export async function getPortfolio() {
     let metrics = {}
     try { metrics = JSON.parse(r['3521'] || '{}') } catch {}
 
-    const subfundRaw = refId(r['3524'])
-    const stageRaw   = refId(r['3525'])
+    // MULTI REF fields return "typeId:id1,id2" format in JSON_KV
+    const parseFirstRef = (v) => { if (!v) return null; const p = String(v).split(':'); return p.length === 2 ? p[1].split(',')[0] : null }
+    const subfundRaw = parseFirstRef(r['ref_53251'])
+    const stageRaw   = parseFirstRef(r['ref_53252'])
 
     return {
       id:          obj.id,
       name:        obj.val,
-      kpi:          Number(r['2242'] || 0),     // KPI прогресс, %
-      aiReport:     r['3507'] || '',             // AI отчёт портфельной компании
-      updatedAt:    r['3508'] || null,           // Дата обновления
-      riskStatusId: refId(r['1198']) || null,   // Риск-статус (ref→1088)
-      projectId:    refId(r['1195']) || null,   // Проект (ref→1155)
-      dealId:       refId(r['1197']) || null,   // Сделка (ref→1164)
+      aiReport:     r['3507'] || '',             // AI отчёт (type 2)
+      updatedAt:    r['3508'] || null,           // Дата обновления (type 5)
+      riskStatusId: refId(r['ref_1198'] || r['1198']) || null,  // Риск-статус (REF→1088)
+      projectId:    refId(r['ref_1195'] || r['1195']) || null,  // Проект (REF→1155)
+      dealId:       refId(r['ref_1197'] || r['1197']) || null,  // Сделка (REF→1164)
       // Расширенные поля
       invested:    Number(r['3519'] || 0),
       nav:         Number(r['3520'] || 0),
@@ -596,11 +684,12 @@ export async function getPortfolio() {
   })
 }
 
-export async function updatePortfolioCompany(id, { kpi, aiReport }) {
+export async function updatePortfolioCompany(id, { aiReport, metrics } = {}) {
+  // NOTE: type 1169 has no dedicated KPI field; metrics are stored as JSON in field 3521
   const body = new URLSearchParams()
-  if (kpi      !== undefined) body.set('t1170', kpi)
-  if (aiReport !== undefined) body.set('t1171', aiReport)
-  body.set('t1172', new Date().toISOString())
+  if (aiReport !== undefined) body.set('t3507', aiReport)  // AI отчёт
+  if (metrics  !== undefined) body.set('t3521', typeof metrics === 'string' ? metrics : JSON.stringify(metrics))  // Метрики JSON
+  body.set('t3508', new Date().toISOString())               // Дата обновления
   return api(`_m_set/${id}?JSON_KV`, { method: 'POST', body })
 }
 
@@ -613,11 +702,17 @@ export async function getTranches(dealId) {
 }
 
 export async function createTranche(data) {
+  // TODO: type 1173 has no Amount field; fields 1174/1175/1176 don't exist.
+  // Correct fields: t1199=dealId(REF), t3509=kpiTrigger(text), t3510=payDate(date)
+  // Amount needs a dedicated numeric field added to type 1173.
+  const kpiContent = data.amount
+    ? `${data.kpiTrigger || ''}\n<!--FST_TRANCHE_META:${JSON.stringify({ amount: data.amount })}-->`
+    : (data.kpiTrigger || '')
   const body = new URLSearchParams({
     [`t${TYPE_TRANCHES}`]: `Транш #${data.number}`,
-    t1174: data.amount || 0,
-    t1175: data.kpiTrigger || '',
-    t1176: data.payDate || ''
+    t3509: kpiContent,
+    t3510: data.payDate || '',
+    ...(data.dealId ? { t1199: data.dealId } : {}),
   })
   return api(`_m_new/${TYPE_TRANCHES}?JSON_KV`, { method: 'POST', body })
 }
@@ -717,42 +812,6 @@ export async function getDocumentTemplates(minId = 7610, maxId = 7690) {
     .sort((a, b) => a.num - b.num)
 }
 
-// ── Company / Компания (type 7828) ───────────────────────────────────────
-
-export const TYPE_COMPANY = 7828
-
-/**
- * Создать запись Компания (7828) с реквизитами:
- *   7830=ИНН, 7831=ОГРН, 7832=КПП, 7833=Email, 7834=Телефон,
- *   7835=Сайт, 7836=Форма собственности, 7837=Юр. адрес, 7838=Регион,
- *   7839=ФИО руководителя, 7840=Должность, 7841=Кол-во сотрудников,
- *   7842=Год основания, 7843=Выручка, 7844=Команда, 7845=Отрасль, 7846=Резидентство
- */
-export async function createCompany(company) {
-  const body = new URLSearchParams({
-    [`t${TYPE_COMPANY}`]: company.name || 'Новая компания',
-    up: 1,
-    ...(company.inn          ? { t7830: company.inn }          : {}),
-    ...(company.ogrn         ? { t7831: company.ogrn }         : {}),
-    ...(company.kpp          ? { t7832: company.kpp }          : {}),
-    ...(company.email        ? { t7833: company.email }        : {}),
-    ...(company.phone        ? { t7834: company.phone }        : {}),
-    ...(company.website      ? { t7835: company.website }      : {}),
-    ...(company.legalForm    ? { t7836: company.legalForm }    : {}),
-    ...(company.legalAddress ? { t7837: company.legalAddress } : {}),
-    ...(company.region       ? { t7838: company.region }       : {}),
-    ...(company.ceoName      ? { t7839: company.ceoName }      : {}),
-    ...(company.ceoTitle     ? { t7840: company.ceoTitle }     : {}),
-    ...(company.teamSize != null ? { t7841: company.teamSize } : {}),
-    ...(company.foundedYear  ? { t7842: company.foundedYear }  : {}),
-    ...(company.revenue3y    ? { t7843: company.revenue3y }    : {}),
-    ...(company.teamDesc     ? { t7844: company.teamDesc }     : {}),
-    ...(company.sector       ? { t7845: company.sector }       : {}),
-    ...(company.residency    ? { t7846: company.residency }    : {}),
-  })
-  return api(`_m_new/${TYPE_COMPANY}?JSON_KV`, { method: 'POST', body })
-}
-
 // ── Applications / Заявки (type 1956) ────────────────────────────────────
 
 export const TYPE_APPLICATIONS = 1956
@@ -789,8 +848,6 @@ export async function createApplication(application) {
   const body = new URLSearchParams({
     [`t${TYPE_APPLICATIONS}`]: application.companyName || 'Новая заявка',
     up: 1,
-    // --- Ссылка на Компанию ---
-    ...(application.companyId ? { t7829: application.companyId } : {}),
     // --- Базовые поля ---
     ...(application.description  ? { t3511: application.description }         : {}),
     ...(application.inn          ? { t2003: application.inn }                 : {}),
@@ -803,7 +860,8 @@ export async function createApplication(application) {
     ...(application.rdBacklog        ? { t7706: application.rdBacklog }        : {}),
     ...(application.trl != null      ? { t7708: application.trl }              : {}),
     ...(application.timeline         ? { t7710: application.timeline }         : {}),
-    ...(application.projectCost != null ? { t7712: application.projectCost }   : {}),
+    // NOTE: t7712 (Стоимость проекта) has wrong type=5 (DATE) in DB — skip write to avoid data corruption
+    // projectCost is preserved in fullApplication JSON blob in type 1155
     ...(application.potentialCustomers ? { t7714: application.potentialCustomers } : {}),
     ...(application.monetizationModel  ? { t7716: application.monetizationModel }  : {}),
     ...(application.rid              ? { t7718: application.rid }              : {}),

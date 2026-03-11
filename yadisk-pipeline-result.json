@@ -1,0 +1,765 @@
+{
+  "stats": {
+    "folders": 5,
+    "docs": 139,
+    "skipped": 70,
+    "events": 0,
+    "dupes": 0,
+    "errors": 0,
+    "profiles": 0
+  },
+  "results": [
+    {
+      "folder": "1. 400-726_Многофункциональный конвертоплан Р-75_ООО Эколибри-БТ",
+      "project": {
+        "id": "53280",
+        "name": "ООО Эколибри-БТ — Конвертоплан Р-75",
+        "desc": "\n\n\n\n<!--FST_FULL_APPLICATION:{\"description\":\"ООО 'Эколибри-БТ' занимается реализацией проекта НТИ по созданию многофункционального конвертоплана Р-75 в рамках дорожной карты 'Аэронет'.\",\"sector\":\"авиационная промышленность\",\"key_customers\":[],\"strengths\":[],\"risks\":[],\"ip_count\":1}-->"
+      },
+      "actorId": 64418,
+      "profile": {
+        "description": "ООО 'Эколибри-БТ' реализует проект НТИ по созданию многофункционального конвертоплана Р-75 в рамках дорожной карты 'Аэронет'.",
+        "key_customers": [],
+        "strengths": [],
+        "risks": [],
+        "sector": "авиационная промышленность",
+        "ip_count": 1
+      },
+      "events": [
+        {
+          "type": "Технологическое",
+          "date": "2023-11-16",
+          "description": "Зарегистрирована программа для ЭВМ 'FaradPower'",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3051
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-05-27",
+          "description": "Избран Совет директоров Общества в составе: Рогозин Алексей Дмитриевич, Сметанин Виталий Сергеевич, Павлова Татьяна Викторовна.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Финансовое",
+          "date": null,
+          "description": "Потребные инвестиции для проекта составляют 770 млн руб.",
+          "amount_mln": 770,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 10,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024",
+          "description": "Нацпроект «Беспилотные авиационные системы» предусматривает финансирование в объёме 898,4 млрд руб. до 2030 года.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 9,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Финансовое",
+          "date": null,
+          "description": "Заключение договора на выполнение научно-исследовательской опытно-конструкторской работы по разработке беспилотной авиационной системы.",
+          "amount_mln": 12,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": null,
+          "description": "Заключение договора на выполнение научно-исследовательской опытно-конструкторской работы по разработке беспилотной авиационной системы.",
+          "amount_mln": 12,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-05-27",
+          "description": "Избран Совет директоров Общества в составе Рогозина А.Д., Сметанина В.С. и Павловой Т.В.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-04",
+          "description": "Утвержден устав ООО «Эколибри-Беспилотные технологии».",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-04-10",
+          "description": "Утверждена новая редакция устава ООО 'Эколибри-Беспилотные технологии' и решено произвести государственную регистрацию вносимых изменений в учредительные документы.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-04",
+          "description": "Заключение договора конвертируемого займа между ООО 'Эколибри-БТ' и ООО 'Спутник - Управление активами НТИ'.",
+          "amount_mln": 40,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024",
+          "description": "Инвестор предоставляет инвестиции ООО 'Эколибри – БТ' в качестве конвертируемого займа.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024",
+          "description": "Заключение соглашения о предоставлении опциона на покупку доли в уставном капитале ООО 'Эколибри – БТ'.",
+          "amount_mln": 40,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        }
+      ]
+    },
+    {
+      "folder": "2. 400-737_ЭкстраСинема_ООО ЭкстраСинема",
+      "project": {
+        "id": "53283",
+        "name": "ООО ЭкстраСинема",
+        "desc": "\n\n\n<!--FST_FULL_APPLICATION:{\"description\":\"ООО «Экстра Синема» уведомляет о смене своего юридического адреса в пределах одного населенного пункта.\",\"key_customers\":[],\"strengths\":[],\"risks\":[],\"sector\":\"Финансовые услуги\",\"ip_count\":2}-->"
+      },
+      "actorId": 64420,
+      "profile": {
+        "description": "ООО «Экстра Синема» уведомляет о смене своего юридического адреса в пределах одного населенного пункта.",
+        "sector": "Финансовые услуги",
+        "key_customers": [],
+        "strengths": [],
+        "risks": [],
+        "ip_count": 2
+      },
+      "events": [
+        {
+          "type": "Финансовое",
+          "date": "2024-07-04",
+          "description": "Получение транша №1 в соответствии с договором конвертируемого займа.",
+          "amount_mln": 50,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 10,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-07-10",
+          "description": "Перечисление средств во вклад (депозит) по договору.",
+          "amount_mln": 25,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 8,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-07-04",
+          "description": "Оплата в TN AZS YAKUTSK RUS на сумму 2 999.96 руб.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 1,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-07-11",
+          "description": "Оплата по договору №Е-019 от 14.12.23г. за кинопоказы на сумму 11 940.00 руб.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 3,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-08-13",
+          "description": "Перевод средств между счетами на сумму 100 000.00 руб.",
+          "amount_mln": 0.1,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2023-11",
+          "description": "Рассмотрение концепции проекта «Экстра Синема» и рекомендация получить аналитическую справку о соответствии проекта целям технологического лидерства и суверенитета РФ.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "IC_PROTOCOL",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-02",
+          "description": "Подписание соглашения об основных условиях сделки для реализации проекта «Экстра Синема».",
+          "amount_mln": 100,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 10,
+          "source": "IC_PROTOCOL",
+          "typeId": 3052
+        },
+        {
+          "type": "Технологическое",
+          "date": "2023-08-24",
+          "description": "Получение патента на полезную модель №220094.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 1,
+          "magnitude": 8,
+          "source": "UNKNOWN",
+          "typeId": 3051
+        },
+        {
+          "type": "Технологическое",
+          "date": "2023-05-25",
+          "description": "Регистрация программы ЭВМ No 2023660901 Киноплатформа ЭкстраСинема.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 1,
+          "magnitude": 7,
+          "source": "UNKNOWN",
+          "typeId": 3051
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-06",
+          "description": "Выполнение предварительных условий для перечисления транша №1 в размере 50 млн рублей.",
+          "amount_mln": 50,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 10,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-06-03",
+          "description": "Подписание договора об осуществлении прав участников и соглашений о предоставлении опциона на заключение договора купли-продажи доли в ООО «Экстра синема».",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-06-13",
+          "description": "Утверждение новой редакции устава на общем собрании участников общества.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-06-13",
+          "description": "Утвержден устав ООО «Экстра синема» протоколом №2/24 общего собрания участников.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-06-13",
+          "description": "Утвержден устав ООО «Экстра синема» протоколом общего собрания участников.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-06",
+          "description": "Внесены изменения в Единый государственный реестр юридических лиц о том, что ООО 'ЭкстраСинема' действует на основании устава.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Технологическое",
+          "date": "2023-08-24",
+          "description": "Получение патента на полезную модель №220094.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 1,
+          "magnitude": 8,
+          "source": "UNKNOWN",
+          "typeId": 3051
+        },
+        {
+          "type": "Технологическое",
+          "date": "2023-05-25",
+          "description": "Регистрация программы ЭВМ 'Киноплатформа ЭкстраСинема'.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 1,
+          "magnitude": 7,
+          "source": "UNKNOWN",
+          "typeId": 3051
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2023-11-17",
+          "description": "Проектному комитету НТИ рекомендовано присвоить проекту «Экстра Синема» статус проекта НТИ при условии получения аналитической справки от АНО «Платформа НТИ».",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "IC_PROTOCOL",
+          "typeId": 3049
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-06-03",
+          "description": "Заключение договора конвертируемого займа №2 и договора об осуществлении прав участников.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2024-11",
+          "description": "В Единый государственный реестр юридических лиц внесены изменения в сведения о юридическом лице ООО 'ЭкстраСинема'.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-11-22",
+          "description": "Уведомление о выполнении предварительных условий для перечисления транша №2 в размере 50 млн рублей.",
+          "amount_mln": 50,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Рыночное",
+          "date": "2024-11",
+          "description": "Открытие не менее 40 кинозалов в Республике Саха (Якутия).",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 1,
+          "magnitude": 8,
+          "source": "UNKNOWN",
+          "typeId": 3050
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-06-03",
+          "description": "Заключение договора конвертируемого займа между ООО 'ЭкстраСинема' и ООО 'Спутник - Управление активами НТИ'.",
+          "amount_mln": 100,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-06",
+          "description": "Заключение соглашения о предоставлении опциона на заключение договора купли-продажи доли в уставном капитале ООО «Экстра синема».",
+          "amount_mln": 100,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-06-03",
+          "description": "Заключение договора об осуществлении прав участников в отношении ООО «Экстра Синема».",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-06",
+          "description": "Заключение соглашения о предоставлении опциона на заключение договора купли-продажи доли в уставном капитале ООО «Экстра синема».",
+          "amount_mln": 100,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "UNKNOWN",
+          "date": "2024-08-09",
+          "description": "Документ подписан электронной подписью от АО 'Корпорация Попов Радио'",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 1,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": null
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-12-12",
+          "description": "ООО ЭкстраСинема получило транш №2 в размере 50 миллионов рублей по договору конвертируемого займа.",
+          "amount_mln": 50,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 10,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024",
+          "description": "Заключение соглашения об основных условиях сделки для создания венчурных фондов.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "IC_PROTOCOL",
+          "typeId": 3052
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2023-11-17",
+          "description": "Присвоен статус проекта НТИ при условии получения аналитической справки от АНО «Платформа НТИ».",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "IC_PROTOCOL",
+          "typeId": 3049
+        },
+        {
+          "type": "Регуляторное",
+          "date": "2025-06-20",
+          "description": "ООО «Экстра Синема» сменило юридический адрес на Российская Федерация, Республика Саха (Якутия), г. Якутск, ул. Труда, 1.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        }
+      ]
+    },
+    {
+      "folder": "3. 400-772_Сверхлегкая ракета_ООО 3Д Исследования и Разработки",
+      "project": {
+        "id": "53286",
+        "name": "ООО 3Д Исследования и Разработки — Сверхлегкая ракета",
+        "desc": "\n\n\n\n<!--FST_FULL_APPLICATION:{\"description\":\"ООО '3Д Исследования и Разработки' занимается созданием ракеты-носителя сверхлегкого класса в рамках проекта НТИ.\",\"sector\":\"Аэрокосмическая\",\"key_customers\":[],\"strengths\":[],\"risks\":[]}-->"
+      },
+      "actorId": 64422,
+      "profile": {
+        "description": "ООО '3Д Исследования и Разработки' занимается созданием ракеты-носителя сверхлёгкого класса в рамках проекта НТИ.",
+        "sector": "Аэрокосмическая промышленность",
+        "key_customers": [],
+        "strengths": [],
+        "risks": []
+      },
+      "events": [
+        {
+          "type": "Финансовое",
+          "date": "2024-12-11",
+          "description": "Проведена оценка рыночной стоимости 100% долей участия в уставном капитале ООО '3Д Исследования и разработки'.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "EXPERT",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-12-09",
+          "description": "Инвесторы внесли инвестиции в размере 60 млн рублей в уставный капитал компании.",
+          "amount_mln": 60,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "IC_PROTOCOL",
+          "typeId": 3052
+        }
+      ]
+    },
+    {
+      "folder": "4. 400-776_Конвертоплан Эра_ООО ЭраАэро",
+      "project": {
+        "id": "53289",
+        "name": "ООО ЭраАэро — Конвертоплан Эра",
+        "desc": "\n\n\n\n<!--FST_FULL_APPLICATION:{\"description\":\"Разработка масштабируемой платформы беспилотных авиационных систем типа конвертоплан «Дрон ЭРА» для мониторинга и доставки грузов.\",\"sector\":\"Беспилотные авиационные системы\",\"key_customers\":[],\"strengths\":[],\"risks\":[],\"trl\":5,\"headcount\":31,\"stage\":\"НИОКР и организация опытного производства\"}-->"
+      },
+      "actorId": 64424,
+      "profile": {
+        "description": "Разработка масштабируемой платформы беспилотных авиационных систем типа конвертоплан «Дрон ЭРА» для мониторинга и доставки грузов.",
+        "sector": "Беспилотные авиационные системы",
+        "key_customers": [],
+        "strengths": [],
+        "risks": [],
+        "trl": 5,
+        "headcount": 31,
+        "stage": "НИОКР и организация опытного производства"
+      },
+      "events": [
+        {
+          "type": "Регуляторное",
+          "date": "2024-10-24",
+          "description": "Проведена тщательная проверка бизнес-параметров, финансовых и юридических аспектов деятельности ООО 'ЭраАэро'.",
+          "amount_mln": null,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3049
+        },
+        {
+          "type": "Финансовое",
+          "date": "2025-01-15",
+          "description": "Заключение договора о привлечении финансирования в размере 100 млн рублей от Инвестора.",
+          "amount_mln": 100,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-12-24",
+          "description": "Формирование выписки операций по лицевому счету ООО 'Эра Аэро' в Сбербанке.",
+          "amount_mln": 10.03113345,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024",
+          "description": "Инвестор предоставляет инвестиции Обществу в размере 100 млн рублей.",
+          "amount_mln": 100,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "IC_PROTOCOL",
+          "typeId": 3052
+        },
+        {
+          "type": "Технологическое",
+          "date": "2024-09-01",
+          "description": "Начало проведения НИОКР по доработке опытного образца и организации опытного производства конвертопланов.",
+          "amount_mln": null,
+          "delta_trl": 4,
+          "probability": 0.9,
+          "magnitude": 10,
+          "source": "DESCRIPTION",
+          "typeId": 3051
+        },
+        {
+          "type": "Финансовое",
+          "date": "2025-01-15",
+          "description": "ООО 'Визион' внесло 50 000 рублей в общее имущество товарищества 'Фонд технологий Будущего НТИ'",
+          "amount_mln": 0.05,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2025-01-15",
+          "description": "ООО 'ТОЛЬЯТТИ ИНВЕСТ' осуществило платёж в размере 49 975 000 рублей на счёт ООО 'ВИЗИОН' в рамках договора N69/265-Н/77-2023-3-1326 от 30.11.2023.",
+          "amount_mln": 49.975,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-12-26",
+          "description": "Вклад в общее имущество товарищества ИТ 'Фонд технологий Будущего НТИ'",
+          "amount_mln": 49.975,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        }
+      ]
+    },
+    {
+      "folder": "5. 400-773_Гигафабрика_ООО ИНЭСИС",
+      "project": {
+        "id": "53292",
+        "name": "ООО ИНЭСИС — Гигафабрика",
+        "desc": "\n\n\n<!--FST_FULL_APPLICATION:{\"description\":\"Строительство завода по производству литий-ионных аккумуляторных батарей производительностью 4 ГВт-ч в год на территории ОЭЗ Тольятти.\",\"sector\":\"Производство литий-ионных аккумуляторов\",\"key_customers\":[\"Отечественные и мировые производители электротранспорта, БПЛА, СИМ, ССНЭ\"],\"strengths\":[\"Комбинаторный инновационный продукт\",\"Высокая энергоотдача при меньшем весе\",\"Сбалансированные технические показатели\"],\"risks\":[],\"trl\":5,\"stage\":\"Разработка и строительство\"}-->"
+      },
+      "actorId": 64426,
+      "profile": {
+        "description": "Строительство завода по производству литий-ионных аккумуляторных батарей производительностью 4 ГВт-ч в год на территории ОЭЗ Тольятти.",
+        "key_customers": [
+          "Отечественные и мировые производители электротранспорта, БПЛА, СИМ, ССНЭ"
+        ],
+        "strengths": [
+          "Комбинаторный инновационный продукт",
+          "Высокая энергоотдача при меньшем весе",
+          "Сбалансированные технические показатели"
+        ],
+        "risks": [],
+        "sector": "Производство литий-ионных аккумуляторов",
+        "trl": 5,
+        "stage": "Разработка и строительство"
+      },
+      "events": [
+        {
+          "type": "Финансовое",
+          "date": "2024-12-20",
+          "description": "Инвестиционное товарищество 'Фонд суверенных технологий НТИ' планирует внести вклад в размере 349 713 755 рублей 65 копеек в ООО 'ИНЭСИС'.",
+          "amount_mln": 349.714,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024-12-26",
+          "description": "Вклад в общее имущество товарищества ИТ 'Фонд технологий Будущего НТИ' на сумму 349 825 000 рублей.",
+          "amount_mln": 349.825,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2025-01-15",
+          "description": "ПАО Сбербанк осуществило платёж в размере 349 825 000 рублей на счёт ООО 'Визион' в рамках вклада в общее имущество товарищества 'Фонд технологий Будущего НТИ'.",
+          "amount_mln": 349.825,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2025-01-15",
+          "description": "ООО ИНЭСИС — Гигафабрика произвело платёж в размере 350 тысяч рублей на счёт ООО 'Визион'.",
+          "amount_mln": 0.35,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2025-01-15",
+          "description": "Заключение договора об осуществлении прав участников в отношении ООО «ИНЭСИС».",
+          "amount_mln": 7000,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 10,
+          "source": "UNKNOWN",
+          "typeId": 3052
+        },
+        {
+          "type": "Финансовое",
+          "date": "2024",
+          "description": "Инвестор предоставляет инвестиции Обществу в размере 100 млн рублей.",
+          "amount_mln": 100,
+          "delta_trl": null,
+          "probability": 0.9,
+          "magnitude": 5,
+          "source": "IC_PROTOCOL",
+          "typeId": 3052
+        }
+      ]
+    }
+  ]
+}

@@ -1,60 +1,63 @@
 <template>
-  <FstPageLayout title="🎯 Система интерактивных квизов" subtitle="Интерактивные мини-квизы с геймификацией для проверки знаний после изучения модулей">
+  <FstPageLayout>
+    <template #header>
+      <div class="qz-title-group">
+        <span class="qz-live-dot" />
+        <span class="qz-title">Квизы</span>
+        <span class="qz-sep">·</span>
+        <span class="qz-sub">геймификация и проверка знаний</span>
+      </div>
+    </template>
 
-    <!-- Gamification Panel -->
-    <GamificationPanel />
+    <div class="qz-content">
 
-    <Divider />
+      <!-- Gamification Panel -->
+      <GamificationPanel />
 
-    <!-- Features Overview -->
-    <Card>
-      <template #title>
-        <h2>Возможности системы</h2>
-      </template>
-      <template #content>
+      <!-- Features Overview -->
+      <div class="qz-section-card">
+        <div class="qz-section-title">
+          <i class="pi pi-list"></i> Возможности системы
+        </div>
         <div class="features-grid">
           <div class="feature-card">
             <i class="pi pi-question-circle feature-icon"></i>
-            <h3>5 типов вопросов</h3>
-            <p>Multiple choice, True/False, Fill in the blank, Drag & Drop, Scenario</p>
+            <div class="feature-title">5 типов вопросов</div>
+            <p>Multiple choice, True/False, Fill in the blank, Drag &amp; Drop, Scenario</p>
           </div>
           <div class="feature-card">
             <i class="pi pi-star feature-icon"></i>
-            <h3>XP и уровни</h3>
+            <div class="feature-title">XP и уровни</div>
             <p>Получайте 10 XP за правильный ответ, растите в уровнях</p>
           </div>
           <div class="feature-card">
             <i class="pi pi-trophy feature-icon"></i>
-            <h3>Бейджи</h3>
+            <div class="feature-title">Бейджи</div>
             <p>Разблокируйте достижения за идеальные результаты и серии</p>
           </div>
           <div class="feature-card">
             <i class="pi pi-fire feature-icon"></i>
-            <h3>Серии</h3>
+            <div class="feature-title">Серии</div>
             <p>Занимайтесь каждый день, чтобы поддерживать streak</p>
           </div>
           <div class="feature-card">
             <i class="pi pi-sparkles feature-icon"></i>
-            <h3>AI-генерация</h3>
+            <div class="feature-title">AI-генерация</div>
             <p>Создавайте новые вопросы с помощью искусственного интеллекта</p>
           </div>
           <div class="feature-card">
             <i class="pi pi-chart-line feature-icon"></i>
-            <h3>Статистика</h3>
+            <div class="feature-title">Статистика</div>
             <p>Отслеживайте свой прогресс и средние баллы</p>
           </div>
         </div>
-      </template>
-    </Card>
+      </div>
 
-    <Divider />
-
-    <!-- Available Quizzes -->
-    <Card>
-      <template #title>
-        <h2>Доступные квизы</h2>
-      </template>
-      <template #content>
+      <!-- Available Quizzes -->
+      <div class="qz-section-card">
+        <div class="qz-section-title">
+          <i class="pi pi-list-check"></i> Доступные квизы
+        </div>
         <div class="quiz-list">
           <div
             v-for="module in availableQuizzes"
@@ -62,8 +65,8 @@
             class="quiz-item"
           >
             <div class="quiz-info">
-              <h3>{{ module.title }}</h3>
-              <p>{{ module.questionCount }} вопросов</p>
+              <div class="quiz-item-title">{{ module.title }}</div>
+              <div class="quiz-item-meta">{{ module.questionCount }} вопросов</div>
               <div v-if="module.bestScore !== null" class="quiz-stats">
                 <Tag
                   :value="`Лучший результат: ${module.bestScore}%`"
@@ -81,17 +84,13 @@
             </div>
           </div>
         </div>
-      </template>
-    </Card>
+      </div>
 
-    <Divider />
-
-    <!-- How to Integrate -->
-    <Card>
-      <template #title>
-        <h2>Как добавить квиз на страницу модуля</h2>
-      </template>
-      <template #content>
+      <!-- How to Integrate -->
+      <div class="qz-section-card">
+        <div class="qz-section-title">
+          <i class="pi pi-code"></i> Как добавить квиз на страницу модуля
+        </div>
         <Tabs value="0">
           <TabList>
             <Tab value="0">Простой способ</Tab>
@@ -113,57 +112,53 @@
             </TabPanel>
           </TabPanels>
         </Tabs>
-      </template>
-    </Card>
+      </div>
 
-    <Divider />
-
-    <!-- Example Quiz Section -->
-    <Card>
-      <template #title>
-        <h2>Попробуйте демо-квиз</h2>
-      </template>
-      <template #content>
-        <p>Проверьте, как работает система квизов:</p>
+      <!-- Demo Quiz -->
+      <div class="qz-section-card">
+        <div class="qz-section-title">
+          <i class="pi pi-play"></i> Попробуйте демо-квиз
+        </div>
+        <p style="margin: 0 0 12px; font-size: 0.875rem; color: var(--p-text-muted-color);">Проверьте, как работает система квизов:</p>
         <div class="demo-actions">
           <Button
             label="Демо: AI-инвесткомитет"
             icon="pi pi-play"
             @click="openDemoQuiz('fst-committee')"
-            size="large"
+            size="small"
           />
           <Button
             label="Демо: Структура сделки"
             icon="pi pi-play"
             @click="openDemoQuiz('fst-deal')"
             outlined
-            size="large"
+            size="small"
           />
           <Button
             label="Демо: Мониторинг портфеля"
             icon="pi pi-play"
             @click="openDemoQuiz('fst-portfolio')"
             outlined
-            size="large"
+            size="small"
           />
         </div>
-      </template>
-    </Card>
+      </div>
+
+    </div>
   </FstPageLayout>
 </template>
 
 <script setup>
 import { computed, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import Card from 'primevue/card'
 import Button from 'primevue/button'
-import Divider from 'primevue/divider'
 import Tabs from 'primevue/tabs'
 import TabList from 'primevue/tablist'
 import Tab from 'primevue/tab'
 import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import Tag from 'primevue/tag'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import GamificationPanel from '@/components/GamificationPanel.vue'
 import QuizButton from '@/components/QuizButton.vue'
 import { QUIZ_DATA, getAvailableQuizModules } from '@/config/quizData'
@@ -264,7 +259,6 @@ function escapeHtml(text) {
 }
 
 onMounted(async () => {
-  // Highlight all code blocks in parallel
   const [simple, composable, quizData] = await Promise.all([
     highlightCode(CODE_SIMPLE, 'markup').catch(() => escapeHtml(CODE_SIMPLE)),
     highlightCode(CODE_COMPOSABLE, 'markup').catch(() => escapeHtml(CODE_COMPOSABLE)),
@@ -301,7 +295,6 @@ function getScoreSeverity(score) {
 }
 
 function openDemoQuiz(moduleId) {
-  // Navigate to the actual module page where quiz is integrated
   const routeMap = {
     'fst-committee': '/fst-committee',
     'fst-deal': '/fst-deal',
@@ -316,7 +309,138 @@ function openDemoQuiz(moduleId) {
 </script>
 
 <style scoped>
-/* Light theme token colors (default) */
+/* ── Header ── */
+.qz-title-group { display: flex; align-items: center; gap: 8px; }
+.qz-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--p-primary-color); flex-shrink: 0; animation: qz-pulse 2s infinite; }
+@keyframes qz-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.qz-title { font-size: 14px; font-weight: 600; color: var(--p-text-color); }
+.qz-sep { color: var(--p-text-muted-color); }
+.qz-sub { font-size: 0.82rem; color: var(--p-text-muted-color); font-weight: 400; }
+
+/* ── Content wrapper ── */
+.qz-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+/* ── Section cards ── */
+.qz-section-card {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.qz-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--p-text-muted-color);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Features grid ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.feature-card {
+  text-align: center;
+  padding: 16px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  transition: border-color 0.15s;
+}
+
+.feature-card:hover {
+  border-color: var(--p-primary-color);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  color: var(--p-primary-color);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.feature-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.feature-card p {
+  margin: 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ── Quiz list ── */
+.quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quiz-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+  font-size: 0.875rem;
+}
+
+.quiz-item:hover {
+  border-color: var(--p-primary-color);
+}
+
+.quiz-info { flex: 1; min-width: 0; }
+
+.quiz-item-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.quiz-item-meta {
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 4px;
+}
+
+.quiz-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.attempt-count {
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color);
+}
+
+.quiz-actions { flex-shrink: 0; }
+
+/* ── Demo actions ── */
+.demo-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Code block ── */
 pre.code-block {
   --code-bg: var(--p-surface-100, #f8f9fa);
   --code-text: var(--p-text-color, #1e293b);
@@ -333,7 +457,6 @@ pre.code-block {
   --code-class: #8a5700;
 }
 
-/* Dark theme token colors */
 :root.app-dark pre.code-block {
   --code-bg: var(--p-surface-900, #1e1e2e);
   --code-text: var(--p-text-color, #e2e8f0);
@@ -352,199 +475,46 @@ pre.code-block {
 
 pre.code-block {
   background: var(--code-bg);
-  padding: 1.5rem;
+  padding: 16px;
   border-radius: 8px;
   overflow-x: auto;
-  margin: 1rem 0;
-  border: 1px solid var(--p-surface-200, var(--surface-border));
-}
-
-:root.app-dark pre.code-block {
-  border-color: var(--p-surface-700, var(--surface-border));
+  margin: 10px 0 0;
+  border: 1px solid var(--p-content-border-color);
 }
 
 pre.code-block code {
   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   line-height: 1.7;
   color: var(--code-text);
 }
 
-/* Prism token styles — adaptive light/dark via CSS custom properties */
 pre.code-block :deep(.token.comment),
 pre.code-block :deep(.token.prolog),
 pre.code-block :deep(.token.doctype),
-pre.code-block :deep(.token.cdata) {
-  color: var(--code-comment);
-  font-style: italic;
-}
-
-pre.code-block :deep(.token.punctuation) {
-  color: var(--code-punctuation);
-}
-
+pre.code-block :deep(.token.cdata) { color: var(--code-comment); font-style: italic; }
+pre.code-block :deep(.token.punctuation) { color: var(--code-punctuation); }
 pre.code-block :deep(.token.tag),
-pre.code-block :deep(.token.tag .punctuation) {
-  color: var(--code-tag);
-}
-
-pre.code-block :deep(.token.attr-name) {
-  color: var(--code-attr-name);
-}
-
+pre.code-block :deep(.token.tag .punctuation) { color: var(--code-tag); }
+pre.code-block :deep(.token.attr-name) { color: var(--code-attr-name); }
 pre.code-block :deep(.token.attr-value),
 pre.code-block :deep(.token.attr-value .punctuation),
-pre.code-block :deep(.token.string) {
-  color: var(--code-string);
-}
-
-pre.code-block :deep(.token.keyword) {
-  color: var(--code-keyword);
-}
-
-pre.code-block :deep(.token.function) {
-  color: var(--code-function);
-}
-
+pre.code-block :deep(.token.string) { color: var(--code-string); }
+pre.code-block :deep(.token.keyword) { color: var(--code-keyword); }
+pre.code-block :deep(.token.function) { color: var(--code-function); }
 pre.code-block :deep(.token.number),
-pre.code-block :deep(.token.boolean) {
-  color: var(--code-number);
-}
-
-pre.code-block :deep(.token.operator) {
-  color: var(--code-operator);
-}
-
-pre.code-block :deep(.token.property) {
-  color: var(--code-property);
-}
-
+pre.code-block :deep(.token.boolean) { color: var(--code-number); }
+pre.code-block :deep(.token.operator) { color: var(--code-operator); }
+pre.code-block :deep(.token.property) { color: var(--code-property); }
 pre.code-block :deep(.token.class-name),
-pre.code-block :deep(.token.builtin) {
-  color: var(--code-class);
-}
-
+pre.code-block :deep(.token.builtin) { color: var(--code-class); }
 pre.code-block :deep(.token.script),
-pre.code-block :deep(.token.language-javascript) {
-  color: var(--code-text);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1rem;
-}
-
-.feature-card {
-  text-align: center;
-  padding: 1.5rem;
-  border: 2px solid var(--surface-border);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-  border-color: var(--p-primary-color);
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 10%, transparent);
-}
-
-.feature-icon {
-  font-size: 2.5rem;
-  color: var(--p-primary-color);
-  margin-bottom: 1rem;
-}
-
-.feature-card h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.feature-card p {
-  margin: 0;
-  color: var(--p-text-secondary-color);
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.quiz-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.quiz-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border: 2px solid var(--surface-border);
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.quiz-item:hover {
-  border-color: var(--p-primary-color);
-  background: var(--surface-hover);
-}
-
-.quiz-info h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.quiz-info p {
-  margin: 0 0 0.5rem 0;
-  color: var(--p-text-secondary-color);
-  font-size: 0.9rem;
-}
-
-.quiz-stats {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.attempt-count {
-  font-size: 0.85rem;
-  color: var(--p-text-secondary-color);
-}
-
-.quiz-actions {
-  flex-shrink: 0;
-}
-
-.demo-actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-top: 1rem;
-}
+pre.code-block :deep(.token.language-javascript) { color: var(--code-text); }
 
 @media (max-width: 768px) {
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .quiz-item {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-
-  .quiz-actions {
-    width: 100%;
-  }
-
-  .demo-actions {
-    flex-direction: column;
-  }
-
-  .demo-actions button {
-    width: 100%;
-  }
+  .features-grid { grid-template-columns: 1fr; }
+  .quiz-item { flex-direction: column; gap: 10px; align-items: flex-start; }
+  .quiz-actions { width: 100%; }
+  .demo-actions { flex-direction: column; }
 }
 </style>
