@@ -229,34 +229,6 @@ const arenaMode = ref('scenarios')
 // Possible moves для сценарий-плеера
 const possibleMoves = computed(() => props.possible || [])
 
-// ─── Атаки + звук ────────────────────────────────────────────────────────────
-function resolveDamage(move) {
-  // move.type → ищем в boss.attacks всех боссов
-  for (const { boss } of activeBosses.value) {
-    const atk = boss.attacks?.find(a => a.type === move.type)
-    if (atk?.damage) return atk.damage
-  }
-  return 100
-}
-
-function handleAttack(move) {
-  playHit(resolveDamage(move))
-  emit('attack', move)
-}
-
-// Применить сценарий — пробрасываем события наверх поочерёдно
-function onApplyScenario(events) {
-  for (const evt of events) {
-    playHit(resolveDamage(evt))
-    emit('attack', evt)
-  }
-}
-
-// Победа над боссом — звук
-watch(bossesDefeated, (now, prev) => {
-  if (now > (prev ?? 0)) playVictory()
-})
-
 // ─── Проекты для выбора (обогащённые) ────────────────────────────────────────
 const pickableProjects = computed(() =>
   props.projects.map(p => {
@@ -343,6 +315,32 @@ const activeBosses = computed(() =>
 
 const bossesDefeated = computed(() => activeBosses.value.filter(b => b.state.defeated).length)
 const bossesActive   = computed(() => activeBosses.value.filter(b => !b.state.defeated).length)
+
+// ─── Атаки + звук ────────────────────────────────────────────────────────────
+function resolveDamage(move) {
+  for (const { boss } of activeBosses.value) {
+    const atk = boss.attacks?.find(a => a.type === move.type)
+    if (atk?.damage) return atk.damage
+  }
+  return 100
+}
+
+function handleAttack(move) {
+  playHit(resolveDamage(move))
+  emit('attack', move)
+}
+
+function onApplyScenario(events) {
+  for (const evt of events) {
+    playHit(resolveDamage(evt))
+    emit('attack', evt)
+  }
+}
+
+// Победа над боссом — звук
+watch(bossesDefeated, (now, prev) => {
+  if (now > (prev ?? 0)) playVictory()
+})
 
 const irrMultiplier = computed(() => {
   const d = bossesDefeated.value
