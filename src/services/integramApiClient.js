@@ -765,7 +765,7 @@ class IntegramApiClient {
     // These servers use /{database}/{endpoint} URL format (no /api/ prefix)
     const isDronedoc = cleanBaseURL.includes('dronedoc.ru') ||
                        cleanBaseURL.includes('sakhwings.ru') ||
-                       cleanBaseURL.includes('api.ai2o.ru')
+                       cleanBaseURL.includes('ai2o.ru')
 
     if (isDronedoc) {
       // Fix: Check if baseURL already contains the database path
