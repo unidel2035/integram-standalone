@@ -36,6 +36,9 @@ async function getSysToken() {
   return _sysToken
 }
 
+// Прогрев токена при загрузке модуля (чтобы первый запрос /user/me был быстрым)
+getSysToken().catch(() => {})
+
 // GET /api/user/me
 // Header: X-Integram-Token: <token>  (выставляется фронтом после логина)
 router.get('/me', async (req, res) => {
