@@ -383,6 +383,23 @@ const USERNAME_EXPERT_MAP = {
 
 // ── In-memory sessions ────────────────────────────────────────
 const sessions = new Map()
+const SESSION_TTL_MS = 30 * 60 * 1000 // 30 min
+const SESSION_MAX = 50
+
+// Evict expired sessions every 5 min to prevent OOM
+setInterval(() => {
+  const now = Date.now()
+  for (const [id, s] of sessions) {
+    if (now - s.createdAt > SESSION_TTL_MS) sessions.delete(id)
+  }
+  // Hard cap: if still too many, drop oldest
+  if (sessions.size > SESSION_MAX) {
+    const sorted = [...sessions.entries()].sort((a, b) => a[1].createdAt - b[1].createdAt)
+    while (sessions.size > SESSION_MAX) {
+      sessions.delete(sorted.shift()[0])
+    }
+  }
+}, 5 * 60 * 1000).unref()
 
 // ── Helpers ───────────────────────────────────────────────────
 function getApiBase(req) {
