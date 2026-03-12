@@ -37,8 +37,7 @@
 
     <!-- ── SVG Карта ──────────────────────────────────────────── -->
     <div class="smap-container">
-      <svg :width="SVG_W + LABEL_LEFT + LABEL_RIGHT"
-           :height="SVG_H + LABEL_TOP + LABEL_BOTTOM"
+      <svg :viewBox="`0 0 ${SVG_W + LABEL_LEFT + LABEL_RIGHT} ${SVG_H + LABEL_TOP + LABEL_BOTTOM}`"
            class="smap-svg">
 
         <defs>
@@ -710,8 +709,8 @@ const ghostPositions = computed(() => {
 .smap-legend-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: opacity 0.5s; }
 .smap-legend-dot--tunnel { background: #06b6d4; box-shadow: 0 0 6px #06b6d4; }
 
-.smap-container { overflow-x: auto; }
-.smap-svg { display: block; max-width: 100%; }
+.smap-container { overflow-x: auto; min-height: 120px; }
+.smap-svg { display: block; width: 100%; height: auto; min-height: 200px; }
 
 /* Пульс проекта */
 @keyframes smap-pulse {

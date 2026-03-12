@@ -84,6 +84,22 @@
           </div>
         </div>
 
+        <!-- Связь с боссами — какие барьеры этот сценарий пробьёт -->
+        <div v-if="sc.type !== 'stagnation'" class="gsp-boss-preview">
+          <span class="gsp-boss-preview-lbl">Пробивает барьеры:</span>
+          <template v-if="bossesForScenario(sc).length">
+            <span v-for="b in bossesForScenario(sc)" :key="b.id"
+                  class="gsp-boss-tag"
+                  :style="{ borderColor: b.color + '55', color: b.color,
+                             background: b.color + '12' }">
+              {{ b.emoji }} {{ b.name }}
+            </span>
+          </template>
+          <span v-else class="gsp-boss-tag gsp-boss-tag--none">
+            барьеры не обнаружены — запусти диагностику
+          </span>
+        </div>
+
         <!-- Раунды (фазы) -->
         <div class="gsp-phases">
           <div v-for="(phase, pi) in sc.phases" :key="pi" class="gsp-phase">
@@ -216,6 +232,17 @@ const relevantMeasures = computed(() => {
     return trlOk && sectOk
   }).slice(0, 10)
 })
+
+// ─── Связь сценарий → боссы ──────────────────────────────────────────────────
+function bossesForScenario(sc) {
+  const types = new Set(
+    (sc.phases || []).flatMap(ph => (ph.steps || []).map(s => s.eventType).filter(Boolean))
+  )
+  return GR_BOSSES.filter(boss =>
+    boss.attacks.some(a => types.has(a.type)) &&
+    (bossStates.value[boss.id]?.triggered || !bossStates.value[boss.id])
+  )
+}
 
 // ─── Генерация через AI ───────────────────────────────────────────────────────
 async function generate() {
@@ -747,8 +774,29 @@ function buildDemoScenarios() {
 }
 .gsp-apply:hover   { opacity: .85; transform: translateY(-1px); }
 .gsp-apply:disabled { opacity: .5; cursor: default; transform: none; }
-.gsp-apply--basic     { background: #22c55e18; color: #22c55e; border: 1px solid #22c55e40; }
-.gsp-apply--schlimann { background: #06b6d418; color: #06b6d4; border: 1px solid #06b6d440; }
+.gsp-apply--basic     { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); border: 1px solid color-mix(in srgb, var(--fst-green) 30%, transparent); }
+.gsp-apply--schlimann { background: color-mix(in srgb, var(--fst-cyan) 12%, transparent); color: var(--fst-cyan); border: 1px solid color-mix(in srgb, var(--fst-cyan) 30%, transparent); }
+
+/* ── Boss preview ── */
+.gsp-boss-preview {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  padding: 8px 0; border-top: 1px solid var(--p-content-border-color);
+  border-bottom: 1px solid var(--p-content-border-color);
+  margin-bottom: 4px;
+}
+.gsp-boss-preview-lbl {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--p-text-muted-color); flex-shrink: 0;
+}
+.gsp-boss-tag {
+  font-size: 10px; font-weight: 600; padding: 2px 8px;
+  border-radius: 8px; border: 1px solid var(--p-content-border-color);
+  color: var(--p-text-muted-color);
+}
+.gsp-boss-tag--none {
+  font-size: 10px; color: var(--p-text-muted-color); font-style: italic;
+  border: none; padding: 0;
+}
 
 /* ── Нарратив ── */
 .gsp-narrative {

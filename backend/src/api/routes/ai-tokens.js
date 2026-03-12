@@ -157,6 +157,29 @@ async function callYandex(prompt, systemPrompt) {
 
 // ── Router ────────────────────────────────────────────────────────────────────
 
+// GET /api/ai-tokens/default-token/:userId
+// Returns default AI token config for a user (used by 6+ frontend modules)
+router.get('/ai-tokens/default-token/:userId', (req, res) => {
+  const defaultModel = 'deepseek/deepseek-chat'
+  const hasKey = !!PROVIDERS.deepseek.key()
+
+  if (!hasKey) {
+    return res.status(503).json({
+      error: 'No default AI provider configured',
+      hint: 'Set DEEPSEEK_API_KEY in .env',
+    })
+  }
+
+  res.json({
+    data: {
+      token: 'system-default',
+      defaultModel,
+      provider: 'deepseek',
+      userId: req.params.userId,
+    },
+  })
+})
+
 router.post('/ai-tokens/chat', async (req, res) => {
   const { modelId, prompt, systemPrompt, application } = req.body
 

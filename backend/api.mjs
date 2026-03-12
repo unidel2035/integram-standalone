@@ -430,6 +430,15 @@ app.post('/api/doc-blocks/:docId/sync', async (req, res) => {
   }
 })
 
+// ── Stub routes for features in development ─────────────────────────────────
+// Prevent 404 noise in console from frontend calls
+
+app.get('/api/debate/sessions', (req, res) => res.json([]))
+app.get('/api/debate/sessions/:id', (req, res) => res.status(404).json({ error: 'Session not found' }))
+
+app.post('/api/kag/search', (req, res) => res.json({ results: [], total: 0 }))
+app.post('/api/kag/web-search', (req, res) => res.json({ results: [], total: 0 }))
+
 const PORT = parseInt(process.env.FST_API_PORT || '8082')
 server.listen(PORT, () => {
   console.log(`[FST API] Listening on port ${PORT}`)

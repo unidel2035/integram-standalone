@@ -158,6 +158,50 @@ html.terminal-page .layout-footer {
 }
 
 /* =====================================================
+   Gov page — full-bleed canvas (no footer, no padding)
+   Applied via html.gov-page class from FstGov.vue
+   ===================================================== */
+html.gov-page,
+html.gov-page body {
+    overflow: hidden;
+    height: 100%;
+}
+
+html.gov-page .layout-wrapper {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+html.gov-page .layout-main-container {
+    padding: 4rem 0 0 0;
+    min-height: unset;
+    height: unset;
+    flex: 1 1 0;
+    overflow: hidden;
+    justify-content: flex-start;
+}
+
+html.gov-page .layout-main {
+    height: 100%;
+    overflow: hidden;
+    padding: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+html.gov-page .layout-main > * {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+html.gov-page .layout-footer {
+    display: none;
+}
+
+/* =====================================================
    Expert page — full-bleed chat workspace (no sidebar chat, no footer)
    Applied via html.expert-page class from FstExpert.vue
    ===================================================== */

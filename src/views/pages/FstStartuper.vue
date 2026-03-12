@@ -200,40 +200,29 @@
           </div>
         </template>
 
-        <!-- Document viewer — BLOCK EDITOR (doc + doc-gost unified) -->
+        <!-- Document viewer — inline HTML renderer (fst-native) -->
         <template v-else-if="activeView === 'block-doc'">
           <div class="spw-doc-view">
             <div class="spw-doc-topbar">
               <span class="spw-doc-title"><i :class="activeItem.icon"></i> {{ activeItem.label }}</span>
               <div class="spw-doc-actions">
-                <button v-if="!activeItem.blockDocId" class="spw-btn spw-btn--primary" :disabled="creatingDoc" @click="createBlockDoc(activeItem)">
-                  <i :class="creatingDoc ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"></i>
-                  {{ creatingDoc ? 'Создаю...' : 'Создать в редакторе' }}
-                </button>
-                <button v-if="activeItem.blockDocId" class="spw-btn spw-btn--primary" @click="openBlockEditor(activeItem.blockDocId)">
-                  <i class="pi pi-pencil"></i> Открыть редактор
-                </button>
                 <button class="spw-btn spw-btn--ghost" @click="fillDocWithAI(activeItem)">
                   <i class="pi pi-magic"></i> AI заполнить
                 </button>
                 <a v-if="activeItem.url" :href="activeItem.url" target="_blank" class="spw-btn spw-btn--outline">
                   <i class="pi pi-external-link"></i> Открыть
                 </a>
-                <a v-if="activeItem.downloadUrl" :href="activeItem.downloadUrl" class="spw-btn spw-btn--ghost">
-                  <i class="pi pi-download"></i>
-                </a>
               </div>
             </div>
-            <!-- Block editor iframe -->
-            <iframe v-if="activeItem.blockDocId && showDocFrame"
-              :src="`/block-editor?docId=${activeItem.blockDocId}&database=kval&embed=1`"
-              class="spw-doc-iframe spw-doc-iframe--block"
-              frameborder="0"
+            <!-- Inline document content from vegaDocuments -->
+            <div v-if="activeItem.blockDocId && vegaDocuments[activeItem.blockDocId]"
+              class="spw-doc-html"
+              v-html="vegaDocuments[activeItem.blockDocId]"
             />
             <div v-else class="spw-doc-placeholder-mini">
               <i :class="activeItem.icon || 'pi pi-file'" style="font-size:40px;opacity:.2"></i>
               <p>{{ activeItem.label }}</p>
-              <p style="font-size:12px;color:var(--p-text-muted-color)">Нажмите «Создать в редакторе» чтобы открыть блочный редактор</p>
+              <p style="font-size:12px;color:var(--p-text-muted-color)">Документ ещё не заполнен. Нажмите «AI заполнить».</p>
             </div>
           </div>
         </template>
@@ -778,6 +767,7 @@ import FstFinModelBlock from '@/components/finmodel/FstFinModelBlock.vue'
 import { buildArtifactTree, logEvent, fetchEvents, syncCompanyTwin } from '@/services/workspaceOntologyService.js'
 import { fetchTwinModel, saveTwinModel } from '@/services/fstApi.js'
 import { vegaTwin, vegaTermSheet, vegaSmartContract, vegaGostDocs, vegaEvents, vegaFinmodel } from '@/data/vegaDemoData.js'
+import { vegaDocuments } from '@/data/vegaDocuments.js'
 
 const router = useRouter()
 
@@ -894,8 +884,8 @@ const ARTIFACTS_ALL = [
     key: 'dataroom', label: 'DataRoom', icon: 'pi pi-folder-open', roles: ['founder','investor','expert'],
     items: [
       { key: 'doc-nav',      label: 'Навигатор по пакету', icon: 'pi pi-map',              type: 'doc', required: true,  blockDocId: '1777620', filled: true },
-      { key: 'doc-exec',     label: 'Executive Summary',    icon: 'pi pi-file',             type: 'doc', required: true,  blockDocId: '66192',   integramId: '66075', filled: true },
-      { key: 'doc-teaser',   label: 'Тизер / Pitch Deck',  icon: 'pi pi-bolt',             type: 'doc',                    blockDocId: '66194',   integramId: '66079', filled: true },
+      { key: 'doc-exec',     label: 'Executive Summary',    icon: 'pi pi-file',             type: 'doc', required: true,  blockDocId: '1777641', filled: true },
+      { key: 'doc-teaser',   label: 'Тизер / Pitch Deck',  icon: 'pi pi-bolt',             type: 'doc',                    blockDocId: '1777641', filled: true },
       { key: 'doc-nda',      label: 'NDA',                  icon: 'pi pi-lock',             type: 'doc', required: true,  blockDocId: '67260',   integramId: '66095', filled: true },
       { key: 'doc-dd',       label: 'Due Diligence',        icon: 'pi pi-search',           type: 'doc',                    blockDocId: '1777618', integramId: '66099', filled: true },
       { key: 'doc-faq',      label: 'FAQ для инвестора',    icon: 'pi pi-question-circle',  type: 'doc',                    blockDocId: '1777621', filled: true },
@@ -906,8 +896,8 @@ const ARTIFACTS_ALL = [
   {
     key: 'finance', label: 'Финансы', icon: 'pi pi-chart-line', roles: ['founder','investor'],
     items: [
-      { key: 'finmodel',    label: 'Финансовая модель',  icon: 'pi pi-table',    type: 'doc', required: true, blockDocId: '66630',   integramId: '66087', filled: true },
-      { key: 'doc-bizplan', label: 'Бизнес-план',        icon: 'pi pi-book',     type: 'doc', required: true, blockDocId: '66333',   integramId: '66083', filled: true },
+      { key: 'finmodel',    label: 'Финансовая модель',  icon: 'pi pi-table',    type: 'doc', required: true, blockDocId: '1777650', filled: true },
+      { key: 'doc-bizplan', label: 'Бизнес-план',        icon: 'pi pi-book',     type: 'doc', required: true, blockDocId: '1777647', filled: true },
       { key: 'doc-captable',label: 'Cap Table',          icon: 'pi pi-sitemap',  type: 'doc',                   blockDocId: '1777619', integramId: '66103', filled: true },
       { key: 'doc-nma',     label: 'Отчёт по НМА',       icon: 'pi pi-star',     type: 'doc',                   blockDocId: '1777624', filled: true },
       { key: 'doc-founder', label: 'Справка основателя', icon: 'pi pi-id-card',  type: 'doc',                   blockDocId: '1777625', filled: true },
@@ -916,7 +906,7 @@ const ARTIFACTS_ALL = [
   {
     key: 'deal', label: 'Сделка', icon: 'pi pi-handshake', roles: ['founder','investor'],
     items: [
-      { key: 'doc-termsheet',  label: 'Term Sheet (фонд)', icon: 'pi pi-file-edit',  type: 'doc', required: true, blockDocId: '66974',   integramId: '66091', filled: true },
+      { key: 'doc-termsheet',  label: 'Term Sheet (фонд)', icon: 'pi pi-file-edit',  type: 'doc', required: true, blockDocId: '1777644', filled: true },
       { key: 'doc-ts-own',     label: 'Term Sheet (конструктор)', icon: 'pi pi-file-edit',  type: 'termsheet' },
       { key: 'doc-invest',     label: 'Договор инвестирования', icon: 'pi pi-verified',  type: 'doc', required: true, blockDocId: '1777626', filled: true },
       { key: 'doc-corp',       label: 'Корпоративный договор',  icon: 'pi pi-users',     type: 'doc', required: true, blockDocId: '1777627', filled: true },
@@ -1840,16 +1830,16 @@ onMounted(async () => {
     return
   }
 
-  const hasData = loadLS()
+  loadLS()
 
-  // Автозагрузка данных VentureOS для владельца при первом заходе
-  if (!hasData && currentUserEmail === OWNER_EMAIL) {
+  // Для владельца ВСЕГДА загружаем актуальные данные VentureOS (перезаписывает устаревший localStorage)
+  if (currentUserEmail === OWNER_EMAIL) {
     Object.assign(twin.value, vegaTwin)
     termSheet.value = { ...vegaTermSheet }
     gostDoc.value = { ...vegaGostDocs }
     smartContract.value = { ...vegaSmartContract }
     events.value = [...vegaEvents]
-    addEvent('info', `Рабочее пространство VentureOS загружено для ${currentUserEmail}`)
+    addEvent('info', `Рабочее пространство VentureOS · ИП Гаврилов Д.А.`)
     saveLS()
   }
 
@@ -2251,8 +2241,26 @@ onMounted(async () => {
 .spw-doc-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; flex: 1; }
 .spw-doc-actions { display: flex; gap: 6px; }
 .spw-doc-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-.spw-doc-iframe { flex: 1; border: none; width: 100%; min-height: 500px; }
-.spw-doc-iframe--block { height: 100%; min-height: 600px; border: none; }
+.spw-doc-html {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 40px;
+  color: var(--p-text-color);
+  line-height: 1.7;
+  font-size: 14px;
+}
+.spw-doc-html h1 { font-size: 22px; font-weight: 700; margin: 0 0 20px; color: var(--p-text-color); }
+.spw-doc-html h2 { font-size: 16px; font-weight: 700; margin: 24px 0 10px; color: var(--p-text-color); border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 6px; }
+.spw-doc-html h3 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
+.spw-doc-html p { margin: 0 0 10px; }
+.spw-doc-html ul, .spw-doc-html ol { margin: 0 0 12px; padding-left: 20px; }
+.spw-doc-html li { margin-bottom: 4px; }
+.spw-doc-html table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 13px; }
+.spw-doc-html table th { background: color-mix(in srgb, var(--p-primary-color) 10%, transparent); padding: 8px 12px; text-align: left; font-weight: 600; border: 1px solid var(--p-content-border-color); }
+.spw-doc-html table td { padding: 7px 12px; border: 1px solid var(--p-content-border-color); }
+.spw-doc-html table tr:nth-child(even) td { background: color-mix(in srgb, var(--p-surface-ground) 60%, transparent); }
+.spw-doc-html pre { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; overflow-x: auto; }
+.spw-doc-html em { color: var(--p-text-muted-color); }
 .spw-doc-placeholder-mini {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   height: 300px; gap: 12px; color: var(--p-text-muted-color);

@@ -105,32 +105,63 @@
       </div>
       <div v-else-if="aiSuggestion" class="arena-ai">
         <div class="arena-ai-header">
-          <i class="pi pi-sparkles" style="color:#ab47bc" />
+          <i class="pi pi-sparkles" style="color:var(--fst-purple)" />
           <strong>Следующие шаги (AI)</strong>
-          <button @click="aiSuggestion = null" class="arena-ai-close">×</button>
+          <Button v-if="possibleMoves.length"
+                  label="Применить лучший шаг"
+                  icon="pi pi-bolt"
+                  size="small"
+                  severity="secondary"
+                  style="margin-left:auto;margin-right:8px"
+                  @click="aiApply" />
+          <button @click="aiSuggestionLocal = false" class="arena-ai-close">×</button>
         </div>
         <div style="font-size:12px;line-height:1.8;white-space:pre-line;padding-top:4px">{{ aiSuggestion }}</div>
+        <div v-if="possibleMoves.length" class="arena-ai-moves">
+          <span class="arena-ai-moves-lbl">Доступные ходы:</span>
+          <button v-for="move in possibleMoves.slice(0, 3)" :key="move.type"
+                  class="arena-ai-move-btn"
+                  @click="handleAttack(move)">
+            {{ move.label || move.type.replace(/_/g, ' ') }}
+          </button>
+        </div>
       </div>
 
       <!-- ══ ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМОВ ══ -->
       <div class="arena-mode-tabs">
+        <button :class="['arena-mode-tab', { active: arenaMode === 'canvas' }]"
+                @click="arenaMode = 'canvas'">
+          🔮 Канвас
+        </button>
         <button :class="['arena-mode-tab', { active: arenaMode === 'scenarios' }]"
                 @click="arenaMode = 'scenarios'">
-          🗺️ Сценарии выхода
+          🗺️ Сценарии
         </button>
         <button :class="['arena-mode-tab', { active: arenaMode === 'bosses' }]"
                 @click="arenaMode = 'bosses'">
-          ⚔️ Битва с барьерами
+          ⚔️ Барьеры
           <span v-if="activeBosses.length" class="arena-mode-badge">{{ activeBosses.length }}</span>
         </button>
         <button :class="['arena-mode-tab', { active: arenaMode === 'map' }]"
                 @click="arenaMode = 'map'">
-          📡 Карта операции
+          📡 Карта
         </button>
       </div>
 
+      <!-- ══ СОБЫТИЙНЫЙ КАНВАС ══ -->
+      <div v-if="arenaMode === 'canvas'" class="arena-canvas-wrap">
+        <GrEventCanvas
+          :company="company"
+          :events="events"
+          :possible="possibleMoves"
+          :scenarios="scenariosFromPlayer"
+          @attack="handleAttack"
+          @apply-scenario="onApplyScenario"
+        />
+      </div>
+
       <!-- ══ СЦЕНАРИЙ-ПЛЕЕР ══ -->
-      <div v-if="arenaMode === 'scenarios'">
+      <div v-else-if="arenaMode === 'scenarios'">
         <GrScenarioPlayer
           :company="company"
           :events="events"
@@ -140,14 +171,51 @@
       </div>
 
       <!-- ══ АРЕНА БОССОВ ══ -->
-      <div v-else-if="arenaMode === 'bosses'">
+      <div v-else-if="arenaMode === 'bosses'" class="arena-bosses-wrap">
 
         <div v-if="!events.length" class="arena-init">
-          <Button label="Начать диагностику барьеров" icon="pi pi-search"
-                  size="large" severity="warning" @click="$emit('init')" />
-          <div class="arena-init-hint">
-            Анализируем {{ company.name }}: ищем регуляторные, рыночные и технологические барьеры
-          </div>
+
+          <!-- idle -->
+          <template v-if="scanPhase === 'idle'">
+            <div class="arena-scan-title">⚔️ Диагностика барьеров</div>
+            <Button label="Начать диагностику" icon="pi pi-search"
+                    size="large" severity="warning" @click="startDiagnostic" />
+            <div class="arena-init-hint">
+              Анализируем {{ company.name }}: ищем регуляторные, рыночные и технологические барьеры
+            </div>
+          </template>
+
+          <!-- scanning / done -->
+          <template v-else>
+            <div class="arena-scan-title">
+              <i v-if="scanPhase === 'scanning'" class="pi pi-spin pi-spinner" style="color:var(--fst-brand)" />
+              <span v-else style="color:var(--fst-green)">✓</span>
+              {{
+                scanPhase === 'scanning'
+                  ? 'Сканирование ' + company.name + '...'
+                  : 'Обнаружено барьеров: ' + scanLog.length
+              }}
+            </div>
+            <div class="arena-scan-log">
+              <div v-for="(entry, i) in scanLog" :key="i" class="arena-scan-entry">
+                <span class="arena-scan-bullet">{{ entry.emoji }}</span>
+                <span class="arena-scan-text">{{ entry.text }}</span>
+                <span class="arena-scan-found">ОБНАРУЖЕН</span>
+              </div>
+              <div v-if="scanPhase === 'scanning' && scanLog.length < SCAN_STEPS.length"
+                   class="arena-scan-entry arena-scan-entry--active">
+                <i class="pi pi-spin pi-spinner" style="font-size:10px;opacity:0.6" />
+                <span class="arena-scan-text" style="color:var(--p-text-muted-color)">
+                  {{ SCAN_STEPS[scanLog.length]?.analyzing }}
+                </span>
+              </div>
+              <div v-if="scanPhase === 'done'" class="arena-scan-loading">
+                <i class="pi pi-spin pi-spinner" />
+                Загружаем данные проекта...
+              </div>
+            </div>
+          </template>
+
         </div>
 
         <template v-else>
@@ -163,9 +231,45 @@
           </div>
           <div v-else class="arena-clear">
             <div class="arena-clear-icon">🏆</div>
-            <div class="arena-clear-title">Все барьеры пробиты</div>
-            <div class="arena-clear-sub">
-              {{ company.name }} получила мультипликатор {{ irrMultiplier }}x к IRR фонда.
+            <div class="arena-clear-title">Все барьеры пробиты!</div>
+            <div class="arena-clear-sub">{{ company.name }} прошла все барьеры.</div>
+
+            <!-- IRR breakdown -->
+            <div class="arena-victory-irr">
+              <div class="arena-victory-row arena-victory-row--base">
+                <span class="arena-victory-emoji">📊</span>
+                <span class="arena-victory-name">Базовый IRR</span>
+                <span class="arena-victory-num">1.0x</span>
+              </div>
+              <div v-for="b in activeBosses" :key="b.boss.id" class="arena-victory-row">
+                <span class="arena-victory-emoji">{{ b.boss.emoji }}</span>
+                <span class="arena-victory-name">{{ b.boss.name }} побеждён</span>
+                <span class="arena-victory-num arena-victory-num--plus">+0.4x</span>
+              </div>
+              <div class="arena-victory-row">
+                <span class="arena-victory-emoji">🎯</span>
+                <span class="arena-victory-name">Бонус полного прохождения</span>
+                <span class="arena-victory-num arena-victory-num--plus">+0.5x</span>
+              </div>
+              <div class="arena-victory-total">
+                <span class="arena-victory-total-val">{{ irrMultiplier }}x</span>
+                <span class="arena-victory-total-lbl">итого к IRR фонда</span>
+              </div>
+            </div>
+
+            <!-- Rewards -->
+            <div class="arena-victory-rewards">
+              <template v-for="b in activeBosses" :key="b.boss.id">
+                <div v-for="r in b.boss.rewards" :key="r" class="arena-victory-reward-tag">{{ r }}</div>
+              </template>
+            </div>
+
+            <!-- Next steps -->
+            <div class="arena-victory-next">
+              <div class="arena-victory-next-title">Следующие шаги:</div>
+              <div class="arena-victory-next-item">→ Переключись на Сценарии и постройте карту операции</div>
+              <div class="arena-victory-next-item">→ Зафиксируйте договорённости в протоколе ИК</div>
+              <div class="arena-victory-next-item">→ Добавьте компанию в портфель мониторинга</div>
             </div>
           </div>
         </template>
@@ -208,6 +312,7 @@ import GrBossCard        from './GrBossCard.vue'
 import GrXpBar           from './GrXpBar.vue'
 import GrScenarioPlayer  from './GrScenarioPlayer.vue'
 import GrStartupMap      from './GrStartupMap.vue'
+import GrEventCanvas     from './GrEventCanvas.vue'
 import { GR_BOSSES, getBossState } from '@/config/grBosses.js'
 import { GR_EVENT_TYPES } from '@/config/grEventTypes.js'
 import { playHit, playVictory } from '@/services/grSoundEngine.js'
@@ -223,8 +328,64 @@ const props = defineProps({
 
 const emit = defineEmits(['pick', 'init', 'attack', 'remove', 'applyScenario'])
 
+// ─── Диагностика ─────────────────────────────────────────────────────────────
+const scanPhase = ref('idle') // idle | scanning | done
+const scanLog   = ref([])
+const SCAN_STEPS = [
+  { analyzing: 'Проверяем регуляторный статус...', text: 'Регуляторный барьер', emoji: '🏛️' },
+  { analyzing: 'Оцениваем рыночную готовность...', text: 'Провал рынка', emoji: '📉' },
+  { analyzing: 'Проверяем технологическую готовность (TRL)...', text: 'Технологический разрыв', emoji: '⚙️' },
+  { analyzing: 'Оцениваем инфраструктуру и полигоны...', text: 'Инфраструктурный пробел', emoji: '🏗️' },
+]
+async function startDiagnostic() {
+  scanPhase.value = 'scanning'
+  scanLog.value   = []
+  const delays = [700, 600, 800, 600]
+  for (let i = 0; i < SCAN_STEPS.length; i++) {
+    await new Promise(r => setTimeout(r, delays[i]))
+    scanLog.value.push(SCAN_STEPS[i])
+  }
+  await new Promise(r => setTimeout(r, 400))
+  scanPhase.value = 'done'
+  emit('init')
+}
+
+// AI-подсказка: применить лучший ход
+function aiApply() {
+  const best = possibleMoves.value[0]
+  if (best) handleAttack(best)
+}
+
 // ─── Режим арены ─────────────────────────────────────────────────────────────
-const arenaMode = ref('scenarios')
+const arenaMode = ref('canvas')
+
+// Демо-сценарии для канваса (до запуска AI-генерации в ScenarioPlayer)
+const scenariosFromPlayer = computed(() => [
+  {
+    type: 'basic', name: 'Базовый GR', icon: '✓',
+    irr: 1.8, months: 11, totalFunding: '38 млн ₽', outcome: 'success',
+    subtitle: 'системное прохождение барьеров',
+    resultText: 'Первый контракт получен. Сертификация пройдена.',
+    phases: [
+      { round: 0, label: 'Сколково / Pre-seed', capital: '800 тыс./год', duration: '0-3 мес',
+        steps: [{ month: 1, description: 'Подача на Сколково', eventType: 'MEASURE_APPLIED' }] },
+      { round: 1, label: 'ФАСИЕ / СТАРТ-1', capital: '4 млн ₽', duration: '3-8 мес',
+        steps: [{ month: 4, description: 'Получение финансирования ФАСИЕ', eventType: 'MEASURE_FUNDED' }] },
+    ],
+  },
+  {
+    type: 'schlimann', name: 'Стратегия Шлимана', icon: '⚡',
+    irr: 2.4, months: 5, totalFunding: '4.5 млн ₽', outcome: 'breakthru',
+    subtitle: 'виртуальный рынок в вакууме',
+    resultText: 'Ниша занята до прихода регулятора.',
+    phases: [
+      { round: 0, label: 'Правовой вакуум', capital: '0 ₽', duration: '0-1 мес',
+        steps: [{ month: 0, description: 'Работа в зоне без регулирования', eventType: 'WORKING_GROUP_FORMED' }] },
+      { round: 1, label: 'УМНИК / СТАРТ-1', capital: '1.5 млн ₽', duration: '1-5 мес',
+        steps: [{ month: 2, description: 'Подача с кейсом выручки', eventType: 'MEASURE_APPROVED' }] },
+    ],
+  },
+])
 
 // Possible moves для сценарий-плеера
 const possibleMoves = computed(() => props.possible || [])
@@ -457,6 +618,12 @@ function fmtDate(ts) {
 .arena-mult-fill { height: 100%; background: linear-gradient(90deg,#22c55e,#86efac); border-radius: 6px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
 .arena-mult-desc { font-size: 12px; color: var(--p-text-muted-color); }
 
+/* ─── Канвас ─── */
+.arena-canvas-wrap {
+  height: 520px; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--p-content-border-color);
+}
+
 /* ─── Переключатель режимов ─── */
 .arena-mode-tabs {
   display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;
@@ -477,12 +644,39 @@ function fmtDate(ts) {
   font-size: 10px; padding: 1px 5px; font-weight: 700;
 }
 
-/* ─── Кнопка старта ─── */
+/* ─── Кнопка старта / диагностика ─── */
 .arena-init {
-  display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 32px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 20px;
   background: var(--p-surface-card); border: 1px dashed var(--p-content-border-color); border-radius: 14px;
 }
 .arena-init-hint { font-size: 11px; color: var(--p-text-muted-color); text-align: center; }
+.arena-scan-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 700; color: var(--p-text-color);
+}
+.arena-scan-log {
+  width: 100%; max-width: 380px;
+  background: var(--p-surface-ground);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.arena-scan-entry {
+  display: flex; align-items: center; gap: 10px; font-size: 12px;
+  animation: scan-in 0.3s ease forwards;
+}
+.arena-scan-entry--active { opacity: 0.6; }
+@keyframes scan-in { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+.arena-scan-bullet { font-size: 14px; flex-shrink: 0; }
+.arena-scan-text { flex: 1; color: var(--p-text-color); }
+.arena-scan-found {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.06em;
+  color: var(--fst-red); opacity: 0.85;
+}
+.arena-scan-loading {
+  display: flex; align-items: center; gap: 7px; font-size: 11px;
+  color: var(--p-text-muted-color); margin-top: 4px;
+}
 
 /* ─── Боссы ─── */
 .arena-bosses { display: flex; flex-direction: column; gap: 12px; }
@@ -490,16 +684,78 @@ function fmtDate(ts) {
 
 /* ─── Победа ─── */
 @keyframes trophy { 0%{transform:scale(0.5)rotate(-15deg);opacity:0} 60%{transform:scale(1.1)rotate(5deg)} 100%{transform:scale(1)rotate(0);opacity:1} }
-.arena-clear { text-align: center; padding: 32px; }
-.arena-clear-icon { font-size: 3.5rem; animation: trophy 0.6s cubic-bezier(0.16,1,0.3,1) forwards; display: block; margin-bottom: 12px; }
-.arena-clear-title { font-size: 1.3rem; font-weight: 800; color: #22c55e; margin-bottom: 8px; }
-.arena-clear-sub { font-size: 13px; color: var(--p-text-muted-color); line-height: 1.7; }
+.arena-clear { text-align: center; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.arena-clear-icon { font-size: 3.5rem; animation: trophy 0.6s cubic-bezier(0.16,1,0.3,1) forwards; display: block; }
+.arena-clear-title { font-size: 1.3rem; font-weight: 800; color: var(--fst-green); }
+.arena-clear-sub { font-size: 13px; color: var(--p-text-muted-color); }
+
+/* IRR breakdown */
+.arena-victory-irr {
+  width: 100%; max-width: 360px;
+  background: var(--p-surface-ground);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px; padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.arena-victory-row {
+  display: flex; align-items: center; gap: 10px; font-size: 12px;
+  animation: scan-in 0.3s ease forwards;
+}
+.arena-victory-row--base { opacity: 0.6; }
+.arena-victory-emoji { font-size: 15px; flex-shrink: 0; }
+.arena-victory-name { flex: 1; color: var(--p-text-color); }
+.arena-victory-num { font-weight: 700; color: var(--p-text-muted-color); }
+.arena-victory-num--plus { color: var(--fst-green); }
+.arena-victory-total {
+  border-top: 1px solid var(--p-content-border-color);
+  padding-top: 8px; margin-top: 4px;
+  display: flex; align-items: baseline; justify-content: center; gap: 10px;
+}
+.arena-victory-total-val {
+  font-size: 2rem; font-weight: 900; color: var(--fst-green);
+  font-variant-numeric: tabular-nums;
+}
+.arena-victory-total-lbl { font-size: 12px; color: var(--p-text-muted-color); }
+
+/* Rewards */
+.arena-victory-rewards { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.arena-victory-reward-tag {
+  font-size: 10px; font-weight: 600;
+  padding: 3px 10px; border-radius: 12px;
+  background: color-mix(in srgb, var(--fst-green) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-green) 30%, transparent);
+  color: var(--fst-green);
+}
+
+/* Next steps */
+.arena-victory-next {
+  width: 100%; max-width: 360px; text-align: left;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 12px 16px;
+}
+.arena-victory-next-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 8px;
+}
+.arena-victory-next-item {
+  font-size: 12px; color: var(--p-text-color); margin-bottom: 5px; line-height: 1.5;
+}
 
 /* ─── AI-подсказка ─── */
-.arena-ai { background: var(--p-surface-card); border: 1px solid #ab47bc44; border-radius: 10px; padding: 12px 14px; }
+.arena-ai { background: var(--p-surface-card); border: 1px solid color-mix(in srgb, var(--fst-purple) 25%, transparent); border-radius: 10px; padding: 12px 14px; }
 .arena-ai--loading { color: var(--p-text-muted-color); font-style: italic; display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.arena-ai-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; }
-.arena-ai-close { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--p-text-muted-color); font-size: 18px; line-height: 1; }
+.arena-ai-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; flex-wrap: wrap; }
+.arena-ai-close { background: none; border: none; cursor: pointer; color: var(--p-text-muted-color); font-size: 18px; line-height: 1; }
+.arena-ai-moves { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--p-content-border-color); }
+.arena-ai-moves-lbl { font-size: 10px; color: var(--p-text-muted-color); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+.arena-ai-move-btn {
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 8px; cursor: pointer;
+  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--p-primary-color) 35%, transparent);
+  color: var(--p-primary-color); transition: all 0.15s;
+}
+.arena-ai-move-btn:hover { background: color-mix(in srgb, var(--p-primary-color) 20%, transparent); }
 
 /* ─── История ─── */
 .arena-history { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; }

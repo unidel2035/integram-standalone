@@ -17,6 +17,13 @@ import {
 
 const router = Router()
 
+// ── In-memory session event buffer (for high-frequency polling) ──────────────
+// usePresentBroadcast polls /api/events/session/present-live every 2s.
+// Loading 10k+ rows from Integram each time causes OOM.
+// Keep last N session events in memory — cheap reads.
+const SESSION_BUFFER_MAX = 200
+const sessionEvents = []  // ring buffer of session-scoped events
+
 // POST /api/events
 router.post('/events', async (req, res) => {
   try {
@@ -40,12 +47,27 @@ router.post('/events', async (req, res) => {
       ts:         ts || Date.now(),
     }
 
+    // Buffer session events in-memory for fast polling
+    if (entityType === 'session') {
+      sessionEvents.push(event)
+      if (sessionEvents.length > SESSION_BUFFER_MAX) {
+        sessionEvents.splice(0, sessionEvents.length - SESSION_BUFFER_MAX)
+      }
+    }
+
     await appendEvent(event)
     res.json({ ok: true, event })
   } catch (err) {
     console.error('[Events] append error:', err.message)
     res.status(500).json({ error: err.message })
   }
+})
+
+// GET /api/events/session/:entityId — fast path (in-memory, no Integram)
+router.get('/events/session/:entityId', (req, res) => {
+  const { entityId } = req.params
+  const filtered = sessionEvents.filter(e => e.entityId === entityId)
+  res.json(filtered)
 })
 
 // GET /api/events/:entityType/:entityId

@@ -118,6 +118,8 @@ export async function appendEvent(event) {
 /**
  * Получить все события (постранично) и отфильтровать по entityType/entityId
  */
+const MAX_PAGES = 5 // cap at 2500 events to prevent OOM
+
 async function fetchAllRows() {
   if (_cache && Date.now() - _cacheTs < CACHE_TTL_MS) return _cache
 
@@ -125,10 +127,10 @@ async function fetchAllRows() {
   const rows = []
   let page = 1
 
-  while (true) {
+  while (page <= MAX_PAGES) {
     const res = await fetch(
       `${INTEGRAM_SERVER}/${INTEGRAM_DB}/object/${EVENT_LOG_TYPE}?JSON_KV&LIMIT=500&pg=${page}`,
-      { headers }
+      { headers, signal: AbortSignal.timeout(10_000) }
     )
     if (!res.ok) throw new Error(`EventLog fetch failed: ${res.status}`)
 
