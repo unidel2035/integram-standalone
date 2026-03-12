@@ -29,6 +29,12 @@
   --fst-purple-dark:     #6a1b9a;
   --fst-cyan:            #26c6da;
   --fst-brand-dark:      #e65100;
+
+  /* PrimeVue v3 → v4 compat alias — --p-surface-card не существует в v4,
+     используем --p-content-background (= surface.0 light / surface.900 dark) */
+  --p-surface-card:      var(--p-content-background);
+  --p-surface-border:    var(--p-content-border-color);
+  --p-surface-ground:    var(--p-surface-100);
 }
 
 .p-dark {
