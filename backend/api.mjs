@@ -297,6 +297,28 @@ app.post('/api/integram-auth/authenticate', async (req, res) => {
   }
 })
 
+// ── FST DB auth (system credentials from .env) ─────────────────
+app.post('/api/fst-db/auth', async (req, res) => {
+  const login = process.env.INTEGRAM_SYSTEM_USERNAME
+  const password = process.env.INTEGRAM_SYSTEM_PASSWORD
+  const database = req.body?.database || 'fst'
+  if (!login || !password) {
+    return res.status(500).json({ error: 'INTEGRAM_SYSTEM_USERNAME/PASSWORD not configured' })
+  }
+  try {
+    const resp = await fetch(`https://ai2o.ru/${database}/auth?JSON_KV`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ login, pwd: password })
+    })
+    const data = await resp.json()
+    if (data.error) return res.status(401).json(data)
+    res.json(data)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 
 // ── Calculator endpoints ────────────────────────────────────────────────────
 function calcHandler(fn) {

@@ -63,15 +63,32 @@ export async function authenticate() {
   if (_authPromise) return _authPromise
 
   _authPromise = (async () => {
-    const login = import.meta.env.VITE_FST_LOGIN || import.meta.env.VITE_INTEGRAM_LOGIN || ''
-    const password = import.meta.env.VITE_FST_PASSWORD || import.meta.env.VITE_INTEGRAM_PASSWORD || ''
+    let data
 
-    const res = await fetch(`${FST_SERVER}/${FST_DB}/auth?JSON_KV`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `login=${encodeURIComponent(login)}&pwd=${encodeURIComponent(password)}`
-    })
-    const data = await res.json()
+    // Preferred: auth via backend (credentials stay server-side)
+    try {
+      const backendRes = await fetch('/api/fst-db/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ database: 'fst' })
+      })
+      if (backendRes.ok) {
+        data = await backendRes.json()
+      }
+    } catch { /* backend unavailable — fall through to direct */ }
+
+    // Fallback: direct auth with env-baked credentials (dev only)
+    if (!data || data.error) {
+      const login = import.meta.env.VITE_FST_LOGIN || import.meta.env.VITE_INTEGRAM_LOGIN || ''
+      const password = import.meta.env.VITE_FST_PASSWORD || import.meta.env.VITE_INTEGRAM_PASSWORD || ''
+      const res = await fetch(`${FST_SERVER}/${FST_DB}/auth?JSON_KV`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `login=${encodeURIComponent(login)}&pwd=${encodeURIComponent(password)}`
+      })
+      data = await res.json()
+    }
+
     if (data.error) throw new Error(data.error)
 
     _token = data.token
