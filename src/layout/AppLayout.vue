@@ -18,10 +18,14 @@ import { isRoleSelected } from '@/config/learningPaths'
 import ShortcutsModal from '@/components/fst-shared/ShortcutsModal.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useRoleStore } from '@/stores/roleStore'
+import { usePresentBroadcast } from '@/composables/usePresentBroadcast'
+import { useSessionGuard } from '@/composables/useSessionGuard'
 
 const route = useRoute()
 const { layoutConfig, layoutState, isSidebarActive } = useLayout()
 const roleStore = useRoleStore()
+const { isPresentDisplay } = usePresentBroadcast()
+const { isLocked, lockReason } = useSessionGuard()
 
 // Сайдбар скрыт только для внешних ролей (startup, investor).
 // Внутренние сотрудники (admin, director, analyst, expert) видят полное меню.
@@ -216,6 +220,33 @@ const chatMargin = computed(() => {
   <Toast />
   <RoleSelectionModal v-if="showRoleModal" @role-selected="showRoleModal = false" @skipped="showRoleModal = false" />
   <ShortcutsModal />
+  <!-- Session lock overlay — мгновенно закрывает контент при выходе/истечении сессии -->
+  <Transition name="session-lock">
+    <div v-if="isLocked" class="session-lock-overlay">
+      <div class="session-lock-inner">
+        <div class="session-lock-icon">
+          <i :class="lockReason === 'logout' ? 'pi pi-sign-out' : 'pi pi-lock'"></i>
+        </div>
+        <div class="session-lock-title">
+          {{ lockReason === 'logout' ? 'Выход из системы' : 'Сессия завершена' }}
+        </div>
+        <div class="session-lock-sub">Перенаправление на страницу входа...</div>
+        <div class="session-lock-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </Transition>
+
+  <!-- Тонкий индикатор в окне Пескова — виден только при управлении с другого экрана -->
+  <Transition name="slide-in-right">
+    <div v-if="isPresentDisplay" class="present-display-badge" title="Управляется с другого экрана">
+      <span class="present-display-dot"></span>
+      <span class="present-display-text">LIVE DEMO</span>
+      <span class="present-display-sep">·</span>
+      <span class="present-display-hint">управляется событийным логом</span>
+    </div>
+  </Transition>
 </template>
 
 <style>
@@ -270,6 +301,135 @@ const chatMargin = computed(() => {
   margin-left: 0 !important;
   padding-left: 2rem;
   padding-right: 2rem;
+}
+
+/* Presentation display badge — minimal indicator in Peskov's window */
+.present-display-badge {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+.present-display-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+  animation: present-pulse 2s ease-in-out infinite;
+}
+.present-display-text {
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.12em;
+}
+.present-display-sep {
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: 400;
+}
+.present-display-hint {
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgba(167, 139, 250, 0.7);
+  font-size: 10px;
+}
+@keyframes present-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Session lock overlay */
+.session-lock-enter-active {
+  transition: opacity 0.2s ease;
+}
+.session-lock-leave-active {
+  transition: opacity 0.4s ease;
+}
+.session-lock-enter-from,
+.session-lock-leave-to {
+  opacity: 0;
+}
+
+.session-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.session-lock-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+.session-lock-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.session-lock-icon i {
+  font-size: 26px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.session-lock-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.session-lock-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.session-lock-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.session-lock-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  animation: lock-dot-pulse 1.2s ease-in-out infinite;
+}
+
+.session-lock-dots span:nth-child(2) { animation-delay: 0.2s; }
+.session-lock-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes lock-dot-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
 }
 
 </style>

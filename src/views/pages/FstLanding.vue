@@ -12,6 +12,7 @@
       </div>
       <nav class="land-nav-links">
         <a href="#process">Процесс</a>
+        <a href="#support">Сопровождение</a>
         <a href="#modules">Модули</a>
         <a href="#numbers">Показатели</a>
       </nav>
@@ -49,6 +50,8 @@
 
         <p class="land-hero-p">
           Первый в России AI-инвесткомитет с прозрачными решениями.<br>
+          <strong>Упаковываем стартапы</strong> и берём на себя все задачи роста —<br>
+          от юридики до финмодели. Френдли структура без скрытых условий.<br>
           От заявки до ответа — <strong>48 часов</strong> вместо 3–6 месяцев.
         </p>
 
@@ -94,7 +97,7 @@
     <section id="process" class="land-process">
       <div class="land-section-eyebrow">Как работает ФСТ НТИ</div>
       <h2 class="land-section-h2">Мы переписали логику,<br><span>а не автоматизировали старую</span></h2>
-      <p class="land-section-sub">Автоматизация встраивает агентов в существующие процессы. Мы перестроили сам процесс — от онтологии рынка до протокола инвесткомитета.</p>
+      <p class="land-section-sub">Автоматизация встраивает агентов в существующие процессы. Мы перестроили сам процесс — от карты знаний рынка до протокола инвесткомитета.</p>
 
       <div class="land-compare">
         <div class="land-compare-col land-compare-col--old">
@@ -172,6 +175,20 @@
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════ SUPPORT -->
+    <section id="support" class="land-support-section">
+      <div class="land-section-eyebrow">Партнёрская модель</div>
+      <h2 class="land-section-h2">Мы с вами до выхода —<br><span>не просто финансируем</span></h2>
+      <p class="land-section-sub">ФСТ НТИ не просто даёт деньги. Мы берём на себя всю операционную нагрузку, чтобы фаундеры занимались продуктом.</p>
+      <div class="land-support-grid">
+        <div v-for="s in support" :key="s.id" class="land-support-card" :style="{ '--supc': s.color }">
+          <div class="land-support-icon"><i :class="s.icon"></i></div>
+          <div class="land-support-title">{{ s.title }}</div>
+          <div class="land-support-text">{{ s.text }}</div>
+        </div>
+      </div>
+    </section>
+
     <!-- ═══════════════════════════════════════════ MODULES -->
     <section id="modules" class="land-modules-section">
       <div class="land-section-eyebrow">Платформа</div>
@@ -195,8 +212,8 @@
         <div class="land-cta-badge">Готовы начать?</div>
         <h2 class="land-cta-h2">Подайте заявку в ФСТ НТИ</h2>
         <p class="land-cta-sub">
-          Заполните структурированную форму — и через 48 часов получите<br>
-          протокол инвесткомитета с аргументами каждого из 6 AI-агентов.
+          Поделитесь ссылками на проект — AI-агент сам соберёт данные,<br>
+          оценит команду и за 48 часов подготовит протокол инвесткомитета.
         </p>
         <div class="land-cta-btns">
           <button class="land-btn-cta" @click="go('/fst-apply')">
@@ -254,9 +271,11 @@ const stats = [
 
 const pillars = [
   { id: 1, icon: 'pi pi-eye', color: '#a78bfa', title: 'Прозрачность', text: 'Каждое решение сопровождается протоколом дебатов. Стартап видит аргументы каждого из 6 AI-агентов.' },
-  { id: 2, icon: 'pi pi-bolt', color: '#f59e0b', title: 'Скорость', text: '48 часов вместо 3–6 месяцев. Структурированная форма → AI-карта → инвесткомитет → решение.' },
+  { id: 2, icon: 'pi pi-bolt', color: '#f59e0b', title: 'Скорость', text: '48 часов вместо 3–6 месяцев. AI-агент парсит данные → строит предметную карту → инвесткомитет → решение.' },
   { id: 3, icon: 'pi pi-shield', color: '#34d399', title: 'Суверенность', text: 'Единственный фонд, где суверенность (0–9) является обязательным критерием оценки каждой заявки.' },
-  { id: 4, icon: 'pi pi-sitemap', color: '#38bdf8', title: 'Онтология', text: 'Вместо PDF и Excel — предметная карта проекта по доменной модели рынка НТИ. Агенты работают с контекстом, а не с текстом.' },
+  { id: 4, icon: 'pi pi-sitemap', color: '#38bdf8', title: 'Карта знаний', text: 'Вместо PDF и Excel — цифровой профиль проекта по доменной модели рынка НТИ. Агенты работают с контекстом, а не с текстом.' },
+  { id: 5, icon: 'pi pi-compass', color: '#22d3ee', title: 'Сопровождение', text: 'Упаковываем стартап: юридика, финмодель, IR-материалы, менторство. Помогаем решить все задачи на пути к росту.' },
+  { id: 6, icon: 'pi pi-thumbs-up', color: '#fb923c', title: 'Френдли структура', text: 'Условия, понятные основателям. Открытый Term Sheet, партнёрская модель, без скрытых ковенантов и давления.' },
 ]
 
 const oldProcess = [
@@ -268,15 +287,15 @@ const oldProcess = [
 ]
 
 const newProcess = [
-  'Стартап заполняет структурированную форму',
-  'AI строит предметную карту проекта по онтологии',
+  'AI-агент парсит данные из открытых источников',
+  'Оценка психотипов команды по интервью',
+  'AI строит цифровой профиль проекта по карте рынка',
   'Инвесткомитет: 6 AI-агентов дебатируют',
-  'Протокол с аргументами каждого агента',
-  'Решение + обоснование доступны стартапу',
+  'Решение + протокол дебатов доступны стартапу',
 ]
 
 const pipeline = [
-  { id: 1, name: 'Заявка', sub: 'Структурированная форма', icon: 'pi pi-file-plus', color: '#38bdf8', path: '/fst-apply' },
+  { id: 1, name: 'Заявка', sub: 'AI-парсинг · Интервью команды', icon: 'pi pi-file-plus', color: '#38bdf8', path: '/fst-apply' },
   { id: 2, name: 'Инвесткомитет', sub: '6 AI-агентов дебатируют', icon: 'pi pi-users', color: '#a78bfa', path: '/fst-committee' },
   { id: 3, name: 'Term Sheet', sub: 'Equity / CLN / Грант', icon: 'pi pi-file-edit', color: '#fb923c', path: '/fst-deal' },
   { id: 4, name: 'Исполнение', sub: 'KPI-транши · Kanban', icon: 'pi pi-list-check', color: '#34d399', path: '/fst-execution' },
@@ -290,7 +309,16 @@ const numbers = [
   { val: '9D', label: 'Суверенность', desc: 'Девятимерная матрица оценки суверенности технологии', color: '#34d399' },
   { val: '3', label: 'Субфонда', desc: 'БАС · Робототехника · Машиностроение', color: '#fb923c' },
   { val: 'AI+Ч', label: 'Управление', desc: 'Когнитивные цепочки 6 агентов + финальное решение человека. Governance смешанной среды.', color: '#f59e0b' },
-  { val: 'AI+', label: 'Онтология', desc: 'Предметные карты рынка НТИ — агенты работают с контекстом, а не с текстом PDF', color: '#f87171' },
+  { val: 'AI+', label: 'Карта знаний', desc: 'Цифровые профили рынка НТИ — агенты работают с контекстом, а не с текстом PDF', color: '#f87171' },
+]
+
+const support = [
+  { id: 1, icon: 'pi pi-box', color: '#a78bfa', title: 'Упаковка стартапа', text: 'Питч-дек, финансовая модель, дью-дилидженс — готовим полный пакет материалов для инвесторов и партнёров.' },
+  { id: 2, icon: 'pi pi-verified', color: '#34d399', title: 'Юридика и SPV', text: 'Структурирование сделки, SPV, Term Sheet, корпоративные документы. Совместно с доверенными партнёрами.' },
+  { id: 3, icon: 'pi pi-chart-line', color: '#38bdf8', title: 'Финансовая модель', text: 'AI строит и актуализирует финмодель. Сценарный анализ, прогноз runway, оценка стоимости — в реальном времени.' },
+  { id: 4, icon: 'pi pi-users', color: '#fb923c', title: 'Оценка команды', text: 'Психотипирование основателей по интервью, карта компетенций, анализ gap-ов. Не форма — живая беседа с AI.' },
+  { id: 5, icon: 'pi pi-globe', color: '#22d3ee', title: 'Выход на рынок', text: 'Помогаем найти первых клиентов, партнёров по интеграции и государственных заказчиков в экосистеме НТИ.' },
+  { id: 6, icon: 'pi pi-comments', color: '#f59e0b', title: 'Менторство', text: 'Доступ к сети экспертов фонда: технологи, CTO, серийные предприниматели. Регулярные сессии и разборы.' },
 ]
 
 const modules = [
@@ -664,7 +692,7 @@ const modules = [
 .land-pillars-inner {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  gap: 24px;
   max-width: 1100px;
   margin: 0 auto;
 }
@@ -989,6 +1017,57 @@ const modules = [
   line-height: 1.5;
 }
 
+/* ════════════════════════════════════════════════ SUPPORT */
+.land-support-section {
+  padding: 100px 48px;
+  border-top: 1px solid var(--fst-glass-xs);
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+.land-support-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 56px;
+}
+.land-support-card {
+  padding: 28px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--fst-glass-sm);
+  border-top: 3px solid var(--supc);
+  border-radius: 14px;
+  text-align: left;
+  transition: all 0.2s;
+}
+.land-support-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 20px color-mix(in srgb, var(--supc) 10%, transparent);
+  transform: translateY(-3px);
+}
+.land-support-icon {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--supc) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--supc) 25%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--supc);
+  margin-bottom: 16px;
+}
+.land-support-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--p-text-color);
+  margin-bottom: 8px;
+}
+.land-support-text {
+  font-size: 13px;
+  color: var(--p-text-muted-color);
+  line-height: 1.7;
+}
+
 /* ════════════════════════════════════════════════ MODULES */
 .land-modules-section {
   padding: 100px 48px;
@@ -1195,6 +1274,8 @@ const modules = [
   .land-pipeline-section { padding: 60px 20px; }
   .land-numbers { padding: 60px 20px; }
   .land-numbers-grid { grid-template-columns: 1fr; }
+  .land-support-section { padding: 60px 20px; }
+  .land-support-grid { grid-template-columns: 1fr; }
   .land-modules-section { padding: 60px 20px; max-width: 100%; }
   .land-modules { grid-template-columns: 1fr; }
   .land-cta-section { padding: 80px 20px; }

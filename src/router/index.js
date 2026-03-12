@@ -48,6 +48,7 @@ const routes = [
       { path: 'fst-glossary', component: () => import('@/views/pages/FstGlossary.vue'), meta: { title: 'Глоссарий венчурных терминов' } },
       { path: 'fst-quiz', component: () => import('@/views/pages/FstQuizDemo.vue'), meta: { title: 'Мини-квизы — закрепление знаний' } },
       { path: 'fst-dev-guide', component: () => import('@/views/pages/FstDevGuide.vue'), meta: { title: 'Центр обучения ФСТ НТИ' } },
+      { path: 'fst-dev-course', component: () => import('@/views/pages/FstDevCourse.vue'), meta: { title: 'Курс для управляющих фондом' } },
       { path: 'fst-learning-progress', component: () => import('@/views/pages/FstLearningProgress.vue'), meta: { title: 'Мой прогресс обучения' } },
       { path: 'fst-school', component: () => import('@/views/pages/FstAgentSchool.vue'), meta: { title: 'Школа агентов ИК' } },
       { path: 'fst-miniapp', component: () => import('@/views/pages/FstMiniApp.vue'), meta: { title: 'Telegram Mini App' } },
@@ -64,6 +65,7 @@ const routes = [
       { path: 'fst-room', component: () => import('@/views/pages/FstRoom.vue'), meta: { title: 'Agent Room — живой чат агентов' } },
       { path: 'fst-soft-model', component: () => import('@/views/pages/FstSoftModel.vue'), meta: { title: 'Software Ontology Model' } },
       { path: 'fst-flow', component: () => import('@/views/pages/FstFlow.vue'), meta: { title: 'Моя панель' } },
+      { path: 'fst-present', component: () => import('@/views/pages/FstPresent.vue'), meta: { title: 'Режим презентации' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },
@@ -82,6 +84,7 @@ router.beforeEach((to) => {
   if (!token) return { path: '/login', query: { redirect: to.fullPath } }
 
   // Внешние роли (startup, investor) → на /fst-flow вместо /fst-hub
+  // Роль present → сразу на /fst-present
   try {
     const roleStore = useRoleStore()
     const EXTERNAL_ROLES = ['startup', 'investor']
@@ -89,6 +92,9 @@ router.beforeEach((to) => {
       const roles = roleStore.availableRoles.map(r => r.id)
       const isExternal = roles.every(r => EXTERNAL_ROLES.includes(r))
       if (isExternal && to.path === '/fst-hub') return { path: '/fst-flow' }
+      // Роль present: все не-презентационные маршруты → /fst-present
+      const isPresent = roleStore.activeRole === 'present'
+      if (isPresent && to.path === '/fst-hub') return { path: '/fst-present' }
     }
   } catch { /* store not ready yet — let it pass */ }
 

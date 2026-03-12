@@ -10,8 +10,31 @@ import express from 'express'
 
 const router = express.Router()
 
-const FST_API = 'https://api.ai2o.ru'
-const FST_DB  = 'fst'
+const FST_API  = 'https://api.ai2o.ru'
+const FST_DB   = 'fst'
+
+// Системный токен — кеш (читает таблицу пользователей с полными правами)
+let _sysToken    = null
+let _sysTokenExp = 0
+
+async function getSysToken() {
+  if (_sysToken && Date.now() < _sysTokenExp) return _sysToken
+  const resp = await fetch(`${FST_API}/${FST_DB}/auth?JSON_KV`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      login: process.env.INTEGRAM_SYSTEM_USERNAME,
+      pwd:   process.env.INTEGRAM_SYSTEM_PASSWORD
+    })
+  })
+  const data = await resp.json()
+  const items = Array.isArray(data) ? data : [data]
+  const tok = items[0]?.token
+  if (!tok) throw new Error('System auth failed')
+  _sysToken    = tok
+  _sysTokenExp = Date.now() + 55 * 60 * 1000  // 55 мин
+  return _sysToken
+}
 
 // GET /api/user/me
 // Header: X-Integram-Token: <token>  (выставляется фронтом после логина)
@@ -24,15 +47,64 @@ router.get('/me', async (req, res) => {
   }
 
   try {
-    // Читаем роли из таблицы пользователей (object/18) — самый надёжный способ
-    // Формат: reqs[userId]['115'] = "investor,expert,admin"
-    //         reqs[userId]['ref_115'] = "42:52536,52559,145"
-    const result = await readUserViaTable(token, userId)
+    // Читаем роли через системный токен — у обычных пользователей нет прав читать всю таблицу 18
+    const sysToken = await getSysToken()
+    const result   = await readUserViaTable(sysToken, userId)
     return res.json(result)
   } catch (e) {
     return res.status(500).json({ error: e.message })
   }
 })
+
+// Динамически получаем маппинг ID → имя из Integram type 42
+// Кеш на 5 минут — не долбём базу каждым запросом
+let _roleMapCache = null
+let _roleMapCachedAt = 0
+const ROLE_MAP_TTL = 5 * 60 * 1000
+
+async function fetchDynamicRoleMap(token) {
+  const now = Date.now()
+  if (_roleMapCache && now - _roleMapCachedAt < ROLE_MAP_TTL) return _roleMapCache
+
+  try {
+    const resp = await fetch(`${FST_API}/${FST_DB}/object/42?JSON_KV`, {
+      headers: { 'X-Authorization': token }
+    })
+    if (!resp.ok) return ROLE_ID_MAP  // fallback к хардкоду
+
+    const data = await resp.json()
+    const map = { ...ROLE_ID_MAP }  // начинаем с известных
+
+    // data.objects или data.list — список объектов type 42
+    const objects = data.objects || data.list || data.items || []
+    for (const obj of objects) {
+      const id = String(obj.id || obj._id || '')
+      const name = (obj.name || obj.label || obj.title || '').trim().toLowerCase()
+      if (id && name && !map[id]) {
+        // Нормализуем имя: "Презентация" → "present", "Аналитик" → "analyst"
+        const normalized = ROLE_NAME_MAP[name] || name.replace(/[^a-z]/g, '') || null
+        if (normalized) map[id] = normalized
+      }
+    }
+
+    // Также проверяем reqs — Integram возвращает имена через reqs
+    const reqs = data.reqs || {}
+    for (const [id, attrs] of Object.entries(reqs)) {
+      if (map[id]) continue  // уже знаем
+      const name = (attrs['1'] || attrs['name'] || attrs['33'] || '').trim().toLowerCase()
+      if (name) {
+        const normalized = ROLE_NAME_MAP[name] || (name.match(/^[a-z]+$/) ? name : null)
+        if (normalized) map[id] = normalized
+      }
+    }
+
+    _roleMapCache = map
+    _roleMapCachedAt = now
+    return map
+  } catch {
+    return ROLE_ID_MAP
+  }
+}
 
 // Читаем роли и имя из таблицы пользователей (object/18)
 async function readUserViaTable(token, userId) {
@@ -51,8 +123,9 @@ async function readUserViaTable(token, userId) {
   let roles = []
   const refStr = userReqs['ref_115'] || ''
   if (refStr) {
+    const dynamicMap = await fetchDynamicRoleMap(token)
     const ids = refStr.replace(/^\d+:/, '').split(',')
-    roles = ids.map(id => ROLE_ID_MAP[id.trim()]).filter(Boolean)
+    roles = ids.map(id => dynamicMap[id.trim()]).filter(Boolean)
   }
   if (!roles.length) {
     const nameStr = userReqs['115'] || ''
@@ -135,6 +208,7 @@ const ROLE_ID_MAP = {
   '52560': 'director',
   '52561': 'analyst',
   '52562': 'startup',
+  '72159': 'present',
 }
 
 // Маппинг русских/английских названий ролей → идентификатор
@@ -151,8 +225,11 @@ const ROLE_NAME_MAP = {
   'аналитик':       'analyst',
   'startup':        'startup',
   'стартап':        'startup',
+  'present':        'present',
+  'презентация':    'present',
+  'presentation':   'present',
 }
 
-const VALID_ROLES = ['investor', 'expert', 'director', 'analyst', 'startup', 'admin']
+const VALID_ROLES = ['investor', 'expert', 'director', 'analyst', 'startup', 'admin', 'present']
 
 export default router

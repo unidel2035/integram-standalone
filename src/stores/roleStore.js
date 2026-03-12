@@ -60,6 +60,14 @@ export const ROLE_PROFILES = {
     icon: 'pi pi-cog',
     color: 'var(--fst-red)',
     description: 'Полный доступ ко всем функциям'
+  },
+  present: {
+    id: 'present',
+    label: 'Презентация',
+    labelShort: 'Презентация',
+    icon: 'pi pi-play-circle',
+    color: 'var(--fst-purple)',
+    description: 'Режим ведущего — телесуфлёр для демо'
   }
 }
 
@@ -115,8 +123,12 @@ export const useRoleStore = defineStore('role', () => {
   }
 
   function hasMenuAccess(itemRoles) {
-    if (!itemRoles || itemRoles.length === 0) return true
     if (activeRole.value === 'admin') return true  // роль admin → полное меню
+    // Роль present: видит ТОЛЬКО пункты явно для неё — чистый интерфейс
+    if (activeRole.value === 'present') {
+      return Array.isArray(itemRoles) && itemRoles.includes('present')
+    }
+    if (!itemRoles || itemRoles.length === 0) return true
     return itemRoles.includes(activeRole.value)
   }
 

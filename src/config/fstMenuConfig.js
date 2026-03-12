@@ -46,6 +46,22 @@ const svgShieldCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="1.25rem" 
 // Пустой массив или отсутствие поля = видят все.
 // Если у пользователя fullMenuMode=true (admin) — видит всё.
 
+// ─── Меню для роли present (Гордин) — только самое нужное ───────────────────
+export const presentMenuConfig = [
+  {
+    label: 'Презентация',
+    icon: 'pi pi-play-circle',
+    roles: ['present'],
+    items: [
+      { label: 'Телесуфлёр',       icon: 'pi pi-play-circle', to: '/fst-present',     roles: ['present'] },
+      { label: 'Инвесткомитет',    icon: 'pi pi-users',       to: '/fst-committee',   roles: ['present'] },
+      { label: 'Портфель',         icon: 'pi pi-briefcase',   to: '/fst-portfolio',   roles: ['present'] },
+      { label: 'Суверенность',     icon: 'pi pi-shield',      to: '/fst-sovereignty', roles: ['present'] },
+      { label: 'Цифровой двойник', icon: 'pi pi-building',    to: '/fst-fund',        roles: ['present'] },
+    ]
+  }
+]
+
 export const fstMenuConfig = [
   {
     label: 'Обзор',
@@ -124,13 +140,15 @@ export const fstMenuConfig = [
     label: 'Обучение',
     icon: 'pi pi-graduation-cap',
     items: [
-      { label: 'Центр обучения', icon: 'pi pi-graduation-cap',   to: '/fst-dev-guide' },
+      { label: 'Центр обучения', icon: 'pi pi-graduation-cap',   to: '/fst-dev-guide', roles: ['admin'] },
       { label: 'Глоссарий',     icon: 'pi pi-book',              to: '/fst-glossary' },
       { label: 'Мой прогресс',  icon: 'pi pi-chart-line',        to: '/fst-learning-progress' },
       { label: 'Начать тур',    icon: 'pi pi-map',               action: 'show-tours-menu', special: true },
       { label: 'Мини-квизы',    icon: 'pi pi-question-circle',   to: '/fst-quiz' },
       { label: 'Школа агентов', icon: 'pi pi-star',              to: '/fst-school', roles: ['director', 'analyst', 'admin'] },
       { label: 'Claude CLI',    icon: 'pi pi-code',              to: '/fst-terminal', roles: ['director', 'admin'] },
+      { label: 'Курс разработчика', icon: 'pi pi-book',         to: '/fst-dev-course', roles: ['admin'] },
+      { label: 'Режим презентации', icon: 'pi pi-play-circle',  to: '/fst-present', roles: ['director', 'admin'] },
     ]
   }
 ]

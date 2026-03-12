@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import AppMenuItem from './AppMenuItem.vue'
-import { fstMenuConfig } from '@/config/fstMenuConfig'
+import { fstMenuConfig, presentMenuConfig } from '@/config/fstMenuConfig'
 import { useRoleStore } from '@/stores/roleStore'
 
 const props = defineProps({
@@ -25,15 +25,16 @@ watch(() => props.searchQuery, (newQuery) => {
 watch(() => roleStore.activeRole, () => { /* computed пересчитается автоматически */ })
 watch(() => roleStore.fullMenuMode, () => { /* computed пересчитается автоматически */ })
 
-const model = computed(() =>
-  fstMenuConfig
+const model = computed(() => {
+  const config = roleStore.activeRole === 'present' ? presentMenuConfig : fstMenuConfig
+  return config
     .filter(section => roleStore.hasMenuAccess(section.roles))
     .map(section => ({
       ...section,
       items: (section.items || []).filter(item => roleStore.hasMenuAccess(item.roles))
     }))
     .filter(section => section.items && section.items.length > 0)
-)
+})
 
 const filteredModel = computed(() => {
   if (!debouncedSearchQuery.value) return model.value

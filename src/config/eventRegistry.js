@@ -1025,6 +1025,69 @@ const SOFT_EVENT_TYPES_TAGGED = Object.fromEntries(
   Object.entries(SOFT_EVENT_TYPES).map(([k, v]) => [k, { ...v, entityType: 'module' }])
 )
 
+// ─── Presentation / Live Demo events ─────────────────────────────────────────
+
+export const PRESENT_EVENT_TYPES = {
+  PRESENT_STEP: {
+    id: 'PRESENT_STEP',
+    label: 'Шаг презентации',
+    icon: 'pi pi-play-circle',
+    color: '#a78bfa',
+    subject: 'Горин',
+    object: 'Экран Пескова',
+    entityType: 'session',
+    phase: 'present',
+  },
+  PRESENT_STARTED: {
+    id: 'PRESENT_STARTED',
+    label: 'Презентация запущена',
+    icon: 'pi pi-play',
+    color: '#a78bfa',
+    subject: 'Горин',
+    object: 'Сессия',
+    entityType: 'session',
+    phase: 'present',
+  },
+  PRESENT_STOPPED: {
+    id: 'PRESENT_STOPPED',
+    label: 'Презентация завершена',
+    icon: 'pi pi-stop',
+    color: '#a78bfa',
+    subject: 'Горин',
+    object: 'Сессия',
+    entityType: 'session',
+    phase: 'present',
+  },
+}
+
+// ─── Auth / Session events ────────────────────────────────────────────────────
+export const AUTH_EVENT_TYPES = {
+  USER_LOGGED_IN: {
+    id: 'USER_LOGGED_IN', label: 'Вход в систему',
+    icon: 'pi pi-sign-in', color: '#22c55e',
+    subject: 'Пользователь', object: 'Сессия',
+    entityType: 'session', phase: 'auth',
+  },
+  USER_LOGGED_OUT: {
+    id: 'USER_LOGGED_OUT', label: 'Выход из системы',
+    icon: 'pi pi-sign-out', color: '#f97316',
+    subject: 'Пользователь', object: 'Сессия',
+    entityType: 'session', phase: 'auth',
+  },
+  SESSION_EXPIRED: {
+    id: 'SESSION_EXPIRED', label: 'Сессия истекла',
+    icon: 'pi pi-clock', color: '#ef4444',
+    subject: 'Система', object: 'Сессия',
+    entityType: 'session', phase: 'auth',
+  },
+  SESSION_LOCKED: {
+    id: 'SESSION_LOCKED', label: 'Экран заблокирован',
+    icon: 'pi pi-lock', color: '#8b5cf6',
+    subject: 'Система', object: 'Экран',
+    entityType: 'session', phase: 'auth',
+  },
+}
+
 export const EVENT_REGISTRY = {
   ...GR_EVENT_TYPES,
   ...PORTFOLIO_EVENT_TYPES,
@@ -1036,6 +1099,8 @@ export const EVENT_REGISTRY = {
   ...EXPERT_EVENT_TYPES,
   ...FACTOR_EVENT_TYPES,
   ...REGLAMENT_EVENT_TYPES,
+  ...PRESENT_EVENT_TYPES,
+  ...AUTH_EVENT_TYPES,
 }
 
 /**
