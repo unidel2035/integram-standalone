@@ -126,6 +126,7 @@ export const fstMenuConfig = [
       { label: 'Due Diligence',  icon: 'pi pi-search',     to: '/fst-duediligence', roles: ['analyst', 'director', 'admin'] },
       { label: 'Юридика',        svgIcon: svgScale,        to: '/fst-legal',        roles: ['director', 'admin'] },
       { label: 'Реестр ПП-1726', svgIcon: svgBookOpenText, to: '/fst-registry',     roles: ['director', 'admin'] },
+      { label: 'Биллинг',        icon: 'pi pi-credit-card', to: '/fst-billing',     roles: ['director', 'admin'] },
     ]
   },
   {

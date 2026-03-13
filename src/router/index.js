@@ -66,6 +66,7 @@ const routes = [
       { path: 'fst-soft-model', component: () => import('@/views/pages/FstSoftModel.vue'), meta: { title: 'Software Ontology Model' } },
       { path: 'fst-flow', component: () => import('@/views/pages/FstFlow.vue'), meta: { title: 'Моя панель' } },
       { path: 'fst-present', component: () => import('@/views/pages/FstPresent.vue'), meta: { title: 'Режим презентации' } },
+      { path: 'fst-billing', component: () => import('@/views/pages/FstBilling.vue'), meta: { title: 'Биллинг и подписка' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },

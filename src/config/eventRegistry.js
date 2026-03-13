@@ -370,6 +370,132 @@ export const STARTUPER_EVENT_TYPES = {
     description: 'Проект прошёл первичный фильтр и передан на рассмотрение инвесткомитета',
     enables: ['SESSION_STARTED'],  // → цепочка в committee
   },
+
+  // ── Подготовка инвест-пакета (цепочка документов) ─────────────────────────────
+  // phase: docprep → docsign → docarchive
+  // Связывает: lead → deal (через INVEST_PACK_SENT → PI_REGISTERED)
+
+  EXEC_SUMMARY_READY: {
+    id: 'EXEC_SUMMARY_READY', label: 'Executive Summary подготовлен',
+    icon: 'pi pi-file', color: '#3b82f6',
+    subject: 'Стартапер / AI', object: 'Executive Summary',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Сводный документ проекта готов: продукт, рынок, команда, метрики, параметры раунда',
+    preconditions: ['TWIN_THRESHOLD_30'],
+    enables: ['TERM_SHEET_READY', 'BIZPLAN_READY'],
+  },
+  TERM_SHEET_READY: {
+    id: 'TERM_SHEET_READY', label: 'Term Sheet составлен',
+    icon: 'pi pi-file-edit', color: '#f59e0b',
+    subject: 'Стартапер / AI', object: 'Term Sheet CLN',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Условия сделки зафиксированы: инструмент, сумма, cap, дисконт, права инвестора',
+    preconditions: ['EXEC_SUMMARY_READY'],
+    enables: ['CLN_CONTRACT_READY', 'INVEST_AGREEMENT_READY'],
+  },
+  BIZPLAN_READY: {
+    id: 'BIZPLAN_READY', label: 'Бизнес-план утверждён',
+    icon: 'pi pi-book', color: '#6366f1',
+    subject: 'Стартапер / AI', object: 'Бизнес-план 2026–2028',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Детальный план развития: рынок, продукт, GTM, финпрогноз, конкуренция, команда',
+    preconditions: ['EXEC_SUMMARY_READY'],
+    enables: ['FINMODEL_READY'],
+  },
+  FINMODEL_READY: {
+    id: 'FINMODEL_READY', label: 'Финансовая модель завершена',
+    icon: 'pi pi-table', color: '#10b981',
+    subject: 'Стартапер / AI', object: 'Финмодель 5 лет',
+    entityType: 'lead', phase: 'docprep',
+    description: 'P&L, Cash Flow, Unit Economics, сценарный анализ, waterfall — всё сведено',
+    preconditions: ['BIZPLAN_READY'],
+    enables: ['DD_SELF_DONE', 'CAPTABLE_READY'],
+  },
+  DD_SELF_DONE: {
+    id: 'DD_SELF_DONE', label: 'Self Due Diligence проведён',
+    icon: 'pi pi-search', color: '#8b5cf6',
+    subject: 'Стартапер / AI', object: 'Компания',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Самодиагностика: юридический, финансовый, технологический, рыночный анализ',
+    preconditions: ['FINMODEL_READY'],
+    enables: ['INVEST_PACK_COMPLETE'],
+  },
+  CAPTABLE_READY: {
+    id: 'CAPTABLE_READY', label: 'Cap Table составлен',
+    icon: 'pi pi-sitemap', color: '#0ea5e9',
+    subject: 'Стартапер / AI', object: 'Cap Table',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Структура владения: pre/post CLN, сценарии разводнения, ESOP, waterfall',
+    preconditions: ['FINMODEL_READY'],
+    enables: ['INVEST_PACK_COMPLETE'],
+  },
+  CLN_CONTRACT_READY: {
+    id: 'CLN_CONTRACT_READY', label: 'Договор CLN подготовлен',
+    icon: 'pi pi-verified', color: '#22c55e',
+    subject: 'Стартапер / Юрист', object: 'Договор конвертируемого займа',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Полный текст договора: 12 статей, условия конвертации, права инвестора',
+    preconditions: ['TERM_SHEET_READY'],
+    enables: ['DOCS_SIGNED'],
+  },
+  INVEST_AGREEMENT_READY: {
+    id: 'INVEST_AGREEMENT_READY', label: 'Инвестиционное соглашение готово',
+    icon: 'pi pi-handshake', color: '#6366f1',
+    subject: 'Стартапер / Юрист', object: 'Инвест. соглашение',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Рамочное соглашение: вестинг, lock-up, non-compete, ROFR, drag/tag-along',
+    preconditions: ['TERM_SHEET_READY'],
+    enables: ['DOCS_SIGNED'],
+  },
+  GOST_DOCS_READY: {
+    id: 'GOST_DOCS_READY', label: 'Техническая документация ГОСТ готова',
+    icon: 'pi pi-cog', color: '#64748b',
+    subject: 'Стартапер / AI', object: 'ТЗ + Описание ПО + TRL + Архитектура',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Полный комплект: ГОСТ 34.602 (ТЗ), ГОСТ 19.402 (описание), TRL-паспорт, архитектура',
+    preconditions: ['TWIN_THRESHOLD_30'],
+    enables: ['INVEST_PACK_COMPLETE'],
+  },
+  INVEST_PACK_COMPLETE: {
+    id: 'INVEST_PACK_COMPLETE', label: 'Инвест-пакет укомплектован',
+    icon: 'pi pi-folder', color: '#22c55e',
+    subject: 'Платформа', object: 'Полный пакет документов',
+    entityType: 'lead', phase: 'docprep',
+    description: 'Все 20 документов готовы: Exec Summary, Term Sheet, финмодель, DD, юридические, технические',
+    preconditions: ['DD_SELF_DONE', 'CAPTABLE_READY', 'CLN_CONTRACT_READY', 'INVEST_AGREEMENT_READY', 'GOST_DOCS_READY'],
+    enables: ['DOCS_SIGNED', 'ARCHIVE_DOWNLOADED', 'SENT_TO_IC'],
+  },
+
+  // ── Подписание и отправка ──────────────────────────────────────────────────────
+  ARCHIVE_DOWNLOADED: {
+    id: 'ARCHIVE_DOWNLOADED', label: 'Архив документов скачан',
+    icon: 'pi pi-download', color: '#3b82f6',
+    subject: 'Стартапер', object: 'ZIP/PDF архив',
+    entityType: 'lead', phase: 'docarchive',
+    description: 'Инвест-пакет скачан в формате PDF/DOCX/HTML для отправки в фонд',
+    preconditions: ['INVEST_PACK_COMPLETE'],
+    enables: ['INVEST_PACK_SENT'],
+  },
+  DOCS_SIGNED: {
+    id: 'DOCS_SIGNED', label: 'Документы подписаны ЭЦП',
+    icon: 'pi pi-pen-to-square', color: '#8b5cf6',
+    subject: 'Стартапер', object: 'Диадок / КЭП',
+    entityType: 'lead', phase: 'docsign',
+    description: 'Ключевые документы (Term Sheet, Договор CLN, Инвест. соглашение) подписаны квалифицированной ЭЦП через Контур.Диадок',
+    preconditions: ['CLN_CONTRACT_READY', 'INVEST_AGREEMENT_READY'],
+    enables: ['INVEST_PACK_SENT'],
+  },
+  INVEST_PACK_SENT: {
+    id: 'INVEST_PACK_SENT', label: 'Инвест-пакет отправлен в фонд',
+    icon: 'pi pi-send', color: '#10b981',
+    subject: 'Стартапер', object: 'Фонд / ИК',
+    entityType: 'lead', phase: 'docsign',
+    description: 'Полный пакет документов передан в фонд для рассмотрения ИК',
+    preconditions: ['INVEST_PACK_COMPLETE'],
+    enables: ['SESSION_STARTED'],  // → цепочка в committee
+    // cross-entity: инициирует deal flow
+    crossEnables: [{ entityType: 'deal', eventType: 'PI_REGISTERED' }],
+  },
 }
 
 // ─── Expert Digital Twin events ───────────────────────────────────────────────

@@ -18,6 +18,8 @@ import factorRoutes     from './src/api/routes/factorModel.js'
 import userRoutes       from './src/api/routes/user.js'
 import eventGraphRoutes from './src/api/routes/eventGraph.js'
 import docParserRoutes  from './src/api/routes/docParser.js'
+import billingRoutes    from './src/api/routes/billing.js'
+import { logUsage, incrementUsage, checkTokenQuota, deductTokens } from './src/services/billingService.js'
 import { refreshConfig } from './src/services/fstConfigService.js'
 
 const app = express()
@@ -260,22 +262,93 @@ function resolveProvider(modelId = '') {
   return AI_PROVIDERS['deepseek/deepseek-chat']
 }
 
+// Маппинг моделей на Polza-эквиваленты для автоматического fallback
+const POLZA_FALLBACK = {
+  'deepseek-chat':              'deepseek/deepseek-chat',
+  'claude-sonnet-4-6-20251001': 'anthropic/claude-sonnet-4.6',
+  'gpt-4o':                     'openai/gpt-4o',
+}
+
+async function callProvider(provider, prompt, systemPrompt) {
+  const isAnthropic = provider.anthropic
+  const body = isAnthropic
+    ? JSON.stringify({ model: provider.model, max_tokens: 4096, system: systemPrompt || '', messages: [{ role: 'user', content: prompt }] })
+    : JSON.stringify({ model: provider.model, messages: [...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []), { role: 'user', content: prompt }], max_tokens: 4096 })
+  const headers = isAnthropic
+    ? { 'Content-Type': 'application/json', 'x-api-key': provider.key, 'anthropic-version': '2023-06-01' }
+    : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.key}` }
+  const response = await fetch(provider.url, { method: 'POST', headers, body })
+  const data = await response.json()
+  if (!response.ok) {
+    const raw = data.error?.message || data.error?.code || JSON.stringify(data.error) || `HTTP ${response.status}`
+    const isBalance = /insufficient.balance|недостаточно средств/i.test(raw)
+    return { ok: false, raw, isBalance }
+  }
+  const text = isAnthropic ? data.content?.[0]?.text || '' : data.choices?.[0]?.message?.content || ''
+  const usage = isAnthropic
+    ? { promptTokens: data.usage?.input_tokens || 0, completionTokens: data.usage?.output_tokens || 0, costRub: data.usage?.cost_rub || 0 }
+    : { promptTokens: data.usage?.prompt_tokens || 0, completionTokens: data.usage?.completion_tokens || 0, costRub: data.usage?.cost_rub || 0 }
+  return { ok: true, text, model: provider.model, usage }
+}
+
 app.post('/api/ai-tokens/chat', async (req, res) => {
   const { modelId, prompt, systemPrompt, application } = req.body
+  const userId = req.body.userId || 'anonymous'
   const provider = resolveProvider(modelId)
-  if (!provider.key) return res.status(503).json({ error: `No API key for ${modelId}` })
+  if (!provider.key) return res.status(503).json({ error: `Нет API-ключа для ${modelId}` })
+
+  // Проверка баланса токенов
   try {
-    const isAnthropic = provider.anthropic
-    const body = isAnthropic
-      ? JSON.stringify({ model: provider.model, max_tokens: 4096, system: systemPrompt || '', messages: [{ role: 'user', content: prompt }] })
-      : JSON.stringify({ model: provider.model, messages: [...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []), { role: 'user', content: prompt }], max_tokens: 4096 })
-    const headers = isAnthropic
-      ? { 'Content-Type': 'application/json', 'x-api-key': provider.key, 'anthropic-version': '2023-06-01' }
-      : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.key}` }
-    const response = await fetch(provider.url, { method: 'POST', headers, body })
-    const data = await response.json()
-    const text = isAnthropic ? data.content?.[0]?.text || '' : data.choices?.[0]?.message?.content || ''
-    res.json({ response: text, model: provider.model, application })
+    const tokenCheck = await checkTokenQuota(userId)
+    if (!tokenCheck.allowed) {
+      return res.status(402).json({
+        error: 'Баланс токенов исчерпан. Пополните баланс в разделе Биллинг.',
+        code: 'INSUFFICIENT_TOKENS',
+        balance: tokenCheck.balance,
+      })
+    }
+  } catch (err) {
+    console.error('[Billing] token quota check error:', err.message)
+    // Не блокируем вызов при ошибке проверки
+  }
+
+  try {
+    let result = await callProvider(provider, prompt, systemPrompt)
+
+    // Fallback на Polza при ошибке баланса (если это не уже Polza)
+    if (!result.ok && result.isBalance && !modelId?.startsWith('polza/') && process.env.POLZA_API_KEY) {
+      const polzaModel = POLZA_FALLBACK[provider.model] || 'deepseek/deepseek-chat'
+      console.warn(`[AI] ${modelId} — нет баланса, fallback → polza/${polzaModel}`)
+      const polzaProvider = { url: POLZA_URL, key: process.env.POLZA_API_KEY, model: polzaModel }
+      result = await callProvider(polzaProvider, prompt, systemPrompt)
+    }
+
+    if (!result.ok) {
+      const errMsg = result.isBalance
+        ? `Недостаточно средств на балансе провайдера ${modelId}. Пополните баланс.`
+        : `Ошибка AI-провайдера ${modelId}: ${result.raw}`
+      console.error(`[AI] ${modelId} error: ${result.raw}`)
+      return res.status(502).json({ error: errMsg, provider: modelId })
+    }
+
+    // Трекинг использования AI (async, не блокирует ответ)
+    const providerName = modelId?.startsWith('polza/') ? 'polza' : (provider.anthropic ? 'anthropic' : 'deepseek')
+    const totalTokens = (result.usage?.promptTokens || 0) + (result.usage?.completionTokens || 0)
+    logUsage({
+      userId, modelId, provider: providerName, application,
+      promptTokens: result.usage?.promptTokens,
+      completionTokens: result.usage?.completionTokens,
+      costRub: result.usage?.costRub,
+    }).catch(err => console.error('[Billing] logUsage error:', err.message))
+    incrementUsage(userId, result.usage?.costRub || 0)
+      .catch(err => console.error('[Billing] incrementUsage error:', err.message))
+    // Списание токенов с баланса пользователя
+    if (totalTokens > 0) {
+      deductTokens(userId, totalTokens, `AI: ${modelId} (${application || 'unknown'})`)
+        .catch(err => console.error('[Billing] deductTokens error:', err.message))
+    }
+
+    res.json({ response: result.text, model: result.model, application })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -354,6 +427,7 @@ app.use('/api/fst',       docParserRoutes)
 app.use('/api',           roomRoutes)
 app.use('/api',           eventsRoutes)
 app.use('/api',           aiTokensRoutes)
+app.use('/api',           billingRoutes)
 
 // ── Doc Blocks — create/sync document in Integram kval ───────────────────────
 // Simplified: creates type 1022 Document in kval and returns documentId.
