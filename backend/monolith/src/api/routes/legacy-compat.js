@@ -618,10 +618,154 @@ function getAlign(typeId) {
 }
 
 /**
+ * Resolve BuiltIn() macros in values — matches PHP's BuiltIn() function
+ */
+function resolveBuiltIn(val, user, req, tzone) {
+  if (typeof val !== 'string') return val;
+  return val
+    .replace(/\[TODAY\]/gi, () => {
+      const d = new Date();
+      return String(d.getFullYear()) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+    })
+    .replace(/\[NOW\]/gi, () => String(Math.floor(Date.now() / 1000)))
+    .replace(/\[USER\]/gi, () => user?.username || '')
+    .replace(/\[USER_ID\]/gi, () => String(user?.uid || ''))
+    .replace(/\[ROLE\]/gi, () => user?.role || '')
+    .replace(/\[TSHIFT\]/gi, () => String(tzone || 0))
+    .replace(/\[REMOTE_ADDR\]/gi, () => req?.ip || '');
+}
+
+/**
+ * HTML escape helper — matches PHP's htmlspecialchars()
+ */
+function htmlEsc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Get subdirectory path for file storage — matches PHP's GetSubdir()
+ */
+function getSubdir(id) {
+  const hex = Number(id).toString(16).padStart(4, '0');
+  return `${hex.slice(0, 2)}/${hex.slice(2, 4)}`;
+}
+
+/**
+ * Get filename from ID — matches PHP's GetFilename()
+ */
+function getFilename(id) {
+  return crypto.createHash('md5').update(String(id)).digest('hex');
+}
+
+/**
+ * File extension blacklist — matches PHP's BlackList()
+ */
+const FILE_BLACKLIST = /\.(php|cgi|asp|aspx|jsp|exe|sh|bat|cmd|com|vbs|ws|wsf|scr|pif)$/i;
+function isBlacklistedFile(filename) {
+  return FILE_BLACKLIST.test(filename);
+}
+
+/**
  * Validate database name (matches PHP DB_MASK)
  */
 function isValidDbName(db) {
   return /^[a-z]\w{1,14}$/i.test(db);
+}
+
+/**
+ * Legacy auth middleware — validates token cookie and populates req.legacyUser + req.grants
+ * Matches PHP's Validate_Token() logic
+ */
+function legacyAuthMiddleware() {
+  return async (req, res, next) => {
+    const { db } = req.params;
+    if (!db || !isValidDbName(db)) return next(); // let route handler deal with it
+
+    const pool = getPool();
+    const token = req.cookies?.[db] || req.headers?.authorization?.replace(/^Bearer\s+/i, '');
+
+    if (!token) {
+      return res.status(401).json([{ error: 'Authentication required' }]);
+    }
+
+    try {
+      const [rows] = await pool.query(`
+        SELECT u.id AS uid, u.val AS username,
+               tok.val AS token,
+               xsrf.val AS xsrf,
+               role.t AS role_type_id,
+               role_def.val AS role_name,
+               role_def.id AS role_id
+        FROM \`${db}\` tok
+        JOIN \`${db}\` u ON u.id = tok.up AND u.t = ${TYPE.USER}
+        LEFT JOIN \`${db}\` xsrf ON xsrf.up = u.id AND xsrf.t = ${TYPE.XSRF}
+        LEFT JOIN \`${db}\` role ON role.up = u.id AND role.t = ${TYPE.ROLE}
+        LEFT JOIN \`${db}\` role_def ON role_def.id = role.t AND role_def.t = ${TYPE.ROLE}
+        WHERE tok.t = ${TYPE.TOKEN} AND tok.val = ?
+        LIMIT 1
+      `, [token]);
+
+      if (rows.length === 0) {
+        return res.status(401).json([{ error: 'Invalid or expired token' }]);
+      }
+
+      const user = rows[0];
+      req.legacyUser = {
+        uid: user.uid,
+        username: user.username,
+        token: user.token,
+        xsrf: user.xsrf || '',
+        role: user.role_name || '',
+        roleId: user.role_id || null,
+      };
+      req.grants = await getGrants(pool, db, user.role_id);
+      next();
+    } catch (error) {
+      logger.error('[LegacyAuth] Middleware error', { error: error.message, db });
+      return res.status(401).json([{ error: 'Authentication failed' }]);
+    }
+  };
+}
+
+/**
+ * XSRF validation middleware for POST requests
+ * Matches PHP's XSRF check behavior
+ */
+function legacyXsrfCheck(req, res, next) {
+  if (req.method !== 'POST') return next();
+
+  const xsrf = req.body?._xsrf;
+  if (!req.legacyUser) return next(); // auth middleware should have run first
+
+  if (!xsrf || xsrf !== req.legacyUser.xsrf) {
+    return res.status(200).json([{ error: 'XSRF token mismatch' }]);
+  }
+  next();
+}
+
+/**
+ * DDL grant check — requires WRITE access to types (Check_Types_Grant equivalent)
+ */
+function legacyDdlGrantCheck(req, res, next) {
+  const { db } = req.params;
+  const pool = getPool();
+  const username = req.legacyUser?.username || '';
+
+  checkGrant(pool, db, req.grants || {}, 0, 0, 'WRITE', username).then(granted => {
+    if (!granted) {
+      return res.status(200).json([{ error: 'No permission to modify types' }]);
+    }
+    next();
+  }).catch(err => {
+    logger.error('[LegacyDdlGrant] Error', { error: err.message, db });
+    return res.status(200).json([{ error: 'Grant check failed' }]);
+  });
 }
 
 /**
@@ -1145,6 +1289,13 @@ router.post('/:db/checkcode', async (req, res) => {
         await pool.query(`INSERT INTO ${db} (up, ord, t, val) VALUES (?, 1, ${TYPE.XSRF}, ?)`, [row.uid, newXsrf]);
       }
 
+      // Update ACTIVITY record (PHP: upsert activity timestamp)
+      await pool.query(
+        `INSERT INTO \`${db}\` (up, ord, t, val) VALUES (?, 1, ${TYPE.ACTIVITY}, ?)
+         ON DUPLICATE KEY UPDATE val = ?`,
+        [row.uid, String(Math.floor(Date.now() / 1000)), String(Math.floor(Date.now() / 1000))]
+      );
+
       // Set cookie like PHP
       res.cookie(db, newToken, { maxAge: 30 * 24 * 60 * 60 * 1000, path: '/', httpOnly: false });
 
@@ -1283,10 +1434,17 @@ router.all('/:db/exit', async (req, res) => {
   if (token && isValidDbName(db)) {
     try {
       const pool = getPool();
-      await pool.query(
-        `DELETE FROM \`${db}\` WHERE t = ${TYPE.TOKEN} AND val = ?`,
+      // Find user ID from token, then delete all their tokens (matching PHP)
+      const [userRows] = await pool.query(
+        `SELECT up FROM \`${db}\` WHERE t = ${TYPE.TOKEN} AND val = ? LIMIT 1`,
         [token]
       );
+      if (userRows.length > 0) {
+        await pool.query(
+          `DELETE FROM \`${db}\` WHERE up = ? AND t = ${TYPE.TOKEN}`,
+          [userRows[0].up]
+        );
+      }
     } catch (err) {
       logger.error({ error: err.message, db }, '[Legacy Exit] DB error on token delete');
     }
@@ -1625,6 +1783,21 @@ async function deleteChildren(db, parentId) {
 }
 
 /**
+ * Recursively delete an object and all its descendants
+ * Matches PHP's BatchDelete() function
+ */
+async function recursiveDelete(pool, db, objectId) {
+  const [children] = await pool.query(
+    `SELECT id FROM \`${db}\` WHERE up = ?`, [objectId]
+  );
+  for (const child of children) {
+    await recursiveDelete(pool, db, child.id);
+  }
+  await pool.query(`DELETE FROM \`${db}\` WHERE up = ?`, [objectId]);
+  await pool.query(`DELETE FROM \`${db}\` WHERE id = ?`, [objectId]);
+}
+
+/**
  * Get object by ID
  */
 async function getObjectById(db, id) {
@@ -1644,6 +1817,20 @@ async function getRequisiteByType(db, parentId, typeId) {
   return rows.length > 0 ? rows[0] : null;
 }
 
+/**
+ * Remove duplicated requisites — matches PHP's checkDuplicatedReqs()
+ */
+async function checkDuplicatedReqs(pool, db, parentId, typeId) {
+  const [rows] = await pool.query(
+    `SELECT id FROM \`${db}\` WHERE up = ? AND t = ? ORDER BY id DESC`,
+    [parentId, typeId]
+  );
+  if (rows.length > 1) {
+    const idsToDelete = rows.slice(1).map(r => r.id);
+    await pool.query(`DELETE FROM \`${db}\` WHERE id IN (?)`, [idsToDelete]);
+  }
+}
+
 // ============================================================================
 // DML Action Routes (Phase 1 MVP - Real Implementation)
 // ============================================================================
@@ -1653,7 +1840,7 @@ async function getRequisiteByType(db, parentId, typeId) {
  * POST /:db/_m_new/:up
  * Parameters: up (parent ID), t (type ID), val, t{id}=value (attributes)
  */
-router.post('/:db/_m_new/:up?', async (req, res) => {
+router.post('/:db/_m_new/:up?', legacyAuthMiddleware(), legacyXsrfCheck, async (req, res) => {
   const { db, up } = req.params;
 
   if (!isValidDbName(db)) {
@@ -1661,12 +1848,60 @@ router.post('/:db/_m_new/:up?', async (req, res) => {
   }
 
   try {
+    const pool = getPool();
     const parentId = parseInt(up || req.body.up || '0', 10);
     const typeId = parseInt(req.body.t, 10);
-    const value = req.body.val || '';
+    let value = req.body.val || '';
+    const tzone = parseInt(req.cookies?.tzone || '0', 10);
+    value = resolveBuiltIn(value, req.legacyUser, req, tzone);
+
+    if (parentId === 0) {
+      return res.status(200).json([{ error: 'Invalid parent' }]);
+    }
 
     if (!typeId) {
       return res.status(200).json([{ error: 'Type ID (t) is required'  }]);
+    }
+
+    // Grant check
+    const username = req.legacyUser?.username || '';
+    if (!await checkGrant(pool, db, req.grants || {}, parentId, typeId, 'WRITE', username)) {
+      return res.status(200).json([{ error: 'No permission to create objects here' }]);
+    }
+    if (parentId === 1) {
+      const g1 = await grant1Level(pool, db, req.grants || {}, typeId, username);
+      if (!g1) {
+        return res.status(200).json([{ error: 'No permission for this type' }]);
+      }
+    }
+
+    // Parent existence check (when up !== 1)
+    if (parentId !== 1) {
+      const [parentCheck] = await pool.query(
+        `SELECT id, up FROM \`${db}\` WHERE id = ? LIMIT 1`, [parentId]
+      );
+      if (parentCheck.length === 0 || parentCheck[0].up === 0) {
+        return res.status(200).json([{ error: 'Invalid parent' }]);
+      }
+    }
+
+    // Check type definition for uniqueness flag (ord=1 means unique)
+    const [typeDef] = await pool.query(
+      `SELECT ord FROM \`${db}\` WHERE id = ? AND up = 0 LIMIT 1`, [typeId]
+    );
+    if (typeDef.length > 0 && typeDef[0].ord === 1 && value) {
+      const [existing] = await pool.query(
+        `SELECT id FROM \`${db}\` WHERE t = ? AND val = ? AND up = ? LIMIT 1`,
+        [typeId, value, parentId]
+      );
+      if (existing.length > 0) {
+        return res.status(200).json({
+          id: existing[0].id,
+          obj: existing[0].id,
+          warning: 'The record already exists',
+          next_act: 'edit_obj',
+        });
+      }
     }
 
     // Get next order
@@ -1681,10 +1916,10 @@ router.post('/:db/_m_new/:up?', async (req, res) => {
     const attributes = extractAttributes(req.body);
     for (const [attrTypeId, attrValue] of Object.entries(attributes)) {
       const attrOrder = await getNextOrder(db, id, parseInt(attrTypeId, 10));
-      await insertRow(db, id, attrOrder, parseInt(attrTypeId, 10), String(attrValue));
+      let processedValue = resolveBuiltIn(String(attrValue), req.legacyUser, req, tzone);
+      processedValue = formatVal(parseInt(attrTypeId, 10), processedValue, tzone);
+      await insertRow(db, id, attrOrder, parseInt(attrTypeId, 10), String(processedValue));
     }
-
-    const pool = getPool();
 
     // Check if type has requisites (determines next_act per PHP logic)
     const [reqRows] = await pool.query(
@@ -1723,7 +1958,7 @@ router.post('/:db/_m_new/:up?', async (req, res) => {
  * PHP: index.php lines 7991-8163
  * When copybtn is set, copies the object and all its requisites.
  */
-router.post('/:db/_m_save/:id', async (req, res) => {
+router.post('/:db/_m_save/:id', legacyAuthMiddleware(), legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -1733,6 +1968,20 @@ router.post('/:db/_m_save/:id', async (req, res) => {
   try {
     const pool = getPool();
     const originalId = parseInt(id, 10);
+
+    const username = req.legacyUser?.username || '';
+    if (!await checkGrant(pool, db, req.grants || {}, originalId, 0, 'WRITE', username)) {
+      return res.status(200).json([{ error: 'No permission to edit this object' }]);
+    }
+
+    // Metadata protection
+    const [objCheck] = await pool.query(`SELECT up FROM \`${db}\` WHERE id = ? LIMIT 1`, [originalId]);
+    if (objCheck.length === 0) {
+      return res.status(200).json([{ error: 'Object not found' }]);
+    }
+    if (objCheck[0].up === 0) {
+      return res.status(200).json([{ error: 'Cannot modify metadata' }]);
+    }
 
     // Check if this is a copy operation (PHP: isset($_REQUEST["copybtn"]))
     const isCopy = req.query.copybtn !== undefined || req.body.copybtn !== undefined;
@@ -1806,6 +2055,7 @@ router.post('/:db/_m_save/:id', async (req, res) => {
     }
 
     // Normal save (not copy)
+    const tzone = parseInt(req.cookies?.tzone || '0', 10);
     // Update value if provided
     if (req.body.val !== undefined) {
       await updateRowValue(db, objectId, req.body.val);
@@ -1855,15 +2105,27 @@ router.post('/:db/_m_save/:id', async (req, res) => {
     for (const [attrTypeId, attrValue] of Object.entries(attributes)) {
       const typeIdNum = parseInt(attrTypeId, 10);
       const existing = await getRequisiteByType(db, objectId, typeIdNum);
+      let processedValue = resolveBuiltIn(String(attrValue), req.legacyUser, req, tzone);
+      processedValue = formatVal(typeIdNum, processedValue, tzone);
+
+      // Skip password stars (PHP: PASSWORDSTARS constant)
+      if (String(processedValue) === '********') continue;
+
+      // Empty value for non-multi requisite = delete
+      if (String(processedValue) === '' && existing) {
+        await pool.query(`DELETE FROM \`${db}\` WHERE id = ?`, [existing.id]);
+        continue;
+      }
 
       if (existing) {
         // Update existing requisite
-        await updateRowValue(db, existing.id, String(attrValue));
+        await updateRowValue(db, existing.id, String(processedValue));
       } else {
         // Create new requisite
         const attrOrder = await getNextOrder(db, objectId, typeIdNum);
-        await insertRow(db, objectId, attrOrder, typeIdNum, String(attrValue));
+        await insertRow(db, objectId, attrOrder, typeIdNum, String(processedValue));
       }
+      await checkDuplicatedReqs(pool, db, objectId, typeIdNum);
     }
 
     // Handle SEARCH_* parameters - persist search criteria for dropdown lists
@@ -1889,19 +2151,25 @@ router.post('/:db/_m_save/:id', async (req, res) => {
     const objType = objInfo.length > 0 ? objInfo[0].t : 0;
     const objUp   = objInfo.length > 0 ? objInfo[0].up : 0;
 
-    // PHP api_dump(): {id, obj, next_act, args, warnings}
-    // For _m_save: obj = type ID, next_act = "object", args = F_U=<parent> if parent>1
+    // Determine next_act based on warnings/search changes
+    let next_act = 'object';
+    let warningText = '';
+    if (Object.keys(searchParams).length > 0) {
+      next_act = 'edit_obj';
+    }
+
     const response = {
       id: objectId,
       obj: objType,
-      next_act: 'object',
+      next_act,
       args: objUp > 1 ? `F_U=${objUp}` : '',
-      warnings: '',
+      warnings: warningText,
     };
 
-    // If SEARCH_* params are present, include them so the client can filter dropdown lists
+    // Put search params into args URL string
     if (Object.keys(searchParams).length > 0) {
-      response.search = searchParams;
+      const searchArgs = Object.entries(searchParams).map(([k, v]) => `SEARCH_${k}=${encodeURIComponent(v)}`).join('&');
+      response.args = response.args ? `${response.args}&${searchArgs}` : searchArgs;
     }
 
     res.json(response);
@@ -1915,7 +2183,7 @@ router.post('/:db/_m_save/:id', async (req, res) => {
  * _m_del - Delete object
  * POST /:db/_m_del/:id
  */
-router.post('/:db/_m_del/:id', async (req, res) => {
+router.post('/:db/_m_del/:id', legacyAuthMiddleware(), legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -1925,7 +2193,15 @@ router.post('/:db/_m_del/:id', async (req, res) => {
   try {
     const pool = getPool();
     const objectId = parseInt(id, 10);
-    const cascade = req.body.cascade === '1' || req.body.cascade === true;
+
+    const username = req.legacyUser?.username || '';
+    if (!await checkGrant(pool, db, req.grants || {}, objectId, 0, 'WRITE', username)) {
+      return res.status(200).json([{ error: 'No permission to delete this object' }]);
+    }
+    // Self-deletion prevention
+    if (objectId === req.legacyUser?.uid) {
+      return res.status(200).json([{ error: 'Cannot delete yourself' }]);
+    }
 
     // Fetch type_id BEFORE deleting (needed for PHP api_dump() response)
     const [objInfo] = await pool.query(
@@ -1934,15 +2210,10 @@ router.post('/:db/_m_del/:id', async (req, res) => {
     const objType = objInfo.length > 0 ? objInfo[0].t : 0;
     const objUp   = objInfo.length > 0 ? objInfo[0].up : 0;
 
-    // Delete children first if cascade
-    if (cascade) {
-      await deleteChildren(db, objectId);
-    }
+    // PHP always does recursive delete (BatchDelete)
+    await recursiveDelete(pool, db, objectId);
 
-    // Delete the object
-    await deleteRow(db, objectId);
-
-    logger.info('[Legacy _m_del] Object deleted', { db, id: objectId, cascade });
+    logger.info('[Legacy _m_del] Object deleted', { db, id: objectId });
 
     // PHP api_dump(): {id:type_id, obj:deleted_id, next_act:"object", args, warnings}
     res.json({
@@ -1963,7 +2234,7 @@ router.post('/:db/_m_del/:id', async (req, res) => {
  * POST /:db/_m_set/:id
  * Parameters: t{id}=value (attributes to set)
  */
-router.post('/:db/_m_set/:id', async (req, res) => {
+router.post('/:db/_m_set/:id', legacyAuthMiddleware(), legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -1974,6 +2245,8 @@ router.post('/:db/_m_set/:id', async (req, res) => {
     const pool = getPool();
     const objectId = parseInt(id, 10);
     const attributes = extractAttributes(req.body);
+    const username = req.legacyUser?.username || '';
+    const tzone = parseInt(req.cookies?.tzone || '0', 10);
 
     if (Object.keys(attributes).length === 0) {
       return res.status(200).json([{ error: 'No attributes provided'  }]);
@@ -1981,14 +2254,20 @@ router.post('/:db/_m_set/:id', async (req, res) => {
 
     for (const [attrTypeId, attrValue] of Object.entries(attributes)) {
       const typeIdNum = parseInt(attrTypeId, 10);
+      if (!await checkGrant(pool, db, req.grants || {}, objectId, typeIdNum, 'WRITE', username)) {
+        continue; // skip this attribute if no grant
+      }
       const existing = await getRequisiteByType(db, objectId, typeIdNum);
+      let processedValue = resolveBuiltIn(String(attrValue), req.legacyUser, req, tzone);
+      processedValue = formatVal(typeIdNum, processedValue, tzone);
 
       if (existing) {
-        await updateRowValue(db, existing.id, String(attrValue));
+        await updateRowValue(db, existing.id, String(processedValue));
       } else {
         const attrOrder = await getNextOrder(db, objectId, typeIdNum);
-        await insertRow(db, objectId, attrOrder, typeIdNum, String(attrValue));
+        await insertRow(db, objectId, attrOrder, typeIdNum, String(processedValue));
       }
+      await checkDuplicatedReqs(pool, db, objectId, typeIdNum);
     }
 
     // Fetch type and parent for PHP api_dump() response
@@ -2019,7 +2298,7 @@ router.post('/:db/_m_set/:id', async (req, res) => {
  * POST /:db/_m_move/:id
  * Parameters: up (new parent ID)
  */
-router.post('/:db/_m_move/:id', async (req, res) => {
+router.post('/:db/_m_move/:id', legacyAuthMiddleware(), legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -2032,6 +2311,26 @@ router.post('/:db/_m_move/:id', async (req, res) => {
     const newOrder = await getNextOrder(db, newParentId);
 
     const pool = getPool();
+
+    const username = req.legacyUser?.username || '';
+    if (!await checkGrant(pool, db, req.grants || {}, objectId, 0, 'WRITE', username)) {
+      return res.status(200).json([{ error: 'No permission to move this object' }]);
+    }
+
+    // Metadata protection
+    const [moveObj] = await pool.query(`SELECT up, t, ord FROM \`${db}\` WHERE id = ? LIMIT 1`, [objectId]);
+    if (moveObj.length === 0) {
+      return res.status(200).json([{ error: 'Object not found' }]);
+    }
+    if (moveObj[0].up === 0) {
+      return res.status(200).json([{ error: 'Cannot move metadata' }]);
+    }
+
+    // Adjust order in old parent
+    await pool.query(
+      `UPDATE \`${db}\` SET ord = ord - 1 WHERE up = ? AND t = ? AND ord > ?`,
+      [moveObj[0].up, moveObj[0].t, moveObj[0].ord]
+    );
 
     // Fetch type BEFORE moving
     const [objInfo] = await pool.query(
@@ -2414,7 +2713,7 @@ router.all('/:db/_d_main/:typeId', async (req, res) => {
  * PHP filters types through Grant_1level($id) — shows only those the user has access to.
  * Node.js now replicates this behavior using the grant1Level function.
  */
-router.get('/:db/terms', async (req, res) => {
+router.get('/:db/terms', legacyAuthMiddleware(), async (req, res) => {
   const { db } = req.params;
 
   if (!isValidDbName(db)) {
@@ -2424,31 +2723,9 @@ router.get('/:db/terms', async (req, res) => {
   try {
     const pool = getPool();
 
-    // Get user grants from token cookie if available
-    const token = req.cookies[db] || req.headers.authorization?.replace(/^Bearer\s+/i, '');
-    let grants = {};
-    let username = '';
-
-    if (token) {
-      try {
-        // Validate token and get user role
-        const [userRows] = await pool.query(`
-          SELECT u.id, u.val AS username, role_def.id AS role_id
-          FROM ${db} tok
-          JOIN ${db} u ON tok.up = u.id
-          LEFT JOIN (${db} r CROSS JOIN ${db} role_def) ON r.up = u.id AND role_def.id = r.t AND role_def.t = ${TYPE.ROLE}
-          WHERE tok.val = ? AND tok.t = ${TYPE.TOKEN}
-          LIMIT 1
-        `, [token]);
-
-        if (userRows.length > 0) {
-          username = userRows[0].username;
-          grants = await getGrants(pool, db, userRows[0].role_id);
-        }
-      } catch (e) {
-        logger.warn('[Legacy terms] Failed to load grants', { error: e.message });
-      }
-    }
+    // Use grants and username from legacyAuthMiddleware
+    const grants = req.grants || {};
+    const username = req.legacyUser?.username || '';
 
     // Match PHP terms query: all top-level objects where id!=t, val!='', t!=0
     // Left join to get the type of each requisite (child record) per PHP logic
@@ -2493,7 +2770,7 @@ router.get('/:db/terms', async (req, res) => {
         types.push({
           id: numId,
           type: base[id],
-          name: typ[id],
+          name: htmlEsc(typ[id]),
         });
       }
     }
@@ -2513,7 +2790,7 @@ router.get('/:db/terms', async (req, res) => {
  *   {"_xsrf":"...","token":"...","user":"...","role":"...","id":...,"msg":""}
  * Requires valid token cookie — used by the SPA on page load to verify session.
  */
-router.get('/:db/xsrf', async (req, res) => {
+router.get('/:db/xsrf', legacyAuthMiddleware(), async (req, res) => {
   const { db } = req.params;
   const token = req.cookies[db];
 
@@ -2574,7 +2851,7 @@ router.get('/:db/xsrf', async (req, res) => {
  *   ?r=<id> - Restrict to specific ID
  *   ?r=<id1>,<id2> - Restrict to multiple IDs
  */
-router.get('/:db/_ref_reqs/:refId', async (req, res) => {
+router.get('/:db/_ref_reqs/:refId', legacyAuthMiddleware(), async (req, res) => {
   const { db, refId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -2689,7 +2966,10 @@ router.get('/:db/_ref_reqs/:refId', async (req, res) => {
     // Handle restrict parameter (?r=<id> or ?r=<id1>,<id2>)
     if (restrictParam) {
       const restrictIds = restrictParam.split(',').filter(v => /^\d+$/.test(v)).map(v => parseInt(v, 10));
-      if (restrictIds.length === 1) {
+      if (restrictIds.length === 1 && refReqs.length > 0) {
+        // PHP: r= filters by the first requisite's value, not by object ID
+        whereClause += ` AND a${refReqs[0].reqId}.val = '${restrictIds[0]}'`;
+      } else if (restrictIds.length === 1) {
         whereClause += ` AND vals.id = ${restrictIds[0]}`;
       } else if (restrictIds.length > 1) {
         whereClause += ` AND vals.id IN (${restrictIds.join(',')})`;
@@ -2758,7 +3038,7 @@ router.get('/:db/_ref_reqs/:refId', async (req, res) => {
  * _connect - Check database connection
  * GET/POST /:db/_connect
  */
-router.all('/:db/_connect', async (req, res) => {
+router.all('/:db/_connect', legacyAuthMiddleware(), async (req, res) => {
   const { db } = req.params;
 
   if (!isValidDbName(db)) {
@@ -2829,7 +3109,7 @@ function buildModifiers(name, alias, required, multi) {
  * POST /:db/_d_new/:parentTypeId?
  * Parameters: val (type name), t (base type), parentTypeId (optional parent)
  */
-router.post('/:db/_d_new/:parentTypeId?', async (req, res) => {
+router.post('/:db/_d_new/:parentTypeId?', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, parentTypeId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -2843,6 +3123,17 @@ router.post('/:db/_d_new/:parentTypeId?', async (req, res) => {
 
     if (!name) {
       return res.status(200).json([{ error: 'Type name (val) is required'  }]);
+    }
+
+    const pool = getPool();
+
+    // Check for duplicate type names
+    const [dupCheck] = await pool.query(
+      `SELECT id FROM \`${db}\` WHERE val = ? AND up = ? LIMIT 1`,
+      [name, parentId]
+    );
+    if (dupCheck.length > 0) {
+      return res.status(200).json([{ error: 'A type with this name already exists' }]);
     }
 
     // Get next order
@@ -2872,7 +3163,7 @@ router.post('/:db/_d_new/:parentTypeId?', async (req, res) => {
  * POST /:db/_d_save/:typeId
  * Parameters: val (new name), t (new base type)
  */
-router.post('/:db/_d_save/:typeId', async (req, res) => {
+router.post('/:db/_d_save/:typeId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, typeId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -2906,6 +3197,17 @@ router.post('/:db/_d_save/:typeId', async (req, res) => {
       return res.status(200).json([{ error: 'No fields to update'  }]);
     }
 
+    // Check for duplicate names (excluding self)
+    if (req.body.val !== undefined) {
+      const [dupCheck] = await pool.query(
+        `SELECT id FROM \`${db}\` WHERE val = ? AND up = (SELECT up FROM \`${db}\` WHERE id = ?) AND id != ? LIMIT 1`,
+        [req.body.val, id, id]
+      );
+      if (dupCheck.length > 0) {
+        return res.status(200).json([{ error: 'A type with this name already exists' }]);
+      }
+    }
+
     params.push(id);
     await pool.query(`UPDATE ${db} SET ${updates.join(', ')} WHERE id = ?`, params);
 
@@ -2929,7 +3231,7 @@ router.post('/:db/_d_save/:typeId', async (req, res) => {
  * _d_del - Delete type
  * POST /:db/_d_del/:typeId
  */
-router.post('/:db/_d_del/:typeId', async (req, res) => {
+router.post('/:db/_d_del/:typeId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, typeId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -2937,18 +3239,21 @@ router.post('/:db/_d_del/:typeId', async (req, res) => {
   }
 
   try {
+    const pool = getPool();
     const id = parseInt(typeId, 10);
-    const cascade = req.body.cascade === '1' || req.body.cascade === true;
 
-    // Delete children first if cascade
-    if (cascade) {
-      await deleteChildren(db, id);
+    // Check for existing instances
+    const [instanceCount] = await pool.query(
+      `SELECT COUNT(*) AS cnt FROM \`${db}\` WHERE t = ? AND up != 0`, [id]
+    );
+    if (instanceCount[0].cnt > 0 && !req.body.forced) {
+      return res.status(200).json([{ error: `Type has ${instanceCount[0].cnt} instances. Use forced=1 to delete.` }]);
     }
 
-    // Delete the type
-    await deleteRow(db, id);
+    // PHP always does recursive delete (BatchDelete)
+    await recursiveDelete(pool, db, id);
 
-    logger.info('[Legacy _d_del] Type deleted', { db, id, cascade });
+    logger.info('[Legacy _d_del] Type deleted', { db, id });
 
     // PHP api_dump(): {id:0, obj:0, next_act:"terms", args:"", warnings:""}
     res.json({ id: 0, obj: 0, next_act: 'terms', args: '', warnings: '' });
@@ -2963,7 +3268,7 @@ router.post('/:db/_d_del/:typeId', async (req, res) => {
  * POST /:db/_d_req/:typeId
  * Parameters: val (requisite name), t (requisite type), alias, required, multi
  */
-router.post('/:db/_d_req/:typeId', async (req, res) => {
+router.post('/:db/_d_req/:typeId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, typeId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3012,7 +3317,7 @@ router.post('/:db/_d_req/:typeId', async (req, res) => {
  * POST /:db/_d_alias/:reqId
  * Parameters: alias (new alias value)
  */
-router.post('/:db/_d_alias/:reqId', async (req, res) => {
+router.post('/:db/_d_alias/:reqId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, reqId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3021,8 +3326,12 @@ router.post('/:db/_d_alias/:reqId', async (req, res) => {
 
   try {
     const id = parseInt(reqId, 10);
-    const newAlias = req.body.alias || '';
+    const newAlias = req.body.alias || req.body.val || '';
     const pool = getPool();
+
+    if (newAlias && newAlias.includes(':')) {
+      return res.status(200).json([{ error: 'Alias cannot contain colon character' }]);
+    }
 
     // Get current value
     const obj = await getObjectById(db, id);
@@ -3053,7 +3362,7 @@ router.post('/:db/_d_alias/:reqId', async (req, res) => {
  * POST /:db/_d_null/:reqId
  * Parameters: required (1/0 or true/false)
  */
-router.post('/:db/_d_null/:reqId', async (req, res) => {
+router.post('/:db/_d_null/:reqId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, reqId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3068,6 +3377,10 @@ router.post('/:db/_d_null/:reqId', async (req, res) => {
     const obj = await getObjectById(db, id);
     if (!obj) {
       return res.status(404).json({ error: 'Requisite not found' });
+    }
+
+    if (obj.up === 0) {
+      return res.status(200).json([{ error: 'Cannot modify metadata requisite' }]);
     }
 
     // Parse existing modifiers
@@ -3098,7 +3411,7 @@ router.post('/:db/_d_null/:reqId', async (req, res) => {
  * POST /:db/_d_multi/:reqId
  * Parameters: multi (1/0 or true/false)
  */
-router.post('/:db/_d_multi/:reqId', async (req, res) => {
+router.post('/:db/_d_multi/:reqId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, reqId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3113,6 +3426,10 @@ router.post('/:db/_d_multi/:reqId', async (req, res) => {
     const obj = await getObjectById(db, id);
     if (!obj) {
       return res.status(404).json({ error: 'Requisite not found' });
+    }
+
+    if (obj.up === 0) {
+      return res.status(200).json([{ error: 'Cannot modify metadata requisite' }]);
     }
 
     // Parse existing modifiers
@@ -3143,7 +3460,7 @@ router.post('/:db/_d_multi/:reqId', async (req, res) => {
  * POST /:db/_d_attrs/:reqId
  * Parameters: alias, required, multi (sets all modifiers at once)
  */
-router.post('/:db/_d_attrs/:reqId', async (req, res) => {
+router.post('/:db/_d_attrs/:reqId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, reqId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3194,7 +3511,7 @@ router.post('/:db/_d_attrs/:reqId', async (req, res) => {
  * _d_up - Move requisite up (decrease order)
  * POST /:db/_d_up/:reqId
  */
-router.post('/:db/_d_up/:reqId', async (req, res) => {
+router.post('/:db/_d_up/:reqId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, reqId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3224,9 +3541,11 @@ router.post('/:db/_d_up/:reqId', async (req, res) => {
 
     const prevSibling = siblings[0];
 
-    // Swap orders
-    await pool.query(`UPDATE ${db} SET ord = ? WHERE id = ?`, [obj.ord, prevSibling.id]);
-    await pool.query(`UPDATE ${db} SET ord = ? WHERE id = ?`, [prevSibling.ord, id]);
+    // Atomic order swap
+    await pool.query(
+      `UPDATE \`${db}\` SET ord = CASE WHEN id = ? THEN ? WHEN id = ? THEN ? END WHERE id IN (?, ?)`,
+      [prevSibling.id, obj.ord, id, prevSibling.ord, prevSibling.id, id]
+    );
 
     logger.info('[Legacy _d_up] Requisite moved up', { db, id, newOrd: prevSibling.ord });
 
@@ -3243,7 +3562,7 @@ router.post('/:db/_d_up/:reqId', async (req, res) => {
  * POST /:db/_d_ord/:reqId
  * Parameters: ord (new order value)
  */
-router.post('/:db/_d_ord/:reqId', async (req, res) => {
+router.post('/:db/_d_ord/:reqId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, reqId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3269,7 +3588,7 @@ router.post('/:db/_d_ord/:reqId', async (req, res) => {
     logger.info('[Legacy _d_ord] Order set', { db, id, ord: newOrd });
 
     // PHP api_dump(): {id, obj:type_id (parent), next_act:"edit_types", args, warnings}
-    res.json({ id, obj: parentId, next_act: 'edit_types', args: '', warnings: '' });
+    res.json({ id: parentId, obj: parentId, next_act: 'edit_types', args: '', warnings: '' });
   } catch (error) {
     logger.error('[Legacy _d_ord] Error', { error: error.message, db });
     res.status(200).json([{ error: error.message  }]);
@@ -3280,7 +3599,7 @@ router.post('/:db/_d_ord/:reqId', async (req, res) => {
  * _d_del_req - Delete requisite
  * POST /:db/_d_del_req/:reqId
  */
-router.post('/:db/_d_del_req/:reqId', async (req, res) => {
+router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, reqId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3288,22 +3607,33 @@ router.post('/:db/_d_del_req/:reqId', async (req, res) => {
   }
 
   try {
+    const pool = getPool();
     const id = parseInt(reqId, 10);
-    const cascade = req.body.cascade === '1' || req.body.cascade === true;
 
     // Fetch parent (type_id) BEFORE deleting
     const obj = await getObjectById(db, id);
     const typeId = obj ? obj.up : 0;
 
-    // Delete children first if cascade
-    if (cascade) {
-      await deleteChildren(db, id);
+    // Check usage
+    const [usageCount] = await pool.query(
+      `SELECT COUNT(*) AS cnt FROM \`${db}\` WHERE t = ? AND up != 0`, [id]
+    );
+    if (usageCount[0].cnt > 0 && !req.body.forced) {
+      return res.status(200).json([{ error: `Requisite has ${usageCount[0].cnt} values in use. Use forced=1 to delete.` }]);
     }
 
-    // Delete the requisite
-    await deleteRow(db, id);
+    // PHP always does recursive delete (BatchDelete)
+    await recursiveDelete(pool, db, id);
 
-    logger.info('[Legacy _d_del_req] Requisite deleted', { db, id, cascade });
+    // Renumber remaining requisites
+    if (obj) {
+      await pool.query(
+        `UPDATE \`${db}\` SET ord = ord - 1 WHERE up = ? AND ord > ?`,
+        [obj.up, obj.ord]
+      );
+    }
+
+    logger.info('[Legacy _d_del_req] Requisite deleted', { db, id });
 
     // PHP api_dump(): {id:type_id, obj:type_id, next_act:"edit_types", args, warnings}
     res.json({ id: typeId, obj: typeId, next_act: 'edit_types', args: '', warnings: '' });
@@ -3318,7 +3648,7 @@ router.post('/:db/_d_del_req/:reqId', async (req, res) => {
  * POST /:db/_d_ref/:parentTypeId
  * Parameters: ref (referenced type ID), val (name)
  */
-router.post('/:db/_d_ref/:parentTypeId', async (req, res) => {
+router.post('/:db/_d_ref/:parentTypeId', legacyAuthMiddleware(), legacyXsrfCheck, legacyDdlGrantCheck, async (req, res) => {
   const { db, parentTypeId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3359,7 +3689,7 @@ router.post('/:db/_d_ref/:parentTypeId', async (req, res) => {
  * _m_up - Move object up (decrease order)
  * POST /:db/_m_up/:id
  */
-router.post('/:db/_m_up/:id', async (req, res) => {
+router.post('/:db/_m_up/:id', legacyAuthMiddleware(), legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3369,6 +3699,11 @@ router.post('/:db/_m_up/:id', async (req, res) => {
   try {
     const objectId = parseInt(id, 10);
     const pool = getPool();
+
+    const username = req.legacyUser?.username || '';
+    if (!await checkGrant(pool, db, req.grants || {}, objectId, 0, 'WRITE', username)) {
+      return res.status(200).json([{ error: 'No permission' }]);
+    }
 
     // Get current object
     const obj = await getObjectById(db, objectId);
@@ -3389,9 +3724,11 @@ router.post('/:db/_m_up/:id', async (req, res) => {
 
     const prevSibling = siblings[0];
 
-    // Swap orders
-    await pool.query(`UPDATE ${db} SET ord = ? WHERE id = ?`, [obj.ord, prevSibling.id]);
-    await pool.query(`UPDATE ${db} SET ord = ? WHERE id = ?`, [prevSibling.ord, objectId]);
+    // Atomic order swap
+    await pool.query(
+      `UPDATE \`${db}\` SET ord = CASE WHEN id = ? THEN ? WHEN id = ? THEN ? END WHERE id IN (?, ?)`,
+      [prevSibling.id, obj.ord, objectId, prevSibling.ord, prevSibling.id, objectId]
+    );
 
     logger.info('[Legacy _m_up] Object moved up', { db, id: objectId, newOrd: prevSibling.ord });
 
@@ -3408,7 +3745,7 @@ router.post('/:db/_m_up/:id', async (req, res) => {
  * POST /:db/_m_ord/:id
  * Parameters: ord (new order value)
  */
-router.post('/:db/_m_ord/:id', async (req, res) => {
+router.post('/:db/_m_ord/:id', legacyAuthMiddleware(), legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3424,6 +3761,11 @@ router.post('/:db/_m_ord/:id', async (req, res) => {
     }
 
     const pool = getPool();
+
+    const username = req.legacyUser?.username || '';
+    if (!await checkGrant(pool, db, req.grants || {}, objectId, 0, 'WRITE', username)) {
+      return res.status(200).json([{ error: 'No permission' }]);
+    }
 
     // Fetch parent for PHP api_dump() response
     const obj = await getObjectById(db, objectId);
@@ -3442,16 +3784,70 @@ router.post('/:db/_m_ord/:id', async (req, res) => {
 });
 
 /**
- * _m_id - Change object ID (reserved operation)
+ * _m_id - Change object ID
  * POST /:db/_m_id/:id
  */
-router.post('/:db/_m_id/:id', async (req, res) => {
+router.post('/:db/_m_id/:id', legacyAuthMiddleware(), legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
-  // ID changes are dangerous - usually not allowed
-  logger.warn('[Legacy _m_id] ID change attempted (not implemented)', { db, id });
+  if (!isValidDbName(db)) {
+    return res.status(200).json([{ error: 'Invalid database' }]);
+  }
 
-  res.status(200).json([{ error: 'ID change is not supported for data integrity reasons' }]);
+  try {
+    const pool = getPool();
+    const objectId = parseInt(id, 10);
+    const newId = parseInt(req.body.newid || req.body.id, 10);
+
+    if (!newId || isNaN(newId)) {
+      return res.status(200).json([{ error: 'New ID is required' }]);
+    }
+
+    const username = req.legacyUser?.username || '';
+    if (!await checkGrant(pool, db, req.grants || {}, objectId, 0, 'WRITE', username)) {
+      return res.status(200).json([{ error: 'No permission' }]);
+    }
+
+    // Metadata guard
+    const obj = await getObjectById(db, objectId);
+    if (!obj || obj.up === 0) {
+      return res.status(200).json([{ error: 'This id belongs to metadata' }]);
+    }
+
+    // Check if new ID already exists
+    const [existCheck] = await pool.query(`SELECT id FROM \`${db}\` WHERE id = ? LIMIT 1`, [newId]);
+    if (existCheck.length > 0) {
+      return res.status(200).json([{ error: 'ID already in use' }]);
+    }
+
+    // Atomic ID change: update the row, its children's up, and any references
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      await conn.query(`UPDATE \`${db}\` SET id = ? WHERE id = ?`, [newId, objectId]);
+      await conn.query(`UPDATE \`${db}\` SET up = ? WHERE up = ?`, [newId, objectId]);
+      await conn.query(`UPDATE \`${db}\` SET t = ? WHERE t = ? AND up != 0`, [newId, objectId]);
+      await conn.commit();
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
+
+    logger.info('[Legacy _m_id] ID changed', { db, oldId: objectId, newId });
+
+    res.json({
+      id: newId,
+      obj: obj.up,
+      next_act: 'object',
+      args: obj.up > 1 ? `F_U=${obj.up}` : '',
+      warnings: '',
+    });
+  } catch (error) {
+    logger.error('[Legacy _m_id] Error', { error: error.message, db });
+    res.status(200).json([{ error: error.message }]);
+  }
 });
 
 // ============================================================================
@@ -3462,7 +3858,7 @@ router.post('/:db/_m_id/:id', async (req, res) => {
  * obj_meta - Get object metadata with requisites
  * GET/POST /:db/obj_meta/:id
  */
-router.all('/:db/obj_meta/:id', async (req, res) => {
+router.all('/:db/obj_meta/:id', legacyAuthMiddleware(), async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3494,7 +3890,7 @@ router.all('/:db/obj_meta/:id', async (req, res) => {
     const [rows] = await pool.query(query, [objectId, objectId]);
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Object not found' });
+      return res.status(200).json({ error: 'Object not found' });
     }
 
     // Build response object
@@ -3545,7 +3941,7 @@ router.all('/:db/obj_meta/:id', async (req, res) => {
  * metadata - Get type/term metadata for all or specific type
  * GET/POST /:db/metadata/:typeId?
  */
-router.all('/:db/metadata/:typeId?', async (req, res) => {
+router.all('/:db/metadata/:typeId?', legacyAuthMiddleware(), async (req, res) => {
   const { db, typeId } = req.params;
 
   if (!isValidDbName(db)) {
@@ -3950,10 +4346,8 @@ function createDiskUpload(db) {
     storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
     fileFilter: (req, file, cb) => {
-      // Basic MIME / extension allow-list matching PHP behaviour
-      const allowed = /\.(pdf|doc|docx|xls|xlsx|csv|txt|png|jpg|jpeg|gif|zip|rar|7z|odt|ods)$/i;
-      if (!allowed.test(file.originalname)) {
-        return cb(new Error('Wrong file extension!'));
+      if (isBlacklistedFile(file.originalname)) {
+        return cb(new Error('File type not allowed'));
       }
       cb(null, true);
     },
