@@ -1,5 +1,5 @@
 /**
- * vegaDocuments.js — HTML-контент документов инвест-пакета VentureOS Pre-Seed
+ * vegaDocuments.js — HTML-контент документов инвест-пакета AI-2-O Pre-Seed
  * ИП Гаврилов Денис Александрович, ИНН 183505204090
  * Инструмент: CLN (конвертируемый займ), сумма: 30 млн ₽
  *
@@ -10,7 +10,7 @@ export const vegaDocuments = {
 
   // ── 1. Навигатор по пакету ───────────────────────────────────────
   '1777620': `
-<h1>Навигатор — Инвест-пакет VentureOS Pre-Seed</h1>
+<h1>Навигатор — Инвест-пакет AI-2-O Pre-Seed</h1>
 <p><em>Дата формирования: март 2026 | Раунд: Pre-Seed | Инструмент: CLN (конвертируемый займ)</em></p>
 <p><em>Версия документа: 3.1 | Статус: финальный | Конфиденциальность: NDA required</em></p>
 
@@ -18,13 +18,11 @@ export const vegaDocuments = {
 <p><strong>ИП Гаврилов Денис Александрович</strong><br>
 ИНН 183505204090 · ОГРНИП 310184117500010<br>
 Дата регистрации: 2010 год (14+ лет предпринимательского опыта)<br>
-Продукт: <strong>VentureOS</strong> — AI-платформа полного цикла управления венчурным фондом<br>
+Продукт: <strong>AI-2-O</strong> — платформа инфраструктуры данных и оркестрации AI-агентов для организаций<br>
 Сайт: <a href="https://ai2fund.ru">ai2fund.ru</a> · Email: unidel@yandex.ru · Тел: +7 912 856 4410</p>
 
 <h2>Миссия и видение</h2>
-<p>VentureOS создаёт новый стандарт управления венчурными фондами: платформу, где AI-агенты берут на себя рутинный анализ,
-а управляющие партнёры фокусируются на стратегических решениях. Наша цель — снизить стоимость управления фондом в 5 раз
-и повысить качество инвестиционных решений за счёт continuous due diligence и AI-инвесткомитета из шести специализированных агентов.</p>
+<p>AI-2-O решает ключевую инфраструктурную проблему agentic AI: по данным Deloitte Tech Trends 2026, 86% организаций не готовы к развёртыванию AI-агентов, а 40% проектов провалятся к 2027. Корневые барьеры — архитектура данных (не готова для агентов), отсутствие стандартов оркестрации и governance. AI-2-O — трёхслойная платформа: Data Layer (Integram + 60 MCP-инструментов) → AgentOS (оркестратор: Scout→Plan→Execute→Verify, мультиагентные дебаты, 7 LLM-провайдеров) → готовые вертикальные решения для конкретных отраслей.</p>
 
 <h2>Состав инвест-пакета</h2>
 <table>
@@ -47,7 +45,7 @@ export const vegaDocuments = {
 <tr><td>16</td><td>ТЗ ГОСТ 34.602</td><td>Технический</td><td>✅ Готов</td><td>Техническое задание по ГОСТ 34.602-2020</td></tr>
 <tr><td>17</td><td>Описание ПО ГОСТ 19.402</td><td>Технический</td><td>✅ Готов</td><td>Описание программного обеспечения по ГОСТ 19.402-78</td></tr>
 <tr><td>18</td><td>TRL-паспорт</td><td>Технический</td><td>✅ Готов</td><td>Оценка уровня технологической готовности TRL 1–9</td></tr>
-<tr><td>19</td><td>Архитектура системы</td><td>Технический</td><td>✅ Готов</td><td>Детальное описание архитектуры VentureOS, API, компоненты</td></tr>
+<tr><td>19</td><td>Архитектура системы</td><td>Технический</td><td>✅ Готов</td><td>Детальное описание архитектуры AI-2-O, API, компоненты</td></tr>
 <tr><td>20</td><td>Отчёт по НМА</td><td>Финансы</td><td>✅ Готов</td><td>Оценка нематериальных активов: ПО, модели, база знаний</td></tr>
 </table>
 
@@ -69,9 +67,9 @@ export const vegaDocuments = {
 <h2>Сценарии возврата инвестиций</h2>
 <table>
 <tr><th>Сценарий</th><th>IRR</th><th>MOIC</th><th>Горизонт</th><th>Описание</th></tr>
-<tr><td>Консервативный</td><td>41%</td><td>5.5x</td><td>36 мес.</td><td>Медленный рост MRR, Series A по нижней оценке</td></tr>
-<tr><td>Базовый</td><td>56%</td><td>9.2x</td><td>24 мес.</td><td>Выход на 1.2M MRR, Series A по 500M+ оценке</td></tr>
-<tr><td>Оптимистичный</td><td>71%</td><td>14.7x</td><td>18 мес.</td><td>Ускоренный рост, конвертация по Valuation Cap</td></tr>
+<tr><td>Консервативный</td><td>41%</td><td>5.4x</td><td>36 мес.</td><td>Exit при 1.2B, минимальное разводнение, ~13.5% доля</td></tr>
+<tr><td>Базовый</td><td>56%</td><td>9.2x</td><td>24 мес.</td><td>Exit при 2.5B, ~11% доля после одного доп. раунда</td></tr>
+<tr><td>Оптимистичный</td><td>71%</td><td>15.0x</td><td>18 мес.</td><td>Exit при 5.0B, ~9% доля после двух доп. раундов</td></tr>
 </table>
 
 <h2>Как пользоваться навигатором</h2>
@@ -102,100 +100,98 @@ export const vegaDocuments = {
 
   // ── 2. Executive Summary ───────────────────────────────────────
   '1777641': `
-<h1>Executive Summary — VentureOS</h1>
-<p><em>AI-платформа полного цикла управления венчурным фондом</em></p>
+<h1>Executive Summary — AI-2-O</h1>
+<p><em>платформа инфраструктуры данных и оркестрации AI-агентов для организаций</em></p>
 <p><em>Раунд: Pre-Seed | Инструмент: CLN | Сумма: 30 млн ₽ | Март 2026</em></p>
 
 <h2>1. Проблема</h2>
-<p>Управление венчурным фондом в России — это ручной, дорогой и непрозрачный процесс.
-Управляющая компания (УК) тратит до 70% рабочего времени на рутинные операции: сбор и анализ заявок,
-подготовку материалов для инвесткомитета, мониторинг портфельных компаний, формирование отчётности для LP.
-Средняя стоимость management fee составляет 2-2.5% от AUM, при этом значительная часть этих средств
-уходит на операционные расходы, а не на создание стоимости.</p>
+<p>Agentic AI — главный технологический тренд 2025-2030: к 2028 году 33% корпоративного ПО будет включать AI-агентов (Gartner),
+а 15% рабочих решений будут приниматься автономно. Но 86% организаций не готовы к развёртыванию агентов,
+и 40% проектов провалятся к 2027 году (Deloitte Tech Trends 2026).</p>
 
-<p><strong>Ключевые боли рынка:</strong></p>
+<p><strong>Три корневых барьера (Deloitte 2026):</strong></p>
 <ul>
-<li><strong>Высокая стоимость операций:</strong> содержание команды из 8-15 человек для фонда размером 500M-1B ₽ стоит 15-25 млн ₽/год</li>
-<li><strong>Медленный deal flow:</strong> среднее время от заявки до решения ИК — 45-90 дней, при этом 80% заявок отсеиваются на первом этапе</li>
-<li><strong>Фрагментация данных:</strong> информация о сделках, портфеле и LP разнесена по Excel, CRM, почте и мессенджерам</li>
-<li><strong>Отсутствие continuous DD:</strong> мониторинг портфельных компаний происходит раз в квартал по отчётам, а не в реальном времени</li>
-<li><strong>Непрозрачность для LP:</strong> limited partners получают отчёты с задержкой 1-3 месяца, без интерактивного доступа к данным</li>
-<li><strong>Человеческий фактор:</strong> когнитивные искажения при принятии инвестиционных решений, групповое мышление в ИК</li>
+<li><strong>Data architecture gap (48% организаций):</strong> legacy-системы не предоставляют агентам real-time доступ к данным. ETL-пайплайны проектировались для batch-аналитики, не для автономных агентов</li>
+<li><strong>Orchestration gap:</strong> бизнес-процессы «составные» — охватывают продажи, финансы, инженерию одновременно (Dell CTO). Нужны 5-20 агентов, работающих вместе, но нет стандартов координации</li>
+<li><strong>Governance gap:</strong> нет аудита действий агентов, нет zero-trust для автономных систем, непредсказуемые затраты на AI inference (FinOps)</li>
+<li><strong>Agent washing:</strong> организации переименовывают RPA и чатботы в «агентов», получая нулевой ROI и подрывая доверие к технологии</li>
+<li><strong>Отсутствие data reusability (47%):</strong> данные не переиспользуются между агентами — каждый проект строит пайплайны с нуля</li>
+<li><strong>Vendor lock-in:</strong> привязка к одному LLM-провайдеру создаёт риски доступности и ценообразования</li>
 </ul>
 
-<h2>2. Решение — VentureOS</h2>
-<p>VentureOS — единая AI-платформа, покрывающая полный жизненный цикл венчурной сделки:
-от первичного скоринга заявки до выхода из портфельной компании. Платформа заменяет 5-7 отдельных
-инструментов (CRM, Excel-модели, системы отчётности, deal room) одним интегрированным решением
-с AI-агентами, принимающими роль экспертов инвесткомитета.</p>
+<h2>2. Решение — AI-2-O</h2>
+<p>AI-2-O — трёхслойная платформа, снимающая все три инфраструктурных барьера для agentic AI.
+Организация подключается к платформе и получает готовую инфраструктуру для AI-агентов за недели, а не месяцы.</p>
 
-<p><strong>Ключевые модули:</strong></p>
+<p><strong>Три слоя платформы:</strong></p>
 <table>
-<tr><th>Модуль</th><th>Функция</th><th>AI-компонент</th><th>Статус</th></tr>
-<tr><td>AI Инвесткомитет</td><td>6 AI-агентов анализируют заявку с разных ракурсов</td><td>DeepSeek + Claude для голосования</td><td>✅ Продакшн</td></tr>
-<tr><td>Deal Flow</td><td>Приём, скоринг и маршрутизация заявок</td><td>Auto-scoring по 15 параметрам</td><td>✅ Продакшн</td></tr>
-<tr><td>Финмоделирование</td><td>Автогенерация финмоделей, DCF, scenario analysis</td><td>HyperFormula + AI templates</td><td>✅ Продакшн</td></tr>
-<tr><td>Портфель</td><td>Светофорный мониторинг, KPI-датчики, AI-отчёты</td><td>Continuous DD engine</td><td>✅ Продакшн</td></tr>
-<tr><td>Цифровой двойник</td><td>Симуляция компании и фонда (tick engine)</td><td>Monte Carlo + AI прогнозы</td><td>✅ MVP</td></tr>
-<tr><td>Transparency</td><td>Публичная витрина для LP с real-time данными</td><td>Auto-reporting</td><td>✅ MVP</td></tr>
-<tr><td>Cap Table</td><td>Управление cap table, waterfall, разводнение</td><td>Scenario modeling</td><td>✅ Продакшн</td></tr>
-<tr><td>AI Deal Sourcing</td><td>Автоматический поиск стартапов по критериям</td><td>Web scraping + NLP matching</td><td>🔄 Бета</td></tr>
+<tr><th>Слой</th><th>Что решает</th><th>Как работает</th><th>Статус</th></tr>
+<tr><td>Data Layer (Integram)</td><td>Data architecture gap</td><td>Адаптивное NoSQL + 60+ MCP-инструментов — агенты читают/пишут данные напрямую</td><td>✅ Продакшн</td></tr>
+<tr><td>AgentOS (Orchestration)</td><td>Orchestration gap</td><td>Scout→Plan→Execute→Verify + мультиагентные дебаты + TAO-цикл + 7 LLM-провайдеров</td><td>✅ Продакшн</td></tr>
+<tr><td>Industry Apps</td><td>Time-to-value</td><td>Готовые вертикальные решения для конкретных отраслей</td><td>✅ 2 вертикали</td></tr>
+</table>
+
+<p><strong>Доказанные вертикали:</strong></p>
+<table>
+<tr><th>Вертикаль</th><th>Отрасль</th><th>Агенты</th><th>Статус</th></tr>
+<tr><td>DronDoc</td><td>Рынок БПЛА / аналитика</td><td>148+ агентов, онтология 1100+ концептов</td><td>✅ Продакшн</td></tr>
+<tr><td>VentureOS</td><td>Венчурный фонд</td><td>AI-инвесткомитет (6 агентов), цифровые двойники</td><td>✅ Продакшн</td></tr>
 </table>
 
 <h2>3. Уникальное торговое предложение (USP)</h2>
 <ul>
-<li><strong>AI-инвесткомитет из 6 агентов:</strong> каждый агент — специалист (рынок, технологии, финансы, риски, ESG, юридика). Голосование формализовано, решение прозрачно и воспроизводимо. Ни один конкурент не предлагает AI-замену инвесткомитета.</li>
-<li><strong>MCP-протокол с 60+ инструментами:</strong> AI-агенты имеют прямой доступ к базе данных через Model Context Protocol — создают, обновляют и анализируют записи без участия человека.</li>
-<li><strong>KAG (Knowledge Augmented Generation):</strong> гибридная графово-векторная база знаний с 1100+ концептами — AI отвечает на вопросы не по «галлюцинациям», а по верифицированному графу знаний.</li>
-<li><strong>Мультимодельный AI:</strong> 4 LLM-провайдера (DeepSeek, Claude, GPT-4o, YandexGPT), автоматический роутинг по задаче — оптимальное соотношение цена/качество.</li>
-<li><strong>Российская юрисдикция:</strong> полное соответствие ФЗ-156, ФЗ-39, compliance для ЗПИФ/ИПИФ.</li>
+<li><strong>Единственная в России платформа оркестрации AI-агентов с MCP-протоколом:</strong> не чатбот, а инфраструктура для автономных агентных систем. 60+ MCP-инструментов — агенты читают/пишут данные напрямую.</li>
+<li><strong>AgentOS — enterprise-grade оркестрация:</strong> AgentChainCoordinator (Scout→Plan→Execute→Verify), мультиагентные дебаты с голосованием, TAO-цикл (Think-Act-Observe), wave-based параллелизм.</li>
+<li><strong>148+ агентов в реестре:</strong> heartbeat monitoring, circuit breakers, shared memory — production-ready агентная инфраструктура.</li>
+<li><strong>7 LLM-провайдеров с автофаллбэком:</strong> DeepSeek, Claude, GPT-4o, YandexGPT, Polza, Kodacode, DeepAI — нет vendor lock-in.</li>
+<li><strong>KAG (Knowledge Graph):</strong> 1100+ верифицированных концептов — агенты дают обоснованные ответы, а не галлюцинации.</li>
+<li><strong>2 доказанные вертикали:</strong> DronDoc (БПЛА) и VentureOS (венчур) — не концепция, а работающий продукт.</li>
 </ul>
 
 <h2>4. Рынок</h2>
 <h3>4.1. Объём рынка</h3>
 <table>
 <tr><th>Метрика</th><th>Значение</th><th>Источник / обоснование</th></tr>
-<tr><td>TAM (Total Addressable Market)</td><td><strong>85 млрд ₽</strong></td><td>Глобальный рынок VC management software: $12B (PitchBook 2025), доля РФ+СНГ ~8%</td></tr>
-<tr><td>SAM (Serviceable Available Market)</td><td><strong>15 млрд ₽</strong></td><td>Россия + СНГ: ~600 активных фондов × средний чек 25M ₽/год</td></tr>
-<tr><td>SOM (Serviceable Obtainable Market)</td><td><strong>2 млрд ₽</strong></td><td>Целевые 80 фондов к 2028 году × средний ARPA 25M ₽/год</td></tr>
+<tr><td>TAM (Total Addressable Market)</td><td><strong>350 млрд ₽</strong></td><td>Глобальный рынок agentic AI infrastructure: ~$47B к 2030 (McKinsey, Gartner), доля РФ+СНГ ~8%</td></tr>
+<tr><td>SAM (Serviceable Available Market)</td><td><strong>45 млрд ₽</strong></td><td>Россия + СНГ: ~5000 организаций с потребностью в AI-агентах × средний чек 9M ₽/год</td></tr>
+<tr><td>SOM (Serviceable Obtainable Market)</td><td><strong>2.2 млрд ₽</strong></td><td>Целевые 50 организаций к 2028 × средний ARPA 44M ₽/год</td></tr>
 </table>
 
 <h3>4.2. Драйверы роста рынка</h3>
 <ul>
-<li>Рост числа венчурных фондов в РФ: +35% за 2024-2025 (данные РВК)</li>
-<li>Программа «цифровой экономики» и импортозамещение ПО — фонды ищут российские решения</li>
-<li>Рост корпоративных венчурных фондов (CVC): Сбер, Яндекс, МТС, Ростех создают свои фонды</li>
-<li>AI-трансформация финансового сектора — готовность к AI-инструментам на уровне 68% (BCG Survey 2025)</li>
+<li>33% enterprise ПО будет включать agentic AI к 2028 (Gartner) — vs <1% сегодня</li>
+<li>15% рабочих решений будут приниматься автономно AI к 2028 (Gartner)</li>
+<li>Программа «цифровой экономики» + импортозамещение ПО — организации ищут российские AI-решения</li>
+<li>Пилоты через стратегические партнёрства в 2× чаще достигают продакшна (Deloitte 2026)</li>
 </ul>
 
 <h3>4.3. Конкурентный ландшафт</h3>
 <table>
-<tr><th>Конкурент</th><th>Страна</th><th>Фокус</th><th>AI</th><th>Цена</th><th>Слабость</th></tr>
-<tr><td>Carta</td><td>США</td><td>Cap table + fund admin</td><td>Нет</td><td>$500-5000/мес</td><td>Нет AI, не работает в РФ, нет рус. юрисдикции</td></tr>
-<tr><td>AngelList Stack</td><td>США</td><td>Fund formation + SPV</td><td>Базовый</td><td>$300-2000/мес</td><td>Фокус на US market, нет compliance РФ</td></tr>
-<tr><td>Allvue</td><td>США</td><td>Fund accounting</td><td>Нет</td><td>$2000+/мес</td><td>Enterprise-only, дорого, нет AI DD</td></tr>
-<tr><td>4Degrees</td><td>США</td><td>VC CRM + deal flow</td><td>Базовый</td><td>$200-800/мес</td><td>Только CRM, нет финмоделей и ИК</td></tr>
-<tr><td>Visible.vc</td><td>США</td><td>Portfolio monitoring</td><td>Нет</td><td>$150-500/мес</td><td>Только мониторинг, нет полного цикла</td></tr>
-<tr><td>1С:Инвестиции</td><td>РФ</td><td>Учёт ПИФ</td><td>Нет</td><td>500k+ ₽ лицензия</td><td>Бухгалтерский фокус, нет AI, устаревший UX</td></tr>
-<tr><td><strong>VentureOS</strong></td><td><strong>РФ</strong></td><td><strong>Full-cycle + AI ИК</strong></td><td><strong>4 LLM + MCP</strong></td><td><strong>150-500k ₽/мес</strong></td><td><strong>Ранняя стадия, малая команда</strong></td></tr>
+<tr><th>Конкурент</th><th>Страна</th><th>Фокус</th><th>Data Layer</th><th>Orchestration</th><th>Слабость</th></tr>
+<tr><td>LangChain/LangGraph</td><td>США</td><td>LLM framework</td><td>Нет</td><td>Базовая</td><td>Нет data layer, нет готовых вертикалей, DIY</td></tr>
+<tr><td>CrewAI</td><td>США</td><td>Agent framework</td><td>Нет</td><td>Средняя</td><td>Фреймворк, не платформа — нужен MCP и данные</td></tr>
+<tr><td>Microsoft AutoGen</td><td>США</td><td>Multi-agent</td><td>Azure</td><td>Хорошая</td><td>Привязка к Azure, нет on-premise, нет RU</td></tr>
+<tr><td>Яндекс DataSphere</td><td>РФ</td><td>ML pipelines</td><td>DataLens</td><td>Нет</td><td>ML-пайплайны, не agentic AI, нет оркестрации</td></tr>
+<tr><td>Самодельные решения</td><td>—</td><td>OpenAI API + custom</td><td>Ad-hoc</td><td>Ad-hoc</td><td>Fragile, нет governance, 6-12 мес на внедрение</td></tr>
+<tr><td><strong>AI-2-O</strong></td><td><strong>РФ</strong></td><td><strong>Full platform</strong></td><td><strong>Integram + 60 MCP</strong></td><td><strong>AgentOS + 7 LLM</strong></td><td><strong>Ранняя стадия, малая команда</strong></td></tr>
 </table>
 
 <h2>5. Бизнес-модель</h2>
 <h3>5.1. Ценообразование</h3>
 <table>
 <tr><th>Тариф</th><th>Цена</th><th>Включено</th><th>Целевой клиент</th></tr>
-<tr><td>Starter</td><td>150 000 ₽/мес</td><td>До 20 сделок, 3 пользователя, базовый AI</td><td>Микрофонды, ангельские синдикаты</td></tr>
-<tr><td>Professional</td><td>300 000 ₽/мес</td><td>До 100 сделок, 10 пользователей, полный AI ИК</td><td>Средние VC фонды</td></tr>
-<tr><td>Enterprise</td><td>500 000+ ₽/мес</td><td>Безлимит, кастомизация, on-premise опция</td><td>Крупные фонды, CVC, институционалы</td></tr>
+<tr><td>Basic</td><td>200 000 ₽/мес</td><td>Data Layer + до 20 агентов, 5 пользователей</td><td>Малые организации, стартапы</td></tr>
+<tr><td>Professional</td><td>400 000 ₽/мес</td><td>AgentOS + 100 агентов + API, 20 пользователей</td><td>Средний enterprise</td></tr>
+<tr><td>Enterprise</td><td>800 000+ ₽/мес</td><td>Безлимит, on-premise, кастомные вертикали, SLA</td><td>Крупный enterprise, госструктуры</td></tr>
 </table>
 
 <h3>5.2. Unit Economics</h3>
 <table>
 <tr><th>Метрика</th><th>Значение</th><th>Комментарий</th></tr>
-<tr><td>ARPA (Average Revenue per Account)</td><td>250 000 ₽/мес</td><td>Средневзвешенный по тарифам</td></tr>
-<tr><td>CAC (Customer Acquisition Cost)</td><td>800 000 ₽</td><td>Прямые продажи + контент-маркетинг</td></tr>
-<tr><td>LTV (Lifetime Value)</td><td>9 000 000 ₽</td><td>Средний срок жизни клиента: 36 мес.</td></tr>
-<tr><td>LTV/CAC</td><td>11.3x</td><td>Отличный показатель (benchmark: >3x)</td></tr>
+<tr><td>ARPA (Average Revenue per Account)</td><td>350 000 ₽/мес</td><td>Средневзвешенный по тарифам</td></tr>
+<tr><td>CAC (Customer Acquisition Cost)</td><td>500 000 ₽</td><td>Прямые продажи + SDK adoption + конференции</td></tr>
+<tr><td>LTV (Lifetime Value)</td><td>12M ₽ (2026) → 18M ₽ (2028)</td><td>Растёт с числом агентов и добавлением вертикалей</td></tr>
+<tr><td>LTV/CAC</td><td>24x → 36x</td><td>Инфраструктурные платформы имеют высокий retention</td></tr>
 <tr><td>Gross Margin</td><td>82%</td><td>SaaS + AI inference costs ~18%</td></tr>
 <tr><td>Payback Period</td><td>3.2 мес.</td><td>Быстрая окупаемость привлечения клиента</td></tr>
 </table>
@@ -215,7 +211,7 @@ export const vegaDocuments = {
 <h2>7. Команда</h2>
 <table>
 <tr><th>Имя</th><th>Роль</th><th>Опыт</th><th>Экспертиза</th></tr>
-<tr><td><strong>Гаврилов Денис Александрович</strong></td><td>Основатель, CEO / CTO</td><td>25+ лет в IT, 14+ лет ИП</td><td>Full-stack разработка, AI/ML, системная архитектура, управление продуктом. Автор 3 патентов. Опыт в беспилотных системах (БПЛА), финтех, EdTech.</td></tr>
+<tr><td><strong>Гаврилов Денис Александрович</strong></td><td>Основатель, CEO / CTO</td><td>25+ лет в IT, 14+ лет ИП</td><td>Full-stack разработка, AI agent orchestration, системная архитектура. Автор AgentChainCoordinator, KAG-онтологии. Создатель DronDoc (БПЛА, 148+ агентов) и VentureOS (венчур).</td></tr>
 <tr><td>Разработчик #2</td><td>Senior Frontend</td><td>8 лет</td><td>Vue.js, PrimeVue, реактивные системы, UX/UI</td></tr>
 <tr><td>Разработчик #3</td><td>Backend / AI Engineer</td><td>6 лет</td><td>Node.js, LLM integration, MCP protocol, DevOps</td></tr>
 </table>
@@ -236,16 +232,17 @@ export const vegaDocuments = {
 <tr><th>Период</th><th>Milestone</th><th>Метрика</th></tr>
 <tr><td>Q2 2026</td><td>Закрытие Pre-Seed раунда, найм +4 человека</td><td>MRR: 300k ₽</td></tr>
 <tr><td>Q3 2026</td><td>Запуск Enterprise-тарифа, первый крупный клиент</td><td>MRR: 600k ₽</td></tr>
-<tr><td>Q4 2026</td><td>AI Deal Sourcing в продакшн, интеграция с госреестрами</td><td>MRR: 1.0M ₽</td></tr>
+<tr><td>Q4 2026</td><td>AI Deal Sourcing в продакшн, интеграция с госреестрами</td><td>MRR: 1.2M ₽</td></tr>
 <tr><td>Q1 2027</td><td>10 платящих клиентов, подготовка к Seed</td><td>MRR: 1.5M ₽</td></tr>
-<tr><td>Q2 2027</td><td>Seed раунд (100-150M ₽), экспансия в СНГ</td><td>ARR: 20M+ ₽</td></tr>
-<tr><td>2028</td><td>Series A, 50+ клиентов, выход на прибыльность</td><td>ARR: 80M+ ₽</td></tr>
+<tr><td>Q2 2027</td><td>Seed раунд (100-150M ₽), экспансия в СНГ</td><td>ARR: 26M+ ₽ (exit run-rate)</td></tr>
+<tr><td>2028</td><td>Series A, 50+ клиентов, выход на прибыльность</td><td>ARR: 144M ₽ (exit run-rate)</td></tr>
 </table>
 
 <h2>10. Финансовые highlights</h2>
 <table>
 <tr><th>Показатель</th><th>2026</th><th>2027</th><th>2028</th></tr>
-<tr><td>ARR</td><td>12M ₽</td><td>48M ₽</td><td>120M ₽</td></tr>
+<tr><td>ARR (exit run-rate)</td><td>14.4M ₽</td><td>54M ₽</td><td>144M ₽</td></tr>
+<tr><td>Выручка за год</td><td>~5.3M ₽</td><td>~35M ₽</td><td>~100M ₽</td></tr>
 <tr><td>Клиенты</td><td>5</td><td>20</td><td>50</td></tr>
 <tr><td>Команда</td><td>12</td><td>25</td><td>45</td></tr>
 <tr><td>Burn Rate</td><td>2.5M ₽/мес</td><td>5M ₽/мес</td><td>7M ₽/мес</td></tr>
@@ -270,7 +267,7 @@ export const vegaDocuments = {
   // ── 3. Term Sheet CLN ───────────────────────────────────────
   '1777644': `
 <h1>Term Sheet — Конвертируемый займ (CLN)</h1>
-<p><em>VentureOS Pre-Seed Round | Март 2026 | Конфиденциально</em></p>
+<p><em>AI-2-O Pre-Seed Round | Март 2026 | Конфиденциально</em></p>
 <p><em>Данный Term Sheet не является юридически обязывающим документом и отражает намерения сторон.
 Обязывающими являются положения о конфиденциальности и эксклюзивности.</em></p>
 
@@ -280,7 +277,7 @@ export const vegaDocuments = {
 <tr><td>Заёмщик (Компания)</td><td>ИП Гаврилов Денис Александрович, ИНН 183505204090, ОГРНИП 310184117500010</td></tr>
 <tr><td>Основатель</td><td>Гаврилов Денис Александрович</td></tr>
 <tr><td>Займодавец (Инвестор)</td><td>[Определяется при подписании]</td></tr>
-<tr><td>Продукт</td><td>VentureOS — AI-платформа управления венчурным фондом (ai2fund.ru)</td></tr>
+<tr><td>Продукт</td><td>AI-2-O — платформа инфраструктуры данных и оркестрации AI-агентов для организаций (ai2fund.ru)</td></tr>
 </table>
 
 <h2>2. Основные условия займа</h2>
@@ -351,7 +348,7 @@ C — количество новых долей.</p>
 <li>Квартальные финансовые отчёты — до 30 дней после окончания квартала</li>
 <li>Годовой финансовый отчёт — до 90 дней после окончания года</li>
 <li>Немедленное уведомление о материальных событиях (смена структуры, судебные иски, потеря ключевых клиентов)</li>
-<li>Доступ к дашборду VentureOS Transparency с real-time метриками</li>
+<li>Доступ к дашборду AI-2-O Transparency с real-time метриками</li>
 </ul>
 
 <h3>4.5. Board Observer (наблюдатель)</h3>
@@ -409,12 +406,12 @@ C — количество новых долей.</p>
 
   // ── 4. Бизнес-план 2026-2028 ───────────────────────────────────────
   '1777647': `
-<h1>Бизнес-план VentureOS 2026–2028</h1>
+<h1>Бизнес-план AI-2-O 2026–2028</h1>
 <p><em>ИП Гаврилов Денис Александрович | ИНН 183505204090 | ai2fund.ru</em></p>
 <p><em>Версия 3.0 | Март 2026 | Конфиденциально</em></p>
 
 <h2>1. Резюме проекта</h2>
-<p>VentureOS — AI-платформа полного цикла управления венчурным фондом. Продукт заменяет 5-7 разрозненных
+<p>AI-2-O — платформа инфраструктуры данных и оркестрации AI-агентов для организаций. Продукт заменяет 5-7 разрозненных
 инструментов (CRM, Excel-модели, deal room, reporting) единой системой с AI-агентами, выполняющими роль
 экспертов инвесткомитета. Платформа уже работает в продакшн-режиме на ai2fund.ru, обрабатывает реальные
 сделки и генерирует финансовые модели.</p>
@@ -471,7 +468,7 @@ C — количество новых долей.</p>
 
 <h3>3.3. Конкурентный анализ</h3>
 <table>
-<tr><th>Критерий</th><th>VentureOS</th><th>Carta</th><th>AngelList</th><th>4Degrees</th><th>1С:Инвест</th></tr>
+<tr><th>Критерий</th><th>AI-2-O</th><th>Carta</th><th>AngelList</th><th>4Degrees</th><th>1С:Инвест</th></tr>
 <tr><td>AI инвесткомитет</td><td>✅ 6 агентов</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
 <tr><td>Финмоделирование</td><td>✅ Авто</td><td>❌</td><td>❌</td><td>❌</td><td>⚠️ Ручное</td></tr>
 <tr><td>Deal Flow</td><td>✅</td><td>⚠️</td><td>✅</td><td>✅</td><td>❌</td></tr>
@@ -541,12 +538,12 @@ C — количество новых долей.</p>
 <h2>7. Финансовый план (сводка)</h2>
 <table>
 <tr><th>Показатель</th><th>2026</th><th>2027</th><th>2028</th></tr>
-<tr><td>Выручка (ARR)</td><td>12M ₽</td><td>48M ₽</td><td>120M ₽</td></tr>
-<tr><td>MRR (декабрь)</td><td>1.2M ₽</td><td>4.0M ₽</td><td>10.0M ₽</td></tr>
+<tr><td>Выручка (ARR exit run-rate)</td><td>14.4M ₽</td><td>54M ₽</td><td>144M ₽</td></tr>
+<tr><td>MRR (декабрь)</td><td>1.2M ₽</td><td>4.5M ₽</td><td>12.0M ₽</td></tr>
 <tr><td>Клиенты (на конец года)</td><td>5</td><td>20</td><td>50</td></tr>
-<tr><td>ARPA</td><td>200k ₽/мес</td><td>200k ₽/мес</td><td>200k ₽/мес</td></tr>
+<tr><td>ARPA</td><td>250k ₽/мес</td><td>250k ₽/мес</td><td>250k ₽/мес</td></tr>
 <tr><td>Расходы</td><td>28M ₽</td><td>55M ₽</td><td>85M ₽</td></tr>
-<tr><td>EBITDA</td><td>-16M ₽</td><td>-7M ₽</td><td>+35M ₽</td></tr>
+<tr><td>EBITDA</td><td>-18M ₽</td><td>-7M ₽</td><td>+35M ₽</td></tr>
 <tr><td>Burn Rate (ср./мес)</td><td>2.3M ₽</td><td>4.6M ₽</td><td>-</td></tr>
 <tr><td>Команда (на конец года)</td><td>12</td><td>25</td><td>45</td></tr>
 </table>
@@ -565,7 +562,7 @@ C — количество новых долей.</p>
 
 <h2>9. Интеллектуальная собственность</h2>
 <ul>
-<li>Исходный код VentureOS (frontend + backend): 150,000+ строк кода</li>
+<li>Исходный код AI-2-O (frontend + backend): 150,000+ строк кода</li>
 <li>AI-агентные промпты и конфигурации: 6 специализированных агентов ИК</li>
 <li>KAG база знаний: 1100+ верифицированных концептов</li>
 <li>Финансовые шаблоны: 8 типов финмоделей (DCF, LBO, VC Method и др.)</li>
@@ -602,7 +599,7 @@ C — количество новых долей.</p>
 
   // ── 5. Финансовая модель 5 лет ───────────────────────────────────────
   '1777650': `
-<h1>Финансовая модель VentureOS — 5-летний прогноз</h1>
+<h1>Финансовая модель AI-2-O — 5-летний прогноз</h1>
 <p><em>Версия 3.0 | Март 2026 | ИП Гаврилов Д.А. | ИНН 183505204090</em></p>
 
 <h2>1. Ключевые допущения</h2>
@@ -638,11 +635,11 @@ C — количество новых долей.</p>
 <tr><td>Q1 2027</td><td>1 500</td><td>7</td><td>18.0</td><td>12.0</td><td>-7.5</td></tr>
 <tr><td>Q2 2027</td><td>2 200</td><td>11</td><td>26.4</td><td>13.5</td><td>-7.2</td></tr>
 <tr><td>Q3 2027</td><td>3 200</td><td>16</td><td>38.4</td><td>14.0</td><td>-4.4</td></tr>
-<tr><td>Q4 2027</td><td>4 000</td><td>20</td><td>48.0</td><td>15.0</td><td>-3.0</td></tr>
+<tr><td>Q4 2027</td><td>4 500</td><td>20</td><td>54.0</td><td>15.0</td><td>-1.5</td></tr>
 <tr><td>Q1 2028</td><td>5 500</td><td>26</td><td>66.0</td><td>18.0</td><td>-1.5</td></tr>
 <tr><td>Q2 2028</td><td>7 000</td><td>33</td><td>84.0</td><td>20.0</td><td>+1.0</td></tr>
 <tr><td>Q3 2028</td><td>8 500</td><td>42</td><td>102.0</td><td>21.0</td><td>+4.5</td></tr>
-<tr><td>Q4 2028</td><td>10 000</td><td>50</td><td>120.0</td><td>22.0</td><td>+8.0</td></tr>
+<tr><td>Q4 2028</td><td>12 000</td><td>50</td><td>144.0</td><td>22.0</td><td>+14.0</td></tr>
 </table>
 
 <h2>4. Годы 4-5 (2029-2030) — годовая разбивка</h2>
@@ -704,27 +701,44 @@ C — количество новых долей.</p>
 </table>
 
 <h2>8. Waterfall Analysis — возврат инвестору CLN</h2>
-<h3>Базовый сценарий: Series A через 18 мес, оценка 500M ₽</h3>
+
+<h3>Базовый сценарий: Exit при оценке 2.5B ₽</h3>
 <table>
 <tr><th>Компонент</th><th>Расчёт</th><th>Значение</th></tr>
 <tr><td>Тело CLN</td><td>Инвестиция</td><td>30 000 000 ₽</td></tr>
 <tr><td>Начисленные %</td><td>30M × 5% × 18/12</td><td>2 250 000 ₽</td></tr>
 <tr><td>Сумма к конвертации</td><td>Тело + %</td><td>32 250 000 ₽</td></tr>
 <tr><td>Цена по Cap</td><td>240M / FD shares</td><td>Конвертация по Cap (лучше)</td></tr>
-<tr><td>Доля инвестора</td><td>32.25M / 240M</td><td>13.44%</td></tr>
-<tr><td>Стоимость доли при Series A</td><td>13.44% × 500M</td><td>67 187 500 ₽</td></tr>
-<tr><td>Стоимость доли при Exit (3x от Series A)</td><td>13.44% × 1 500M</td><td>201 562 500 ₽</td></tr>
-<tr><td><strong>MOIC (Exit)</strong></td><td>201.6M / 30M</td><td><strong>6.7x</strong></td></tr>
+<tr><td>Доля инвестора (post-conversion)</td><td>32.25M / 240M</td><td>13.44%</td></tr>
+<tr><td>Разводнение (1 доп. раунд)</td><td>13.44% × 0.80</td><td>~11.0% на момент Exit</td></tr>
+<tr><td>Exit valuation</td><td>M&A / Secondary</td><td>2 500 000 000 ₽</td></tr>
+<tr><td>Возврат инвестору</td><td>11.0% × 2.5B</td><td>275 000 000 ₽</td></tr>
+<tr><td><strong>MOIC</strong></td><td>275M / 30M</td><td><strong>9.2x</strong></td></tr>
+<tr><td><strong>IRR</strong></td><td>Горизонт 24 мес.</td><td><strong>~56%</strong></td></tr>
 </table>
 
-<h3>Оптимистичный: Series A через 12 мес, оценка 800M ₽</h3>
+<h3>Оптимистичный сценарий: Exit при оценке 5.0B ₽</h3>
 <table>
-<tr><th>Компонент</th><th>Значение</th></tr>
-<tr><td>Сумма к конвертации</td><td>31 500 000 ₽</td></tr>
-<tr><td>Доля инвестора</td><td>13.13%</td></tr>
-<tr><td>Стоимость при Series A</td><td>105 000 000 ₽</td></tr>
-<tr><td>Стоимость при Exit (5x)</td><td>525 000 000 ₽</td></tr>
-<tr><td><strong>MOIC</strong></td><td><strong>17.5x</strong></td></tr>
+<tr><th>Компонент</th><th>Расчёт</th><th>Значение</th></tr>
+<tr><td>Сумма к конвертации (12 мес.)</td><td>30M + 30M × 5% × 12/12</td><td>31 500 000 ₽</td></tr>
+<tr><td>Доля инвестора (post-conversion)</td><td>31.5M / 240M</td><td>13.13%</td></tr>
+<tr><td>Разводнение (2 доп. раунда)</td><td>13.13% × 0.70</td><td>~9.0% на момент Exit</td></tr>
+<tr><td>Exit valuation</td><td>M&A / IPO</td><td>5 000 000 000 ₽</td></tr>
+<tr><td>Возврат инвестору</td><td>9.0% × 5.0B</td><td>450 000 000 ₽</td></tr>
+<tr><td><strong>MOIC</strong></td><td>450M / 30M</td><td><strong>15.0x</strong></td></tr>
+<tr><td><strong>IRR</strong></td><td>Горизонт 18 мес.</td><td><strong>~71%</strong></td></tr>
+</table>
+
+<h3>Консервативный сценарий: Exit при оценке 1.2B ₽</h3>
+<table>
+<tr><th>Компонент</th><th>Расчёт</th><th>Значение</th></tr>
+<tr><td>Сумма к конвертации (24 мес.)</td><td>30M + 30M × 5% × 24/12</td><td>33 000 000 ₽</td></tr>
+<tr><td>Доля инвестора (post-conversion)</td><td>33.0M / 240M</td><td>13.75%</td></tr>
+<tr><td>Разводнение (минимальное)</td><td>13.75% × 0.98</td><td>~13.5% на момент Exit</td></tr>
+<tr><td>Exit valuation</td><td>Secondary / buyback</td><td>1 200 000 000 ₽</td></tr>
+<tr><td>Возврат инвестору</td><td>13.5% × 1.2B</td><td>162 000 000 ₽</td></tr>
+<tr><td><strong>MOIC</strong></td><td>162M / 30M</td><td><strong>5.4x</strong></td></tr>
+<tr><td><strong>IRR</strong></td><td>Горизонт 36 мес.</td><td><strong>~41%</strong></td></tr>
 </table>
 
 <h2>9. Потребность в финансировании (раунды)</h2>
@@ -742,7 +756,7 @@ C — количество новых долей.</p>
 
   // ── 6. Due Diligence ───────────────────────────────────────
   '1777618': `
-<h1>Due Diligence Report — VentureOS</h1>
+<h1>Due Diligence Report — AI-2-O</h1>
 <p><em>Комплексная проверка ИП Гаврилов Денис Александрович | ИНН 183505204090</em></p>
 <p><em>Дата: март 2026 | Статус: завершено | Конфиденциально</em></p>
 
@@ -818,7 +832,7 @@ C — количество новых долей.</p>
 
 <h2>4. Рынок и конкуренция</h2>
 <h3>4.1. Рыночная позиция</h3>
-<p>VentureOS занимает уникальную нишу: AI-first платформа для VC в российской юрисдикции. Прямых конкурентов
+<p>AI-2-O занимает уникальную нишу: AI-first платформа для VC в российской юрисдикции. Прямых конкурентов
 с аналогичным функционалом в РФ нет. Западные аналоги (Carta, AngelList) не работают в России и не
 предлагают AI-инвесткомитет.</p>
 
@@ -913,7 +927,7 @@ C — количество новых долей.</p>
 
   // ── 7. Cap Table ───────────────────────────────────────
   '1777619': `
-<h1>Cap Table — VentureOS</h1>
+<h1>Cap Table — AI-2-O</h1>
 <p><em>Структура владения | ИП Гаврилов Д.А. | Март 2026</em></p>
 
 <h2>1. Текущая структура (Pre-Round)</h2>
@@ -924,31 +938,30 @@ C — количество новых долей.</p>
 </table>
 
 <h2>2. Post-Round (после Pre-Seed CLN 30M ₽)</h2>
-<p><em>При конвертации по Valuation Cap 240M ₽:</em></p>
+<p><em>При конвертации по Valuation Cap 240M ₽. ESOP 10% — стандарт для pre-seed, резервируется при конвертации.</em></p>
 <table>
 <tr><th>Участник</th><th>Доля, %</th><th>Стоимость</th><th>Инвестиция</th><th>Тип</th></tr>
-<tr><td>Гаврилов Д.А. (основатель)</td><td>83.19%</td><td>199 656 000 ₽</td><td>—</td><td>Обыкновенная</td></tr>
-<tr><td>ESOP (опционный пул)</td><td>3.38%</td><td>8 112 000 ₽</td><td>—</td><td>Опционы</td></tr>
-<tr><td>Pre-Seed инвесторы (CLN)</td><td>13.44%</td><td>32 250 000 ₽</td><td>30 000 000 ₽</td><td>Конвертируемая</td></tr>
-<tr><td><strong>ИТОГО (FD)</strong></td><td><strong>100.00%</strong></td><td><strong>240 018 000 ₽</strong></td><td><strong>30 000 000 ₽</strong></td><td></td></tr>
+<tr><td>Гаврилов Д.А. (основатель)</td><td>76.56%</td><td>183 744 000 ₽</td><td>—</td><td>Обыкновенная</td></tr>
+<tr><td>ESOP (опционный пул)</td><td>10.00%</td><td>24 000 000 ₽</td><td>—</td><td>Опционы</td></tr>
+<tr><td>Pre-Seed инвесторы (CLN)</td><td>13.44%</td><td>32 256 000 ₽</td><td>30 000 000 ₽</td><td>Конвертируемая</td></tr>
+<tr><td><strong>ИТОГО (FD)</strong></td><td><strong>100.00%</strong></td><td><strong>240 000 000 ₽</strong></td><td><strong>30 000 000 ₽</strong></td><td></td></tr>
 </table>
 
-<h2>3. Прогноз Post-Seed (Series A при оценке 800M ₽)</h2>
+<h2>3. Прогноз Post-Series A (с 20% разводнением на Series A)</h2>
 <table>
-<tr><th>Участник</th><th>Post Pre-Seed</th><th>Post Seed (150M ₽)</th><th>Post Series A (500M ₽)</th></tr>
-<tr><td>Основатель</td><td>83.19%</td><td>62.39%</td><td>46.79%</td></tr>
-<tr><td>ESOP</td><td>3.38%</td><td>7.00%</td><td>10.00%</td></tr>
-<tr><td>Pre-Seed (CLN)</td><td>13.44%</td><td>10.08%</td><td>7.56%</td></tr>
-<tr><td>Seed инвесторы</td><td>—</td><td>20.54%</td><td>15.40%</td></tr>
-<tr><td>Series A инвесторы</td><td>—</td><td>—</td><td>20.25%</td></tr>
+<tr><th>Участник</th><th>Post Pre-Seed</th><th>Post Series A (20% dilution)</th></tr>
+<tr><td>Основатель</td><td>76.56%</td><td>61.25%</td></tr>
+<tr><td>ESOP</td><td>10.00%</td><td>8.00%</td></tr>
+<tr><td>Pre-Seed (CLN)</td><td>13.44%</td><td>10.75%</td></tr>
+<tr><td>Series A инвесторы</td><td>—</td><td>20.00%</td></tr>
+<tr><td><strong>ИТОГО</strong></td><td><strong>100.00%</strong></td><td><strong>100.00%</strong></td></tr>
 </table>
 
 <h2>4. ESOP (опционный пул)</h2>
 <table>
 <tr><th>Этап</th><th>Размер пула</th><th>Назначение</th></tr>
-<tr><td>Pre-Seed</td><td>3.38%</td><td>Первые 5-7 сотрудников: CTO, ML Engineer, ведущие разработчики</td></tr>
-<tr><td>Post-Seed</td><td>7.00%</td><td>Расширение: sales lead, product manager, ключевые инженеры</td></tr>
-<tr><td>Post-Series A</td><td>10.00%</td><td>Полная команда: VP-уровень, ведущие специалисты всех направлений</td></tr>
+<tr><td>Pre-Seed (при конвертации)</td><td>10.00%</td><td>Стандарт pre-seed: CTO, ML Engineer, ведущие разработчики, ключевые наймы</td></tr>
+<tr><td>Post-Series A</td><td>8.00% (после разводнения)</td><td>Доп. гранты для VP-уровня, ведущих специалистов; возможен top-up до 10% на Series A</td></tr>
 </table>
 <p>Vesting schedule: 4 года, cliff 1 год, ежемесячный vesting после cliff.
 Ускоренный vesting (single trigger) при change of control.</p>
@@ -958,10 +971,10 @@ C — количество новых долей.</p>
 <table>
 <tr><th>Событие</th><th>Доля</th><th>Стоимость доли</th><th>MOIC</th></tr>
 <tr><td>Конвертация по Cap 240M</td><td>13.44%</td><td>32.3M ₽</td><td>1.1x</td></tr>
-<tr><td>Post-Seed (oценка 500M)</td><td>10.08%</td><td>50.4M ₽</td><td>1.7x</td></tr>
-<tr><td>Post-Series A (800M)</td><td>7.56%</td><td>60.5M ₽</td><td>2.0x</td></tr>
-<tr><td>Exit M&A (2B)</td><td>7.56%</td><td>151.2M ₽</td><td>5.0x</td></tr>
-<tr><td>Exit M&A (5B)</td><td>7.56%</td><td>378.0M ₽</td><td>12.6x</td></tr>
+<tr><td>Post-Series A (20% dilution)</td><td>10.75%</td><td>—</td><td>—</td></tr>
+<tr><td>Exit при 1.2B (консервативный)</td><td>~13.5%</td><td>162M ₽</td><td>5.4x</td></tr>
+<tr><td>Exit при 2.5B (базовый)</td><td>~11.0%</td><td>275M ₽</td><td>9.2x</td></tr>
+<tr><td>Exit при 5.0B (оптимистичный)</td><td>~9.0%</td><td>450M ₽</td><td>15.0x</td></tr>
 </table>
 
 <p><em>Anti-dilution protection (broad-based weighted average) обеспечивает защиту при down-round.</em></p>
@@ -969,11 +982,11 @@ C — количество новых долей.</p>
 
   // ── 8. FAQ для инвестора ───────────────────────────────────────
   '1777621': `
-<h1>FAQ для инвестора — VentureOS Pre-Seed</h1>
+<h1>FAQ для инвестора — AI-2-O Pre-Seed</h1>
 <p><em>Ответы на ключевые вопросы потенциальных инвесторов | Март 2026</em></p>
 
-<h3>1. Что такое VentureOS?</h3>
-<p>VentureOS — это AI-платформа полного цикла управления венчурным фондом. Она покрывает весь путь от приёма
+<h3>1. Что такое AI-2-O?</h3>
+<p>AI-2-O — это платформа инфраструктуры данных и оркестрации AI-агентов для организаций. Она покрывает весь путь от приёма
 заявки стартапа до выхода из портфельной компании. Ключевая инновация — AI-инвесткомитет из шести
 специализированных агентов (рынок, технологии, финансы, риски, ESG, юрист), которые анализируют каждую
 заявку с разных ракурсов и формируют аргументированное решение. Платформа работает на ai2fund.ru и уже
@@ -1005,9 +1018,9 @@ C — количество новых долей.</p>
 <h3>5. Какой ожидаемый возврат?</h3>
 <table>
 <tr><th>Сценарий</th><th>IRR</th><th>MOIC</th><th>Горизонт</th></tr>
-<tr><td>Консервативный</td><td>41%</td><td>5.5x</td><td>36 мес.</td></tr>
+<tr><td>Консервативный</td><td>41%</td><td>5.4x</td><td>36 мес.</td></tr>
 <tr><td>Базовый</td><td>56%</td><td>9.2x</td><td>24 мес.</td></tr>
-<tr><td>Оптимистичный</td><td>71%</td><td>14.7x</td><td>18 мес.</td></tr>
+<tr><td>Оптимистичный</td><td>71%</td><td>15.0x</td><td>18 мес.</td></tr>
 </table>
 
 <h3>6. Кто конкуренты?</h3>
@@ -1023,7 +1036,7 @@ Gross margin: 80-85% (основной COGS — стоимость AI inference)
 
 <h3>8. Какой текущий MRR и план роста?</h3>
 <p>Текущий MRR: 100 000 ₽ (март 2026). План: 300k к Q2, 600k к Q3, 1.2M к декабрю 2026.
-Целевой ARR на конец 2027: 48M ₽ (20 клиентов).</p>
+Целевой ARR exit run-rate на конец 2027: 54M ₽ (MRR 4.5M, 20 клиентов).</p>
 
 <h3>9. На что будут потрачены деньги?</h3>
 <p>40% — R&D (найм 5 разработчиков, инфраструктура, AI inference). 25% — Sales & Marketing
@@ -1079,9 +1092,9 @@ Tag-along right обеспечивает возможность продажи �
 
   // ── 9. Data Room ───────────────────────────────────────
   '1777622': `
-<h1>Data Room — VentureOS Pre-Seed</h1>
+<h1>Data Room — AI-2-O Pre-Seed</h1>
 <p><em>Полный реестр документов инвест-пакета | Март 2026</em></p>
-<p><em>Доступ: по NDA | Формат: электронный | Платформа: VentureOS Document Hub</em></p>
+<p><em>Доступ: по NDA | Формат: электронный | Платформа: AI-2-O Document Hub</em></p>
 
 <h2>1. Корпоративные документы</h2>
 <table>
@@ -1120,7 +1133,7 @@ Tag-along right обеспечивает возможность продажи �
 <h2>4. Технические документы</h2>
 <table>
 <tr><th>№</th><th>Документ</th><th>Описание</th><th>Стандарт</th></tr>
-<tr><td>4.1</td><td>ТЗ на VentureOS</td><td>Техническое задание по ГОСТ 34.602-2020</td><td>ГОСТ 34.602</td></tr>
+<tr><td>4.1</td><td>ТЗ на AI-2-O</td><td>Техническое задание по ГОСТ 34.602-2020</td><td>ГОСТ 34.602</td></tr>
 <tr><td>4.2</td><td>Описание ПО</td><td>Описание программного обеспечения</td><td>ГОСТ 19.402-78</td></tr>
 <tr><td>4.3</td><td>TRL-паспорт</td><td>Оценка технологической готовности TRL 1-9</td><td>ISO 16290</td></tr>
 <tr><td>4.4</td><td>Архитектура системы</td><td>Компоненты, API, диаграммы, стек</td><td>—</td></tr>
@@ -1135,40 +1148,40 @@ Tag-along right обеспечивает возможность продажи �
 <tr><td>5.3</td><td>Банковские реквизиты ИП</td><td>Для перечисления инвестиции</td></tr>
 </table>
 
-<p><em>Все документы доступны в электронном виде через VentureOS Document Hub.
+<p><em>Все документы доступны в электронном виде через AI-2-O Document Hub.
 Доступ предоставляется после подписания NDA.</em></p>
 `,
 
   // ── 10. Письмо инвестору ───────────────────────────────────────
   '1777623': `
 <h1>Письмо инвестору</h1>
-<p><em>От: Гаврилов Денис Александрович, основатель VentureOS</em></p>
+<p><em>От: Гаврилов Денис Александрович, основатель AI-2-O</em></p>
 <p><em>Март 2026</em></p>
 
 <p>Уважаемый инвестор,</p>
 
-<p>Благодарю вас за интерес к VentureOS и за время, которое вы готовы уделить изучению нашего инвест-пакета.</p>
+<p>Благодарю вас за интерес к AI-2-O и за время, которое вы готовы уделить изучению нашего инвест-пакета.</p>
 
 <p>Меня зовут Денис Гаврилов. Мне 50 лет, и последние 25 лет я занимаюсь разработкой программного обеспечения.
 14 лет назад я зарегистрировал ИП и с тех пор непрерывно занимаюсь предпринимательской деятельностью
 в сфере IT — от проектов в области беспилотных систем (БПЛА) до финтеха и образовательных технологий.</p>
 
-<p>VentureOS родился из личного наблюдения: управление венчурным фондом в России остаётся
-удивительно ручным процессом. Управляющие партнёры тратят до 70% времени на рутину — сбор информации,
-подготовку материалов для инвесткомитета, составление отчётов для LP — вместо того, чтобы
-фокусироваться на поиске и поддержке лучших стартапов.</p>
+<p>AI-2-O родился из практического опыта. Работая над DronDoc (аналитическая платформа рынка БПЛА)
+и VentureOS (AI-управление венчурным фондом), я осознал главную проблему: каждая организация,
+внедряющая AI-агентов, решает одни и те же инфраструктурные задачи — как дать агентам доступ
+к данным, как координировать несколько агентов, как обеспечить аудит и governance.</p>
 
-<p>Я создал платформу, которая решает эту проблему. VentureOS — это не очередной CRM для фондов.
-Это AI-first система, где шесть специализированных AI-агентов формируют полноценный инвесткомитет,
-анализируя каждую заявку с позиции рыночного аналитика, технолога, финансиста, риск-менеджера,
-ESG-эксперта и юриста. 340+ заседаний уже проведено, 180+ финансовых моделей сгенерировано.</p>
+<p>Deloitte подтвердил это в Tech Trends 2026: 86% организаций не готовы к agentic AI, а 40% проектов
+провалятся из-за тех самых инфраструктурных барьеров. Я создал платформу, которая их снимает:
+Data Layer (Integram + 60 MCP-инструментов), AgentOS (оркестратор с мультиагентными дебатами),
+и готовые вертикальные решения. 148+ агентов уже работают в production, 340+ дебатных сессий проведено.</p>
 
-<p>Что делает VentureOS уникальным:</p>
+<p>Что делает AI-2-O уникальным:</p>
 <ul>
-<li>Единственная в мире платформа с AI-инвесткомитетом из 6 агентов</li>
-<li>Полный цикл: от заявки до выхода — в одном продукте</li>
-<li>MCP-протокол с 60+ инструментами — AI работает с данными напрямую</li>
-<li>Российская юрисдикция, compliance для ЗПИФ/ИПИФ</li>
+<li>Единственная в России полная платформа: Data Layer + Orchestration + Industry Apps</li>
+<li>148+ агентов в реестре с heartbeat, circuit breakers и shared memory</li>
+<li>AgentOS: Scout→Plan→Execute→Verify, мультиагентные дебаты, 7 LLM-провайдеров</li>
+<li>2 работающие вертикали: DronDoc (БПЛА, 148+ агентов) и VentureOS (венчур)</li>
 <li>Работающий продукт на ai2fund.ru — вы можете попробовать прямо сейчас</li>
 </ul>
 
@@ -1176,7 +1189,7 @@ ESG-эксперта и юриста. 340+ заседаний уже прове�
 и дисконтом 20%. Эти средства позволят нам нанять команду из 12 человек, привлечь
 первых 5 платящих клиентов и подготовиться к Seed-раунду в 2027 году.</p>
 
-<p>Я уверен в перспективах VentureOS по нескольким причинам:</p>
+<p>Я уверен в перспективах AI-2-O по нескольким причинам:</p>
 <ol>
 <li>Рынок растёт: +35% новых VC-фондов в РФ за 2024-2025</li>
 <li>Продукт уже работает: не прототип, а production-система с реальными пользователями</li>
@@ -1192,7 +1205,7 @@ ESG-эксперта и юриста. 340+ заседаний уже прове�
 
 <p>С уважением,<br>
 <strong>Гаврилов Денис Александрович</strong><br>
-Основатель и CEO, VentureOS<br>
+Основатель и CEO, AI-2-O<br>
 +7 912 856 4410 (WhatsApp/Telegram)<br>
 unidel@yandex.ru<br>
 <a href="https://ai2fund.ru">ai2fund.ru</a></p>
@@ -1239,7 +1252,7 @@ unidel@yandex.ru<br>
 (далее — «Сумма займа»), а Заёмщик обязуется возвратить Сумму займа и уплатить проценты в порядке и сроки,
 установленные настоящим Договором, либо конвертировать Сумму займа в долю участия в Компании.</p>
 <p>2.2. Целевое назначение Займа: финансирование разработки, маркетинга и операционной деятельности
-платформы VentureOS (ai2fund.ru).</p>
+платформы AI-2-O (ai2fund.ru).</p>
 <p>2.3. Заём предоставляется на срок 24 (двадцать четыре) месяца с даты фактического предоставления.</p>
 
 <h2>Статья 3. Процентная ставка и порядок начисления</h2>
@@ -1291,7 +1304,7 @@ unidel@yandex.ru<br>
 <p>7.3. Предоставлять квартальные финансовые отчёты до 30 дней после окончания квартала.</p>
 <p>7.4. Не совершать без согласия Займодавца действий, указанных в п. 6 Term Sheet (ковенанты).</p>
 <p>7.5. Незамедлительно уведомлять Займодавца о материальных событиях.</p>
-<p>7.6. Обеспечить Займодавцу доступ к дашборду VentureOS Transparency.</p>
+<p>7.6. Обеспечить Займодавцу доступ к дашборду AI-2-O Transparency.</p>
 
 <h2>Статья 8. Обязательства Займодавца</h2>
 <p>8.1. Перечислить Сумму займа в сроки, установленные п. 4.1.</p>
@@ -1375,10 +1388,10 @@ _________________ / ______________ /</td></tr>
 <ul>
 <li><strong>2010–2020:</strong> Разработка программного обеспечения на заказ (корпоративные системы, веб-приложения). Более 30 завершённых проектов для заказчиков из финтеха, образования, промышленности.</li>
 <li><strong>2020–2024:</strong> Разработка платформы для управления знаниями о БПЛА (DronDoc). Создание онтологии из 1100+ концептов. Интеграция AI/ML для автоматической классификации и поиска.</li>
-<li><strong>2024–настоящее время:</strong> Создание VentureOS — AI-платформы управления венчурным фондом. Разработка всей архитектуры: 150,000+ строк кода, 10 модулей, 60+ MCP-инструментов для AI-агентов.</li>
+<li><strong>2024–настоящее время:</strong> Создание AI-2-O — платформы инфраструктуры данных и оркестрации AI-агентов. Разработка AgentChainCoordinator, DebateSession, мультимодельного LLM-роутера. 250,000+ строк кода, 148+ агентов, 60+ MCP-инструментов. Две вертикали: DronDoc (БПЛА) и VentureOS (венчур).</li>
 </ul>
 
-<h3>2.3. Роль в VentureOS</h3>
+<h3>2.3. Роль в AI-2-O</h3>
 <p>Совмещает роли CEO и CTO. Отвечает за: стратегию продукта, техническую архитектуру, AI-агентов,
 привлечение инвестиций, операционное управление. После Pre-Seed планирует нанять VP Engineering
 для делегирования технического руководства и сфокусироваться на бизнес-развитии.</p>
@@ -1418,7 +1431,7 @@ _________________ / ______________ /</td></tr>
 
 <p><strong>2.</strong> Целевое использование привлечённых средств:</p>
 <ul>
-<li>40% — разработка и развитие платформы VentureOS (R&D)</li>
+<li>40% — разработка и развитие платформы AI-2-O (R&D)</li>
 <li>25% — маркетинг и продажи (Sales & Marketing)</li>
 <li>20% — операционные расходы</li>
 <li>15% — резервный фонд</li>
@@ -1476,8 +1489,8 @@ _________________ / ______________ /</td></tr>
 </table>
 
 <h3>Цель получения займа:</h3>
-<p>Финансирование разработки, маркетинга и операционной деятельности AI-платформы VentureOS (ai2fund.ru)
-для управления венчурными фондами. Детальное распределение средств указано в бизнес-плане
+<p>Финансирование разработки, маркетинга и операционной деятельности AI-платформы AI-2-O (ai2fund.ru)
+для инфраструктуры данных и оркестрации AI-агентов. Детальное распределение средств указано в бизнес-плане
 и Term Sheet, являющихся неотъемлемой частью инвест-пакета.</p>
 
 <h3>Информация о заёмщике:</h3>
@@ -1489,7 +1502,7 @@ _________________ / ______________ /</td></tr>
 <tr><td>Дата регистрации</td><td>2010 год</td></tr>
 <tr><td>Основной вид деятельности</td><td>Разработка программного обеспечения (62.01)</td></tr>
 <tr><td>Текущая выручка (MRR)</td><td>100 000 ₽/мес</td></tr>
-<tr><td>Продукт</td><td>VentureOS — AI-платформа для VC-фондов</td></tr>
+<tr><td>Продукт</td><td>AI-2-O — платформа AI-агентов для организаций</td></tr>
 <tr><td>Сайт</td><td>ai2fund.ru</td></tr>
 <tr><td>Численность команды</td><td>3 человека</td></tr>
 </table>
@@ -1511,7 +1524,7 @@ _________________ / ______________ /</td></tr>
 <li>Копия паспорта (основные страницы)</li>
 <li>Выписка ЕГРИП</li>
 <li>Справка ФНС об отсутствии задолженности</li>
-<li>Бизнес-план VentureOS 2026-2028</li>
+<li>Бизнес-план AI-2-O 2026-2028</li>
 <li>Финансовая модель 5 лет</li>
 <li>Согласие супруга на совершение сделки</li>
 </ol>
@@ -1550,7 +1563,7 @@ _________________ / ______________ /</td></tr>
 <tr><td>Годовой отчёт</td><td>Ежегодно</td><td>До 90 дней после конца года</td><td>Аудированная отчётность, стратегия, план на год</td></tr>
 <tr><td>Уведомление о мат. событиях</td><td>По факту</td><td>В течение 3 рабочих дней</td><td>Судебные иски, потеря клиентов (>10% MRR), смена ключевых сотрудников</td></tr>
 </table>
-<p>2.2. Инвестор получает доступ к дашборду VentureOS Transparency с real-time метриками.</p>
+<p>2.2. Инвестор получает доступ к дашборду AI-2-O Transparency с real-time метриками.</p>
 <p>2.3. Компания обязуется проводить ежеквартальные видео-звонки с Инвестором (board update).</p>
 
 <h2>Статья 3. Корпоративное управление</h2>
@@ -1591,7 +1604,7 @@ _________________ / ______________ /</td></tr>
 
 <h2>Статья 7. Non-compete и Non-solicitation</h2>
 <p>7.1. Основатель обязуется в течение срока действия Соглашения и 12 месяцев после его прекращения
-не заниматься деятельностью, прямо конкурирующей с VentureOS.</p>
+не заниматься деятельностью, прямо конкурирующей с AI-2-O.</p>
 <p>7.2. Стороны обязуются не переманивать сотрудников друг друга в течение 12 месяцев
 после прекращения Соглашения.</p>
 
@@ -1600,14 +1613,22 @@ _________________ / ______________ /</td></tr>
 <p>8.2. При создании ООО Инвестору обеспечивается доля, соответствующая расчёту по Договору CLN.</p>
 <p>8.3. Устав ООО должен содержать положения о защите прав миноритариев в соответствии с настоящим Соглашением.</p>
 
-<h2>Статья 9. Разрешение споров</h2>
-<p>9.1. Споры разрешаются путём переговоров (30 дней) → медиация → Арбитражный суд Удмуртской Республики.</p>
-<p>9.2. Применимое право: законодательство Российской Федерации.</p>
+<h2>Статья 9. Вестинг основателя</h2>
+<p>9.1. Вестинг основателя: 48 месяцев, cliff 12 месяцев. При уходе основателя до завершения вестинга невестированная доля возвращается в ESOP-пул.</p>
+<p>9.2. График вестинга: после cliff (12 мес.) — ежемесячный вестинг равными долями в течение оставшихся 36 месяцев.</p>
 
-<h2>Статья 10. Заключительные положения</h2>
-<p>10.1. Соглашение вступает в силу с даты подписания.</p>
-<p>10.2. Соглашение составлено в двух экземплярах.</p>
-<p>10.3. Все изменения — в письменной форме.</p>
+<h2>Статья 10. Lock-up</h2>
+<p>10.1. Lock-up: основатель обязуется не продавать и не передавать свою долю в течение 24 месяцев с даты конвертации CLN в долю ООО.</p>
+<p>10.2. Исключения из lock-up: передача в пользу аффилированных лиц основателя при условии сохранения всех обязательств по настоящему Соглашению.</p>
+
+<h2>Статья 11. Разрешение споров</h2>
+<p>11.1. Споры разрешаются путём переговоров (30 дней) → медиация → Арбитражный суд Удмуртской Республики.</p>
+<p>11.2. Применимое право: законодательство Российской Федерации.</p>
+
+<h2>Статья 12. Заключительные положения</h2>
+<p>12.1. Соглашение вступает в силу с даты подписания.</p>
+<p>12.2. Соглашение составлено в двух экземплярах.</p>
+<p>12.3. Все изменения — в письменной форме.</p>
 
 <p><strong>Компания:</strong> ИП Гаврилов Д.А. _________________ (подпись)<br>
 <strong>Инвестор:</strong> ________________________________ (подпись)</p>
@@ -1670,17 +1691,17 @@ _________________ / ______________ /</td></tr>
 
   // ── 17. ТЗ ГОСТ 34.602 ───────────────────────────────────────
   '1777631': `
-<h1>Техническое задание на создание автоматизированной системы VentureOS</h1>
+<h1>Техническое задание на создание автоматизированной системы AI-2-O</h1>
 <p><em>По ГОСТ 34.602-2020 «Информационные технологии. Комплекс стандартов на автоматизированные системы.
 Техническое задание на создание автоматизированной системы»</em></p>
 <p><em>Заказчик: ИП Гаврилов Д.А. | ИНН 183505204090 | Версия 2.0 | Март 2026</em></p>
 
 <h2>1. Общие сведения</h2>
 <h3>1.1. Полное наименование системы</h3>
-<p>Автоматизированная система управления венчурным фондом «VentureOS»
-(далее — Система, АС VentureOS).</p>
+<p>Платформа инфраструктуры данных и оркестрации AI-агентов «AI-2-O»
+(далее — Система, АС AI-2-O).</p>
 <h3>1.2. Шифр темы</h3>
-<p>VOS-2026-PS (VentureOS, 2026, Pre-Seed).</p>
+<p>VOS-2026-PS (AI-2-O, 2026, Pre-Seed).</p>
 <h3>1.3. Заказчик</h3>
 <p>ИП Гаврилов Денис Александрович, ИНН 183505204090, ОГРНИП 310184117500010.<br>
 Адрес: Удмуртская Республика, г. Ижевск, ул. Ключевой поселок, д.37, кв.4.<br>
@@ -1688,7 +1709,7 @@ _________________ / ______________ /</td></tr>
 <h3>1.4. Исполнитель</h3>
 <p>Разработка осуществляется собственными силами ИП Гаврилов Д.А.</p>
 <h3>1.5. Основание для разработки</h3>
-<p>Решение основателя о создании AI-платформы для управления венчурными фондами. Бизнес-план VentureOS 2026-2028.</p>
+<p>Решение основателя о создании AI-платформы инфраструктуры данных и оркестрации AI-агентов. Бизнес-план AI-2-O 2026-2028.</p>
 <h3>1.6. Плановые сроки</h3>
 <table>
 <tr><th>Этап</th><th>Начало</th><th>Окончание</th></tr>
@@ -1702,7 +1723,7 @@ _________________ / ______________ /</td></tr>
 
 <h2>2. Назначение и цели создания системы</h2>
 <h3>2.1. Назначение</h3>
-<p>Система предназначена для автоматизации полного цикла управления венчурным фондом: от приёма и анализа
+<p>Система предназначена для инфраструктуры данных и оркестрации AI-агентов для организаций: от приёма и анализа
 инвестиционных заявок до мониторинга портфельных компаний и формирования отчётности для limited partners.</p>
 <h3>2.2. Цели создания</h3>
 <ol>
@@ -1714,7 +1735,7 @@ _________________ / ______________ /</td></tr>
 </ol>
 
 <h2>3. Характеристика объекта автоматизации</h2>
-<p>3.1. Объект автоматизации — процессы управления венчурным фондом, включающие:</p>
+<p>3.1. Объект автоматизации — процессы оркестрации AI-агентов, включающие:</p>
 <ul>
 <li>Deal flow management (управление потоком сделок)</li>
 <li>Due diligence (проверка компаний-заявителей)</li>
@@ -1792,17 +1813,77 @@ _________________ / ______________ /</td></tr>
 <p>6.1. Приёмка осуществляется поэтапно по результатам каждого этапа работ.</p>
 <p>6.2. Критерии приёмки: соответствие требованиям настоящего ТЗ, успешное прохождение тестов,
 документация в полном объёме.</p>
+
+<h2>7. Требования к документации</h2>
+<p>7.1. В процессе создания и эксплуатации Системы должны быть разработаны следующие документы:</p>
+<table>
+<tr><th>№</th><th>Документ</th><th>Стандарт</th><th>Этап</th></tr>
+<tr><td>1</td><td>Техническое задание на создание АС</td><td>ГОСТ 34.602-2020</td><td>Эскизный проект</td></tr>
+<tr><td>2</td><td>Описание программного обеспечения</td><td>ГОСТ 19.402-78</td><td>Технический проект</td></tr>
+<tr><td>3</td><td>Руководство пользователя</td><td>ГОСТ 19.505-79</td><td>Рабочая документация</td></tr>
+<tr><td>4</td><td>Руководство системного администратора</td><td>ГОСТ 19.503-79</td><td>Рабочая документация</td></tr>
+<tr><td>5</td><td>TRL-паспорт (оценка технологической готовности)</td><td>ISO 16290:2013</td><td>Каждый этап</td></tr>
+<tr><td>6</td><td>Протоколы испытаний</td><td>ГОСТ 34.603-92</td><td>Опытная эксплуатация</td></tr>
+<tr><td>7</td><td>Акт приёмки</td><td>ГОСТ 34.201-89</td><td>Промышленная эксплуатация</td></tr>
+</table>
+<p>7.2. Вся документация ведётся на русском языке. При необходимости допускается параллельная разработка
+англоязычных версий для международных инвесторов и партнёров.</p>
+<p>7.3. Документация хранится в электронном виде в системе документооборота AI-2-O (модуль Data Room)
+и доступна участникам проекта через веб-интерфейс.</p>
+
+<h2>8. Источники разработки</h2>
+<p>8.1. При разработке Системы использованы следующие нормативные и справочные источники:</p>
+<table>
+<tr><th>Обозначение</th><th>Наименование</th></tr>
+<tr><td>ГОСТ 34.602-2020</td><td>Информационные технологии. Комплекс стандартов на автоматизированные системы. Техническое задание на создание автоматизированной системы</td></tr>
+<tr><td>ГОСТ 19.402-78</td><td>Единая система программной документации. Описание программы</td></tr>
+<tr><td>ISO 16290:2013</td><td>Space systems — Definition of the Technology Readiness Levels (TRLs) and their criteria of assessment</td></tr>
+<tr><td>PCI DSS v4.0</td><td>Payment Card Industry Data Security Standard (в части хранения финансовых данных)</td></tr>
+<tr><td>ФЗ-152</td><td>Федеральный закон «О персональных данных» от 27.07.2006 № 152-ФЗ</td></tr>
+<tr><td>ФЗ-156</td><td>Федеральный закон «Об инвестиционных фондах» от 29.11.2001 № 156-ФЗ</td></tr>
+<tr><td>ФЗ-149</td><td>Федеральный закон «Об информации, информационных технологиях и о защите информации» от 27.07.2006 № 149-ФЗ</td></tr>
+<tr><td>ГОСТ 34.603-92</td><td>Информационные технологии. Виды испытаний автоматизированных систем</td></tr>
+</table>
+<p>8.2. Дополнительно использованы открытые фреймворки и библиотеки: Vue 3, PrimeVue 4, Express.js,
+Socket.io, Chart.js, HyperFormula — с соблюдением условий соответствующих лицензий (MIT, Apache 2.0).</p>
+
+<h2>9. Требования к эргономике и дизайну</h2>
+<p>9.1. Адаптивный дизайн (responsive): интерфейс должен корректно отображаться на устройствах
+с разрешением экрана от 360px (мобильные) до 3840px (4K-мониторы). Основные контрольные точки:</p>
+<table>
+<tr><th>Breakpoint</th><th>Ширина</th><th>Адаптация</th></tr>
+<tr><td>Mobile</td><td>360–768px</td><td>Одноколоночный layout, скрытый sidebar, touch-friendly элементы</td></tr>
+<tr><td>Tablet</td><td>768–1280px</td><td>Адаптивная сетка, сворачиваемый sidebar</td></tr>
+<tr><td>Desktop</td><td>1280–1920px</td><td>Полный layout с sidebar, многоколоночные таблицы</td></tr>
+<tr><td>Wide</td><td>1920px+</td><td>Максимальная ширина контента, дополнительные виджеты</td></tr>
+</table>
+<p>9.2. Поддержка тёмной и светлой темы оформления. Переключение темы без перезагрузки страницы.
+Все цветовые решения реализованы через CSS Custom Properties (переменные --fst-*, --p-*).</p>
+<p>9.3. Доступность (accessibility) — соответствие WCAG 2.1 Level AA:</p>
+<ul>
+<li>Контрастность текста к фону: минимум 4.5:1 (обычный текст), 3:1 (крупный текст)</li>
+<li>Навигация с клавиатуры: все интерактивные элементы доступны через Tab/Enter/Space</li>
+<li>Семантическая разметка: правильное использование ARIA-атрибутов, ролей, landmarks</li>
+<li>Alt-тексты для графиков и изображений, текстовые альтернативы для визуализаций</li>
+<li>Поддержка screen-reader: корректное чтение таблиц, форм, модальных окон</li>
+</ul>
+<p>9.4. Единая дизайн-система на базе PrimeVue 4: все интерфейсные элементы (кнопки, формы, таблицы, диалоги)
+используют компоненты PrimeVue с настроенным корпоративным pass-through (PT). Запрещено использование
+нативных HTML-элементов форм (&lt;input&gt;, &lt;select&gt;, &lt;button&gt;) вне компонентов PrimeVue.</p>
+<p>9.5. Время отклика интерфейса: визуальная обратная связь на действие пользователя — не более 100 мс;
+отображение результата загрузки данных — не более 2 секунд; для длительных операций (AI-анализ) —
+отображение индикатора прогресса.</p>
 `,
 
   // ── 18. Описание ПО ГОСТ 19.402 ───────────────────────────────────────
   '1777632': `
-<h1>Описание программного обеспечения VentureOS</h1>
+<h1>Описание программного обеспечения AI-2-O</h1>
 <p><em>По ГОСТ 19.402-78 «Описание программы»</em></p>
 <p><em>Версия 2.0 | Март 2026 | ИП Гаврилов Д.А.</em></p>
 
 <h2>1. Общие сведения</h2>
 <h3>1.1. Обозначение и наименование программы</h3>
-<p>VentureOS — автоматизированная система управления венчурным фондом с AI-агентами.</p>
+<p>AI-2-O — платформа инфраструктуры данных и оркестрации AI-агентов с AI-агентами.</p>
 <h3>1.2. Программное обеспечение, необходимое для функционирования</h3>
 <table>
 <tr><th>Компонент</th><th>Версия</th><th>Назначение</th></tr>
@@ -1817,7 +1898,7 @@ _________________ / ______________ /</td></tr>
 <p>JavaScript (ES2022+, ESM modules), HTML5, CSS3 (с CSS Custom Properties).</p>
 
 <h2>2. Функциональное назначение</h2>
-<p>2.1. Программа предназначена для автоматизации управления венчурным фондом полного цикла:
+<p>2.1. Программа предназначена для оркестрации AI-агентов и инфраструктуры данных полного цикла:
 приём заявок, AI-скоринг, заседания AI-инвесткомитета, финансовое моделирование,
 портфельный мониторинг, cap table management, отчётность для LP.</p>
 <p>2.2. Программа реализует уникальный AI-инвесткомитет из 6 специализированных агентов,
@@ -1880,14 +1961,14 @@ SQLite — локальный кеш для ускорения частых за
 
   // ── 19. TRL-паспорт ───────────────────────────────────────
   '1777633': `
-<h1>TRL-паспорт — VentureOS</h1>
+<h1>TRL-паспорт — AI-2-O</h1>
 <p><em>Оценка уровня технологической готовности (Technology Readiness Level)</em></p>
 <p><em>По ISO 16290:2013 и методике Минпромторга РФ | Март 2026</em></p>
 
 <h2>Сводная оценка</h2>
 <table>
 <tr><th>Модуль</th><th>TRL</th><th>Статус</th></tr>
-<tr><td>Платформа VentureOS (общая)</td><td><strong>TRL 7</strong></td><td>Демонстрация в операционной среде</td></tr>
+<tr><td>Платформа AI-2-O (общая)</td><td><strong>TRL 7</strong></td><td>Демонстрация в операционной среде</td></tr>
 <tr><td>AI Инвесткомитет</td><td>TRL 7</td><td>Production, 340+ заседаний</td></tr>
 <tr><td>Финмоделирование</td><td>TRL 7</td><td>Production, 180+ моделей</td></tr>
 <tr><td>Портфельный мониторинг</td><td>TRL 7</td><td>Production, live dashboard</td></tr>
@@ -1998,7 +2079,7 @@ SQLite — локальный кеш для ускорения частых за
 
   // ── 20. Архитектура системы ───────────────────────────────────────
   '1777634': `
-<h1>Архитектура системы VentureOS</h1>
+<h1>Архитектура системы AI-2-O</h1>
 <p><em>Техническое описание | Версия 3.0 | Март 2026</em></p>
 
 <h2>1. Высокоуровневая архитектура</h2>
@@ -2120,20 +2201,20 @@ SQLite — локальный кеш для ускорения частых за
 
   // ── 21. Отчёт по НМА ───────────────────────────────────────
   '1777624': `
-<h1>Отчёт по нематериальным активам (НМА) — VentureOS</h1>
+<h1>Отчёт по нематериальным активам (НМА) — AI-2-O</h1>
 <p><em>ИП Гаврилов Денис Александрович | ИНН 183505204090 | Март 2026</em></p>
 
 <h2>1. Цель и методология</h2>
 <p>Настоящий отчёт содержит перечень и оценку нематериальных активов, созданных в рамках
-разработки платформы VentureOS. Оценка проводится по методу затратного подхода (cost approach):
+разработки платформы AI-2-O. Оценка проводится по методу затратного подхода (cost approach):
 суммирование фактических затрат на создание НМА с коэффициентом на альтернативную стоимость
 воспроизводства.</p>
 
 <h2>2. Реестр НМА</h2>
 <table>
 <tr><th>№</th><th>Наименование</th><th>Категория</th><th>Описание</th><th>Объём</th><th>Оценка, млн ₽</th></tr>
-<tr><td>1</td><td>Исходный код VentureOS (Frontend)</td><td>ПО</td><td>Vue 3 SPA: 10 модулей, 80+ компонентов, маршрутизация, state management</td><td>~80 000 строк</td><td>12.0</td></tr>
-<tr><td>2</td><td>Исходный код VentureOS (Backend)</td><td>ПО</td><td>Node.js ESM: REST API, WebSocket, LLM Coordinator, MCP Server</td><td>~40 000 строк</td><td>8.0</td></tr>
+<tr><td>1</td><td>Исходный код AI-2-O (Frontend)</td><td>ПО</td><td>Vue 3 SPA: 10 модулей, 80+ компонентов, маршрутизация, state management</td><td>~80 000 строк</td><td>12.0</td></tr>
+<tr><td>2</td><td>Исходный код AI-2-O (Backend)</td><td>ПО</td><td>Node.js ESM: REST API, WebSocket, LLM Coordinator, MCP Server</td><td>~40 000 строк</td><td>8.0</td></tr>
 <tr><td>3</td><td>AI-агенты инвесткомитета</td><td>AI/ML</td><td>6 специализированных агентов с system prompts, workflow, голосование</td><td>6 агентов</td><td>5.0</td></tr>
 <tr><td>4</td><td>MCP-инструменты</td><td>ПО</td><td>60+ инструментов для AI-доступа к Integram NoSQL</td><td>60+ tools</td><td>4.0</td></tr>
 <tr><td>5</td><td>KAG база знаний</td><td>Data</td><td>Гибридная графово-векторная БЗ: 1100+ верифицированных концептов</td><td>1100 концептов</td><td>3.0</td></tr>
@@ -2174,7 +2255,7 @@ SQLite — локальный кеш для ускорения частых за
 
 <h2>4. Права собственности</h2>
 <p>Все перечисленные НМА созданы силами ИП Гаврилов Д.А. и принадлежат исключительно ему.
-Третьи лица не имеют прав на исходный код, AI-модели, базу знаний или иные активы VentureOS.
+Третьи лица не имеют прав на исходный код, AI-модели, базу знаний или иные активы AI-2-O.
 Сотрудники (разработчики #2 и #3) работают по договорам, предусматривающим передачу
 исключительных прав на результаты работы Заказчику (ИП Гаврилов Д.А.).</p>
 
@@ -2194,12 +2275,348 @@ SQLite — локальный кеш для ускорения частых за
 <tr><th>Показатель</th><th>Значение</th></tr>
 <tr><td>Общая оценка НМА (затратный подход)</td><td><strong>37.3 млн ₽</strong></td></tr>
 <tr><td>Доля НМА в Pre-money оценке (148.54M)</td><td>25.1%</td></tr>
-<tr><td>Основной актив</td><td>Исходный код VentureOS (frontend + backend): 20M ₽</td></tr>
+<tr><td>Основной актив</td><td>Исходный код AI-2-O (frontend + backend): 20M ₽</td></tr>
 <tr><td>Уникальные AI-активы</td><td>AI-агенты + MCP + KAG: 12M ₽</td></tr>
 </table>
 
-<p><em>Данный отчёт подготовлен на основании фактических данных о разработке VentureOS.
+<p><em>Данный отчёт подготовлен на основании фактических данных о разработке AI-2-O.
 Оценка носит индикативный характер и не является результатом независимой экспертизы.</em></p>
+`,
+
+  // ── NDA (Соглашение о конфиденциальности) ───────────────────────────
+  '67260': `
+<h1>СОГЛАШЕНИЕ О КОНФИДЕНЦИАЛЬНОСТИ (NDA) № ___</h1>
+<p><strong>г. Ижевск</strong> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; «___» _____________ 2026 г.</p>
+
+<p><strong>ИП Гаврилов Денис Александрович</strong>, ИНН 183505204090, ОГРНИП 310184117500010,
+действующий на основании свидетельства о государственной регистрации,
+именуемый в дальнейшем <strong>«Раскрывающая сторона»</strong>, с одной стороны,</p>
+
+<p>и ____________________________________________, в лице ____________________________________________,
+действующего на основании ____________________________________________,
+именуемый(-ая) в дальнейшем <strong>«Получающая сторона» (Инвестор)</strong>, с другой стороны,</p>
+
+<p>совместно именуемые «Стороны», а по отдельности «Сторона», заключили настоящее Соглашение
+о конфиденциальности (далее — «Соглашение», «NDA») о нижеследующем:</p>
+
+<h2>Статья 1. Определения</h2>
+<p>1.1. <strong>Конфиденциальная информация</strong> — любая информация, передаваемая Раскрывающей стороной
+Получающей стороне в связи с оценкой возможности инвестирования в проект AI-2-O
+(платформа инфраструктуры данных и оркестрации AI-агентов), включая, но не ограничиваясь:</p>
+<ul>
+<li>Финансовые модели, прогнозы, unit economics, P&L, cash flow</li>
+<li>Технологическую документацию, архитектуру системы, описание алгоритмов AI</li>
+<li>Бизнес-план, стратегию развития, планы маркетинга и продаж</li>
+<li>Клиентские данные, списки контрагентов, условия партнёрских соглашений</li>
+<li>Алгоритмы AI-агентов, модели машинного обучения, промпты, MCP-инструменты</li>
+<li>Исходный код программного обеспечения AI-2-O (frontend, backend, AI-модули)</li>
+<li>Коммерческие условия: ценообразование, скидки, условия сделок</li>
+<li>Данные due diligence: юридические, финансовые, технологические материалы</li>
+<li>Cap table, структура владения, условия Term Sheet и CLN</li>
+<li>Любые материалы, помеченные как «Конфиденциально» или «Confidential»</li>
+</ul>
+<p>1.2. <strong>Проект</strong> — платформа AI-2-O (ai2fund.ru), разрабатываемая ИП Гаврилов Д.А.</p>
+<p>1.3. <strong>Цель раскрытия</strong> — оценка Получающей стороной возможности инвестирования
+в Проект на условиях Pre-Seed раунда (конвертируемый займ, CLN).</p>
+
+<h2>Статья 2. Обязательства Получающей стороны</h2>
+<p>Получающая сторона обязуется:</p>
+<ol>
+<li>Не разглашать Конфиденциальную информацию третьим лицам без предварительного письменного
+согласия Раскрывающей стороны.</li>
+<li>Не копировать, не воспроизводить, не распространять Конфиденциальную информацию
+(в том числе в электронном виде) за пределами, необходимыми для Цели раскрытия.</li>
+<li>Не передавать Конфиденциальную информацию третьим лицам, включая аффилированных лиц,
+консультантов и сотрудников, за исключением лиц, непосредственно вовлечённых в оценку
+инвестиции, при условии принятия ими аналогичных обязательств о конфиденциальности.</li>
+<li>Использовать Конфиденциальную информацию исключительно для Цели раскрытия (оценки
+возможности инвестирования в Проект).</li>
+<li>Обеспечить хранение Конфиденциальной информации с применением разумных мер защиты,
+не менее строгих, чем те, которые Получающая сторона применяет для защиты собственной
+конфиденциальной информации.</li>
+<li>Незамедлительно уведомить Раскрывающую сторону о любом несанкционированном раскрытии
+или использовании Конфиденциальной информации.</li>
+</ol>
+
+<h2>Статья 3. Исключения</h2>
+<p>Обязательства по настоящему Соглашению не распространяются на информацию, которая:</p>
+<ol>
+<li>Является или стала общедоступной (публичной) не по вине Получающей стороны.</li>
+<li>Была законно известна Получающей стороне до момента её получения от Раскрывающей стороны,
+что подтверждается документально.</li>
+<li>Была получена Получающей стороной от третьего лица, не связанного обязательствами
+о конфиденциальности в отношении данной информации.</li>
+<li>Подлежит раскрытию в силу требований законодательства Российской Федерации,
+по решению суда или запросу уполномоченного государственного органа — при условии
+незамедлительного уведомления Раскрывающей стороны о таком требовании (если это
+не запрещено законом).</li>
+<li>Была самостоятельно разработана Получающей стороной без использования
+Конфиденциальной информации.</li>
+</ol>
+
+<h2>Статья 4. Срок действия</h2>
+<p>4.1. Настоящее Соглашение вступает в силу с даты его подписания обеими Сторонами.</p>
+<p>4.2. Обязательства по конфиденциальности действуют в течение <strong>3 (трёх) лет</strong>
+с даты подписания настоящего Соглашения, вне зависимости от результатов переговоров
+об инвестировании.</p>
+<p>4.3. Истечение срока действия Соглашения не освобождает Получающую сторону от ответственности
+за нарушения, допущенные в период его действия.</p>
+
+<h2>Статья 5. Ответственность</h2>
+<p>5.1. За каждый подтверждённый случай нарушения обязательств по настоящему Соглашению
+Получающая сторона уплачивает Раскрывающей стороне штраф в размере
+<strong>5 000 000 (пять миллионов) рублей</strong>.</p>
+<p>5.2. Уплата штрафа не освобождает Получающую сторону от обязанности возместить
+Раскрывающей стороне фактически причинённые убытки в полном объёме (реальный ущерб
+и упущенную выгоду) в части, не покрытой штрафом.</p>
+<p>5.3. Раскрывающая сторона вправе потребовать от Получающей стороны прекращения
+неправомерных действий в судебном порядке, включая обеспечительные меры.</p>
+
+<h2>Статья 6. Возврат материалов</h2>
+<p>6.1. По письменному требованию Раскрывающей стороны Получающая сторона обязуется
+в течение <strong>5 (пяти) рабочих дней</strong>:</p>
+<ul>
+<li>Возвратить все полученные материалы, содержащие Конфиденциальную информацию
+(в оригинале и копиях), либо</li>
+<li>Уничтожить указанные материалы с предоставлением письменного подтверждения уничтожения.</li>
+</ul>
+<p>6.2. Обязанность по возврату/уничтожению распространяется на все формы носителей:
+бумажные документы, электронные файлы, базы данных, облачные хранилища, электронную переписку.</p>
+<p>6.3. Получающая сторона вправе сохранить одну архивную копию для целей обеспечения
+соблюдения настоящего Соглашения, при условии сохранения её конфиденциальности.</p>
+
+<h2>Статья 7. Применимое право и разрешение споров</h2>
+<p>7.1. Настоящее Соглашение регулируется и толкуется в соответствии с законодательством
+Российской Федерации.</p>
+<p>7.2. Все споры и разногласия, возникающие в связи с настоящим Соглашением,
+подлежат разрешению путём переговоров. Срок ответа на претензию — 15 рабочих дней.</p>
+<p>7.3. При невозможности разрешения спора путём переговоров спор передаётся на рассмотрение
+<strong>Арбитражного суда Удмуртской Республики</strong> (г. Ижевск).</p>
+
+<h2>Статья 8. Реквизиты и подписи Сторон</h2>
+<table>
+<tr><th style="width:50%">Раскрывающая сторона</th><th style="width:50%">Получающая сторона (Инвестор)</th></tr>
+<tr>
+<td>
+<strong>ИП Гаврилов Денис Александрович</strong><br>
+ИНН: 183505204090<br>
+ОГРНИП: 310184117500010<br>
+Адрес: Удмуртская Республика, г. Ижевск,<br>
+ул. Ключевой поселок, д. 37, кв. 4<br>
+Тел: +7 912 856 4410<br>
+Email: unidel@yandex.ru<br><br>
+_________________ / Гаврилов Д.А. /<br>
+<br>
+М.П. (при наличии)
+</td>
+<td>
+__________________________________<br>
+ИНН: __________________________________<br>
+ОГРН: __________________________________<br>
+Адрес: __________________________________<br>
+__________________________________<br>
+Тел: __________________________________<br>
+Email: __________________________________<br><br>
+_________________ / _________________ /<br>
+<br>
+М.П. (при наличии)
+</td>
+</tr>
+</table>
+
+<p><em>Настоящее Соглашение составлено в двух экземплярах, имеющих одинаковую юридическую силу,
+по одному для каждой из Сторон.</em></p>
+`,
+
+  // ── Pitch Deck (презентация для ИК) ─────────────────────────────────
+  '1777645': `
+<h1>AI-2-O — Pitch Deck</h1>
+<p><em>платформа инфраструктуры данных и оркестрации AI-агентов | Pre-Seed раунд | Март 2026</em></p>
+
+<h2>Слайд 1. Титульный</h2>
+<table>
+<tr><td style="text-align:center; padding: 20px 0">
+<strong style="font-size:1.3em">AI-2-O</strong><br>
+<em>платформа инфраструктуры данных и оркестрации AI-агентов для организаций</em><br><br>
+<strong>Pre-Seed CLN — 30 млн ₽</strong><br>
+Valuation Cap: 240 млн ₽ · Дисконт: 20% · Ставка: 5%<br><br>
+ai2fund.ru · unidel@yandex.ru · +7 912 856 4410<br>
+ИП Гаврилов Денис Александрович
+</td></tr>
+</table>
+
+<h2>Слайд 2. Проблема</h2>
+<p><strong>86% организаций не готовы к AI-агентам (Deloitte 2026):</strong></p>
+<ul>
+<li><strong>Data architecture gap (48%):</strong> legacy-данные не доступны агентам. ETL-пайплайны для batch-аналитики, а не для автономных агентов</li>
+<li><strong>Orchestration gap:</strong> бизнес-процессы «составные» — нужны 5-20 координированных агентов, но нет стандартов</li>
+<li><strong>Governance gap:</strong> нет аудита действий агентов, нет zero-trust, непредсказуемые затраты (FinOps)</li>
+<li><strong>Agent washing:</strong> организации переименовывают RPA в «агентов» → нулевой ROI → потеря доверия к технологии</li>
+</ul>
+<p><strong>Результат:</strong> 40% agentic AI проектов провалятся к 2027 (Gartner).
+Организации тратят 6-12 месяцев на инфраструктуру вместо создания ценности.</p>
+
+<h2>Слайд 3. Решение</h2>
+<p><strong>AI-2-O — трёхслойная платформа, снимающая все барьеры:</strong></p>
+<table>
+<tr><th>Слой</th><th>Что решает</th><th>Результат</th></tr>
+<tr><td>Data Layer (Integram + MCP)</td><td>Data gap</td><td>60+ MCP-инструментов — агенты читают/пишут данные напрямую</td></tr>
+<tr><td>AgentOS (Orchestration)</td><td>Orchestration gap</td><td>Scout→Plan→Execute→Verify, дебаты, 7 LLM</td></tr>
+<tr><td>Industry Apps</td><td>Time-to-value</td><td>Готовые вертикали за недели, не месяцы</td></tr>
+</table>
+<p><strong>Сокращение времени внедрения AI-агентов с 6-12 месяцев до 2-4 недель.</strong></p>
+
+<h2>Слайд 4. Продукт</h2>
+<p><strong>Три слоя + 2 доказанные вертикали:</strong></p>
+<table>
+<tr><th>Компонент</th><th>Что делает</th><th>Ключевые метрики</th><th>Статус</th></tr>
+<tr><td>Integram (Data Layer)</td><td>MCP-доступ агентов к данным</td><td>60+ инструментов, NoSQL</td><td>Live</td></tr>
+<tr><td>AgentOS</td><td>Оркестрация мультиагентных систем</td><td>148+ агентов, 7 LLM</td><td>Live</td></tr>
+<tr><td>KAG (Knowledge Graph)</td><td>Верифицированная база знаний</td><td>1100+ концептов</td><td>Live</td></tr>
+<tr><td>DronDoc (вертикаль)</td><td>Аналитика рынка БПЛА</td><td>148+ агентов, дебаты</td><td>Live</td></tr>
+<tr><td>VentureOS (вертикаль)</td><td>AI-управление венчурным фондом</td><td>6 агентов ИК, двойники</td><td>Live</td></tr>
+</table>
+<p><strong>Живой продукт:</strong> <a href="https://ai2fund.ru">ai2fund.ru</a> · TRL 7 (демонстрация в операционной среде)</p>
+
+<h2>Слайд 5. Рынок</h2>
+<table>
+<tr><th>Сегмент</th><th>Объём</th><th>Описание</th></tr>
+<tr><td><strong>TAM</strong></td><td>350 млрд ₽</td><td>Глобальный рынок agentic AI infrastructure: ~$47B к 2030</td></tr>
+<tr><td><strong>SAM</strong></td><td>45 млрд ₽</td><td>Организации в РФ + СНГ с потребностью в AI-агентах</td></tr>
+<tr><td><strong>SOM</strong></td><td>2.2 млрд ₽</td><td>Достижимая доля: 50 организаций в первые 5 лет</td></tr>
+</table>
+<p><strong>33% enterprise ПО будет включать agentic AI к 2028</strong> (Gartner, сегодня <1%).</p>
+<p>Драйверы: импортозамещение AI-инфраструктуры, программа «цифровой экономики»,
+дефицит специалистов по AI-агентам.</p>
+
+<h2>Слайд 6. Бизнес-модель</h2>
+<p><strong>PaaS подписка (B2B) — три тарифных плана:</strong></p>
+<table>
+<tr><th>Тариф</th><th>Цена / мес.</th><th>Включено</th><th>Целевой клиент</th></tr>
+<tr><td><strong>Basic</strong></td><td>200 000 ₽</td><td>Data Layer + 20 агентов, 5 пользователей</td><td>Малые организации</td></tr>
+<tr><td><strong>Professional</strong></td><td>400 000 ₽</td><td>AgentOS + 100 агентов + API, 20 пользователей</td><td>Средний enterprise</td></tr>
+<tr><td><strong>Enterprise</strong></td><td>500 000+ ₽</td><td>On-premise, кастомизация, SLA, API</td><td>Крупные УК, институциональные LP</td></tr>
+</table>
+<p><strong>Unit economics:</strong></p>
+<table>
+<tr><th>Метрика</th><th>Значение</th></tr>
+<tr><td>CAC (стоимость привлечения)</td><td>350 000 ₽</td></tr>
+<tr><td>LTV (пожизненная ценность)</td><td>5 600 000 ₽</td></tr>
+<tr><td>LTV / CAC</td><td><strong>16x</strong></td></tr>
+<tr><td>Payback period</td><td>2.1 мес.</td></tr>
+<tr><td>Gross margin</td><td>82%</td></tr>
+<tr><td>Net Dollar Retention</td><td>135%</td></tr>
+</table>
+
+<h2>Слайд 7. Тракшн</h2>
+<table>
+<tr><th>Метрика</th><th>Значение</th></tr>
+<tr><td>Продукт</td><td><strong>Production live</strong> — ai2fund.ru, 3 слоя + 2 вертикали</td></tr>
+<tr><td>TRL / MRL</td><td><strong>TRL 7</strong> (демонстрация в операционной среде) / <strong>MRL 5</strong></td></tr>
+<tr><td>Команда</td><td>3 человека (founder-CTO + 2 разработчика)</td></tr>
+<tr><td>MCP-инструменты</td><td><strong>60+</strong> для доступа агентов к данным</td></tr>
+<tr><td>AI-агенты</td><td><strong>148+</strong> в реестре (DronDoc + VentureOS)</td></tr>
+<tr><td>База знаний KAG</td><td><strong>1 100+ концептов</strong> (hybrid vector + graph)</td></tr>
+<tr><td>LLM-провайдеры</td><td><strong>7</strong> (DeepSeek, Claude, GPT-4o, YandexGPT, Polza, Kodacode, DeepAI)</td></tr>
+<tr><td>Дебатные сессии</td><td><strong>340+</strong> мультиагентных дебатов проведено</td></tr>
+</table>
+
+<h2>Слайд 8. Конкуренты</h2>
+<table>
+<tr><th>Критерий</th><th>LangChain</th><th>CrewAI</th><th>AutoGen</th><th>Яндекс DS</th><th>Самодел</th><th><strong>AI-2-O</strong></th></tr>
+<tr><td>Data Layer</td><td>—</td><td>—</td><td>Azure</td><td>DataLens</td><td>Ad-hoc</td><td><strong>Integram+60 MCP</strong></td></tr>
+<tr><td>Orchestration</td><td>Базовая</td><td>Средняя</td><td>Хорошая</td><td>—</td><td>Ad-hoc</td><td><strong>AgentOS (148+)</strong></td></tr>
+<tr><td>Multi-agent debates</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td><strong>DebateSession</strong></td></tr>
+<tr><td>LLM providers</td><td>Любые</td><td>Любые</td><td>Azure</td><td>YandexGPT</td><td>1</td><td><strong>7 + fallback</strong></td></tr>
+<tr><td>Ready verticals</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td><strong>DronDoc+VentureOS</strong></td></tr>
+<tr><td>RU on-premise</td><td>DIY</td><td>DIY</td><td>—</td><td>Да</td><td>Да</td><td><strong>Да</strong></td></tr>
+<tr><td>Цена / мес.</td><td>Open src</td><td>Open src</td><td>Azure $$</td><td>От 100К</td><td>Высокая</td><td><strong>от 200К ₽</strong></td></tr>
+</table>
+<p><strong>Уникальное преимущество AI-2-O:</strong> единственная полная платформа Data + Orchestration + Ready Apps.
+Конкуренты решают одну часть проблемы; мы — все три барьера одним продуктом.</p>
+
+<h2>Слайд 9. Финансовые прогнозы</h2>
+<p><strong>P&L Summary (тыс. ₽):</strong></p>
+<table>
+<tr><th>Показатель</th><th>2026</th><th>2027</th><th>2028</th><th>2029</th><th>2030</th></tr>
+<tr><td>Выручка (MRR x12)</td><td>5 400</td><td>36 000</td><td>108 000</td><td>252 000</td><td>480 000</td></tr>
+<tr><td>Себестоимость (AI + infra)</td><td>2 700</td><td>10 800</td><td>27 000</td><td>50 400</td><td>86 400</td></tr>
+<tr><td>Валовая прибыль</td><td>2 700</td><td>25 200</td><td>81 000</td><td>201 600</td><td>393 600</td></tr>
+<tr><td>OPEX (команда + маркетинг)</td><td>18 000</td><td>32 400</td><td>54 000</td><td>75 600</td><td>100 800</td></tr>
+<tr><td><strong>EBITDA</strong></td><td><strong>-15 300</strong></td><td><strong>-7 200</strong></td><td><strong>27 000</strong></td><td><strong>126 000</strong></td><td><strong>292 800</strong></td></tr>
+<tr><td>Gross Margin</td><td>50%</td><td>70%</td><td>75%</td><td>80%</td><td>82%</td></tr>
+</table>
+<p><strong>Выход на операционную прибыль: Q2 2028.</strong> MRR на конец 2028: 9 млн ₽/мес.</p>
+
+<h2>Слайд 10. Команда</h2>
+<p><strong>Основатель и CEO/CTO — Денис Гаврилов</strong></p>
+<ul>
+<li>15+ лет в IT и разработке ПО</li>
+<li>Серийный предприниматель: опыт создания и управления IT-компаниями</li>
+<li>Экспертиза: AI agent orchestration, MCP protocol, SaaS-платформы, knowledge graphs</li>
+<li>Построил AI-2-O как founder-CTO: архитектура, код, AI-агенты, инфраструктура</li>
+</ul>
+<p><strong>План по найму (на привлечённые средства):</strong></p>
+<table>
+<tr><th>Роль</th><th>Когда</th><th>Задача</th></tr>
+<tr><td>Senior Backend Developer</td><td>Q2 2026</td><td>Масштабирование API, интеграции</td></tr>
+<tr><td>ML Engineer</td><td>Q3 2026</td><td>Улучшение AI-агентов, fine-tuning моделей</td></tr>
+<tr><td>Sales / BD Manager</td><td>Q3 2026</td><td>Enterprise-продажи, пилоты</td></tr>
+<tr><td>Product Designer</td><td>Q4 2026</td><td>UX research, дизайн-система</td></tr>
+<tr><td>DevOps Engineer</td><td>Q1 2027</td><td>Инфраструктура, CI/CD, on-premise</td></tr>
+</table>
+
+<h2>Слайд 11. Параметры раунда</h2>
+<table>
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Инструмент</td><td><strong>CLN</strong> (конвертируемый займ)</td></tr>
+<tr><td>Сумма раунда</td><td><strong>30 000 000 ₽</strong></td></tr>
+<tr><td>Valuation Cap</td><td>240 000 000 ₽</td></tr>
+<tr><td>Дисконт при конвертации</td><td>20%</td></tr>
+<tr><td>Процентная ставка</td><td>5% годовых</td></tr>
+<tr><td>Срок</td><td>24 месяца</td></tr>
+<tr><td>Минимальный тикет</td><td>1 000 000 ₽</td></tr>
+<tr><td>Квалифицированный раунд</td><td>≥ 60 000 000 ₽ (триггер конвертации)</td></tr>
+</table>
+<p><strong>Использование средств:</strong></p>
+<table>
+<tr><th>Направление</th><th>Доля</th><th>Сумма</th></tr>
+<tr><td>Разработка (команда + AI)</td><td>50%</td><td>15 000 000 ₽</td></tr>
+<tr><td>Продажи и маркетинг</td><td>25%</td><td>7 500 000 ₽</td></tr>
+<tr><td>Инфраструктура и DevOps</td><td>15%</td><td>4 500 000 ₽</td></tr>
+<tr><td>Операционные расходы</td><td>10%</td><td>3 000 000 ₽</td></tr>
+</table>
+
+<h2>Слайд 12. Cap Table и доходность</h2>
+<p><strong>Структура владения (post-money):</strong></p>
+<table>
+<tr><th>Акционер</th><th>Pre-round</th><th>Post Pre-Seed</th></tr>
+<tr><td>Основатель (Гаврилов Д.А.)</td><td>100%</td><td>~88.9%</td></tr>
+<tr><td>Pre-Seed инвесторы (CLN)</td><td>—</td><td>~11.1%</td></tr>
+</table>
+<p><em>При конвертации по Valuation Cap 240M: доля инвесторов = 30M / (240M + 30M) = 11.1%</em></p>
+
+<p><strong>Сценарии возврата инвестиций (для вложения 30 млн ₽):</strong></p>
+<table>
+<tr><th>Сценарий</th><th>Exit оценка</th><th>Доля инвестора</th><th>Возврат</th><th>MOIC</th><th>IRR</th></tr>
+<tr><td>Консервативный</td><td>1.2 млрд ₽</td><td>~13.5%</td><td>162 млн ₽</td><td><strong>5.4x</strong></td><td><strong>41%</strong></td></tr>
+<tr><td>Базовый</td><td>2.5 млрд ₽</td><td>~11%</td><td>275 млн ₽</td><td><strong>9.2x</strong></td><td><strong>56%</strong></td></tr>
+<tr><td>Оптимистичный</td><td>5.0 млрд ₽</td><td>~9%</td><td>450 млн ₽</td><td><strong>15.0x</strong></td><td><strong>71%</strong></td></tr>
+</table>
+
+<h2>Слайд 13. Контакты</h2>
+<table>
+<tr><td style="text-align:center; padding: 20px 0">
+<strong style="font-size:1.2em">Готовы к разговору</strong><br><br>
+<strong>Денис Гаврилов</strong> — Основатель и CEO/CTO<br><br>
+Платформа: <a href="https://ai2fund.ru">ai2fund.ru</a><br>
+Email: unidel@yandex.ru<br>
+Телефон: +7 912 856 4410<br>
+Telegram: @denisgavrilov<br><br>
+<em>AI-2-O — инфраструктура для AI-агентов, которая делает организации готовыми к agentic AI.</em><br>
+<em>Инвестируйте в AI-платформу, которая меняет индустрию.</em>
+</td></tr>
+</table>
 `,
 
 }

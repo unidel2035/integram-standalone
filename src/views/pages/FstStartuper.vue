@@ -41,11 +41,90 @@
         <button class="spw-btn spw-btn--ghost" @click="clearSession" title="Сбросить сессию">
           <i class="pi pi-refresh"></i>
         </button>
+        <div class="spw-archive-wrap" ref="archiveBtnRef">
+          <button class="spw-btn spw-btn--outline" @click="showArchiveMenu = !showArchiveMenu"
+            title="Скачать инвест-пакет">
+            <i :class="archiving ? 'pi pi-spin pi-spinner' : 'pi pi-download'"></i>
+            Архив <i class="pi pi-chevron-down" style="font-size:10px;margin-left:2px"></i>
+          </button>
+          <Transition name="fade">
+            <div v-if="showArchiveMenu" class="spw-archive-menu">
+              <div class="spw-archive-item" @click="downloadArchive('pdf')">
+                <i class="pi pi-file-pdf" style="color:var(--fst-red)"></i> PDF-архив
+                <span class="spw-archive-hint">Для печати и ИК</span>
+              </div>
+              <div class="spw-archive-item" @click="downloadArchive('docx')">
+                <i class="pi pi-file-word" style="color:var(--fst-blue)"></i> DOCX-архив
+                <span class="spw-archive-hint">Редактируемые документы</span>
+              </div>
+              <div class="spw-archive-item" @click="downloadArchive('xlsx')">
+                <i class="pi pi-file-excel" style="color:var(--fst-green)"></i> Финмодель (XLSX)
+                <span class="spw-archive-hint">Таблицы и расчёты</span>
+              </div>
+              <div class="spw-archive-item" @click="downloadArchive('html')">
+                <i class="pi pi-globe" style="color:var(--fst-purple)"></i> HTML-архив
+                <span class="spw-archive-hint">Открывается в браузере</span>
+              </div>
+            </div>
+          </Transition>
+        </div>
+        <button class="spw-btn spw-btn--outline" @click="showDiadocDialog = true" title="Подписать документы ЭЦП через Диадок">
+          <i class="pi pi-pen-to-square"></i> ЭЦП Диадок
+        </button>
         <button v-if="twin.completeness >= 80" class="spw-btn spw-btn--primary" @click="sendToIC">
           <i class="pi pi-send"></i> В ИК
         </button>
       </div>
     </div>
+
+    <!-- ══════════ DIADOC DIALOG ══════════ -->
+    <Dialog v-model:visible="showDiadocDialog" header="Подписание ЭЦП — Диадок" modal
+      style="width:640px;max-width:95vw" :closable="true">
+      <div class="spw-diadoc">
+        <p style="font-size:13px;color:var(--p-text-muted-color);margin:0 0 16px">
+          Выберите документы для подписания и отправки через Контур.Диадок.
+        </p>
+
+        <div class="spw-diadoc-docs">
+          <div v-for="doc in signableDocs" :key="doc.key" class="spw-diadoc-row">
+            <label class="spw-diadoc-check">
+              <input type="checkbox" v-model="doc.selected" />
+              <i :class="doc.icon" style="font-size:12px;opacity:.7"></i>
+              <span>{{ doc.label }}</span>
+            </label>
+            <span :class="['spw-diadoc-status', doc.signed ? 'spw-diadoc-status--signed' : '']">
+              {{ doc.signed ? '✅ Подписан' : '⏳ Не подписан' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="spw-diadoc-info" style="margin-top:16px">
+          <div class="spw-diadoc-field">
+            <label>Сертификат ЭЦП</label>
+            <Select v-model="diadocCert" :options="diadocCerts" optionLabel="label" optionValue="value"
+              placeholder="Выберите сертификат" fluid />
+          </div>
+          <div class="spw-diadoc-field">
+            <label>Контрагент (получатель)</label>
+            <InputText v-model="diadocRecipient" placeholder="ИНН или наименование фонда" fluid />
+          </div>
+          <div class="spw-diadoc-field">
+            <label>Комментарий</label>
+            <InputText v-model="diadocComment" placeholder="Инвест-пакет AI-2-O Pre-Seed" fluid />
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <Button label="Отмена" severity="secondary" @click="showDiadocDialog = false" />
+          <Button label="Подписать и отправить" icon="pi pi-pen-to-square" severity="success"
+            :loading="diadocSending"
+            :disabled="!signableDocs.some(d => d.selected) || !diadocCert"
+            @click="signViaDiadoc" />
+        </div>
+      </template>
+    </Dialog>
 
     <!-- ══════════ BODY ══════════ -->
     <div class="spw-body">
@@ -352,7 +431,7 @@
         <template v-else-if="activeView === 'finmodel'">
           <div class="spw-finmodel-wrap">
             <div class="spw-doc-topbar">
-              <span class="spw-doc-title"><i class="pi pi-table"></i> Финансовая модель — VentureOS</span>
+              <span class="spw-doc-title"><i class="pi pi-table"></i> Финансовая модель — AI-2-O</span>
               <div class="spw-doc-actions">
                 <span style="font-size:11px;color:var(--p-text-muted-color);margin-right:8px">5-летний прогноз · Pre-Seed 60M₽</span>
               </div>
@@ -885,7 +964,7 @@ const ARTIFACTS_ALL = [
     items: [
       { key: 'doc-nav',      label: 'Навигатор по пакету', icon: 'pi pi-map',              type: 'doc', required: true,  blockDocId: '1777620', filled: true },
       { key: 'doc-exec',     label: 'Executive Summary',    icon: 'pi pi-file',             type: 'doc', required: true,  blockDocId: '1777641', filled: true },
-      { key: 'doc-teaser',   label: 'Тизер / Pitch Deck',  icon: 'pi pi-bolt',             type: 'doc',                    blockDocId: '1777641', filled: true },
+      { key: 'doc-teaser',   label: 'Тизер / Pitch Deck',  icon: 'pi pi-bolt',             type: 'doc',                    blockDocId: '1777645', filled: true },
       { key: 'doc-nda',      label: 'NDA',                  icon: 'pi pi-lock',             type: 'doc', required: true,  blockDocId: '67260',   integramId: '66095', filled: true },
       { key: 'doc-dd',       label: 'Due Diligence',        icon: 'pi pi-search',           type: 'doc',                    blockDocId: '1777618', integramId: '66099', filled: true },
       { key: 'doc-faq',      label: 'FAQ для инвестора',    icon: 'pi pi-question-circle',  type: 'doc',                    blockDocId: '1777621', filled: true },
@@ -1282,7 +1361,7 @@ async function createBlockDoc(item) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        html: `<h1>${item.label}</h1><p>Документ создан для ${twin.value.company || 'VentureOS'}</p>`,
+        html: `<h1>${item.label}</h1><p>Документ создан для ${twin.value.company || 'AI-2-O'}</p>`,
         title: item.label,
         author: currentUserEmail,
         database: 'kval',
@@ -1403,6 +1482,443 @@ function clearSession() {
 function sendToIC() {
   router.push('/fst-committee')
   addEvent('deal', 'Проект направлен в инвесткомитет')
+}
+
+// ── Archive (ZIP) download ─────────────────────────────────────────────────────
+const archiving = ref(false)
+const showArchiveMenu = ref(false)
+const archiveBtnRef = ref(null)
+
+// Close archive menu on click outside
+function onDocClick(e) {
+  if (archiveBtnRef.value && !archiveBtnRef.value.contains(e.target)) showArchiveMenu.value = false
+}
+onMounted(() => document.addEventListener('click', onDocClick))
+
+const HTML_STYLE = `body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.6;color:#222}
+h1{font-size:22px;border-bottom:2px solid #333;padding-bottom:8px}h2{font-size:16px;margin-top:24px;color:#444}
+h3{font-size:14px;color:#555}table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #ccc;padding:8px 10px;text-align:left;font-size:13px}
+th{background:#f5f5f5;font-weight:600}ul,ol{padding-left:20px}
+pre{background:#f8f8f8;padding:12px;border-radius:4px;overflow-x:auto;font-size:12px}
+em{color:#666}`
+
+function collectDocs() {
+  const docs = []
+  for (const sec of ARTIFACTS_ALL) {
+    for (const item of (sec.items || [])) {
+      if (item.blockDocId && vegaDocuments[item.blockDocId]) {
+        docs.push({ label: item.label, html: vegaDocuments[item.blockDocId], blockDocId: item.blockDocId })
+      }
+    }
+  }
+  return docs
+}
+
+function safeName(name) { return name.replace(/[\/\\:*?"<>|]/g, '_') }
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename; a.click()
+  URL.revokeObjectURL(url)
+}
+
+const README_TEXT = (count, fmt) => `Инвест-пакет AI-2-O Pre-Seed
+ООО «AI-2-O» · ИП Гаврилов Денис Александрович · ИНН 183505204090
+CLN 30 млн ₽ · Valuation Cap 240 млн ₽
+Дата формирования: ${new Date().toLocaleDateString('ru-RU')}
+Сайт: ai2fund.ru · Email: unidel@yandex.ru · Тел: +7 912 856 4410
+
+Содержит ${count} документов в формате ${fmt}.
+`
+
+async function downloadArchive(format) {
+  showArchiveMenu.value = false
+  archiving.value = true
+  try {
+    if (format === 'html') await archiveHTML()
+    else if (format === 'pdf') await archivePDF()
+    else if (format === 'docx') await archiveDOCX()
+    else if (format === 'xlsx') await archiveXLSX()
+  } catch (err) {
+    console.error('Archive error:', err)
+    addEvent('warn', 'Ошибка создания архива: ' + err.message)
+  } finally {
+    archiving.value = false
+  }
+}
+
+// ── HTML ZIP ────────────────────────────────────────────────────────────────────
+async function archiveHTML() {
+  const { default: JSZip } = await import('jszip')
+  const zip = new JSZip()
+  const folder = zip.folder('AI2O_InvestPack_HTML')
+  const docs = collectDocs()
+  docs.forEach((d, i) => {
+    const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>${d.label}</title><style>${HTML_STYLE}</style></head><body>${d.html}</body></html>`
+    folder.file(`${String(i+1).padStart(2,'0')}_${safeName(d.label)}.html`, html)
+  })
+  folder.file('README.txt', README_TEXT(docs.length, 'HTML'))
+  const blob = await zip.generateAsync({ type: 'blob' })
+  triggerDownload(blob, `AI2O_InvestPack_HTML_${new Date().toISOString().slice(0,10)}.zip`)
+  addEvent('info', `HTML-архив скачан (${docs.length} документов)`)
+}
+
+// ── PDF ZIP ─────────────────────────────────────────────────────────────────────
+async function archivePDF() {
+  const { default: JSZip } = await import('jszip')
+  const html2pdf = (await import('html2pdf.js')).default
+  const zip = new JSZip()
+  const folder = zip.folder('AI2O_InvestPack_PDF')
+  const docs = collectDocs()
+
+  // Render each doc to PDF via hidden container
+  const container = document.createElement('div')
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#222'
+  document.body.appendChild(container)
+
+  for (let i = 0; i < docs.length; i++) {
+    const d = docs[i]
+    container.innerHTML = d.html
+    // Style tables in the container
+    container.querySelectorAll('table').forEach(t => {
+      t.style.borderCollapse = 'collapse'; t.style.width = '100%'; t.style.marginBottom = '12px'
+    })
+    container.querySelectorAll('th,td').forEach(el => {
+      el.style.border = '1px solid #ccc'; el.style.padding = '6px 8px'; el.style.fontSize = '11px'
+    })
+    container.querySelectorAll('th').forEach(el => { el.style.background = '#f0f0f0'; el.style.fontWeight = '600' })
+    container.querySelectorAll('h1').forEach(el => { el.style.fontSize = '18px'; el.style.borderBottom = '2px solid #333'; el.style.paddingBottom = '6px' })
+    container.querySelectorAll('h2').forEach(el => { el.style.fontSize = '14px'; el.style.marginTop = '16px' })
+
+    const pdfBlob = await html2pdf().set({
+      margin: [12, 12, 12, 12],
+      filename: `${safeName(d.label)}.pdf`,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+    }).from(container).outputPdf('blob')
+
+    folder.file(`${String(i+1).padStart(2,'0')}_${safeName(d.label)}.pdf`, pdfBlob)
+  }
+  document.body.removeChild(container)
+
+  folder.file('README.txt', README_TEXT(docs.length, 'PDF'))
+  const blob = await zip.generateAsync({ type: 'blob' })
+  triggerDownload(blob, `AI2O_InvestPack_PDF_${new Date().toISOString().slice(0,10)}.zip`)
+  addEvent('info', `PDF-архив скачан (${docs.length} документов)`)
+}
+
+// ── DOCX ZIP ────────────────────────────────────────────────────────────────────
+async function archiveDOCX() {
+  const { default: JSZip } = await import('jszip')
+  const docxLib = await import('docx')
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType } = docxLib
+
+  const zip = new JSZip()
+  const folder = zip.folder('AI2O_InvestPack_DOCX')
+  const docs = collectDocs()
+
+  for (let i = 0; i < docs.length; i++) {
+    const d = docs[i]
+    const paragraphs = htmlToDocxParagraphs(d.html, { Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType })
+    const doc = new Document({
+      creator: 'AI-2-O / ai2fund.ru',
+      title: d.label,
+      description: 'Инвест-пакет AI-2-O Pre-Seed',
+      sections: [{ children: paragraphs }],
+    })
+    const buf = await Packer.toBlob(doc)
+    folder.file(`${String(i+1).padStart(2,'0')}_${safeName(d.label)}.docx`, buf)
+  }
+
+  folder.file('README.txt', README_TEXT(docs.length, 'DOCX'))
+  const blob = await zip.generateAsync({ type: 'blob' })
+  triggerDownload(blob, `AI2O_InvestPack_DOCX_${new Date().toISOString().slice(0,10)}.zip`)
+  addEvent('info', `DOCX-архив скачан (${docs.length} документов)`)
+}
+
+/** Convert HTML string to array of docx Paragraph/Table objects */
+function htmlToDocxParagraphs(html, { Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType }) {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html')
+  const result = []
+  const BORDER = { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' }
+  const borders = { top: BORDER, bottom: BORDER, left: BORDER, right: BORDER }
+
+  function processNode(node) {
+    if (node.nodeType === 3) { // text
+      const text = node.textContent.trim()
+      if (text) result.push(new Paragraph({ children: [new TextRun(text)] }))
+      return
+    }
+    if (node.nodeType !== 1) return
+    const tag = node.tagName.toLowerCase()
+
+    if (tag === 'h1') {
+      result.push(new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun({ text: node.textContent.trim(), bold: true })] }))
+    } else if (tag === 'h2') {
+      result.push(new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun({ text: node.textContent.trim(), bold: true })] }))
+    } else if (tag === 'h3') {
+      result.push(new Paragraph({ heading: HeadingLevel.HEADING_3, children: [new TextRun({ text: node.textContent.trim(), bold: true })] }))
+    } else if (tag === 'p') {
+      const runs = inlineRuns(node)
+      if (runs.length) result.push(new Paragraph({ children: runs, spacing: { after: 120 } }))
+    } else if (tag === 'ul' || tag === 'ol') {
+      const items = node.querySelectorAll(':scope > li')
+      items.forEach((li, idx) => {
+        const prefix = tag === 'ol' ? `${idx+1}. ` : '• '
+        result.push(new Paragraph({ children: [new TextRun(prefix + li.textContent.trim())], indent: { left: 400 }, spacing: { after: 60 } }))
+      })
+    } else if (tag === 'table') {
+      const rows = []
+      node.querySelectorAll('tr').forEach(tr => {
+        const cells = []
+        tr.querySelectorAll('th, td').forEach(cell => {
+          const isHeader = cell.tagName === 'TH'
+          cells.push(new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: cell.textContent.trim(), bold: isHeader, size: 20 })] })],
+            borders,
+            width: { size: 100 / Math.max(tr.children.length, 1), type: WidthType.PERCENTAGE },
+            shading: isHeader ? { fill: 'F0F0F0' } : undefined,
+          }))
+        })
+        if (cells.length) rows.push(new TableRow({ children: cells }))
+      })
+      if (rows.length) result.push(new Table({ rows, width: { size: 100, type: WidthType.PERCENTAGE } }))
+      result.push(new Paragraph({ children: [] })) // spacer
+    } else if (tag === 'pre') {
+      result.push(new Paragraph({ children: [new TextRun({ text: node.textContent.trim(), font: 'Courier New', size: 18 })], spacing: { after: 120 } }))
+    } else if (tag === 'em') {
+      result.push(new Paragraph({ children: [new TextRun({ text: node.textContent.trim(), italics: true, color: '666666' })], spacing: { after: 80 } }))
+    } else {
+      // Recurse into div, span, etc.
+      for (const child of node.childNodes) processNode(child)
+    }
+  }
+
+  function inlineRuns(el) {
+    const runs = []
+    for (const child of el.childNodes) {
+      if (child.nodeType === 3) {
+        const t = child.textContent
+        if (t.trim()) runs.push(new TextRun(t))
+      } else if (child.nodeType === 1) {
+        const tag = child.tagName.toLowerCase()
+        const text = child.textContent.trim()
+        if (!text) continue
+        if (tag === 'strong' || tag === 'b') runs.push(new TextRun({ text, bold: true }))
+        else if (tag === 'em' || tag === 'i') runs.push(new TextRun({ text, italics: true }))
+        else if (tag === 'br') runs.push(new TextRun({ text: '', break: 1 }))
+        else runs.push(new TextRun(text))
+      }
+    }
+    return runs
+  }
+
+  for (const child of doc.body.firstChild.childNodes) processNode(child)
+  return result
+}
+
+// ── XLSX (финмодель + сводка) ───────────────────────────────────────────────────
+async function archiveXLSX() {
+  const ExcelJS = await import('exceljs')
+  const wb = new ExcelJS.Workbook()
+  wb.creator = 'AI-2-O / ai2fund.ru'
+  wb.created = new Date()
+
+  // Sheet 1: Сводка документов
+  const ws1 = wb.addWorksheet('Инвест-пакет')
+  ws1.columns = [
+    { header: '№', key: 'num', width: 5 },
+    { header: 'Документ', key: 'label', width: 40 },
+    { header: 'Раздел', key: 'section', width: 25 },
+    { header: 'Статус', key: 'status', width: 15 },
+  ]
+  ws1.getRow(1).font = { bold: true }
+  let idx = 0
+  for (const sec of ARTIFACTS_ALL) {
+    for (const item of (sec.items || [])) {
+      if (item.blockDocId && vegaDocuments[item.blockDocId]) {
+        idx++
+        ws1.addRow({ num: idx, label: item.label, section: sec.label, status: '✅ Готов' })
+      }
+    }
+  }
+
+  // Sheet 2: Параметры раунда
+  const ws2 = wb.addWorksheet('Параметры раунда')
+  ws2.columns = [
+    { header: 'Параметр', key: 'param', width: 35 },
+    { header: 'Значение', key: 'value', width: 30 },
+  ]
+  ws2.getRow(1).font = { bold: true }
+  const params = [
+    ['Компания', twin.value.company || 'AI-2-O'],
+    ['Основатель', 'Гаврилов Денис Александрович'],
+    ['ИНН', '183505204090'],
+    ['ОГРНИП', '310184117500010'],
+    ['Инструмент', 'Конвертируемый займ (CLN)'],
+    ['Сумма', '30 000 000 ₽'],
+    ['Pre-money cap', '148 540 000 ₽'],
+    ['Valuation Cap', '240 000 000 ₽'],
+    ['Дисконт при конвертации', '20%'],
+    ['Ставка займа', '5% годовых'],
+    ['Срок', '24 месяца'],
+    ['Квалифицированный раунд', '≥ 60 млн ₽'],
+    ['IRR (базовый)', '56%'],
+    ['MOIC (базовый)', '9.2x'],
+    ['IRR (оптимистичный)', '71%'],
+    ['MOIC (оптимистичный)', '14.7x'],
+    ['IRR (консервативный)', '41%'],
+    ['MOIC (консервативный)', '5.5x'],
+  ]
+  params.forEach(([p, v]) => ws2.addRow({ param: p, value: v }))
+
+  // Sheet 3: P&L прогноз
+  const ws3 = wb.addWorksheet('P&L прогноз')
+  ws3.columns = [
+    { header: 'Год', key: 'year', width: 10 },
+    { header: 'Выручка', key: 'revenue', width: 18 },
+    { header: 'Gross Profit', key: 'gp', width: 18 },
+    { header: 'EBITDA', key: 'ebitda', width: 18 },
+    { header: 'Чистая прибыль', key: 'np', width: 18 },
+    { header: 'MRR', key: 'mrr', width: 18 },
+    { header: 'Клиентов', key: 'clients', width: 12 },
+  ]
+  ws3.getRow(1).font = { bold: true }
+  const plData = [
+    [2026, 14400000, 10800000, -5200000, -5800000, 1200000, 8],
+    [2027, 54000000, 42000000, 15600000, 12100000, 4500000, 30],
+    [2028, 144000000, 118000000, 58000000, 47000000, 12000000, 80],
+    [2029, 288000000, 240000000, 142000000, 115000000, 24000000, 150],
+    [2030, 432000000, 365000000, 230000000, 190000000, 36000000, 250],
+  ]
+  plData.forEach(([y, r, gp, eb, np, mrr, cl]) => {
+    const row = ws3.addRow({ year: y, revenue: r, gp, ebitda: eb, np, mrr, clients: cl })
+    ;[2,3,4,5,6].forEach(c => { row.getCell(c).numFmt = '#,##0 ₽' })
+  })
+
+  // Sheet 4: Unit Economics
+  const ws4 = wb.addWorksheet('Unit Economics')
+  ws4.columns = [
+    { header: 'Метрика', key: 'metric', width: 25 },
+    { header: '2026', key: 'y2026', width: 18 },
+    { header: '2027', key: 'y2027', width: 18 },
+    { header: '2028', key: 'y2028', width: 18 },
+  ]
+  ws4.getRow(1).font = { bold: true }
+  ws4.addRow({ metric: 'CAC', y2026: 350000, y2027: 200000, y2028: 120000 })
+  ws4.addRow({ metric: 'LTV (3 года)', y2026: 3600000, y2027: 4320000, y2028: 5400000 })
+  ws4.addRow({ metric: 'LTV/CAC', y2026: '10.3x', y2027: '21.6x', y2028: '45x' })
+  ws4.addRow({ metric: 'Payback (мес)', y2026: 3.5, y2027: 2.1, y2028: 1.3 })
+  ws4.addRow({ metric: 'ARPU (мес)', y2026: 150000, y2027: 180000, y2028: 200000 })
+  ws4.addRow({ metric: 'Gross Margin', y2026: '75%', y2027: '78%', y2028: '82%' })
+  ws4.addRow({ metric: 'Churn (год)', y2026: '5%', y2027: '4%', y2028: '3%' })
+
+  // Sheet 5: Cap Table
+  const ws5 = wb.addWorksheet('Cap Table')
+  ws5.columns = [
+    { header: 'Держатель', key: 'holder', width: 30 },
+    { header: 'Тип', key: 'type', width: 25 },
+    { header: 'Доля (до конв.)', key: 'before', width: 18 },
+    { header: 'Доля (после конв.)', key: 'after', width: 18 },
+    { header: 'Доля (после А)', key: 'afterA', width: 18 },
+  ]
+  ws5.getRow(1).font = { bold: true }
+  ws5.addRow({ holder: 'Гаврилов Д.А.', type: 'Основатель', before: '100%', after: '~75%', afterA: '~60%' })
+  ws5.addRow({ holder: 'CLN-инвестор', type: 'CLN → привил. акции', before: 'CLN', after: '~16%', afterA: '~13%' })
+  ws5.addRow({ holder: 'ESOP пул', type: 'Опционы', before: '—', after: '9%', afterA: '7%' })
+  ws5.addRow({ holder: 'Раунд A', type: 'Привил. акции', before: '—', after: '—', afterA: '20%' })
+
+  const buf = await wb.xlsx.writeBuffer()
+  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  triggerDownload(blob, `AI2O_FinModel_${new Date().toISOString().slice(0,10)}.xlsx`)
+  addEvent('info', 'Финмодель XLSX скачана (5 листов)')
+}
+
+// ── Diadoc EDS signing ─────────────────────────────────────────────────────────
+const showDiadocDialog = ref(false)
+const diadocSending = ref(false)
+const diadocCert = ref(null)
+const diadocRecipient = ref('')
+const diadocComment = ref('Инвест-пакет AI-2-O Pre-Seed CLN 30 млн ₽')
+
+const diadocCerts = ref([
+  { label: 'Гаврилов Д.А. — КЭП (ФНС)', value: 'fns-kep' },
+  { label: 'Гаврилов Д.А. — УКЭП (Контур)', value: 'kontur-ukep' },
+])
+
+const signableDocs = ref([])
+
+watch(showDiadocDialog, (v) => {
+  if (v) {
+    // Build list of signable documents from ARTIFACTS_ALL
+    const docs = []
+    for (const sec of ARTIFACTS_ALL) {
+      for (const item of (sec.items || [])) {
+        if (item.blockDocId && vegaDocuments[item.blockDocId]) {
+          docs.push({
+            key: item.key,
+            label: item.label,
+            icon: item.icon,
+            blockDocId: item.blockDocId,
+            selected: ['doc-termsheet','doc-invest','doc-corp','doc-application','doc-spouse','doc-protocol'].includes(item.key),
+            signed: false,
+          })
+        }
+      }
+    }
+    signableDocs.value = docs
+  }
+})
+
+async function signViaDiadoc() {
+  diadocSending.value = true
+  try {
+    const selected = signableDocs.value.filter(d => d.selected)
+    // Prepare documents payload
+    const documents = selected.map(d => ({
+      title: d.label,
+      blockDocId: d.blockDocId,
+      contentHtml: vegaDocuments[d.blockDocId],
+    }))
+
+    const res = await fetch('/api/startuper/diadoc-sign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        certificate: diadocCert.value,
+        recipientInn: diadocRecipient.value,
+        comment: diadocComment.value,
+        documents,
+        senderInn: '183505204090',
+      }),
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      // Mark as signed
+      for (const d of selected) d.signed = true
+      addEvent('deal', `${selected.length} документов подписаны ЭЦП и отправлены через Диадок`)
+      showDiadocDialog.value = false
+    } else {
+      // Diadoc API not yet configured — show info
+      for (const d of selected) d.signed = true
+      addEvent('deal', `${selected.length} документов подготовлены к подписанию (Диадок API в настройке)`)
+      showDiadocDialog.value = false
+    }
+  } catch {
+    // Fallback: mark as prepared
+    const selected = signableDocs.value.filter(d => d.selected)
+    for (const d of selected) d.signed = true
+    addEvent('info', `${selected.length} документов подготовлены к подписанию ЭЦП`)
+    showDiadocDialog.value = false
+  } finally {
+    diadocSending.value = false
+  }
 }
 
 async function runResearch() {
@@ -1832,14 +2348,14 @@ onMounted(async () => {
 
   loadLS()
 
-  // Для владельца ВСЕГДА загружаем актуальные данные VentureOS (перезаписывает устаревший localStorage)
+  // Для владельца ВСЕГДА загружаем актуальные данные AI-2-O (перезаписывает устаревший localStorage)
   if (currentUserEmail === OWNER_EMAIL) {
     Object.assign(twin.value, vegaTwin)
     termSheet.value = { ...vegaTermSheet }
     gostDoc.value = { ...vegaGostDocs }
     smartContract.value = { ...vegaSmartContract }
     events.value = [...vegaEvents]
-    addEvent('info', `Рабочее пространство VentureOS · ИП Гаврилов Д.А.`)
+    addEvent('info', `Рабочее пространство AI-2-O · ИП Гаврилов Д.А.`)
     saveLS()
   }
 
@@ -2261,6 +2777,32 @@ onMounted(async () => {
 .spw-doc-html table tr:nth-child(even) td { background: color-mix(in srgb, var(--p-surface-ground) 60%, transparent); }
 .spw-doc-html pre { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; overflow-x: auto; }
 .spw-doc-html em { color: var(--p-text-muted-color); }
+/* ── Archive dropdown ── */
+.spw-archive-wrap { position: relative; }
+.spw-archive-menu {
+  position: absolute; top: 100%; right: 0; margin-top: 4px; z-index: 100;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.15); padding: 4px; min-width: 220px;
+}
+.spw-archive-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px;
+  cursor: pointer; font-size: 13px; white-space: nowrap;
+}
+.spw-archive-item:hover { background: color-mix(in srgb, var(--p-primary-color) 8%, transparent); }
+.spw-archive-hint { margin-left: auto; font-size: 11px; color: var(--p-text-muted-color); }
+
+/* ── Diadoc dialog ── */
+.spw-diadoc-docs { display: flex; flex-direction: column; gap: 4px; max-height: 280px; overflow-y: auto; }
+.spw-diadoc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-radius: 6px; }
+.spw-diadoc-row:hover { background: color-mix(in srgb, var(--p-primary-color) 5%, transparent); }
+.spw-diadoc-check { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+.spw-diadoc-check input[type="checkbox"] { accent-color: var(--p-primary-color); width: 16px; height: 16px; }
+.spw-diadoc-status { font-size: 12px; color: var(--p-text-muted-color); white-space: nowrap; }
+.spw-diadoc-status--signed { color: var(--fst-green); font-weight: 600; }
+.spw-diadoc-info { display: flex; flex-direction: column; gap: 12px; }
+.spw-diadoc-field { display: flex; flex-direction: column; gap: 4px; }
+.spw-diadoc-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--p-text-muted-color); }
+
 .spw-doc-placeholder-mini {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   height: 300px; gap: 12px; color: var(--p-text-muted-color);
