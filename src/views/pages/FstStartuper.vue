@@ -433,7 +433,7 @@
             <div class="spw-doc-topbar">
               <span class="spw-doc-title"><i class="pi pi-table"></i> Финансовая модель — AI-2-O</span>
               <div class="spw-doc-actions">
-                <span style="font-size:11px;color:var(--p-text-muted-color);margin-right:8px">5-летний прогноз · Pre-Seed 60M₽</span>
+                <span style="font-size:11px;color:var(--p-text-muted-color);margin-right:8px">5-летний прогноз · CLN 30M₽ · WACC/CAPM + Damodaran P/S</span>
               </div>
             </div>
             <div class="spw-finmodel-body">
@@ -449,30 +449,9 @@
                     <div class="spw-fm-sc-row"><span>Окупаемость</span><strong>{{ sc.payback }} лет</strong></div>
                   </div>
                 </div>
-                <!-- P&L Table -->
-                <div class="spw-fm-table-wrap">
-                  <table class="spw-fm-table">
-                    <thead>
-                      <tr>
-                        <th>Показатель</th>
-                        <th v-for="y in vegaFinmodel.years" :key="y">{{ y }}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr><td>Клиентов (фондов)</td><td v-for="(v,i) in vegaFinmodel.clients" :key="i">{{ v }}</td></tr>
-                      <tr class="spw-fm-highlight"><td>ARR, млн ₽</td><td v-for="(v,i) in vegaFinmodel.arr" :key="i">{{ v }}</td></tr>
-                      <tr><td>COGS, млн ₽</td><td v-for="(v,i) in vegaFinmodel.cogs" :key="i">{{ v }}</td></tr>
-                      <tr><td>Валовая прибыль, млн ₽</td><td v-for="(v,i) in vegaFinmodel.grossProfit" :key="i">{{ v }}</td></tr>
-                      <tr><td>OpEx, млн ₽</td><td v-for="(v,i) in vegaFinmodel.opex" :key="i">{{ v }}</td></tr>
-                      <tr class="spw-fm-highlight"><td>EBITDA, млн ₽</td>
-                        <td v-for="(v,i) in vegaFinmodel.ebitda" :key="i"
-                          :style="{ color: v >= 0 ? 'var(--fst-green)' : 'var(--fst-red)', fontWeight: 700 }">{{ v }}</td>
-                      </tr>
-                      <tr><td>MRR, млн ₽</td><td v-for="(v,i) in vegaFinmodel.mrr" :key="i">{{ v }}</td></tr>
-                      <tr><td>NRR, %</td><td v-for="(v,i) in vegaFinmodel.nrr" :key="i">{{ v ?? '—' }}</td></tr>
-                      <tr><td>Команда, чел.</td><td v-for="(v,i) in vegaFinmodel.headcount" :key="i">{{ v }}</td></tr>
-                    </tbody>
-                  </table>
+                <!-- Interactive FinModel (TemplateRenderer) -->
+                <div class="spw-fm-template-wrap">
+                  <TemplateRenderer :template="fstStartupTemplate" />
                 </div>
                 <!-- Assumptions -->
                 <div class="spw-fm-assumptions">
@@ -843,6 +822,8 @@
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import FstFinModelBlock from '@/components/finmodel/FstFinModelBlock.vue'
+import TemplateRenderer from '@/components/finmodel/TemplateRenderer.vue'
+import fstStartupTemplate from '@/templates/finmodel/fst_startup.json'
 import { buildArtifactTree, logEvent, fetchEvents, syncCompanyTwin } from '@/services/workspaceOntologyService.js'
 import { fetchTwinModel, saveTwinModel } from '@/services/fstApi.js'
 import { vegaTwin, vegaTermSheet, vegaSmartContract, vegaGostDocs, vegaEvents, vegaFinmodel } from '@/data/vegaDemoData.js'
@@ -2830,6 +2811,7 @@ onMounted(async () => {
 /* FinModel */
 .spw-finmodel-wrap { display: flex; flex-direction: column; height: 100%; }
 .spw-finmodel-body { flex: 1; overflow: auto; }
+.spw-fm-template-wrap { padding: 12px 16px; }
 
 /* Grants */
 .spw-grants-wrap { display: flex; flex-direction: column; height: 100%; }

@@ -1,7 +1,7 @@
 {
   "id": "fst_startup",
-  "name": "Заявка ФСТ НТИ — Финмодель",
-  "description": "Финансовая модель стартапа для заявки в Фонд Суверенных Технологий НТИ",
+  "name": "AI-2-O — Финмодель Pre-Seed",
+  "description": "Финансовая модель AI-2-O для заявки в ФСТ НТИ (CLN 30M, WACC/CAPM, Damodaran P/S)",
   "icon": "pi pi-chart-bar",
   "category": "venture",
   "sheets": [
@@ -9,42 +9,53 @@
       "name": "Исходные данные",
       "panels": [
         {
-          "name": "Финансирование",
+          "name": "Финансирование (CLN)",
           "items": [
-            { "name": "Инвестиции ФСТ (тыс.руб.)", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 50000 },
-            { "name": "Со-финансирование компании (тыс.руб.)", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 10000 },
-            { "name": "Итого IC", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Инвестиции ФСТ (тыс.руб.)]+[Со-финансирование компании (тыс.руб.)]" }
+            { "name": "Инвестиции CLN (тыс.руб.)", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 30000 },
+            { "name": "Со-финансирование (тыс.руб.)", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 0 },
+            { "name": "Итого IC", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Инвестиции CLN (тыс.руб.)]+[Со-финансирование (тыс.руб.)]" },
+            { "name": "Valuation Cap (тыс.руб.)", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 240000 },
+            { "name": "Дисконт %", "level": 1, "type": "input", "mu": "%", "default": 20 }
           ]
         },
         {
           "name": "Прогноз выручки (тыс.руб.)",
           "items": [
-            { "name": "Выручка Год 1", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 20000 },
-            { "name": "Выручка Год 2", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 80000 },
-            { "name": "Выручка Год 3", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 200000 },
-            { "name": "Выручка Год 4", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 400000 },
-            { "name": "Выручка Год 5", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 700000 },
-            { "name": "CAGR 1-3 (%)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 3]/MAX(1,[Выручка Год 1])*100-100" }
+            { "name": "Факт выручки 2024", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 16000 },
+            { "name": "Факт выручки 2025", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 6000 },
+            { "name": "Выручка Год 1", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 12000 },
+            { "name": "Выручка Год 2", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 24000 },
+            { "name": "Выручка Год 3", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 42000 },
+            { "name": "Выручка Год 4", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 63000 },
+            { "name": "Выручка Год 5", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 90000 },
+            { "name": "Рост Г1→Г5, x", "level": 0, "type": "formula", "mu": "x", "formula": "[Выручка Год 5]/MAX(1,[Выручка Год 1])" }
           ]
         },
         {
           "name": "Структура расходов (% от выручки)",
           "items": [
-            { "name": "Себестоимость %", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 35 },
-            { "name": "ФОТ %", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 30 },
-            { "name": "R&D и НИОКР %", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 15 },
-            { "name": "Маркетинг %", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 8 },
-            { "name": "Прочие OPEX %", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 5 },
-            { "name": "Итого OPEX %", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Себестоимость %]+[ФОТ %]+[R&D и НИОКР %]+[Маркетинг %]+[Прочие OPEX %]" }
+            { "name": "COGS %", "level": 1, "type": "input", "mu": "%", "default": 20 },
+            { "name": "ФОТ %", "level": 1, "type": "input", "mu": "%", "default": 40 },
+            { "name": "R&D %", "level": 1, "type": "input", "mu": "%", "default": 15 },
+            { "name": "Маркетинг %", "level": 1, "type": "input", "mu": "%", "default": 5 },
+            { "name": "Прочие OPEX %", "level": 1, "type": "input", "mu": "%", "default": 3 },
+            { "name": "Итого OPEX %", "level": 0, "type": "formula", "mu": "%", "formula": "[COGS %]+[ФОТ %]+[R&D %]+[Маркетинг %]+[Прочие OPEX %]" }
           ]
         },
         {
-          "name": "Параметры оценки",
+          "name": "Параметры оценки (CAPM / Damodaran)",
           "items": [
-            { "name": "WACC %", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 15 },
-            { "name": "Налог на прибыль %", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 20 },
-            { "name": "Burn Rate (тыс.руб./мес.)", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 3000 },
-            { "name": "Runway (мес.)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Итого IC]/MAX(1,[Burn Rate (тыс.руб./мес.)])" }
+            { "name": "Rf (безрисковая ставка) %", "level": 1, "type": "input", "mu": "%", "default": 3.5 },
+            { "name": "Beta (Damodaran)", "level": 1, "type": "input", "mu": "", "default": 1.40 },
+            { "name": "ERP %", "level": 1, "type": "input", "mu": "%", "default": 5.94 },
+            { "name": "Страновой риск %", "level": 1, "type": "input", "mu": "%", "default": 6.42 },
+            { "name": "Валютный риск %", "level": 1, "type": "input", "mu": "%", "default": 2.4 },
+            { "name": "Премия за размер %", "level": 1, "type": "input", "mu": "%", "default": 4.8 },
+            { "name": "Специфический риск %", "level": 1, "type": "input", "mu": "%", "default": 12 },
+            { "name": "WACC (Re) %", "level": 0, "type": "formula", "mu": "%", "formula": "[Rf (безрисковая ставка) %]+[Beta (Damodaran)]*[ERP %]+[Страновой риск %]+[Валютный риск %]+[Премия за размер %]+[Специфический риск %]" },
+            { "name": "P/S мультипликатор", "level": 1, "type": "input", "mu": "x", "default": 5.77 },
+            { "name": "Налог на прибыль %", "level": 1, "type": "input", "mu": "%", "default": 20 },
+            { "name": "Burn Rate (тыс.руб./мес.)", "level": 1, "type": "input", "mu": "тыс.руб.", "default": 1200 }
           ]
         }
       ]
@@ -53,43 +64,49 @@
       "name": "P&L прогноз",
       "panels": [
         {
-          "name": "Год 1",
+          "name": "Год 1 (2026)",
           "items": [
             { "name": "Выр. Г1", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 1]" },
-            { "name": "OPEX Г1", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 1]*[Итого OPEX %]/100" },
-            { "name": "EBITDA Г1", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выр. Г1]-[OPEX Г1]" },
+            { "name": "COGS Г1", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 1]*[COGS %]/100" },
+            { "name": "Gross Profit Г1", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выр. Г1]-[COGS Г1]" },
+            { "name": "OPEX Г1", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 1]*([ФОТ %]+[R&D %]+[Маркетинг %]+[Прочие OPEX %])/100" },
+            { "name": "EBITDA Г1", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Gross Profit Г1]-[OPEX Г1]" },
             { "name": "Налог Г1", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "MAX(0,[EBITDA Г1]*[Налог на прибыль %]/100)" },
             { "name": "ЧП Г1", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[EBITDA Г1]-[Налог Г1]" },
-            { "name": "Маржа EBITDA Г1 %", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[EBITDA Г1]/MAX(1,[Выр. Г1])*100" }
+            { "name": "Маржа EBITDA Г1 %", "level": 1, "type": "formula", "mu": "%", "formula": "[EBITDA Г1]/MAX(1,[Выр. Г1])*100" }
           ]
         },
         {
-          "name": "Год 2",
+          "name": "Год 2 (2027)",
           "items": [
             { "name": "Выр. Г2", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 2]" },
-            { "name": "OPEX Г2", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 2]*[Итого OPEX %]/100" },
-            { "name": "EBITDA Г2", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выр. Г2]-[OPEX Г2]" },
+            { "name": "COGS Г2", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 2]*[COGS %]/100" },
+            { "name": "Gross Profit Г2", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выр. Г2]-[COGS Г2]" },
+            { "name": "OPEX Г2", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 2]*([ФОТ %]+[R&D %]+[Маркетинг %]+[Прочие OPEX %])/100" },
+            { "name": "EBITDA Г2", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Gross Profit Г2]-[OPEX Г2]" },
             { "name": "Налог Г2", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "MAX(0,[EBITDA Г2]*[Налог на прибыль %]/100)" },
             { "name": "ЧП Г2", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[EBITDA Г2]-[Налог Г2]" },
-            { "name": "Маржа EBITDA Г2 %", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[EBITDA Г2]/MAX(1,[Выр. Г2])*100" }
+            { "name": "Маржа EBITDA Г2 %", "level": 1, "type": "formula", "mu": "%", "formula": "[EBITDA Г2]/MAX(1,[Выр. Г2])*100" }
           ]
         },
         {
-          "name": "Год 3",
+          "name": "Год 3 (2028)",
           "items": [
             { "name": "Выр. Г3", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 3]" },
-            { "name": "OPEX Г3", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 3]*[Итого OPEX %]/100" },
-            { "name": "EBITDA Г3", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выр. Г3]-[OPEX Г3]" },
+            { "name": "COGS Г3", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 3]*[COGS %]/100" },
+            { "name": "Gross Profit Г3", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выр. Г3]-[COGS Г3]" },
+            { "name": "OPEX Г3", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 3]*([ФОТ %]+[R&D %]+[Маркетинг %]+[Прочие OPEX %])/100" },
+            { "name": "EBITDA Г3", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Gross Profit Г3]-[OPEX Г3]" },
             { "name": "Налог Г3", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "MAX(0,[EBITDA Г3]*[Налог на прибыль %]/100)" },
             { "name": "ЧП Г3", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[EBITDA Г3]-[Налог Г3]" }
           ]
         },
         {
-          "name": "Год 4–5",
+          "name": "Год 4–5 (2029–2030)",
           "items": [
-            { "name": "EBITDA Г4", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 4]-[Выручка Год 4]*[Итого OPEX %]/100" },
+            { "name": "EBITDA Г4", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 4]*(1-[Итого OPEX %]/100)" },
             { "name": "ЧП Г4", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "MAX(0,[EBITDA Г4]*(1-[Налог на прибыль %]/100))" },
-            { "name": "EBITDA Г5", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 5]-[Выручка Год 5]*[Итого OPEX %]/100" },
+            { "name": "EBITDA Г5", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 5]*(1-[Итого OPEX %]/100)" },
             { "name": "ЧП Г5", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "MAX(0,[EBITDA Г5]*(1-[Налог на прибыль %]/100))" }
           ]
         }
@@ -99,12 +116,24 @@
       "name": "Инвест-анализ",
       "panels": [
         {
+          "name": "Оценка (Damodaran P/S + WACC)",
+          "items": [
+            { "name": "Выручка на выходе (тыс.руб.)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка Год 5]" },
+            { "name": "EV на выходе (P/S)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Выручка на выходе (тыс.руб.)]*[P/S мультипликатор]" },
+            { "name": "Pre-money (дисконт WACC 4 года)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[EV на выходе (P/S)]/(1+[WACC (Re) %]/100)/(1+[WACC (Re) %]/100)/(1+[WACC (Re) %]/100)/(1+[WACC (Re) %]/100)" },
+            { "name": "Post-money", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Pre-money (дисконт WACC 4 года)]+[Итого IC]" },
+            { "name": "Доля инвестора %", "level": 0, "type": "formula", "mu": "%", "formula": "[Итого IC]/MAX(1,[Post-money])*100" },
+            { "name": "Return инвестора (EV × доля)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[EV на выходе (P/S)]*[Доля инвестора %]/100" },
+            { "name": "MOIC инвестора", "level": 0, "type": "formula", "mu": "x", "formula": "[Return инвестора (EV × доля)]/MAX(1,[Итого IC])" }
+          ]
+        },
+        {
           "name": "Денежные потоки (тыс.руб.)",
           "items": [
             { "name": "CF Год 0 (−IC)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "-[Итого IC]" },
             { "name": "CF Год 1", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[ЧП Г1]" },
             { "name": "CF Год 2", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[ЧП Г2]" },
-            { "name": "CF Год 3", "level": 1, "type": "formula", "му": "тыс.руб.", "formula": "[ЧП Г3]" },
+            { "name": "CF Год 3", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[ЧП Г3]" },
             { "name": "CF Год 4", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[ЧП Г4]" },
             { "name": "CF Год 5", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[ЧП Г5]" },
             { "name": "Сумм. CF (без Г0)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[CF Год 1]+[CF Год 2]+[CF Год 3]+[CF Год 4]+[CF Год 5]" }
@@ -113,20 +142,18 @@
         {
           "name": "NPV при разных ставках (тыс.руб.)",
           "items": [
-            { "name": "NPV @ 10%", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "-[Итого IC]+[CF Год 1]/1.1+[CF Год 2]/1.21+[CF Год 3]/1.331+[CF Год 4]/1.4641+[CF Год 5]/1.61051" },
-            { "name": "NPV @ 15% (WACC)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "-[Итого IC]+[CF Год 1]/1.15+[CF Год 2]/1.3225+[CF Год 3]/1.5209+[CF Год 4]/1.749+[CF Год 5]/2.0114" },
-            { "name": "NPV @ 20%", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "-[Итого IC]+[CF Год 1]/1.2+[CF Год 2]/1.44+[CF Год 3]/1.728+[CF Год 4]/2.0736+[CF Год 5]/2.4883" },
-            { "name": "NPV @ 25%", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "-[Итого IC]+[CF Год 1]/1.25+[CF Год 2]/1.5625+[CF Год 3]/1.9531+[CF Год 4]/2.4414+[CF Год 5]/3.0518" }
+            { "name": "NPV @ 15%", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "-[Итого IC]+[CF Год 1]/1.15+[CF Год 2]/1.3225+[CF Год 3]/1.5209+[CF Год 4]/1.749+[CF Год 5]/2.0114" },
+            { "name": "NPV @ 25%", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "-[Итого IC]+[CF Год 1]/1.25+[CF Год 2]/1.5625+[CF Год 3]/1.9531+[CF Год 4]/2.4414+[CF Год 5]/3.0518" },
+            { "name": "NPV @ 35% (WACC)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "-[Итого IC]+[CF Год 1]/1.35+[CF Год 2]/1.8225+[CF Год 3]/2.4604+[CF Год 4]/3.3215+[CF Год 5]/4.484" }
           ]
         },
         {
           "name": "Ключевые метрики",
           "items": [
-            { "name": "MOIC (5 лет)", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "[Сумм. CF (без Г0)]/MAX(1,[Итого IC])" },
-            { "name": "DPP (дисконт.срок окуп., лет)", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "IF([NPV @ 15% (WACC)]>0,IF([NPV @ 10%]>0,3,4),5)" },
-            { "name": "PI (индекс прибыльности)", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "([NPV @ 15% (WACC)]+[Итого IC])/MAX(1,[Итого IC])" },
-            { "name": "Breakeven выручка (тыс.руб./год)", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Burn Rate (тыс.руб./мес.)]*12/MAX(0.01,1-[Итого OPEX %]/100)" },
-            { "name": "IRR (приближение) %", "level": 0, "type": "formula", "mu": "тыс.руб.", "formula": "IF([NPV @ 20%]>0,IF([NPV @ 25%]>0,30,25),IF([NPV @ 15% (WACC)]>0,20,IF([NPV @ 10%]>0,15,5)))" }
+            { "name": "MOIC (5 лет)", "level": 0, "type": "formula", "mu": "x", "formula": "[Сумм. CF (без Г0)]/MAX(1,[Итого IC])" },
+            { "name": "PI (индекс прибыльности)", "level": 1, "type": "formula", "mu": "x", "formula": "([NPV @ 15%]+[Итого IC])/MAX(1,[Итого IC])" },
+            { "name": "Runway (мес.)", "level": 1, "type": "formula", "mu": "мес.", "formula": "[Итого IC]/MAX(1,[Burn Rate (тыс.руб./мес.)])" },
+            { "name": "Breakeven выручка (тыс.руб./год)", "level": 1, "type": "formula", "mu": "тыс.руб.", "formula": "[Burn Rate (тыс.руб./мес.)]*12/MAX(0.01,1-[Итого OPEX %]/100)" }
           ]
         }
       ]
