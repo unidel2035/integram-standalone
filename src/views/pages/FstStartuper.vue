@@ -1506,7 +1506,7 @@ function triggerDownload(blob, filename) {
 }
 
 const README_TEXT = (count, fmt) => `Инвест-пакет AI-2-O Pre-Seed
-ООО «AI-2-O» · ИП Гаврилов Денис Александрович · ИНН 183505204090
+ИП Гаврилов Денис Александрович · ИНН 183505204090 · ОГРНИП 310184117500010
 CLN 30 млн ₽ · Valuation Cap 240 млн ₽
 Дата формирования: ${new Date().toLocaleDateString('ru-RU')}
 Сайт: ai2fund.ru · Email: unidel@yandex.ru · Тел: +7 912 856 4410
@@ -1554,9 +1554,10 @@ async function archivePDF() {
   const folder = zip.folder('AI2O_InvestPack_PDF')
   const docs = collectDocs()
 
-  // Render each doc to PDF via hidden container
+  // Render each doc to PDF via off-screen container
+  // Must be within viewport for html2canvas to capture content
   const container = document.createElement('div')
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#222'
+  container.style.cssText = 'position:fixed;left:0;top:0;width:800px;z-index:-9999;pointer-events:none;font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#222;background:#fff;padding:20px'
   document.body.appendChild(container)
 
   for (let i = 0; i < docs.length; i++) {
@@ -1572,6 +1573,9 @@ async function archivePDF() {
     container.querySelectorAll('th').forEach(el => { el.style.background = '#f0f0f0'; el.style.fontWeight = '600' })
     container.querySelectorAll('h1').forEach(el => { el.style.fontSize = '18px'; el.style.borderBottom = '2px solid #333'; el.style.paddingBottom = '6px' })
     container.querySelectorAll('h2').forEach(el => { el.style.fontSize = '14px'; el.style.marginTop = '16px' })
+
+    // Let browser layout the DOM before html2canvas capture
+    await new Promise(r => setTimeout(r, 50))
 
     const pdfBlob = await html2pdf().set({
       margin: [12, 12, 12, 12],
