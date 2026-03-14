@@ -256,7 +256,9 @@ const router = express.Router();
 // Without these, browsers/proxies may cache JSON API responses and serve stale data.
 router.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-  res.setHeader('Expires', new Date().toUTCString());
+  // PHP: date("r") → RFC 2822 format with +0000 timezone
+  const now = new Date();
+  res.setHeader('Expires', now.toUTCString().replace('GMT', '+0000'));
   next();
 });
 
@@ -295,7 +297,7 @@ router.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-Authorization, x-authorization, Content-Type, content-type, Origin, Authorization, authorization'
+    'X-Authorization, x-authorization,Content-Type,content-type,Origin,Authorization,authorization'
   );
 
   if (req.method === 'OPTIONS') {
@@ -365,11 +367,17 @@ const legacyPath = path.resolve(__dirname, '../../../../../integram-server');
 // Step 4 enhancement: Also detect JSON from headers (Accept, Content-Type, X-Requested-With)
 function isApiRequest(req) {
   const q = req.query;
+  const b = req.body || {};
 
-  // Check query params (original PHP behavior)
+  // Check query params AND body params (PHP: $_GET and $_POST)
   if (q.JSON !== undefined || q.json !== undefined ||
       q.JSON_DATA !== undefined || q.JSON_KV !== undefined ||
-      q.JSON_CR !== undefined || q.JSON_HR !== undefined) {
+      q.JSON_CR !== undefined || q.JSON_HR !== undefined ||
+      q.RECORD_COUNT !== undefined ||
+      b.JSON !== undefined || b.json !== undefined ||
+      b.JSON_DATA !== undefined || b.JSON_KV !== undefined ||
+      b.JSON_CR !== undefined || b.JSON_HR !== undefined ||
+      b.RECORD_COUNT !== undefined) {
     return true;
   }
 
@@ -2687,7 +2695,8 @@ async function legacyAuthMiddleware(req, res, next) {
   const db = req.params.db;
   const locale = getLocale(req, db);
   if (!db || !isValidDbName(db)) {
-    return res.status(401).json([{ error: t9n('invalid_database', locale) }]);
+    // PHP: die("Invalid database") at line 38, before Validate_Token → 200 text/html
+    return res.status(200).type('text/html').send('Invalid database');
   }
 
   const { token, tokenType } = extractToken(req, db);
@@ -2822,7 +2831,12 @@ async function legacyAuthMiddleware(req, res, next) {
     }
 
     // No guest user defined — reject
-    return res.status(401).json([{ error: t9n(token ? 'invalid_token' : 'auth_required', locale) }]);
+    // PHP: login($z, "", "InvalidToken", ...) → 302 redirect to /login.html
+    if (isApiRequest(req)) {
+      return res.status(200).json([{ error: t9n(token ? 'invalid_token' : 'auth_required', locale) }]);
+    }
+    const reason = token ? 'InvalidToken' : 'InvalidToken';
+    return res.redirect(`/login.html?db=${encodeURIComponent(db)}&r=${reason}&uri=${encodeURIComponent(req.originalUrl)}`);
   } catch (error) {
     logger.error({ error: error.message, db }, '[legacyAuthMiddleware] Error');
     return res.status(401).json([{ error: t9n('auth_failed', locale) }]);
@@ -3516,7 +3530,8 @@ router.post('/:db/auth', async (req, res, next) => {
     if (isJSON) {
       return res.status(200).json([{ error: t9n('login_password_required', locale) }]);
     }
-    return res.status(400).send(t9n('login_password_required', locale));
+    // PHP: login($z, "", "wrong", ...) → 302 redirect
+    return res.redirect(`/login.html?db=${encodeURIComponent(db)}&r=wrong&uri=${encodeURIComponent(req.originalUrl)}`);
   }
 
   try {
@@ -3660,10 +3675,16 @@ router.post('/:db/auth', async (req, res, next) => {
 
       logger.warn('[Legacy Auth] User not found', { db, login });
       if (isJSON) {
-        // PHP: my_die("Wrong credentials...") → HTTP 200 [{"error":"..."}]
-        return res.status(200).json([{ error: `Wrong credentials for user ${login} in ${db}. Please send login and password as POST-parameters.` }]);
+        // PHP: my_die(t9n("[RU]Неверный логин...[EN]Wrong credentials..."))
+        return res.status(200).json([{ error: t9n(`[RU]Неверный логин или пароль ${login} @ ${db}. Логин и пароль следует отправлять POST-параметрами.[EN]Wrong credentials for user ${login} in ${db}. Please send login and password as POST-parameters.`, locale) }]);
       }
-      return res.status(401).send('Invalid credentials');
+      // PHP: login($z, $_REQUEST["u"], "wrong") — uses $_REQUEST["u"], not $_POST["login"]
+      // PHP uri: htmlentities($_SERVER["REQUEST_URI"]) — does NOT urlencode slashes
+      const reqU1 = req.body.u || req.query.u || '';
+      let params1 = `db=${db}`;
+      if (reqU1) params1 += `&login=${reqU1}`;
+      params1 += `&r=wrong&uri=${req.originalUrl}`;
+      return res.redirect(`/login.html?${params1}`);
     }
 
     const user = rows[0];
@@ -3717,9 +3738,14 @@ router.post('/:db/auth', async (req, res, next) => {
 
       logger.warn('[Legacy Auth] Password mismatch', { db, login });
       if (isJSON) {
-        return res.status(200).json([{ error: `Wrong credentials for user ${login} in ${db}. Please send login and password as POST-parameters.` }]);
+        return res.status(200).json([{ error: t9n(`[RU]Неверный логин или пароль ${login} @ ${db}. Логин и пароль следует отправлять POST-параметрами.[EN]Wrong credentials for user ${login} in ${db}. Please send login and password as POST-parameters.`, locale) }]);
       }
-      return res.status(401).send('Invalid credentials');
+      // PHP: login($z, $_REQUEST["u"], "wrong") — uses $_REQUEST["u"], not $_POST["login"]
+      const reqU2 = req.body.u || req.query.u || '';
+      let params2 = `db=${db}`;
+      if (reqU2) params2 += `&login=${reqU2}`;
+      params2 += `&r=wrong&uri=${req.originalUrl}`;
+      return res.redirect(`/login.html?${params2}`);
     }
 
     // Handle password change (PHP lines 7660-7676)
@@ -3770,6 +3796,8 @@ router.post('/:db/auth', async (req, res, next) => {
     });
 
     if (isJSON) {
+      // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+      res.setHeader('Content-Disposition', 'attachment;filename=login.json');
       // PHP response: {"_xsrf":"...","token":"...","id":"123","msg":""}
       // id is a string (PHP mysqli_fetch_array returns strings)
       return res.status(200).json({
@@ -3867,7 +3895,8 @@ router.get('/:db/validate', async (req, res) => {
  */
 router.post('/:db/getcode', async (req, res) => {
   const { db } = req.params;
-  const u = (req.body.u || req.body.login || req.body.email || '').toLowerCase().trim();
+  // PHP: $_REQUEST["u"] — use exact same field name
+  const u = (req.body.u || req.query.u || '').toLowerCase().trim();
 
   logger.info({ db, u }, '[Legacy GetCode] Request');
 
@@ -3885,9 +3914,9 @@ router.post('/:db/getcode', async (req, res) => {
     });
   }
 
-  // PHP validates email format
+  // PHP validates email format — die('{"error":"invalid user"}') with text/html (no redirect, no api_dump)
   if (!u || !/^.+@.+\..+$/.test(u)) {
-    return res.status(200).json({ error: 'invalid user' });
+    return res.status(200).type('text/html').send('{"error":"invalid user"}');
   }
 
   try {
@@ -3919,13 +3948,15 @@ router.post('/:db/getcode', async (req, res) => {
  */
 router.post('/:db/checkcode', async (req, res) => {
   const { db } = req.params;
-  const c = (req.body.c || req.body.code || '').toLowerCase().trim().substring(0, 4);
-  const u = (req.body.u || req.body.login || req.body.email || '').toLowerCase().trim();
+  // PHP: $_REQUEST["c"] and $_REQUEST["u"] — use exact same field names
+  const c = (req.body.c || req.query.c || '').toLowerCase().trim().substring(0, 4);
+  const u = (req.body.u || req.query.u || '').toLowerCase().trim();
 
   logger.info({ db, u }, '[Legacy CheckCode] Request');
 
+  // PHP: die('{"error":"invalid data"}') with text/html (no redirect, no api_dump)
   if (!u || !c || c.length !== 4) {
-    return res.status(200).json({ error: 'invalid data' });
+    return res.status(200).type('text/html').send('{"error":"invalid data"}');
   }
 
   try {
@@ -4953,12 +4984,12 @@ router.get('/:db/:page*', async (req, res, next) => {
   const { token } = extractToken(req, db);
 
   // If no token and not auth-related, redirect to login
-  // JSON API requests get a 401 instead of a redirect
+  // PHP: login($z, "", "InvalidToken") → /login.html?db=...&r=InvalidToken&uri=...
   if (!token && page !== 'auth' && page !== 'login' && page !== 'register') {
     if (isApiRequest(req)) {
-      return res.status(401).json([{ error: 'Unauthorized', hint: `POST /${db}/auth?JSON with login+pwd to get token` }]);
+      return res.status(200).json([{ error: t9n('auth_required', getLocale(req, db)) }]);
     }
-    return res.redirect(`/${db}?uri=${encodeURIComponent(req.originalUrl)}`);
+    return res.redirect(`/login.html?db=${db}&r=InvalidToken&uri=${req.originalUrl}`);
   }
 
   logger.info('[Legacy SubPage] Request', { db, page, fullPath });
@@ -4994,6 +5025,10 @@ router.get('/:db/:page*', async (req, res, next) => {
         const filterVal = allObjParams[`F_${subId}`] !== undefined
           ? String(allObjParams[`F_${subId}`]) : null;
 
+        // Filter by exact object ID (F_I=objectId) — used by object panel after save/copy
+        const filterId = allObjParams.F_I !== undefined
+          ? parseInt(allObjParams.F_I, 10) : null;
+
         // Filter by parent (F_U=parentId) — used by doEditArr and object panel filters
         const filterUp = allObjParams.F_U !== undefined
           ? parseInt(allObjParams.F_U, 10) : null;
@@ -5017,6 +5052,10 @@ router.get('/:db/:page*', async (req, res, next) => {
 
         const objWhereParts  = ['a.t = ?', 'a.up != 0'];  // up=0 = type root row, excluded like PHP
         const objWhereParams = [subId];
+        if (filterId !== null && !isNaN(filterId)) {
+          objWhereParts.push('a.id = ?');
+          objWhereParams.push(filterId);
+        }
         if (filterVal !== null) {
           objWhereParts.push('a.val = ?');
           objWhereParams.push(filterVal);
@@ -6193,7 +6232,6 @@ router.get('/:db/:page*', async (req, res, next) => {
       if (page === 'sql') {
         const { rows: funRows } = await execSql(pool, `SELECT id, val FROM \`${db}\` WHERE t = ? AND up = 1 ORDER BY val`, [63], { label: 'query_select' });  // REP_COL_FUNC constant from PHP index.php
         const { rows: fmtRows } = await execSql(pool, `SELECT id, val FROM \`${db}\` WHERE t = ? AND up = 1 ORDER BY val`, [29], { label: 'query_select' });  // REP_COL_FORMAT constant from PHP index.php
-        const mainMyrolemenu = await getMenuForToken(pool, db, token);
         // PHP: id values are strings (json_encode converts PHP ints from DB to JSON numbers,
         // but the block array builder stores them as PHP strings via array push)
         const funBlock = funRows.length > 0
@@ -6202,9 +6240,8 @@ router.get('/:db/:page*', async (req, res, next) => {
         const fmtBlock = fmtRows.length > 0
           ? { id: fmtRows.map(r => String(r.id)), val: fmtRows.map(r => r.val) }
           : {};
+        // PHP returns only &functions and &formats blocks (no myrolemenu/top_menu)
         return res.json({
-          '&main.myrolemenu':    mainMyrolemenu,
-          '&main.&top_menu':     buildTopMenu(),
           '&main.a.&functions':  funBlock,
           '&main.a.&formats':    fmtBlock,
         });
@@ -6240,10 +6277,8 @@ router.get('/:db/:page*', async (req, res, next) => {
           const names = ['id','t','ref_val','uniq','val','req_id','req_t','ord','attrs','reft'];
           for (let i = 0; i < 10; i++) { formEditTypes[i].push(cols[i]); formEditTypes[names[i]].push(cols[i]); }
         }
-        const mainMyrolemenu = await getMenuForToken(pool, db, token);
+        // PHP returns only edit_types, types, editable (no myrolemenu/top_menu)
         return res.json({
-          '&main.myrolemenu': mainMyrolemenu,
-          '&main.&top_menu':  buildTopMenu(),
           edit_types: formEditTypes,
           types: REV_BASE_TYPE,
           editable: 1,
@@ -8251,6 +8286,7 @@ router.get('/:db/terms', legacyAuthMiddleware, async (req, res) => {
       }
     }
 
+    res.setHeader('Content-Disposition', 'attachment;filename=terms.json');
     res.json(types);
   } catch (error) {
     logger.error('[Legacy terms] Error', { error: error.message, db });
@@ -8704,7 +8740,8 @@ router.all('/:db/_connect/:id?', legacyAuthMiddleware, async (req, res) => {
     if (objectId) {
       const { rows: [row] } = await execSql(pool, `SELECT val FROM \`${db}\` WHERE up = ? AND t = ${TYPE.CONNECT} LIMIT 1`, [objectId], { label: 'query_select' });
       if (!row || !row.val) {
-        return res.status(200).send('');
+        // PHP: falls through to legacyRespond when no connector found
+        return legacyRespond(req, res, db, { id: objectId, obj: null, next_act: '_connect', args: '', warnings: '' });
       }
       // Build proxy URL: append all GET params (PHP: foreach($_GET as $k=>$v) $url .= "&$k=$v")
       const connectorUrl = row.val;
@@ -9019,16 +9056,11 @@ router.post('/:db/_d_req/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
   try {
     const parentId = parseInt(typeId, 10);
     const reqType = parseInt(req.body.t || '8', 10); // Default to CHARS
-    const name = req.body.val || req.body.name || '';
     const alias = req.body.alias || null;
     const required = req.body.required === '1' || req.body.required === true;
     let multi = req.body.multi === '1' || req.body.multi === true;
     const multiselect = req.body.multiselect !== undefined;
     const pool = getPool();
-
-    if (!name) {
-      return res.status(200).json([{ error: 'Requisite name (val) is required'  }]);
-    }
 
     // PHP parity (Add_Req): validate before adding requisite
     // 1. Target type exists
@@ -9045,6 +9077,15 @@ router.post('/:db/_d_req/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
     // 3. Not self-referencing (type cannot reference itself)
     if (reqType === parentId) {
       return res.status(200).json([{ error: 'Type cannot reference itself' }]);
+    }
+
+    // 3b. PHP: if($row["t"] == $t) — cannot add a base type as requisite (where id=t)
+    const { rows: reqTypeMeta } = await execSql(pool, `SELECT id, t, up FROM \`${db}\` WHERE id = ? LIMIT 1`, [reqType], { label: '_d_req_check_base_type' });
+    if (reqTypeMeta.length === 0 || reqTypeMeta[0].up !== 0) {
+      return res.status(200).json([{ error: t9n(`[RU]Неверный реквизит ${reqType} [EN]Invalid requisite(${reqType})`, getLocale(req, db)) }]);
+    }
+    if (reqTypeMeta[0].t === reqType) {
+      return res.status(200).json([{ error: t9n(`[RU]Некорректный тип ${reqType} - это базовый тип[EN]Invalid type ${reqType} is the base type`, getLocale(req, db)) }]);
     }
 
     // 4. Not duplicate — check if requisite of this type already exists
@@ -9072,7 +9113,8 @@ router.post('/:db/_d_req/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
     }
 
     // Build value with modifiers
-    const val = buildModifiers(name, alias, required, multi);
+    // PHP: Insert($id, Get_Ord($id), $t, $attr, "Add Req") where $attr is "" or MULTI_MASK
+    const val = buildModifiers('', alias, required, multi);
 
     // Get next order
     const order = await getNextOrder(db, parentId);
@@ -9080,7 +9122,7 @@ router.post('/:db/_d_req/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
     // Insert the requisite
     const id = await insertRow(db, parentId, order, reqType, val);
 
-    logger.info('[Legacy _d_req] Requisite added', { db, id, parentId, name, reqType });
+    logger.info('[Legacy _d_req] Requisite added', { db, id, parentId, reqType });
 
     // PHP api_dump(): {id:req_id, obj:type_id, next_act:"edit_types", args:"ext", warnings}
     legacyRespond(req, res, db, { id, obj: parentId, next_act: 'edit_types', args: 'ext' });
@@ -9371,7 +9413,8 @@ router.post('/:db/_d_ord/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacyD
     const newOrd = parseInt(req.body.order || req.query.order, 10);
 
     if (isNaN(newOrd) || newOrd < 1) {
-      return res.status(200).json([{ error: 'Invalid order'  }]);
+      // PHP: die("Invalid order") — plain text, not JSON
+      return res.status(200).type('text/html').send('Invalid order');
     }
 
     const pool = getPool();
@@ -9380,7 +9423,8 @@ router.post('/:db/_d_ord/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacyD
     const { rows: [reqRow] } = await execSql(pool, `SELECT req.ord, req.up FROM \`${db}\` req, \`${db}\` par WHERE req.id=? AND par.id=req.up AND par.up=0`, [id], { label: 'post_db_d_ord_reqId_select' });
 
     if (!reqRow) {
-      return res.status(200).json([{ error: `Id=${id} not found`  }]);
+      // PHP: my_die() — uses t9n error format
+      return res.status(200).type('text/html').send(t9n(`[RU]Не найден id=${id} [EN] Id=${id} not found`, getLocale(req, db)));
     }
 
     const parentId = reqRow.up;
@@ -9842,13 +9886,17 @@ router.all('/:db/obj_meta/:id', legacyAuthMiddleware, async (req, res) => {
       reqs[String(row.ord)] = reqEntry;
     }
 
-    // PHP: omit reqs key when no requisites exist
+    // PHP: always includes reqs key; when no requisites, the LEFT JOIN
+    // produces a NULL row which PHP includes as reqs[""] = {id:"", val:"", type:""}
     if (Object.keys(reqs).length > 0) {
       meta.reqs = reqs;
+    } else {
+      meta.reqs = { '': { id: '', val: '', type: '' } };
     }
 
     logger.info('[Legacy obj_meta] Metadata retrieved', { db, id: objectId });
 
+    res.setHeader('Content-Disposition', `attachment;filename=${objectId}.json`);
     res.json(meta);
   } catch (error) {
     logger.error('[Legacy obj_meta] Error', { error: error.message, db });
@@ -9965,7 +10013,8 @@ router.all('/:db/metadata/:typeId?', legacyAuthMiddleware, async (req, res) => {
           num: row.req_ord,
           id: row.req_id.toString(),
           // PHP: addcslashes($val, "\\'") — escape backslash and single-quote
-          val: (row.req_val || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"),
+          // First decode \uXXXX escapes stored literally in DB (PHP outputs them raw in JSON)
+          val: decodeJsonEscapes(row.req_val || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"),
           orig: (row.ref_id || row.req_type || '').toString(),
           // PHP: "$row["base_typ"]" — 0 should give "0", only NULL gives ""
           type: row.base_typ != null ? String(row.base_typ) : '',
@@ -9993,8 +10042,10 @@ router.all('/:db/metadata/:typeId?', legacyAuthMiddleware, async (req, res) => {
     logger.info('[Legacy metadata] Metadata retrieved', { db, typeId: id, count: result.length });
 
     if (isOneType) {
+      res.setHeader('Content-Disposition', `attachment;filename=metadata_${id}.json`);
       res.json(result[0] || { error: 'Type not found' });
     } else {
+      res.setHeader('Content-Disposition', 'attachment;filename=metadata_all.json');
       res.json(result);
     }
   } catch (error) {
