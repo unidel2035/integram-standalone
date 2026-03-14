@@ -6087,8 +6087,8 @@ router.get('/:db/:page*', async (req, res, next) => {
         }
 
         // 7. Assemble PHP-format response
+        // PHP edit_obj.html template does NOT include myrolemenu block
         const editResp = {
-          '&main.myrolemenu': myroleEd,
           'obj': {
             id:       String(obj.id),
             val:      obj.val || '',

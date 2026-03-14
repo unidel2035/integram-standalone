@@ -9,8 +9,9 @@ Date: 2026-03-15
 | Read-only parity | 19 | 0 | 3 | `full-parity-audit.js` |
 | CRUD parity | 28 | 0 | 0 | `crud-parity-audit.js` |
 | Query & filter parity | 18 | 0 | 3 | `query-parity-audit.js` |
-| Endpoints parity | 35 | 0 | 14 | `endpoints-parity-audit.js` |
-| **Total** | **100** | **0** | **20** |
+| Endpoints parity | 46 | 0 | 13 | `endpoints-parity-audit.js` |
+| Comprehensive parity | 113 | 0 | 22 | `comprehensive-parity-audit.js` |
+| **Total** | **224** | **0** | **41** |
 
 ## Test Results
 
@@ -175,6 +176,19 @@ Date: 2026-03-15
 | E14 | POST `action=object` | SKIP | PHP 500 |
 | E15 | POST `action=report` | SKIP | PHP returns null |
 
+### 5. Comprehensive Parity (`comprehensive-parity-audit.js`): 113 PASS / 0 FAIL / 22 SKIP
+
+| Section | Tests | PASS | SKIP | Coverage |
+|---------|-------|------|------|----------|
+| 1. Auth & Session | 20 | 9 | 11 | auth, xsrf, getcode, checkcode, confirm, login, exit, OPTIONS |
+| 2. Types DDL | 25 | 25 | 0 | _d_new (11 base types), _d_save, _d_req (8 cols), _d_alias, _d_null, _d_multi, _d_attrs, _d_up, _d_ord, _d_ref, _d_del_req |
+| 3. Objects DML | 22 | 22 | 0 | _m_new, _m_save, _m_set (7 data types + clear), _m_save copy, _m_up, _m_ord, _m_move, _m_id, _m_del |
+| 4. Listing & Querying | 21 | 14 | 7 | object?JSON, LIMIT, sorting, F_U, edit_obj, edit_types, terms, metadata, obj_meta, _dict, _list, _list_join, _d_main, _ref_reqs |
+| 5. Edge Cases | 16 | 13 | 3 | XSS, Cyrillic, special chars, LIMIT boundary, obj_meta boundary, empty POST, no XSRF, headers |
+| 6. Pages JSON | 4 | 3 | 1 | dict, sql, form, dir_admin |
+| 7. Reports | 9 | 9 | 0 | JSON, JSON_DATA, JSON_KV, JSON_CR, JSON_HR, RECORD_COUNT, LIMIT |
+| 8. Type Deletion | 2 | 2 | 0 | _d_del with objects (forced), nonexistent |
+
 ## Node.js Bugs Found & Fixed
 
 ### This session (uncommitted)
@@ -257,4 +271,5 @@ node tests/integration/full-parity-audit.js
 node tests/integration/crud-parity-audit.js
 node tests/integration/query-parity-audit.js
 node tests/integration/endpoints-parity-audit.js
+node tests/integration/comprehensive-parity-audit.js
 ```
