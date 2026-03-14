@@ -842,8 +842,25 @@ async function phaseE_remaining(phpTid, nodeTid, phpOids, nodeOids) {
     return { php, node, skipped: false };
   }
 
+  // Helper: Node-only structure check (when PHP always fails)
+  function nodeOnly(name, node, checks) {
+    const issues = [];
+    if (node.status >= 500) { issues.push(`Node 500`); report(name, issues); return; }
+    if (!node.json) { issues.push(`Node not JSON: ${short(node.body, 80)}`); report(name, issues); return; }
+    checks(node.json, issues);
+    report(name + ' (Node-only)', issues);
+  }
+
   // E1: validate — token check
-  await cmp('E1 validate', 'GET', '/validate?JSON=1', null);
+  {
+    const { node, skipped } = await cmp('E1 validate', 'GET', '/validate?JSON=1', null);
+    if (skipped) {
+      nodeOnly('E1 validate', node, (j, iss) => {
+        if (!('valid' in j) && !('error' in j) && !('token' in j))
+          iss.push(`Missing expected keys, got: ${Object.keys(j).join(',')}`);
+      });
+    }
+  }
 
   // E2: sql?JSON — report functions/formats
   await cmp('E2 sql (JSON)', 'GET', '/sql?JSON=1', null);
@@ -851,67 +868,136 @@ async function phaseE_remaining(phpTid, nodeTid, phpOids, nodeOids) {
   // E3: form?JSON — type editor structure
   await cmp('E3 form (JSON)', 'GET', '/form?JSON=1', null);
 
-  // E4: dict?JSON — type dictionary (PHP page=dict, different from /_dict)
+  // E4: dict?JSON — type dictionary
   await cmp('E4 dict (JSON)', 'GET', '/dict?JSON=1', null);
 
   // E5: _list/:typeId — object listing
-  await cmp('E5 _list', 'GET', `/_list/${realTypeId}?JSON=1`, null);
-
-  // E6: _list_join/:typeId
-  await cmp('E6 _list_join', 'GET', `/_list_join/${realTypeId}?JSON=1`, null);
-
-  // E7: _d_main/:typeId — type metadata (PHP requires XSRF via POST)
   {
-    const [php, node] = await Promise.all([
-      http(PHP, 'POST', `/${DB}/_d_main/${realTypeId}`, `_xsrf=${xsrfPhp}&JSON=1`, cookie()),
-      http(NODE, 'POST', `/${DB}/_d_main/${realTypeId}`, `_xsrf=${xsrfNode}&JSON=1`, cookie()),
-    ]);
-    if (php.body === 'null' || php.status >= 500) {
-      skip('E7 _d_main', 'PHP built-in server limitation');
-    } else {
-      const issues = [];
-      if (php.status !== node.status) issues.push(`Status: PHP=${php.status} Node=${node.status}`);
-      if (php.json && node.json) {
-        const pk = Object.keys(php.json).sort().join(',');
-        const nk = Object.keys(node.json).sort().join(',');
-        if (pk !== nk) issues.push(`Keys: PHP=[${short(pk,80)}] Node=[${short(nk,80)}]`);
-      } else {
-        if (!php.json) issues.push(`PHP not JSON: ${short(php.body, 80)}`);
-        if (!node.json) issues.push(`Node not JSON: ${short(node.body, 80)}`);
-      }
-      report('E7 _d_main', issues);
+    const { node, skipped } = await cmp('E5 _list', 'GET', `/_list/${realTypeId}?JSON=1`, null);
+    if (skipped) {
+      nodeOnly('E5 _list', node, (j, iss) => {
+        for (const k of ['data', 'limit', 'offset', 'total']) {
+          if (!(k in j)) iss.push(`Missing key "${k}"`);
+        }
+        if (!Array.isArray(j.data)) iss.push(`data not array`);
+      });
     }
   }
 
+  // E6: _list_join/:typeId
+  {
+    const { node, skipped } = await cmp('E6 _list_join', 'GET', `/_list_join/${realTypeId}?JSON=1`, null);
+    if (skipped) {
+      nodeOnly('E6 _list_join', node, (j, iss) => {
+        for (const k of ['data', 'total', 'requisites']) {
+          if (!(k in j)) iss.push(`Missing key "${k}"`);
+        }
+      });
+    }
+  }
+
+  // E7: _d_main/:typeId — type metadata
+  {
+    const node = await http(NODE, 'GET', `/${DB}/_d_main/${realTypeId}?JSON=1`, null, cookie());
+    const issues = [];
+    if (!node.json) {
+      issues.push(`Node not JSON: ${short(node.body, 80)}`);
+    } else {
+      for (const k of ['id', 'name', 'requisites']) {
+        if (!(k in node.json)) issues.push(`Missing key "${k}"`);
+      }
+      if (node.json.requisites && !Array.isArray(node.json.requisites))
+        issues.push(`requisites not array`);
+    }
+    report('E7 _d_main (Node-only)', issues);
+  }
+
   // E8: grants
-  await cmp('E8 grants', 'GET', '/grants?JSON=1', null);
+  {
+    const { node, skipped } = await cmp('E8 grants', 'GET', '/grants?JSON=1', null);
+    if (skipped) {
+      nodeOnly('E8 grants', node, (j, iss) => {
+        if (!('grants' in j)) iss.push(`Missing "grants" key`);
+        if (!('user' in j)) iss.push(`Missing "user" key`);
+      });
+    }
+  }
 
   // E9: check_grant
-  await cmp('E9 check_grant', 'POST', '/check_grant', `grant=ddl&JSON=1`);
+  {
+    const { node, skipped } = await cmp('E9 check_grant', 'POST', '/check_grant', `grant=ddl&JSON=1`);
+    if (skipped) {
+      // Node should return error or result
+      const issues = [];
+      if (node.status >= 500) issues.push('Node 500');
+      report('E9 check_grant (Node-only)', issues);
+    }
+  }
 
   // E10: export/:typeId
-  await cmp('E10 export', 'GET', `/export/${realTypeId}`, null);
+  {
+    const { node, skipped } = await cmp('E10 export', 'GET', `/export/${realTypeId}`, null);
+    if (skipped) {
+      const issues = [];
+      const ct = (node.headers['content-type'] || '');
+      if (!ct.includes('csv') && !ct.includes('text')) issues.push(`Unexpected Content-Type: ${ct}`);
+      if (node.status >= 500) issues.push('Node 500');
+      report('E10 export (Node-only)', issues);
+    }
+  }
 
   // E11: dir_admin
-  await cmp('E11 dir_admin', 'GET', '/dir_admin?JSON=1', null);
+  {
+    const { node, skipped } = await cmp('E11 dir_admin', 'GET', '/dir_admin?JSON=1', null);
+    if (skipped) {
+      nodeOnly('E11 dir_admin', node, (j, iss) => {
+        // Should return some admin info
+        if (typeof j !== 'object') iss.push(`Not object: ${typeof j}`);
+      });
+    }
+  }
 
   // E12: _connect (no connector — should return legacyRespond)
   await cmp('E12 _connect', 'GET', '/_connect/999999?JSON=1', null);
 
   // E13: download non-existent file
-  await cmp('E13 download (404)', 'GET', '/download/nonexistent_file.txt', null);
+  {
+    const { node, skipped } = await cmp('E13 download (404)', 'GET', '/download/nonexistent_file.txt', null);
+    if (skipped) {
+      const issues = [];
+      if (node.status !== 404 && node.status !== 200) issues.push(`Node status: ${node.status}`);
+      report('E13 download 404 (Node-only)', issues);
+    }
+  }
 
   // E14: POST action=object (JSON_DATA)
-  await cmp('E14 POST action=object (JSON_DATA)', 'POST', `?JSON_DATA=1`,
-    `id=${realTypeId}&a=object`);
+  {
+    const { node, skipped } = await cmp('E14 POST action=object (JSON_DATA)', 'POST', `?JSON_DATA=1`,
+      `id=${realTypeId}&a=object`);
+    if (skipped) {
+      const issues = [];
+      if (node.status >= 500) issues.push('Node 500');
+      // JSON_DATA should return array
+      if (node.json && !Array.isArray(node.json)) issues.push(`Not array: ${typeof node.json}`);
+      report('E14 POST action=object JSON_DATA (Node-only)', issues);
+    }
+  }
 
   // E15: POST action=report
   {
     const nodeReports = await http(NODE, 'GET', `/${DB}/report?JSON=1`, null, cookie());
     const repId = nodeReports.json?.[0]?.id;
     if (repId) {
-      await cmp('E15 POST action=report', 'POST', `?JSON=1`,
+      const { node, skipped } = await cmp('E15 POST action=report', 'POST', `?JSON=1`,
         `action=report&id=${repId}`);
+      if (skipped) {
+        const issues = [];
+        if (node.status >= 500) issues.push('Node 500');
+        if (node.json) {
+          if (!node.json.columns && !node.json.data) issues.push('Missing columns/data');
+        }
+        report('E15 POST action=report (Node-only)', issues);
+      }
     } else {
       skip('E15 POST action=report', 'No reports available');
     }
