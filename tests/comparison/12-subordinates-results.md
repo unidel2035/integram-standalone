@@ -1,12 +1,12 @@
 # 12-subordinates — Подчинённости
 
-21 MATCH / 6 DIFF out of 27 tests
+23 MATCH / 4 DIFF out of 27 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
-| 1 | #1 GET /metadata (parent type) | 200 | 200 | DIFF: keys: PHP=[id,reqs,type,unique,up,val] Node=[&main.&top_menu,&main.myrolemenu] |
-| 2 | #2 GET /metadata (child type) | 200 | 200 | DIFF: keys: PHP=[id,reqs,type,unique,up,val] Node=[&main.&top_menu,&main.myrolemenu] |
-| 3 | #3 GET /metadata (grandchild type) | 200 | 200 | DIFF: keys: PHP=[id,reqs,type,unique,up,val] Node=[&main.&top_menu,&main.myrolemenu] |
+| 1 | #1 GET /metadata (parent type) | 200 | 200 | MATCH |
+| 2 | #2 GET /metadata (child type) | 200 | 200 | MATCH |
+| 3 | #3 GET /metadata (grandchild type) | 200 | 200 | MATCH |
 | 4 | #4 GET /edit_types (full tree) | 200 | 200 | MATCH |
 | 5 | #5 GET /object (children of parent1) | 200 | 200 | MATCH |
 | 6 | #6 GET /object (children of parent2) | 200 | 200 | MATCH |
@@ -27,45 +27,18 @@
 | 21 | #21 POST /_m_set (child requisite) | 200 | 200 | MATCH |
 | 22 | #22 GET /edit_obj (child) | 500 | 200 | DIFF: status: PHP=500 Node=200 |
 | 23 | #23 GET /edit_obj (grandchild) | 500 | 200 | DIFF: status: PHP=500 Node=200 |
-| 24 | #24 GET /object (parent list) | 200 | 200 | MATCH |
+| 24 | #24 GET /object (parent list) | 200 | 200 | DIFF: val[&main.a.&uni_obj]: PHP={"base_typ":["3"],"create_granted":["blo... Node={"base_typ":["3"],"create_granted":["blo... |
 | 25 | #25 POST /_m_del (delete child) | 200 | 200 | MATCH |
 | 26 | #26 GET /object (parent2 after child delete) | 200 | 200 | MATCH |
 | 27 | #27 POST /_m_del (parent with children) | 200 | 200 | MATCH |
 
 ## Diffs Detail
 
-### #1 GET /metadata (parent type)
-
-- keys: PHP=[id,reqs,type,unique,up,val] Node=[&main.&top_menu,&main.myrolemenu]
-- val[id]: PHP="__ID__" Node=
-- val[reqs]: PHP=[{"arr_id":"238200","id":"__ID__","num":... Node=
-- val[type]: PHP="3" Node=
-- PHP: `{"id":"1000005795","up":"0","type":"3","val":"__sub_parent_1773575855173","unique":"0","reqs":[{"num":1,"id":"1000005796","val":"AI Agent Demo","orig"...`
-- Node: `{"&main.&top_menu":{"top_menu":["Таблицы","Структура","Файлы"],"top_menu_href":["dict","edit_types","dir_admin"]},"&main.myrolemenu":{"href":["dict","...`
-
-### #2 GET /metadata (child type)
-
-- keys: PHP=[id,reqs,type,unique,up,val] Node=[&main.&top_menu,&main.myrolemenu]
-- val[id]: PHP="__ID__" Node=
-- val[reqs]: PHP=[{"arr_id":"238200","id":"__ID__","num":... Node=
-- val[type]: PHP="3" Node=
-- PHP: `{"id":"1000005797","up":"0","type":"3","val":"__sub_child_1773575855173","unique":"0","reqs":[{"num":1,"id":"1000005798","val":"AI Agent Demo","orig":...`
-- Node: `{"&main.&top_menu":{"top_menu":["Таблицы","Структура","Файлы"],"top_menu_href":["dict","edit_types","dir_admin"]},"&main.myrolemenu":{"href":["dict","...`
-
-### #3 GET /metadata (grandchild type)
-
-- keys: PHP=[id,reqs,type,unique,up,val] Node=[&main.&top_menu,&main.myrolemenu]
-- val[id]: PHP="__ID__" Node=
-- val[reqs]: PHP=[] Node=
-- val[type]: PHP="3" Node=
-- PHP: `{"id":"1000005799","up":"0","type":"3","val":"__sub_grandchild_1773575855173","unique":"0","reqs":[]}`
-- Node: `{"&main.&top_menu":{"top_menu":["Таблицы","Структура","Файлы"],"top_menu_href":["dict","edit_types","dir_admin"]},"&main.myrolemenu":{"href":["dict","...`
-
 ### #8 GET /object (grandchildren of child1)
 
 - val[&main.a.&uni_obj]: PHP={"base_typ":["3"],"create_granted":["blo... Node={"base_typ":["3"],"create_granted":["blo...
-- PHP: `{"&main.a":{"_parent_.title":["__sub_grandchild_1773575855173"]},"type":{"id":1000005799,"up":1,"val":"__sub_grandchild_1773575855173","base":"SHORT"}...`
-- Node: `{"&main.a":{"_parent_.title":["__sub_grandchild_1773575855173"]},"&main.a._noobj":{"_request_.f_u":["NaN"]},"&main.a.&uni_obj":{"base_typ":["3"],"crea...`
+- PHP: `{"&main.a":{"_parent_.title":["__sub_grandchild_1773579362063"]},"type":{"id":1000006306,"up":1,"val":"__sub_grandchild_1773579362063","base":"SHORT"}...`
+- Node: `{"&main.a":{"_parent_.title":["__sub_grandchild_1773579362063"]},"&main.a._noobj":{"_request_.f_u":["NaN"]},"&main.a.&uni_obj":{"base_typ":["3"],"crea...`
 
 ### #22 GET /edit_obj (child)
 
@@ -80,3 +53,12 @@
 - format: PHP=text Node=JSON
 - PHP: ``
 - Node: `[{"error":"objectId required: /my/edit_obj/{id}?JSON"}]`
+
+### #24 GET /object (parent list)
+
+- val[&main.a.&uni_obj]: PHP={"base_typ":["3"],"create_granted":["blo... Node={"base_typ":["3"],"create_granted":["blo...
+- val[&main.a.&uni_obj.&filter_val_rcm]: PHP={"f_typ":["F_1000006300"],"filter":[""]} Node={"f_typ":["F_1000006301"],"filter":[""]}
+- val[&main.a.&uni_obj.&new_req]: PHP={"_parent_.typ":["1000006300"],"_parent_... Node={"_parent_.typ":["1000006301"],"_parent_...
+- val[&main.a.&uni_obj.&uni_obj_head]: PHP={"arr_type":[""],"array":[""],"base_typ"... Node={"arr_type":[""],"array":[""],"base_typ"...
+- PHP: `{"&main.a":{"_parent_.title":["__sub_parent_1773579362063"]},"type":{"id":1000006300,"up":1,"val":"__sub_parent_1773579362063","base":"SHORT"},"base":...`
+- Node: `{"&main.a":{"_parent_.title":["__sub_parent_1773579362063"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":[""],"fi...`

@@ -1,6 +1,6 @@
 # 07-refs-multi — References & Multiselect
 
-19 MATCH / 0 DIFF out of 19 tests
+18 MATCH / 1 DIFF out of 19 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -21,5 +21,16 @@
 | 15 | POST /_d_null (required=1) | 200 | 200 | MATCH |
 | 16 | POST /_d_null (required=0) | 200 | 200 | MATCH |
 | 17 | GET /object (col-as-table) | 200 | 200 | MATCH |
-| 18 | POST /_d_del_req (remove ref) | 200 | 200 | MATCH |
+| 18 | POST /_d_del_req (remove ref) | 200 | 200 | DIFF: keys: PHP=[args,id,next_act,obj,warnings] Node=[error] |
 | 19 | GET /edit_obj (with refs) | 200 | 200 | MATCH |
+
+## Diffs Detail
+
+### POST /_d_del_req (remove ref)
+
+- keys: PHP=[args,id,next_act,obj,warnings] Node=[error]
+- val[args]: PHP="ext" Node=
+- val[id]: PHP="__ID__" Node=
+- val[next_act]: PHP="edit_types" Node=
+- PHP: `{"id":"0","obj":"0","next_act":"edit_types","args":"ext","warnings":""}`
+- Node: `{"error":"Requisite not found"}`
