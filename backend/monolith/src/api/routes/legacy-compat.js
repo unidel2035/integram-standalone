@@ -6012,8 +6012,9 @@ router.get('/:db/:page*', async (req, res, next) => {
            LEFT JOIN \`${db}\` t ON t.id = o.t
            WHERE o.id = ?`, [subId], { label: 'query_select' });
         if (objResult.length === 0) {
-          // PHP parity (#549): PHP returns 200 with empty response for deleted objects
-          return res.status(200).json({});
+          // PHP parity (#549): PHP returns 200 with text message for deleted objects
+          res.set('Content-Type', 'text/html; charset=UTF-8');
+          return res.status(200).send(`Объект ${subId} не найден, вероятно, он был удален`);
         }
         const obj         = objResult[0];
         const objTypName   = obj.type_name    || String(obj.t);
@@ -6199,7 +6200,7 @@ router.get('/:db/:page*', async (req, res, next) => {
               value: '',
               base: 'BUTTON',
             };
-            if (meta.attrs) reqs2[k].attrs = meta.attrs;
+            // PHP does NOT include attrs in the reqs block for BUTTON type
             continue;
           }
 
@@ -6939,7 +6940,8 @@ router.post('/:db/_m_new/:up?', legacyAuthMiddleware, legacyXsrfCheck, (req, res
     }
 
     // Get next order (PHP: Calc_Order) — must be before default values (PHP line 8373)
-    const order = await calcOrder(pool, db, parentId, typeId);
+    // PHP parity: $ord = 1; if($up != 1) { $ord = Calc_Order($up, $id); }
+    const order = (parentId === 1) ? 1 : await calcOrder(pool, db, parentId, typeId);
 
     // Default values: DATE→today, DATETIME→timestamp, SIGNED→1, NUMBER→unique MAX+1 or 1
     // PHP parity: index.php lines 8378-8407
@@ -10458,6 +10460,16 @@ router.all('/:db/metadata/:typeId?', legacyAuthMiddleware, async (req, res) => {
     }
 
     const { rows: rows } = await execSql(pool, query, params, { label: 'query_query' });
+
+    // PHP parity: validate that single-type ID is actually a type (up=0), not an object
+    if (isOneType && rows.length > 0 && rows[0].up !== 0) {
+      res.set('Content-Type', 'text/html; charset=UTF-8');
+      return res.status(200).send(`Invalid Term id ${id}`);
+    }
+    if (isOneType && rows.length === 0) {
+      res.set('Content-Type', 'text/html; charset=UTF-8');
+      return res.status(200).send(`Invalid Term id ${id}`);
+    }
 
     // PHP (metadata all): first pass collects req-only types to skip.
     // "req-only" = type has no own requisites AND its ID is used as req.t by another type.
