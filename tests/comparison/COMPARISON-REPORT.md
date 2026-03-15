@@ -1,8 +1,8 @@
-# PHP vs Node.js Comparison Test Report (Round 4)
+# PHP vs Node.js Comparison Test Report (Round 5 — Final)
 
 **Date:** 2026-03-15
-**Branch:** master (after PRs #521-#524 merged)
-**Servers:** PHP 127.0.0.1:8082, Node 127.0.0.1:8081
+**Branch:** master (PRs #521-#538 merged)
+**Servers:** PHP nginx+php-fpm :8082, Node :8081
 **Database:** my, User: testbot
 
 ## Summary
@@ -11,51 +11,34 @@
 |-------|-------|-------|------|-------|
 | 01-auth | 15 | 14 | 1 | 93% |
 | 02-ddl | 15 | 14 | 1 | 93% |
-| 03-dml | 13 | 9 | 4 | 69% |
-| 04-listing | 21 | 14 | 7 | 67% |
+| 03-dml | 13 | 13 | 0 | **100%** |
+| 04-listing | 21 | 21 | 0 | **100%** |
 | 05-reports | 11 | 11 | 0 | **100%** |
-| 06-admin | 16 | 14 | 2 | 88% |
-| 07-refs-multi | 19 | 14 | 5 | 74% |
+| 06-admin | 16 | 16 | 0 | **100%** |
+| 07-refs-multi | 19 | 19 | 0 | **100%** |
 | 08-export | 11 | 10 | 1 | 91% |
-| **TOTAL** | **121** | **100** | **21** | **83%** |
+| **TOTAL** | **121** | **118** | **3** | **97.5%** |
 
-**Progress: 54% → 70% → 83% (Round 3-4 stabilized)**
+**Progress: 54% → 70% → 83% → 97.5%**
 
-## Remaining Issues by Category
+## Remaining 3 Diffs — PHP Fatal Errors (not Node bugs)
 
-### Not-a-bug diffs (7 total)
-- `POST /auth nonexistent db` — PHP 500 (built-in server limitation)
-- `POST /_d_null` — PHP 500 (built-in server limitation)
-- `GET /csv_all` — PHP 500 (built-in server limitation)
-- `POST /_m_new` ord — auto-increment gap (expected)
-- `POST /_m_new (empty)` ord — auto-increment gap (expected)
-- `POST /_m_save (rename)` F_I — different object IDs (expected)
-- `POST /_m_save (copy)` F_I — different object IDs (expected)
+These are PHP code bugs where uncaught exceptions cause HTTP 500. Node handles these cases correctly.
 
-### Real diffs requiring fixes (14 total)
+| Test | PHP | Node | PHP Error |
+|------|-----|------|-----------|
+| POST /auth (nonexistent db) | 500 | 404 | `Table 'integram.zzznoexist427' doesn't exist` — uncaught mysqli_sql_exception |
+| POST /_d_null (required=1) | 500 | 200 | NaN passed to SQL — uncaught fatal |
+| GET /csv_all | 500 | 302 | CSV generation fatal error |
 
-| Category | Diffs | Tests |
-|----------|-------|-------|
-| object?JSON — &object_reqs/&uni_object_view_reqs missing | ~5 | 04-listing (#3-6) |
-| object?JSON — _noobj F_U block | 2 | 04-listing (#5-6) |
-| object?JSON — F_U=0 returns empty | 1 | 04-listing (#6) |
-| edit_obj — auto-increment ID arrays | 2 | 04-listing (#11), 07-refs-multi (#19) |
-| edit_types — ACTIVITY race condition | 2 | 04-listing (#12), 06-admin (#6) |
-| dir_admin — HTML body diff | 1 | 06-admin (#12) |
-| object sub-type/col-as-table — template keys | 2 | 07-refs-multi (#9, #17) |
-| _d_del_req — test data race | 1 | 07-refs-multi (#18) |
-| object F_I — ID normalization | 1 | 04-listing (#7) |
+## 6 Suites at 100% MATCH
 
-## What's Working (100/121 MATCH)
-
-- **Reports** — 100% (all JSON formats, pagination, CSV, counting)
-- **Auth** — 93% (login, xsrf, jwt, exit, validate, getcode, checkcode)
-- **DDL** — 93% (type/column CRUD, ref, multi, rename)
-- **Export** — 91% (backup, export, bki-export, login pages)
-- **Admin** — 88% (terms, dict, types, form, sql, grants, validate)
-- **Refs/Multi** — 74% (_ref_reqs, _list, _list_join, _d_null, _d_multi, _m_set, _m_move)
-- **DML** — 69% (_m_up, _m_ord, _m_move, _m_id, _m_del all match)
-- **Listing** — 67% (JSON, JSON_DATA, filters, sorting, obj_meta)
+- **DML** — 13/13 (move, order, delete, new, save, id)
+- **Listing** — 21/21 (object, edit_obj, edit_types, obj_meta, _list, _ref_reqs)
+- **Reports** — 11/11 (all JSON formats, pagination, CSV, counting)
+- **Admin** — 16/16 (terms, dict, types, form, sql, dir_admin, grants, validate)
+- **Refs/Multi** — 19/19 (_ref_reqs, _list, _d_null, _d_multi, _m_set, _m_move, edit_obj)
+- **Export** — 10/11 (backup, export, bki-export, login, upload)
 
 ## Individual Suite Reports
 
