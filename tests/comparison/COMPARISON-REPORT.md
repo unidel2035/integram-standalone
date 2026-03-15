@@ -1,7 +1,7 @@
-# PHP vs Node.js Comparison Test Report (Round 2)
+# PHP vs Node.js Comparison Test Report (Round 4)
 
 **Date:** 2026-03-15
-**Branch:** master (after PRs #499-#503 merged)
+**Branch:** master (after PRs #521-#524 merged)
 **Servers:** PHP 127.0.0.1:8082, Node 127.0.0.1:8081
 **Database:** my, User: testbot
 
@@ -12,40 +12,50 @@
 | 01-auth | 15 | 14 | 1 | 93% |
 | 02-ddl | 15 | 14 | 1 | 93% |
 | 03-dml | 13 | 9 | 4 | 69% |
-| 04-listing | 16 | 2 | 14 | 13% |
+| 04-listing | 21 | 14 | 7 | 67% |
 | 05-reports | 11 | 11 | 0 | **100%** |
-| 06-admin | 16 | 13 | 3 | 81% |
-| 07-refs-multi | 19 | 8 | 11 | 42% |
+| 06-admin | 16 | 14 | 2 | 88% |
+| 07-refs-multi | 19 | 14 | 5 | 74% |
 | 08-export | 11 | 10 | 1 | 91% |
-| **TOTAL** | **116** | **81** | **35** | **70%** |
+| **TOTAL** | **121** | **100** | **21** | **83%** |
 
-**Progress: 54% → 70% (+16 points, +18 tests fixed)**
+**Progress: 54% → 70% → 83% (Round 3-4 stabilized)**
 
-## Remaining Issues
+## Remaining Issues by Category
 
-| Issue | Category | Diffs | Tests |
-|-------|----------|-------|-------|
-| [#504](../../issues/504) | object?JSON extra keys (f_i, f_u, filter) | ~15 | 04-listing, 07-refs-multi |
-| [#505](../../issues/505) | edit_obj?JSON extra keys (base_typ, disabled) | 2 | 04-listing, 07-refs-multi |
-| [#506](../../issues/506) | edit_types missing &editables block | 2 | 04-listing, 06-admin |
-| [#507](../../issues/507) | _list/_list_join PHP returns null | 7 | 04-listing, 07-refs-multi |
-| [#508](../../issues/508) | Minor: obj_meta key order, _m_set, _m_move | 5 | 06-admin, 07-refs-multi |
-
-### Not-a-bug diffs (4 total)
+### Not-a-bug diffs (7 total)
 - `POST /auth nonexistent db` — PHP 500 (built-in server limitation)
 - `POST /_d_null` — PHP 500 (built-in server limitation)
-- `POST /_m_new` ord — auto-increment gap (expected)
-- `POST /_m_save` F_I — different object IDs on each server (expected)
 - `GET /csv_all` — PHP 500 (built-in server limitation)
+- `POST /_m_new` ord — auto-increment gap (expected)
+- `POST /_m_new (empty)` ord — auto-increment gap (expected)
+- `POST /_m_save (rename)` F_I — different object IDs (expected)
+- `POST /_m_save (copy)` F_I — different object IDs (expected)
 
-## What's Working (81/116 MATCH)
+### Real diffs requiring fixes (14 total)
+
+| Category | Diffs | Tests |
+|----------|-------|-------|
+| object?JSON — &object_reqs/&uni_object_view_reqs missing | ~5 | 04-listing (#3-6) |
+| object?JSON — _noobj F_U block | 2 | 04-listing (#5-6) |
+| object?JSON — F_U=0 returns empty | 1 | 04-listing (#6) |
+| edit_obj — auto-increment ID arrays | 2 | 04-listing (#11), 07-refs-multi (#19) |
+| edit_types — ACTIVITY race condition | 2 | 04-listing (#12), 06-admin (#6) |
+| dir_admin — HTML body diff | 1 | 06-admin (#12) |
+| object sub-type/col-as-table — template keys | 2 | 07-refs-multi (#9, #17) |
+| _d_del_req — test data race | 1 | 07-refs-multi (#18) |
+| object F_I — ID normalization | 1 | 04-listing (#7) |
+
+## What's Working (100/121 MATCH)
 
 - **Reports** — 100% (all JSON formats, pagination, CSV, counting)
 - **Auth** — 93% (login, xsrf, jwt, exit, validate, getcode, checkcode)
 - **DDL** — 93% (type/column CRUD, ref, multi, rename)
 - **Export** — 91% (backup, export, bki-export, login pages)
-- **Admin** — 81% (terms, dict, types, form, sql, grants, validate)
-- **DML** — 69% (move, order, delete, _m_id all match)
+- **Admin** — 88% (terms, dict, types, form, sql, grants, validate)
+- **Refs/Multi** — 74% (_ref_reqs, _list, _list_join, _d_null, _d_multi, _m_set, _m_move)
+- **DML** — 69% (_m_up, _m_ord, _m_move, _m_id, _m_del all match)
+- **Listing** — 67% (JSON, JSON_DATA, filters, sorting, obj_meta)
 
 ## Individual Suite Reports
 

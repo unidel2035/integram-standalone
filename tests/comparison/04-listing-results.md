@@ -14,7 +14,7 @@
 | 8 | GET /object?F_{type}=Alpha | 200 | 200 | MATCH |
 | 9 | GET /object?order_val=val | 200 | 200 | MATCH |
 | 10 | GET /object?desc=1 | 200 | 200 | MATCH |
-| 11 | GET /edit_obj/:id | 200 | 200 | DIFF: val[&main.a.&object]: PHP={"disabled":[""],"id":["1000004558"],"ty... Node={"disabled":[""],"id":["1000004557"],"ty... |
+| 11 | GET /edit_obj/:id | 200 | 200 | DIFF: val[&main.a.&object]: PHP={"disabled":[""],"id":["1000005200"],"ty... Node={"disabled":[""],"id":["1000005199"],"ty... |
 | 12 | GET /edit_types | 200 | 200 | DIFF: val[edit_types]: PHP={"0":["1000001489","1000001488","220822"... Node={"0":["1000001489","1000001488","220822"... |
 | 13 | GET /obj_meta/:type | 200 | 200 | MATCH |
 | 14 | GET /obj_meta (bad id) | 200 | 200 | MATCH |
@@ -31,43 +31,43 @@
 ### GET /object/:type?LIMIT=2
 
 - keys: PHP=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...] Node=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...]
-- PHP: `{"&main.a":{"_parent_.title":["__lst_main_1773568914115"]},"type":{"id":1000004554,"up":1,"val":"__lst_main_1773568914115","base":"SHORT"},"base":{"id...`
-- Node: `{"&main.a":{"_parent_.title":["__lst_main_1773568914115"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":[""],"filt...`
+- PHP: `{"&main.a":{"_parent_.title":["__lst_main_1773571296052"]},"type":{"id":1000005196,"up":1,"val":"__lst_main_1773571296052","base":"SHORT"},"base":{"id...`
+- Node: `{"&main.a":{"_parent_.title":["__lst_main_1773571296052"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":[""],"filt...`
 
 ### GET /object/:type (empty)
 
 - keys: PHP=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...] Node=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...]
-- PHP: `{"&main.a":{"_parent_.title":["__lst_empty_1773568914115"]},"type":{"id":1000004567,"up":1,"val":"__lst_empty_1773568914115","base":"SHORT"},"base":{"...`
-- Node: `{"&main.a":{"_parent_.title":["__lst_empty_1773568914115"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":[""],"fil...`
+- PHP: `{"&main.a":{"_parent_.title":["__lst_empty_1773571296052"]},"type":{"id":1000005209,"up":1,"val":"__lst_empty_1773571296052","base":"SHORT"},"base":{"...`
+- Node: `{"&main.a":{"_parent_.title":["__lst_empty_1773571296052"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":[""],"fil...`
 
 ### GET /object?F_U=1
 
 - keys: PHP=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...] Node=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...]
 - val[&main.a._noobj]: PHP={"_request_.f_u":["1"]} Node=
-- PHP: `{"&main.a":{"_parent_.title":["__lst_main_1773568914115"]},"type":{"id":1000004554,"up":1,"val":"__lst_main_1773568914115","base":"SHORT"},"base":{"id...`
-- Node: `{"&main.a":{"_parent_.title":["__lst_main_1773568914115"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":["1"],"fil...`
+- PHP: `{"&main.a":{"_parent_.title":["__lst_main_1773571296052"]},"type":{"id":1000005196,"up":1,"val":"__lst_main_1773571296052","base":"SHORT"},"base":{"id...`
+- Node: `{"&main.a":{"_parent_.title":["__lst_main_1773571296052"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":["1"],"fil...`
 
 ### GET /object?F_U=0
 
 - keys: PHP=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...] Node=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...]
 - val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT","LEFT","LEFT","LEFT","L... Node={"align":[],"id":[],"val":[]}
 - val[&main.a._noobj]: PHP={"_request_.f_u":["0"]} Node=
-- val[object]: PHP=[{"base":"1000004554","id":"__ID__","up"... Node=[]
-- PHP: `{"&main.a":{"_parent_.title":["__lst_main_1773568914115"]},"type":{"id":1000004554,"up":1,"val":"__lst_main_1773568914115","base":"SHORT"},"base":{"id...`
-- Node: `{"&main.a":{"_parent_.title":["__lst_main_1773568914115"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":["0"],"fil...`
+- val[object]: PHP=[{"base":"1000005196","id":"__ID__","up"... Node=[]
+- PHP: `{"&main.a":{"_parent_.title":["__lst_main_1773571296052"]},"type":{"id":1000005196,"up":1,"val":"__lst_main_1773571296052","base":"SHORT"},"base":{"id...`
+- Node: `{"&main.a":{"_parent_.title":["__lst_main_1773571296052"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":["0"],"fil...`
 
 ### GET /object?F_I=id
 
 - val[&main.a.&uni_obj]: PHP={"base_typ":["3"],"create_granted":["blo... Node={"base_typ":["3"],"create_granted":["blo...
-- val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT"],"id":["1000004558"],"v... Node={"align":["LEFT"],"id":["1000004557"],"v...
-- PHP: `{"&main.a":{"_parent_.title":["__lst_main_1773568914115"]},"type":{"id":1000004554,"up":1,"val":"__lst_main_1773568914115","base":"SHORT"},"base":{"id...`
-- Node: `{"&main.a":{"_parent_.title":["__lst_main_1773568914115"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":["1000004557"],"f_u":...`
+- val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT"],"id":["1000005200"],"v... Node={"align":["LEFT"],"id":["1000005199"],"v...
+- PHP: `{"&main.a":{"_parent_.title":["__lst_main_1773571296052"]},"type":{"id":1000005196,"up":1,"val":"__lst_main_1773571296052","base":"SHORT"},"base":{"id...`
+- Node: `{"&main.a":{"_parent_.title":["__lst_main_1773571296052"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":["1000005199"],"f_u":...`
 
 ### GET /edit_obj/:id
 
-- val[&main.a.&object]: PHP={"disabled":[""],"id":["1000004558"],"ty... Node={"disabled":[""],"id":["1000004557"],"ty...
-- PHP: `{"obj":{"id":"1000004558","val":"Alpha","parent":"1","typ":"1000004554","typ_name":"__lst_main_1773568914115","base_typ":"3"},"&main.a.&object":{"typ"...`
-- Node: `{"&main.a.&object":{"disabled":[""],"id":["1000004557"],"typ":["1000004554","1000004554"],"typ_name":["__lst_main_1773568914115","__lst_main_177356891...`
+- val[&main.a.&object]: PHP={"disabled":[""],"id":["1000005200"],"ty... Node={"disabled":[""],"id":["1000005199"],"ty...
+- PHP: `{"obj":{"id":"1000005200","val":"Alpha","parent":"1","typ":"1000005196","typ_name":"__lst_main_1773571296052","base_typ":"3"},"&main.a.&object":{"typ"...`
+- Node: `{"&main.a.&object":{"disabled":[""],"id":["1000005199"],"typ":["1000005196","1000005196"],"typ_name":["__lst_main_1773571296052","__lst_main_177357129...`
 
 ### GET /edit_types
 
