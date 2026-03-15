@@ -5402,8 +5402,11 @@ router.get('/:db/:page*', async (req, res, next) => {
         const req_order   = [];
         const arr_type    = {};
         const ref_type    = {};
+        const seenReqKeys = new Set();
         for (const rd of reqDefStd) {
           const k = String(rd.t);
+          if (seenReqKeys.has(k)) continue; // skip duplicates from JOIN
+          seenReqKeys.add(k);
           // PHP: base_typ=0 → 'TAB_DELIMITER' in req_base (section separator)
           req_base[k]    = rd.base_typ === 0 ? 'TAB_DELIMITER' : (REV_BASE_TYPE[rd.base_typ] || 'SHORT');
           req_base_id[k] = String(rd.base_typ);
