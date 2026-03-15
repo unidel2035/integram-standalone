@@ -61,6 +61,25 @@ async function run() {
   // 14. OPTIONS preflight
   await dual('OPTIONS /*', 'OPTIONS', '/', null, { noCookie: true, statusOnly: true });
 
+  // 15. POST /auth — non-existent database (#427: must return 404 + plain text)
+  {
+    const fakeDb = 'zzz_nonexistent_db_427';
+    const body = `login=${USER}&pwd=${PASS}&JSON=1`;
+    const [php, node] = await Promise.all([
+      http(PHP, 'POST', `/${fakeDb}/auth`, body),
+      http(NODE, 'POST', `/${fakeDb}/auth`, body),
+    ]);
+    const diffs = [];
+    if (php.status !== node.status) diffs.push(`status: PHP=${php.status} Node=${node.status}`);
+    if (node.status !== 404) diffs.push(`Node should return 404, got ${node.status}`);
+    if (node.json !== null) diffs.push('Node should return plain text, got JSON');
+    if (!node.body.includes('does not exist')) diffs.push(`Node body missing "does not exist": ${node.body.slice(0, 80)}`);
+    const match = diffs.length === 0;
+    const icon = match ? '\x1b[32mMATCH\x1b[0m' : '\x1b[31mDIFF\x1b[0m';
+    console.log(`  ${icon}  POST /auth (nonexistent db #427)${diffs.length ? '\n         ' + diffs.join('\n         ') : ''}`);
+    results.push({ name: 'POST /auth (nonexistent db #427)', match, diffs, phpStatus: php.status, nodeStatus: node.status, phpBody: php.body.slice(0, 200), nodeBody: node.body.slice(0, 200) });
+  }
+
   // Summary
   const s = summary();
   const md = generateMD('01-auth — Auth & Session');
