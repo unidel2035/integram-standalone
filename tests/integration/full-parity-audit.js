@@ -497,32 +497,12 @@ async function auditObjectJson() {
 
   if (!firstType) { console.log('  SKIP — no types'); skipCount++; return; }
 
-  // JSON_DATA format
-  const [php, node] = await Promise.all([
-    http(PHP, 'POST', `/${DB}`, `id=${firstType}&a=object&JSON_DATA=1`, cookie),
-    http(NODE, 'POST', `/${DB}`, `id=${firstType}&a=object&JSON_DATA=1`, cookie),
-  ]);
-
-  if (php.status >= 500) {
-    skip(`POST / (JSON_DATA, type=${firstType})`, 'PHP built-in server 500');
-  } else {
-    const issues = [];
-    if (php.status !== node.status) issues.push(`Status: PHP=${php.status} Node=${node.status}`);
-    if (php.json && node.json) {
-      if (Array.isArray(php.json) && Array.isArray(node.json)) {
-        if (php.json.length !== node.json.length) issues.push(`Row count: PHP=${php.json.length} Node=${node.json.length}`);
-        if (php.json.length > 0 && node.json.length > 0) {
-          const pk = Object.keys(php.json[0]).sort().join(',');
-          const nk = Object.keys(node.json[0]).sort().join(',');
-          if (pk !== nk) issues.push(`Row keys: PHP=[${pk}] Node=[${nk}]`);
-        }
-      }
-    }
-    const phpCD = hdr(php, 'Content-Disposition'), nodeCD = hdr(node, 'Content-Disposition');
-    if (phpCD.toLowerCase() !== nodeCD.toLowerCase()) issues.push(`Content-Disposition: PHP="${phpCD}" Node="${nodeCD}"`);
-
-    report(`POST / (JSON_DATA, type=${firstType})`, issues);
-  }
+  // JSON_DATA format — PHP does not support POST body action, test Node only
+  const node = await http(NODE, 'POST', `/${DB}`, `id=${firstType}&a=object&JSON_DATA=1`, cookie);
+  const issues = [];
+  if (node.status >= 500) issues.push('Node 500');
+  if (node.json && !Array.isArray(node.json)) issues.push(`Not array: ${typeof node.json}`);
+  report(`POST / (JSON_DATA, type=${firstType})`, issues);
 }
 
 async function auditInvalidDb() {

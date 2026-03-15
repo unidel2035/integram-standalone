@@ -8958,6 +8958,7 @@ if(Validate_Token())
 			$joins = Array();
 		    $list = Array();
 			$reqs = $reqs_granted = $sub_reqs = $search_req = $restrict = $wild_search = "";
+			$dic = null;
 			while($row = mysqli_fetch_array($data_set)){
 			    if(!isset($dic)){
     			    $dic = $row["dic"];
@@ -9070,7 +9071,10 @@ if(Validate_Token())
 				if(isset($granted))
 					$reqs_granted = "AND ($granted)";
         	}
-			$sql = "SELECT vals.id, vals.val ref_val $reqs 
+			if($dic === null){
+				die(json_encode($list, JSON_UNESCAPED_UNICODE));
+			}
+			$sql = "SELECT vals.id, vals.val ref_val $reqs
 						FROM (SELECT vals.id, vals.val $sub_reqs FROM $z vals ".implode(" ", $joins).", $z pars
 						WHERE pars.id=vals.up AND pars.up!=0 AND vals.t=$dic $reqs_granted $search_req $restrict LIMIT ".DDLIST_ITEMS.") vals
 					    ORDER BY vals.val";
@@ -9147,7 +9151,7 @@ if(Validate_Token())
     		wlog("$user@".$_SERVER["REMOTE_ADDR"]."[$scount/$time/$stime]", "log");
 			if(isApi())
 			    if(isset($_REQUEST["JSON_DATA"]))
-    				die("[".implode(",", $GLOBALS["GLOBAL_VARS"]["newapi"])."]");
+    				die("[".implode(",", $GLOBALS["GLOBAL_VARS"]["newapi"] ?? [])."]");
     			else
     				die(json_encode($GLOBALS["GLOBAL_VARS"]["api"], JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE));
         	if(($z == $GLOBALS["GLOBAL_VARS"]["user"]) || ($GLOBALS["GLOBAL_VARS"]["user"] == "admin"))

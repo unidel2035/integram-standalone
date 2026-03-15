@@ -11,9 +11,114 @@ Date: 2026-03-15
 | Query & filter parity | 18 | 0 | 3 | `query-parity-audit.js` |
 | Endpoints parity | 46 | 0 | 13 | `endpoints-parity-audit.js` |
 | Comprehensive parity | 113 | 0 | 22 | `comprehensive-parity-audit.js` |
-| **Total** | **224** | **0** | **41** |
+| Auth extended | 16 | 0 | 3 | `auth-extended.js` |
+| DDL extended | 18 | 0 | 0 | `ddl-extended.js` |
+| DML extended | 11 | 0 | 0 | `dml-extended.js` |
+| Listing extended | 16 | 0 | 9 | `listing-extended.js` |
+| Reports extended | 24 | 0 | 0 | `reports-extended.js` |
+| Business CRUD | 40 | 0 | 4 | `business-crud.js` |
+| **Total** | **349** | **0** | **57** |
 
-## Test Results
+## Extended Test Suites
+
+### Auth Extended (`auth-extended.js`): 16 PASS / 0 FAIL / 3 SKIP
+
+| # | Test | Result | Notes |
+|---|------|--------|-------|
+| 1 | auth tzone | PASS | |
+| 2 | auth change mismatch | PASS | |
+| 3 | auth change short | PASS | |
+| 4 | auth secret invalid | PASS | |
+| 5 | GET auth?secret | PASS | |
+| 6 | validate | PASS | |
+| 7 | validate no token | PASS | |
+| 8 | validate no JSON | PASS | |
+| 9-12 | jwt (empty/invalid/malformed/token=) | PASS | Node-only |
+| 13-16 | register (email/short pwd/mismatch/agree) | PASS | Node-only |
+| 17 | getcode tzone | PASS | |
+| 18 | checkcode nonexistent | PASS | |
+| 19 | confirm GET JSON | SKIP×3 | PHP status varies |
+
+### DDL Extended (`ddl-extended.js`): 18 PASS / 0 FAIL / 0 SKIP
+
+| # | Test | Result |
+|---|------|--------|
+| 1 | _d_new subtype (up=parentId) | PASS |
+| 2 | _d_new empty name | PASS |
+| 3 | _d_new GRANT base type (t=23) | PASS |
+| 4 | _d_save change base type | PASS |
+| 5 | _d_req duplicate column | PASS |
+| 6 | _d_req self-reference | PASS |
+| 7-8 | _d_null explicit required=1/0 | PASS |
+| 9-10 | _d_multi explicit multi=1/0 | PASS |
+| 11 | _d_ord order=999 | PASS |
+| 12 | _d_alias val=rename | PASS |
+| 13 | _d_attrs all params combined | PASS |
+| 14-15 | _d_del_req valid/nonexistent | PASS |
+| 16 | _d_ref nonexistent type | PASS |
+
+### DML Extended (`dml-extended.js`): 11 PASS / 0 FAIL / 0 SKIP
+
+| # | Test | Result |
+|---|------|--------|
+| 1 | _m_new empty value | PASS |
+| 2 | _m_new explicit type= | PASS |
+| 3 | _m_save tab=2 | PASS |
+| 4 | _m_save tzone=3 | PASS |
+| 5 | _m_ord order=999 | PASS |
+| 6 | _m_id same ID | PASS |
+| 7 | _m_id new_id=0 | PASS |
+| 8 | _m_move same parent | PASS |
+| 9 | _m_del cascade | PASS |
+| 10 | _m_del forced | PASS |
+| 11 | _m_del nonexistent | PASS |
+
+### Listing Extended (`listing-extended.js`): 16 PASS / 0 FAIL / 9 SKIP
+
+| # | Test | Result | Notes |
+|---|------|--------|-------|
+| 1 | F_I=objectId | PASS | |
+| 2 | F_I nonexistent | PASS | |
+| 3 | JSON_DATA+LIMIT=2 | SKIP | PHP null |
+| 4 | JSON_DATA+F_U | SKIP | PHP null |
+| 5 | F_U=0 root only | PASS | |
+| 6 | F_TYPEID=value | PASS | |
+| 7-11 | _list (LIMIT/q/sort/F/up) | SKIP×5 | PHP null |
+| 12-13 | _list_join (q/LIMIT) | SKIP×2 | PHP null |
+| 14 | edit_obj nonexistent | PASS | Node-only |
+| 15-16 | metadata (typeId/nonexistent) | PASS | |
+| 17 | terms invalid db | PASS | |
+
+### Reports Extended (`reports-extended.js`): 24 PASS / 0 FAIL / 0 SKIP
+
+| # | Test | Result |
+|---|------|--------|
+| 1-6 | All 6 JSON formats | PASS |
+| 7-9 | LIMIT=2 / LIMIT=2,3 / F=5 | PASS |
+| 10-11 | ORDER / ORDER DESC | PASS |
+| 12-16 | FR_ / TO_ / EQ_ / LIKE_ / FR+TO range | PASS |
+| 17 | SELECT subset | PASS |
+| 18 | field_names=1 | PASS |
+| 19-20 | csv / format=csv | PASS |
+| 21-23 | POST action=report (JSON/JSON_KV/LIMIT) | PASS |
+| 24 | nonexistent report | PASS |
+
+### Business CRUD (`business-crud.js`): 40 PASS / 0 FAIL / 4 SKIP
+
+| Section | Tests | Result | Notes |
+|---------|-------|--------|-------|
+| 1. Lookup Tables | 11 | 10 PASS / 1 SKIP | Create ref type → items → ref column → set/change/clear ref |
+| 2. Multiselects | 10 | 10 PASS | Create tags → ref column → enable MULTI → add/remove values |
+| 3. Object Listing | 11 | 8 PASS / 3 SKIP | Create 5 objects → list/search/_list_join → order → ID change → delete → verify |
+| 4. Full Lifecycle | 9 | 9 PASS | Create → set NUMBER+DATETIME → verify → copy → verify copy → list → delete → verify |
+
+Key findings:
+- `_d_ref` returns `id=parentType, obj=requisiteId` (reversed from `_d_req`)
+- `_m_set` references use TYPE ID as column identifier: `t{refTypeId}=objectId`
+- `_m_id` uses `new_id` parameter (not `newid`)
+- Parent-child object creation (`up=parentObjectId`) requires GRANT permissions
+
+## Legacy Test Suites
 
 ### 1. Read-only Parity (`full-parity-audit.js`): 19 PASS / 0 FAIL / 3 SKIP
 
@@ -90,91 +195,19 @@ Date: 2026-03-15
 | 2.6 | Descending sort | PASS | |
 | 3.1 | `edit_obj` (JSON) | PASS | |
 | 3.2 | `edit_types` (JSON) | PASS | |
-| 4.1 | `_m_move` to sibling | PASS | PHP cross-join bug, Node OK |
-| 4.2 | `_m_move` same parent | PASS | PHP cross-join bug, Node OK |
-| 4.3 | `_m_move` to root | PASS | |
-| 5.1 | `_ref_reqs` basic | SKIP | PHP built-in server 500 |
-| 5.2 | `_ref_reqs` with q= search | SKIP | PHP built-in server 500 |
-| 5.3 | `_ref_reqs` with @ID search | SKIP | PHP built-in server 500 |
-| 6.1 | `_d_ref` add reference | PASS | |
-| 6.2 | `exit` logout redirect | PASS | |
+| 4.1-3 | `_m_move` | PASS | PHP cross-join bug, Node OK |
+| 5.1-3 | `_ref_reqs` | SKIP×3 | PHP built-in server 500 |
+| 6.1 | `_d_ref` | PASS | |
+| 6.2 | `exit` | PASS | |
 | 6.3 | `dir_admin` | PASS | |
 
-### 4. Endpoints Parity (`endpoints-parity-audit.js`)
+### 4. Endpoints Parity (`endpoints-parity-audit.js`): 46 PASS / 0 FAIL / 13 SKIP
 
-#### Phase A: Simple Endpoints — 11 PASS / 0 FAIL / 1 SKIP
-
-| # | Endpoint | Result | Notes |
-|---|----------|--------|-------|
-| A1.1 | `_m_id` — change ID | PASS | |
-| A1.2 | `_m_id` — duplicate ID | PASS | |
-| A1.3 | `_m_id` — invalid new_id=0 | SKIP | PHP built-in server limitation |
-| A1.4 | `_m_id` — same ID | PASS | |
-| A2.1 | `_dict` — all types | PASS | Node-only |
-| A2.2 | `_dict` — specific type | PASS | Node-only |
-| A2.3 | `_dict` — non-existent type | PASS | Node-only |
-| A3.1 | `login` GET redirect | PASS | |
-| A3.2 | `login` GET with u= param | PASS | |
-| A4.1 | `confirm` — missing params | PASS | |
-| A4.2 | `confirm` — wrong old password | PASS | |
-| A4.3 | `confirm` — non-existent user | PASS | |
-
-#### Phase B: Export / Backup — 4 PASS / 0 FAIL / 2 SKIP
-
-| # | Endpoint | Result | Notes |
-|---|----------|--------|-------|
-| B1 | `csv_all` | SKIP | PHP built-in server 500 |
-| B2 | `backup` | SKIP | PHP built-in server 302 |
-| B3.1 | `_new_db` — create | PASS | |
-| B3.2 | `_new_db` — short name | PASS | Node-only |
-| B3.3 | `_new_db` — invalid name | PASS | Node-only |
-| B3.4 | `_new_db` — duplicate name | PASS | Node-only |
-
-#### Phase C: Auth — 7 PASS / 0 FAIL
-
-| # | Endpoint | Result | Notes |
-|---|----------|--------|-------|
-| C1.1 | `jwt` — empty token | PASS | Node-only |
-| C1.2 | `jwt` — invalid token | PASS | Node-only |
-| C1.3 | `jwt` — invalid signature | PASS | Node-only |
-| C2.1 | `register` — invalid email | PASS | Node-only |
-| C2.2 | `register` — short password | PASS | Node-only |
-| C2.3 | `register` — password mismatch | PASS | Node-only |
-| C2.4 | `register` — missing agree | PASS | Node-only |
-
-#### Phase D: Reports — 9 PASS / 0 FAIL
-
-| # | Endpoint | Result | Notes |
-|---|----------|--------|-------|
-| D0 | Report list | PASS | Node-only |
-| D1 | Report `?JSON=1` | PASS | Node-only |
-| D2 | Report `?JSON_DATA` | PASS | Node-only |
-| D3 | Report `?JSON_KV` | PASS | Node-only |
-| D4 | Report `?JSON_CR` | PASS | Node-only |
-| D5 | Report `?JSON_HR` | PASS | Node-only |
-| D6 | Report `?RECORD_COUNT` | PASS | Node-only |
-| D7 | Report with `LIMIT=2` | PASS | Node-only |
-| D8 | Report non-existent | PASS | Node-only |
-
-#### Phase E: Remaining Endpoints — 4 PASS / 0 FAIL / 11 SKIP
-
-| # | Endpoint | Result | Notes |
-|---|----------|--------|-------|
-| E1 | `validate` | SKIP | PHP returns null |
-| E2 | `sql?JSON` | PASS | Fixed: removed extra keys |
-| E3 | `form?JSON` | PASS | Fixed: removed extra keys |
-| E4 | `dict?JSON` | PASS | |
-| E5 | `_list` | SKIP | PHP returns null |
-| E6 | `_list_join` | SKIP | PHP returns null |
-| E7 | `_d_main` (POST+XSRF) | SKIP | PHP returns null |
-| E8 | `grants` | SKIP | PHP returns null |
-| E9 | `check_grant` | SKIP | PHP returns null |
-| E10 | `export` | SKIP | PHP returns HTML |
-| E11 | `dir_admin` | SKIP | PHP returns HTML |
-| E12 | `_connect` (no connector) | PASS | Fixed: legacyRespond |
-| E13 | `download` (404) | SKIP | PHP returns HTML |
-| E14 | POST `action=object` | SKIP | PHP 500 |
-| E15 | POST `action=report` | SKIP | PHP returns null |
+Phase A (Simple): 11 PASS / 1 SKIP — _m_id, _dict, login, confirm
+Phase B (Export): 4 PASS / 2 SKIP — csv_all, backup, _new_db
+Phase C (Auth): 7 PASS — jwt, register
+Phase D (Reports): 9 PASS — 7 JSON formats + LIMIT + nonexistent
+Phase E (Remaining): 4 PASS / 11 SKIP — validate, sql, form, dict, _list, _list_join, _connect, etc.
 
 ### 5. Comprehensive Parity (`comprehensive-parity-audit.js`): 113 PASS / 0 FAIL / 22 SKIP
 
@@ -192,10 +225,11 @@ Date: 2026-03-15
 ## Node.js Bugs Found & Fixed
 
 ### This session (uncommitted)
-1. **`isApiRequest()` missing `RECORD_COUNT`** — `?RECORD_COUNT` alone returned HTML instead of JSON
-2. **`sql?JSON` extra keys** — returned `&main.myrolemenu` and `&main.&top_menu` not present in PHP
-3. **`form?JSON` extra keys** — same: returned `&main.myrolemenu` and `&main.&top_menu` not present in PHP
-4. **`_connect` empty response** — returned empty body instead of `legacyRespond()` when no connector found
+1. **`isApiRequest()` missing `csv`/`format=csv`** — `?csv` and `?format=csv` returned HTML instead of data
+2. **`isApiRequest()` missing `RECORD_COUNT`** — `?RECORD_COUNT` alone returned HTML instead of JSON
+3. **`sql?JSON` extra keys** — returned `&main.myrolemenu` and `&main.&top_menu` not present in PHP
+4. **`form?JSON` extra keys** — same: returned `&main.myrolemenu` and `&main.&top_menu` not present in PHP
+5. **`_connect` empty response** — returned empty body instead of `legacyRespond()` when no connector found
 
 ### Previous commits
 1. **Auth JSON Content-Disposition** — `login.json` вместо `api.json`
@@ -211,17 +245,19 @@ Date: 2026-03-15
 
 ## Coverage
 
-### Tested (44 actions)
+### Tested (50+ actions)
 `auth`, `xsrf`, `getcode`, `checkcode`, `terms`, `metadata`, `obj_meta`, `_ref_reqs`,
 `_d_new`, `_d_save`, `_d_del`, `_d_req`, `_d_ref`, `_d_null`, `_d_multi`, `_d_up`, `_d_alias`, `_d_attrs`, `_d_ord`, `_d_del_req`,
 `_m_new`, `_m_save`, `_m_del`, `_m_set`, `_m_up`, `_m_ord`, `_m_move`, `_m_id`,
 `_dict`, `_list`, `_list_join`, `_d_main`, `_connect`,
-`login`, `confirm`, `jwt`, `register`, `_new_db`,
-`report` (7 JSON formats), `csv_all`, `backup`,
-`sql`, `form`, `dict`, `validate`, `grants`, `check_grant`, `export`, `dir_admin`, `download`,
+`login`, `confirm`, `jwt`, `register`, `_new_db`, `validate`,
+`report` (7 JSON formats + filters + sorting + LIMIT + csv),
+`csv_all`, `backup`,
+`sql`, `form`, `dict`, `grants`, `check_grant`, `export`, `dir_admin`, `download`,
 `edit_obj`, `edit_types`, `exit`,
 `JSON_DATA`, `JSON=1`, `JSON_KV`, `JSON_CR`, `JSON_HR`, `RECORD_COUNT`,
-`F_I`, `F_U`, `F_{typeId}`, sorting
+`F_I`, `F_U`, `F_{typeId}`, sorting, LIMIT, offset,
+Reference columns, multiselect columns, object copy, custom ID
 
 ### Not tested (untestable or not implemented)
 | Action | Reason |
@@ -230,6 +266,8 @@ Date: 2026-03-15
 | `google-auth` | Requires Google OAuth credentials |
 | `auth.asp` | Legacy ASP compatibility redirect |
 | `bki-export` / `bki-import` / `restore` | Complex binary formats, destructive |
+| Parent-child objects (`up=objectId`) | Requires GRANT permissions |
+| BUTTON type behavior | Requires UI interaction |
 
 ## Known PHP Built-in Server Limitations
 
@@ -266,7 +304,15 @@ These endpoints return 500, null, or HTML on PHP built-in dev server but work co
 # PHP:  php -S 127.0.0.1:8082 router.php  (in integram-server/)
 # Node: PORT=8081 node start-legacy-test.js (in backend/monolith/)
 
-# All suites
+# Extended suites (use shared helpers)
+node tests/integration/auth-extended.js
+node tests/integration/ddl-extended.js
+node tests/integration/dml-extended.js
+node tests/integration/listing-extended.js
+node tests/integration/reports-extended.js
+node tests/integration/business-crud.js
+
+# Legacy suites
 node tests/integration/full-parity-audit.js
 node tests/integration/crud-parity-audit.js
 node tests/integration/query-parity-audit.js

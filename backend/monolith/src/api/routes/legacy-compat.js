@@ -374,6 +374,7 @@ function isApiRequest(req) {
       q.JSON_DATA !== undefined || q.JSON_KV !== undefined ||
       q.JSON_CR !== undefined || q.JSON_HR !== undefined ||
       q.RECORD_COUNT !== undefined ||
+      q.csv !== undefined || q.format === 'csv' ||
       b.JSON !== undefined || b.json !== undefined ||
       b.JSON_DATA !== undefined || b.JSON_KV !== undefined ||
       b.JSON_CR !== undefined || b.JSON_HR !== undefined ||
@@ -4745,7 +4746,7 @@ router.post('/:db', async (req, res, next) => {
   const { db } = req.params;
   if (!isValidDbName(db)) return next();
 
-  const action = req.body.action || req.query.action;
+  const action = req.body.action || req.query.action || req.body.a || req.query.a;
 
   if (action !== 'object' && action !== 'edit_obj') {
     return next();
@@ -4754,6 +4755,20 @@ router.post('/:db', async (req, res, next) => {
   const id = parseInt(req.body.id || req.query.id, 10);
   if (!id) {
     return res.status(200).send('Object id is empty or 0');
+  }
+
+  // For API requests (JSON/JSON_DATA/JSON_KV/etc), internally forward to GET object handler
+  // PHP: processes action=object with JSON_DATA through the normal render pipeline
+  if (isApiRequest(req)) {
+    // Merge body params into query so GET handler sees JSON_DATA, LIMIT, etc.
+    for (const [k, v] of Object.entries(req.body || {})) {
+      if (req.query[k] === undefined) req.query[k] = v;
+    }
+    // Rewrite request to match GET /:db/object/:typeId route
+    req.method = 'GET';
+    req.url = `/${db}/object/${id}`;
+    req.params.typeId = String(id);
+    return next('route');
   }
 
   // Map action to template file (PHP: renders object.html or edit_obj.html)
@@ -5006,7 +5021,8 @@ router.get('/:db/:page*', async (req, res, next) => {
       return res.status(200).json([{ error: `typeId required: /${db}/${page}/{id}?JSON` }]);
     }
 
-    // report + JSON: always pass to the dedicated report API route (list or detail)
+    // report + JSON/CSV: always pass to the dedicated report API route (list or detail)
+    // CSV export (?csv or ?format=csv) also needs the report route, not the HTML page
     if (page === 'report') {
       return next();
     }
@@ -8400,12 +8416,19 @@ router.get('/:db/_ref_reqs/:refId', legacyAuthMiddleware, async (req, res) => {
        ORDER BY def_reqs.ord`, [id], { label: 'get_db_ref_reqs_refId_select' });
 
     if (refRows.length === 0) {
-      // Fallback to simple query if the complex query returns nothing
-      const { rows: simpleRows } = await execSql(pool, `SELECT t, val FROM ${db} WHERE id = ?`, [id], { label: 'get_db_ref_reqs_refId_select' });
+      // Main query found no rows: either ID doesn't exist, or par.up != 0
+      const { rows: simpleRows } = await execSql(pool, `SELECT r.t, r.up FROM ${db} r WHERE r.id = ?`, [id], { label: 'get_db_ref_reqs_refId_select' });
       if (simpleRows.length === 0) {
         return res.status(404).json([{ error: 'Reference not found' }]);
       }
 
+      // Type definitions (up=0) are not reference requisites — return empty array like PHP
+      // PHP: json_encode(array()) → "[]"
+      if (Number(simpleRows[0].up) === 0) {
+        return res.json([]);
+      }
+
+      // For actual reference requisites (up != 0), fallback to simple query
       const refTypeId = simpleRows[0].t;
       let query = `SELECT id, val FROM ${db} WHERE t = ?`;
       const params = [refTypeId];
