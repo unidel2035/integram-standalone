@@ -4015,7 +4015,8 @@ router.post('/:db/checkcode', async (req, res) => {
 
       // PHP checkcode does NOT set a cookie — client sets it from JSON response (#430)
 
-      return res.status(200).json({ token: newToken, _xsrf: newXsrf });
+      // PHP: die('{"token":"...","_xsrf":"..."}') — text/html content type
+      return res.status(200).type('text/html').send(JSON.stringify({ token: newToken, _xsrf: newXsrf }));
     } else {
       // PHP: die('{"error":"user not found"}') — text/html, bare object, no array (#406)
       return res.status(200).type('text/html').send('{"error":"user not found"}');

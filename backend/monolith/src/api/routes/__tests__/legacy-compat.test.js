@@ -1700,28 +1700,69 @@ describe('GET /:db/report/:reportId — non-existent report (#450)', () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
   it('returns 200 with error in body for non-existent report ID (PHP parity)', async () => {
-    // compileReport: SELECT id, val, t, up FROM ... WHERE id = ? → empty result
-    const emptyRows = [[], []];  // mysql2 format: [rows, fields]
-
+    const emptyRows = [[], []];
     mockQuery(emptyRows);
-
     const res = await request(app)
       .get(`/${DB}/report/999999999?JSON=1`);
-
-    // PHP returns 200 with die_info("Report #999999999 was not found")
     expect(res.status).toBe(200);
     expect(res.body).toEqual([{ error: 'Report #999999999 was not found' }]);
   });
 
   it('does NOT return 404 for non-existent report (regression)', async () => {
     const emptyRows = [[], []];
-
     mockQuery(emptyRows);
-
     const res = await request(app)
       .get(`/${DB}/report/123456?JSON=1`);
-
     expect(res.status).not.toBe(404);
     expect(res.status).toBe(200);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /:db/checkcode — cookie parity (Issue #430)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('POST /:db/checkcode cookie parity (#430)', () => {
+  const app = makeApp();
+
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('checkcode with invalid data does NOT set a cookie', async () => {
+    mockQuery([[]]);
+    const res = await request(app)
+      .post(`/${DB}/checkcode`)
+      .send({ c: 'ab', u: 'bad' });
+    expect(res.status).toBe(200);
+    const setCookie = res.headers['set-cookie'];
+    expect(setCookie).toBeUndefined();
+  });
+
+  it('checkcode with valid format but unknown user does NOT set a cookie', async () => {
+    mockQuery([[]]);
+    const res = await request(app)
+      .post(`/${DB}/checkcode`)
+      .send({ c: 'abcd', u: 'user@example.com' });
+    expect(res.status).toBe(200);
+    const body = JSON.parse(res.text);
+    expect(body.error).toBe('user not found');
+    const setCookie = res.headers['set-cookie'];
+    expect(setCookie).toBeUndefined();
+  });
+
+  it('checkcode invalid data returns text/html content type (PHP parity)', async () => {
+    mockQuery([[]]);
+    const res = await request(app)
+      .post(`/${DB}/checkcode`)
+      .send({ c: 'ab', u: 'bad' });
+    expect(res.headers['content-type']).toMatch(/text\/html/);
+    expect(res.text).toBe('{"error":"invalid data"}');
+  });
+
+  it('checkcode user-not-found returns text/html content type (PHP parity)', async () => {
+    mockQuery([[]]);
+    const res = await request(app)
+      .post(`/${DB}/checkcode`)
+      .send({ c: 'abcd', u: 'user@example.com' });
+    expect(res.headers['content-type']).toMatch(/text\/html/);
   });
 });
