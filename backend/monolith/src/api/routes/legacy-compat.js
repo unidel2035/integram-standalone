@@ -4769,16 +4769,22 @@ router.post('/:db', async (req, res, next) => {
     return res.status(200).send('Object id is empty or 0');
   }
 
-  // For API requests (JSON/JSON_DATA/JSON_KV/etc), internally forward to GET object handler
+  // For API requests (JSON/JSON_DATA/JSON_KV/etc), internally forward to GET handler
   // PHP: processes action=object with JSON_DATA through the normal render pipeline
   if (isApiRequest(req)) {
     // Merge body params into query so GET handler sees JSON_DATA, LIMIT, etc.
     for (const [k, v] of Object.entries(req.body || {})) {
       if (req.query[k] === undefined) req.query[k] = v;
     }
-    // Rewrite request to match GET /:db/object/:typeId route
+    // Rewrite request to match the appropriate GET route
+    // action=object → GET /:db/object/:typeId (id is a type ID)
+    // action=edit_obj → GET /:db/edit_obj/:id (id is an object ID) — #442
     req.method = 'GET';
-    req.url = `/${db}/object/${id}`;
+    if (action === 'edit_obj') {
+      req.url = `/${db}/edit_obj/${id}`;
+    } else {
+      req.url = `/${db}/object/${id}`;
+    }
     req.params.typeId = String(id);
     return next('route');
   }
@@ -5026,11 +5032,16 @@ router.get('/:db/:page*', async (req, res, next) => {
   // default: case in index.php which populates $GLOBALS["GLOBAL_VARS"]["api"]
   // and returns json_encode() when isApi() is true.
   if (isApiRequest(req)) {
-    const subId = parseInt((fullPath || '').replace(/^\//, ''), 10) || 0;
+    let subId = parseInt((fullPath || '').replace(/^\//, ''), 10) || 0;
+
+    // #442: edit_obj can receive id from query/body params (PHP derives from $_REQUEST)
+    if (!subId && (page === 'edit_obj' || page === 'edit')) {
+      subId = parseInt(req.query.id || req.body?.id || 0, 10) || 0;
+    }
 
     // JSON requested but page is a template page without required sub-id → JSON error
     if ((page === 'object' || page === 'edit_obj') && !subId) {
-      return res.status(200).json([{ error: `typeId required: /${db}/${page}/{id}?JSON` }]);
+      return res.status(200).json([{ error: `${page === 'edit_obj' ? 'objectId' : 'typeId'} required: /${db}/${page}/{id}?JSON` }]);
     }
 
     // report + JSON/CSV: always pass to the dedicated report API route (list or detail)
