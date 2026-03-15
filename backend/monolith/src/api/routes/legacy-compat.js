@@ -5031,8 +5031,8 @@ router.get('/:db/:page*', async (req, res, next) => {
   const { db, page } = req.params;
   const fullPath = req.params[0] || '';
 
-  // Skip API-like requests
-  if (db.startsWith('_') || db === 'api' || page.startsWith('_')) {
+  // Skip API-like requests and pages with dedicated route handlers defined later
+  if (db.startsWith('_') || db === 'api' || page.startsWith('_') || page === 'xsrf') {
     return next();
   }
 

@@ -2,7 +2,7 @@
 /**
  * 01-auth: PHP vs Node.js — Auth & Session endpoints
  */
-import { PHP, NODE, DB, USER, PASS, http, dual, setup, section, summary, generateMD, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, USER, PASS, http, dual, setup, section, summary, generateMD, getXsrf, cookie, results } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
