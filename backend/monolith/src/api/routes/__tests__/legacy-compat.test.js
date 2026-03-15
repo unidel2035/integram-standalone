@@ -1599,3 +1599,39 @@ describe('api_dump() headers (Issue #382)', () => {
     expect(res.headers['content-transfer-encoding']).toBeUndefined();
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /:db/report/:reportId — non-existent report returns 200 (#450)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('GET /:db/report/:reportId — non-existent report (#450)', () => {
+  const app = makeApp();
+
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('returns 200 with error in body for non-existent report ID (PHP parity)', async () => {
+    // compileReport: SELECT id, val, t, up FROM ... WHERE id = ? → empty result
+    const emptyRows = [[], []];  // mysql2 format: [rows, fields]
+
+    mockQuery(emptyRows);
+
+    const res = await request(app)
+      .get(`/${DB}/report/999999999?JSON=1`);
+
+    // PHP returns 200 with die_info("Report #999999999 was not found")
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([{ error: 'Report #999999999 was not found' }]);
+  });
+
+  it('does NOT return 404 for non-existent report (regression)', async () => {
+    const emptyRows = [[], []];
+
+    mockQuery(emptyRows);
+
+    const res = await request(app)
+      .get(`/${DB}/report/123456?JSON=1`);
+
+    expect(res.status).not.toBe(404);
+    expect(res.status).toBe(200);
+  });
+});
