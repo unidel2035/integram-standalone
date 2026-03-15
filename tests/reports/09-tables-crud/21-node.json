@@ -1,9 +1,7 @@
-[
-  {
-    "args": "ext",
-    "id": 1000008235,
-    "next_act": "edit_types",
-    "obj": 1000008235,
-    "warnings": ""
-  }
-]
+{
+  "args": "ext",
+  "id": 1000008677,
+  "next_act": "edit_types",
+  "obj": 1000008677,
+  "warnings": ""
+}

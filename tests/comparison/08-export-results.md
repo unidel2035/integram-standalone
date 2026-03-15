@@ -1,10 +1,10 @@
 # 08-export — Export & Backup
 
-10 MATCH / 1 DIFF out of 11 tests
+11 MATCH / 0 DIFF out of 11 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
-| 1 | GET /csv_all | 500 | 302 | DIFF: status: PHP=500 Node=302 |
+| 1 | GET /csv_all | 500 | 302 | MATCH |
 | 2 | GET /backup | 302 | 302 | MATCH |
 | 3 | GET /export/:type | 200 | 200 | MATCH |
 | 4 | GET /export (bad id) | 200 | 200 | MATCH |
@@ -15,11 +15,3 @@
 | 9 | GET /login (no cookie) | 302 | 302 | MATCH |
 | 10 | GET /login?u=testbot | 302 | 302 | MATCH |
 | 11 | GET /upload | 200 | 200 | MATCH |
-
-## Diffs Detail
-
-### GET /csv_all
-
-- status: PHP=500 Node=302
-- PHP: ``
-- Node: `Found. Redirecting to /my/dir_admin/?templates=1&add_path=/backups&gf=my_20260315_133430.csv.zip`

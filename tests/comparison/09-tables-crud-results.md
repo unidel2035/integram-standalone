@@ -1,11 +1,11 @@
 # 09-tables-crud — Table CRUD
 
-19 MATCH / 6 DIFF out of 25 tests
+22 MATCH / 3 DIFF out of 25 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
 | 1 | #1 POST /_d_new (basic type) | 200 | 200 | DIFF: val[warnings]: PHP="Тип __tbl_verify___ID__ уже существует!... Node="" |
-| 2 | #2 POST /_d_new (LONG base) | 200 | 200 | DIFF: val[warnings]: PHP="" Node="Тип __tbl_long___ID__ уже существует!" |
+| 2 | #2 POST /_d_new (LONG base) | 200 | 200 | DIFF: val[warnings]: PHP="Тип __tbl_long___ID__ уже существует!" Node="" |
 | 3 | #3 POST /_d_new (empty name) | 200 | 200 | MATCH |
 | 4 | #4 POST /_d_new (subordinate) | 200 | 200 | DIFF: val[warnings]: PHP="Тип __tbl_sub___ID__ уже существует!" Node="" |
 | 5 | #5 POST /_d_req (SHORT col) | 200 | 200 | MATCH |
@@ -24,9 +24,9 @@
 | 18 | #18 GET /edit_types | 200 | 200 | MATCH |
 | 19 | #19 GET /terms | 200 | 200 | MATCH |
 | 20 | #20 GET /dict?JSON=1 | 200 | 200 | MATCH |
-| 21 | #21 POST /_d_save (rename type) | 200 | 200 | DIFF: keys[0]: PHP=[error] Node=[args,id,next_act,obj,warnings] |
-| 22 | #22 POST /_d_del_req (delete col) | 200 | 200 | DIFF: val[obj]: PHP=null Node="__ID__" |
-| 23 | #23 POST /_d_del_req (non-existent) | 200 | 200 | DIFF: keys: PHP=[args,id,next_act,obj,warnings] Node=[error] |
+| 21 | #21 POST /_d_save (rename type) | 200 | 200 | MATCH |
+| 22 | #22 POST /_d_del_req (delete col) | 200 | 200 | MATCH |
+| 23 | #23 POST /_d_del_req (non-existent) | 200 | 200 | MATCH |
 | 24 | #24 POST /_d_del (empty type) | 200 | 200 | MATCH |
 | 25 | #25 POST /_d_del (non-existent) | 200 | 200 | MATCH |
 
@@ -35,38 +35,17 @@
 ### #1 POST /_d_new (basic type)
 
 - val[warnings]: PHP="Тип __tbl_verify___ID__ уже существует!... Node=""
-- PHP: `{"id":"","obj":"1000008236","next_act":"edit_types","args":"ext","warnings":"Тип __tbl_verify_1773581670673 уже существует!"}`
-- Node: `{"args":"ext","id":"","next_act":"edit_types","obj":1000008236,"warnings":""}`
+- PHP: `{"id":"","obj":"1000010782","next_act":"edit_types","args":"ext","warnings":"Тип __tbl_verify_1773584401016 уже существует!"}`
+- Node: `{"args":"ext","id":"","next_act":"edit_types","obj":1000010782,"warnings":""}`
 
 ### #2 POST /_d_new (LONG base)
 
-- val[warnings]: PHP="" Node="Тип __tbl_long___ID__ уже существует!"
-- PHP: `{"id":"","obj":1000008237,"next_act":"edit_types","args":"ext","warnings":""}`
-- Node: `{"args":"ext","id":"","next_act":"edit_types","obj":1000008237,"warnings":"Тип __tbl_long_1773581670673 уже существует!"}`
+- val[warnings]: PHP="Тип __tbl_long___ID__ уже существует!" Node=""
+- PHP: `{"id":"","obj":"1000010783","next_act":"edit_types","args":"ext","warnings":"Тип __tbl_long_1773584401016 уже существует!"}`
+- Node: `{"args":"ext","id":"","next_act":"edit_types","obj":1000010783,"warnings":""}`
 
 ### #4 POST /_d_new (subordinate)
 
 - val[warnings]: PHP="Тип __tbl_sub___ID__ уже существует!" Node=""
-- PHP: `{"id":"","obj":"1000008238","next_act":"edit_types","args":"ext","warnings":"Тип __tbl_sub_1773581670673 уже существует!"}`
-- Node: `{"args":"ext","id":"","next_act":"edit_types","obj":1000008238,"warnings":""}`
-
-### #21 POST /_d_save (rename type)
-
-- keys[0]: PHP=[error] Node=[args,id,next_act,obj,warnings]
-- PHP: `[{"error":"Неверный базовый тип (0) "}]`
-- Node: `[{"args":"ext","id":1000008235,"next_act":"edit_types","obj":1000008235,"warnings":""}]`
-
-### #22 POST /_d_del_req (delete col)
-
-- val[obj]: PHP=null Node="__ID__"
-- PHP: `{"id":1000008241,"obj":null,"next_act":"edit_types","args":"ext","warnings":""}`
-- Node: `{"args":"ext","id":1000008235,"next_act":"edit_types","obj":1000008235,"warnings":""}`
-
-### #23 POST /_d_del_req (non-existent)
-
-- keys: PHP=[args,id,next_act,obj,warnings] Node=[error]
-- val[args]: PHP="ext" Node=
-- val[id]: PHP="__ID__" Node=
-- val[next_act]: PHP="edit_types" Node=
-- PHP: `{"id":999999999,"obj":null,"next_act":"edit_types","args":"ext","warnings":""}`
-- Node: `{"error":"Requisite not found"}`
+- PHP: `{"id":"","obj":"1000010784","next_act":"edit_types","args":"ext","warnings":"Тип __tbl_sub_1773584401016 уже существует!"}`
+- Node: `{"args":"ext","id":"","next_act":"edit_types","obj":1000010784,"warnings":""}`

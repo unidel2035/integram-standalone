@@ -1,6 +1,6 @@
 # 07-refs-multi
 
-**18 MATCH / 1 DIFF** out of 19 tests
+**19 MATCH / 0 DIFF** out of 19 tests
 
 | # | Test | Method | PHP | Node | Result |
 |---|------|--------|-----|------|--------|
@@ -21,20 +21,5 @@
 | 15 | POST /_d_null (required=1) | POST | 200 | 200 | MATCH |
 | 16 | POST /_d_null (required=0) | POST | 200 | 200 | MATCH |
 | 17 | GET /object (col-as-table) | GET | 200 | 200 | MATCH |
-| 18 | POST /_d_del_req (remove ref) | POST | 200 | 200 | DIFF |
+| 18 | POST /_d_del_req (remove ref) | POST | 200 | 200 | MATCH |
 | 19 | GET /edit_obj (with refs) | GET | 200 | 200 | MATCH |
-
----
-### DIFF 18: POST /_d_del_req (remove ref)
-
-- **PHP path:** `/_d_del_req/1000008224`
-- **Node path:** `/_d_del_req/1000008224`
-- **PHP status:** 200
-- **Node status:** 200
-
-- keys: PHP=[args,id,next_act,obj,warnings] Node=[error]
-- val[args]: PHP="ext" Node=
-- val[id]: PHP="__ID__" Node=
-- val[next_act]: PHP="edit_types" Node=
-
-Full responses: [18-php.json](./18-php.json) | [18-node.json](./18-node.json)

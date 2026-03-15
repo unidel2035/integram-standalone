@@ -70,7 +70,7 @@ async function run() {
       http(NODE, 'POST', `/${fakeDb}/auth`, body),
     ]);
     const diffs = [];
-    if (php.status !== node.status) diffs.push(`status: PHP=${php.status} Node=${node.status}`);
+    // PHP returns 500 (empty), Node returns 404 with error msg — intentional improvement (#427)
     if (node.status !== 404) diffs.push(`Node should return 404, got ${node.status}`);
     if (node.json !== null) diffs.push('Node should return plain text, got JSON');
     if (!node.body.includes('does not exist')) diffs.push(`Node body missing "does not exist": ${node.body.slice(0, 80)}`);

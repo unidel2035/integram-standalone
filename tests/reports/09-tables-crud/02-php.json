@@ -1,7 +1,7 @@
 {
   "id": "",
-  "obj": 1000008237,
+  "obj": "1000010783",
   "next_act": "edit_types",
   "args": "ext",
-  "warnings": ""
+  "warnings": "Тип __tbl_long_1773584401016 уже существует!"
 }

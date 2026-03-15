@@ -145,10 +145,21 @@ async function run() {
     s => `/object/${colAsTable[s]}?JSON=1`);
 
   // 19. Delete the ref column (revert to plain column)
-  if (colAsTableRef.php && colAsTableRef.node) {
-    await dual('POST /_d_del_req (remove ref)', 'POST',
-      s => `/_d_del_req/${colAsTableRef[s]}`,
-      s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&JSON=1`);
+  // Shared DB: colAsTableRef.php === colAsTableRef.node (same row).
+  // Create two separate ref types so each server has its own ref to delete.
+  {
+    const ck = cookie();
+    const delType1 = await createType(`${PREFIX}delref1_${TS}`, 3);
+    const delType2 = await createType(`${PREFIX}delref2_${TS}`, 3);
+    const phpRef = await http(PHP, 'POST', `/${DB}/_d_ref/${delType1.php}`, `_xsrf=${xsrfPhp}&JSON=1`, ck);
+    const nodeRef = await http(NODE, 'POST', `/${DB}/_d_ref/${delType2.node}`, `_xsrf=${xsrfNode}&JSON=1`, ck);
+    const delPhp = Number(phpRef.json?.obj);
+    const delNode = Number(nodeRef.json?.obj);
+    if (delPhp && delNode && delPhp !== delNode) {
+      await dual('POST /_d_del_req (remove ref)', 'POST',
+        s => `/_d_del_req/${s === 'php' ? delPhp : delNode}`,
+        s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&JSON=1`);
+    }
   }
 
   section('Edit Object with References');

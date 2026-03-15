@@ -1,6 +1,6 @@
 {
-  "id": "0",
-  "obj": "0",
+  "id": 1000012100,
+  "obj": null,
   "next_act": "edit_types",
   "args": "ext",
   "warnings": ""

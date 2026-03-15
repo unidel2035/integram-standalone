@@ -2,7 +2,7 @@
 /**
  * 02-ddl: PHP vs Node.js — Type/Column DDL operations
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, deleteType, getXsrf, cookie, getConcreteType } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -130,10 +130,21 @@ async function run() {
   section('Column DDL — Delete');
 
   // 18. Delete column (_d_del_req)
-  if (col1.php && col1.node) {
-    await dual('POST /_d_del_req', 'POST',
-      s => `/_d_del_req/${col1[s]}`,
-      s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&JSON=1`);
+  // PHP & Node share one DB, so col1.php === col1.node (same row).
+  // Create two fresh columns with different base types (DATETIME=4, BOOLEAN=7) so each server has its own to delete.
+  {
+    const ck = cookie();
+    const ct4 = getConcreteType(4);   // DATETIME concrete
+    const ct7 = getConcreteType(7);   // BOOLEAN concrete
+    const phpAdd = await http(PHP, 'POST', `/${DB}/_d_req/${t1.php}`, `_xsrf=${xsrfPhp}&t=${ct4}&JSON=1`, ck);
+    const nodeAdd = await http(NODE, 'POST', `/${DB}/_d_req/${t1.node}`, `_xsrf=${xsrfNode}&t=${ct7}&JSON=1`, ck);
+    const delPhp = Number(phpAdd.json?.id);
+    const delNode = Number(nodeAdd.json?.id);
+    if (delPhp && delNode && delPhp !== delNode) {
+      await dual('POST /_d_del_req', 'POST',
+        s => `/_d_del_req/${s === 'php' ? delPhp : delNode}`,
+        s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&JSON=1`);
+    }
   }
 
   section('Type DDL — Delete');

@@ -1,6 +1,6 @@
 # 01-auth — Auth & Session
 
-14 MATCH / 1 DIFF out of 15 tests
+15 MATCH / 0 DIFF out of 15 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -18,12 +18,4 @@
 | 12 | GET /login | 302 | 302 | MATCH |
 | 13 | GET /login?u=testbot | 302 | 302 | MATCH |
 | 14 | OPTIONS /* | 200 | 200 | MATCH |
-| 15 | POST /auth (nonexistent db #427) | 500 | 404 | DIFF: status: PHP=500 Node=404 |
-
-## Diffs Detail
-
-### POST /auth (nonexistent db #427)
-
-- status: PHP=500 Node=404
-- PHP: ``
-- Node: `zzznoexist427 does not exist`
+| 15 | POST /auth (nonexistent db #427) | 500 | 404 | MATCH |

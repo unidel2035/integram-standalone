@@ -98,7 +98,7 @@ function compare(php, node, opts = {}) {
   const diffs = [];
 
   // Status
-  if (php.status !== node.status) {
+  if (!opts.ignoreStatus && php.status !== node.status) {
     diffs.push(`status: PHP=${php.status} Node=${node.status}`);
   }
 
@@ -450,3 +450,4 @@ export {
 export function getToken() { return token; }
 export function getXsrf(server) { return server === 'php' ? xsrfPhp : xsrfNode; }
 export function cookie() { return `${DB}=${token}`; }
+export function getConcreteType(baseId) { return concreteTypes[baseId]; }

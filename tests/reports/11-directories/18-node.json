@@ -1,0 +1,253 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__dir_items_1773583293680"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "block"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000009410"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000009410"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__dir_items_1773583293680"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000009410"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000009410"
+    ],
+    "_parent_.val": [
+      "__dir_items_1773583293680"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "id": [
+      "1000009414",
+      "1000009415",
+      "1000009416",
+      "1000009417"
+    ],
+    "val": [
+      "Item1",
+      "Item1",
+      "MultiItem",
+      "MultiItem"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "base": [
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT"
+    ],
+    "val": [
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009414\">(0)</A>",
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009415\">(0)</A>",
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009416\">(0)</A>",
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009417\">(0)</A>"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "arr_type": [
+      "arr-type=\"1000009365\"",
+      "arr-type=\"1000009365\""
+    ],
+    "array": [
+      "arr",
+      "arr"
+    ],
+    "base_typ": [
+      "3",
+      "3"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "grant": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000009410",
+      "1000009410"
+    ],
+    "mandatory": [
+      "",
+      ""
+    ],
+    "multi": [
+      "",
+      ""
+    ],
+    "ref": [
+      "",
+      ""
+    ],
+    "ref_type": [
+      "",
+      ""
+    ],
+    "typ": [
+      "1000009411",
+      "1000009412"
+    ],
+    "val": [
+      "__adm_main_1773583291576",
+      "__adm_main_1773583291576"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000009365"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "_parent_.dd": [
+      ""
+    ],
+    "_parent_.ref": [
+      "1000009365"
+    ],
+    "f_typ": [
+      "F_1000009365"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&object_reqs": {
+    "1000009414": [
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009414\">(0)</A>",
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009414\">(0)</A>"
+    ],
+    "1000009415": [
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009415\">(0)</A>",
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009415\">(0)</A>"
+    ],
+    "1000009416": [
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009416\">(0)</A>",
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009416\">(0)</A>"
+    ],
+    "1000009417": [
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009417\">(0)</A>",
+      "<A HREF=\"/my/object/1000009365/?F_U=1000009417\">(0)</A>"
+    ]
+  },
+  "arr_type": {
+    "1000009365": "1000009366"
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "object": [
+    {
+      "base": "1000009410",
+      "id": "1000009414",
+      "up": "1",
+      "val": "Item1"
+    },
+    {
+      "base": "1000009410",
+      "id": "1000009415",
+      "up": "1",
+      "val": "Item1"
+    },
+    {
+      "base": "1000009410",
+      "id": "1000009416",
+      "up": "1",
+      "val": "MultiItem"
+    },
+    {
+      "base": "1000009410",
+      "id": "1000009417",
+      "up": "1",
+      "val": "MultiItem"
+    }
+  ],
+  "req_attrs": {
+    "1000009365": ""
+  },
+  "req_base": {
+    "1000009365": "SHORT"
+  },
+  "req_base_id": {
+    "1000009365": "3"
+  },
+  "req_order": [
+    "1000009365"
+  ],
+  "req_type": {
+    "1000009365": "__adm_main_1773583291576"
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000009410,
+    "up": 1,
+    "val": "__dir_items_1773583293680"
+  }
+}

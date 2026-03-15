@@ -1,6 +1,6 @@
 # 09-tables-crud
 
-**19 MATCH / 6 DIFF** out of 25 tests
+**22 MATCH / 3 DIFF** out of 25 tests
 
 | # | Test | Method | PHP | Node | Result |
 |---|------|--------|-----|------|--------|
@@ -24,9 +24,9 @@
 | 18 | #18 GET /edit_types | GET | 200 | 200 | MATCH |
 | 19 | #19 GET /terms | GET | 200 | 200 | MATCH |
 | 20 | #20 GET /dict?JSON=1 | GET | 200 | 200 | MATCH |
-| 21 | #21 POST /_d_save (rename type) | POST | 200 | 200 | DIFF |
-| 22 | #22 POST /_d_del_req (delete col) | POST | 200 | 200 | DIFF |
-| 23 | #23 POST /_d_del_req (non-existent) | POST | 200 | 200 | DIFF |
+| 21 | #21 POST /_d_save (rename type) | POST | 200 | 200 | MATCH |
+| 22 | #22 POST /_d_del_req (delete col) | POST | 200 | 200 | MATCH |
+| 23 | #23 POST /_d_del_req (non-existent) | POST | 200 | 200 | MATCH |
 | 24 | #24 POST /_d_del (empty type) | POST | 200 | 200 | MATCH |
 | 25 | #25 POST /_d_del (non-existent) | POST | 200 | 200 | MATCH |
 
@@ -50,7 +50,7 @@ Full responses: [01-php.json](./01-php.json) | [01-node.json](./01-node.json)
 - **PHP status:** 200
 - **Node status:** 200
 
-- val[warnings]: PHP="" Node="Тип __tbl_long___ID__ уже существует!"
+- val[warnings]: PHP="Тип __tbl_long___ID__ уже существует!" Node=""
 
 Full responses: [02-php.json](./02-php.json) | [02-node.json](./02-node.json)
 
@@ -65,42 +65,3 @@ Full responses: [02-php.json](./02-php.json) | [02-node.json](./02-node.json)
 - val[warnings]: PHP="Тип __tbl_sub___ID__ уже существует!" Node=""
 
 Full responses: [04-php.json](./04-php.json) | [04-node.json](./04-node.json)
-
----
-### DIFF 21: #21 POST /_d_save (rename type)
-
-- **PHP path:** `/_d_save/1000008235`
-- **Node path:** `/_d_save/1000008235`
-- **PHP status:** 200
-- **Node status:** 200
-
-- keys[0]: PHP=[error] Node=[args,id,next_act,obj,warnings]
-
-Full responses: [21-php.json](./21-php.json) | [21-node.json](./21-node.json)
-
----
-### DIFF 22: #22 POST /_d_del_req (delete col)
-
-- **PHP path:** `/_d_del_req/1000008241`
-- **Node path:** `/_d_del_req/1000008241`
-- **PHP status:** 200
-- **Node status:** 200
-
-- val[obj]: PHP=null Node="__ID__"
-
-Full responses: [22-php.json](./22-php.json) | [22-node.json](./22-node.json)
-
----
-### DIFF 23: #23 POST /_d_del_req (non-existent)
-
-- **PHP path:** `/_d_del_req/999999999`
-- **Node path:** `/_d_del_req/999999999`
-- **PHP status:** 200
-- **Node status:** 200
-
-- keys: PHP=[args,id,next_act,obj,warnings] Node=[error]
-- val[args]: PHP="ext" Node=
-- val[id]: PHP="__ID__" Node=
-- val[next_act]: PHP="edit_types" Node=
-
-Full responses: [23-php.json](./23-php.json) | [23-node.json](./23-node.json)

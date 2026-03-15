@@ -30,10 +30,11 @@ async function run() {
     s => `/_m_new/${mainType[s]}`,
     s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&t${mainType[s]}=NewObj&up=1&JSON=1`);
 
-  // 2. Create object with empty value
+  // 2. Create object with empty value — val/ord are auto-generated (MAX+1) and differ on shared DB
   await dual('POST /_m_new (empty val)', 'POST',
     s => `/_m_new/${mainType[s]}`,
-    s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&t${mainType[s]}=&up=1&JSON=1`);
+    s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&t${mainType[s]}=&up=1&JSON=1`,
+    { keysOnly: true });
 
   section('Object DML — Save/Update');
 
