@@ -79,7 +79,7 @@ async function run() {
         http(PHP, 'POST', `/${DB}/_m_set/${obj.php}`,
           `_xsrf=${xsrfPhp}&t${colTitle.php}=${encodeURIComponent(d.title)}&t${colDesc.php}=${encodeURIComponent(d.desc)}&t${colHours.php}=${d.hours}&t${colDue.php}=${encodeURIComponent(d.due)}&t${colDone.php}=${d.done}&t${colStatus.php}=${d.status.php}&t${colPrio.php}=${d.prio.php}&JSON=1`, ck2),
         http(NODE, 'POST', `/${DB}/_m_set/${obj.node}`,
-          `_xsrf=${xsrfNode}&t${colTitle.node}=${encodeURIComponent(d.title)}&t${colDesc.node}=${d.hours}&t${colDue.node}=${encodeURIComponent(d.due)}&t${colDone.node}=${d.done}&t${colStatus.node}=${d.status.node}&t${colPrio.node}=${d.prio.node}&JSON=1`, ck2),
+          `_xsrf=${xsrfNode}&t${colTitle.node}=${encodeURIComponent(d.title)}&t${colDesc.node}=${encodeURIComponent(d.desc)}&t${colHours.node}=${d.hours}&t${colDue.node}=${encodeURIComponent(d.due)}&t${colDone.node}=${d.done}&t${colStatus.node}=${d.status.node}&t${colPrio.node}=${d.prio.node}&JSON=1`, ck2),
       ]);
     }
   }

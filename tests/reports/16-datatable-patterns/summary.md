@@ -32,38 +32,32 @@
 ---
 ### DIFF 16: #16 GET /edit_obj (task form)
 
-- **PHP path:** `/edit_obj/1000015696?JSON=1`
-- **Node path:** `/edit_obj/1000015697?JSON=1`
+- **PHP path:** `/edit_obj/1000016461?JSON=1`
+- **Node path:** `/edit_obj/1000016462?JSON=1`
 - **PHP status:** 200
 - **Node status:** 200
 
-- val[&main.a.&object.&object_reqs.&editreq_datetime]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
-- val[&main.a.&object.&object_reqs.&editreq_file]: PHP={"reqid":["__ID__","__ID__","__ID__","",... Node={"reqid":["__ID__","__ID__","","__ID__",...
-- val[&main.a.&object.&object_reqs.&editreq_html]: PHP={"disabled":[""],"typ":["__ID__"],"val":... Node={"disabled":[""],"typ":["__ID__"],"val":...
-- val[&main.a.&object.&object_reqs.&editreq_number]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
+- val[reqs]: PHP={"__ID__":{"arr":0,"arr_type":null,"base... Node={"__ID__":{"arr":"1","arr_type":null,"ba...
 
 Full responses: [16-php.json](./16-php.json) | [16-node.json](./16-node.json)
 
 ---
 ### DIFF 17: #17 GET /edit_obj (task with refs)
 
-- **PHP path:** `/edit_obj/1000015718?JSON=1`
-- **Node path:** `/edit_obj/1000015719?JSON=1`
+- **PHP path:** `/edit_obj/1000016485?JSON=1`
+- **Node path:** `/edit_obj/1000016486?JSON=1`
 - **PHP status:** 200
 - **Node status:** 200
 
-- val[&main.a.&object.&object_reqs.&editreq_datetime]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
-- val[&main.a.&object.&object_reqs.&editreq_file]: PHP={"reqid":["__ID__","__ID__","__ID__","",... Node={"reqid":["__ID__","__ID__","","","__ID_...
-- val[&main.a.&object.&object_reqs.&editreq_html]: PHP={"disabled":[""],"typ":["__ID__"],"val":... Node={"disabled":[""],"typ":["__ID__"],"val":...
-- val[&main.a.&object.&object_reqs.&editreq_number]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
+- val[reqs]: PHP={"__ID__":{"arr":0,"arr_type":null,"base... Node={"__ID__":{"arr":"1","arr_type":null,"ba...
 
 Full responses: [17-php.json](./17-php.json) | [17-node.json](./17-node.json)
 
 ---
 ### DIFF 18: #18 POST /_m_new (add row via DataTable)
 
-- **PHP path:** `/_m_new/1000015687`
-- **Node path:** `/_m_new/1000015687`
+- **PHP path:** `/_m_new/1000016454`
+- **Node path:** `/_m_new/1000016454`
 - **PHP status:** 200
 - **Node status:** 200
 

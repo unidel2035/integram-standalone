@@ -2069,7 +2069,7 @@ function formatVal(typeId, val, tzone = 0) {
         // PHP: strtotime($val) — parse dd.mm.yyyy HH:MM:SS
         const dtDot = val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
         if (dtDot) {
-          const dtIsoStr = `${dtDot[3]}-${dtDot[2].padStart(2,'0')}-${dtDot[1].padStart(2,'0')}T${(dtDot[4]||'0').padStart(2,'0')}:${dtDot[5]||'00'}:${dtDot[6]||'00'}`;
+          const dtIsoStr = `${dtDot[3]}-${dtDot[2].padStart(2,'0')}-${dtDot[1].padStart(2,'0')}T${(dtDot[4]||'0').padStart(2,'0')}:${dtDot[5]||'00'}:${dtDot[6]||'00'}Z`;
           const dtTs = Math.floor(new Date(dtIsoStr).getTime() / 1000);
           if (!isNaN(dtTs) && dtTs >= 10000) {
             return dtTs - tzone;
