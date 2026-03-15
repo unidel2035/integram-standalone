@@ -5635,12 +5635,15 @@ router.get('/:db/:page*', async (req, res, next) => {
         }
 
         response['total']                              = objTotal;
+        // PHP #419: cur_base_typ is the type's own base type, not each row's type
+        const curBaseTypId = typeRow ? typeRow.base_type_id : 3;
+        const includeRef = (curBaseTypId === TYPE.REPORT_COLUMN || curBaseTypId === TYPE.GRANT);
         response['object']                             = objRows.map(r => {
           const obj = { id: String(r.id), val: r.val, up: String(r.up), base: String(r.base) };
           // PHP #418: include ord when viewing child objects (f_u > 1)
           if (fuParam && parseInt(fuParam, 10) > 1) obj.ord = String(r.ord || 0);
-          // PHP #419: include ref for REPORT_COLUMN and GRANT types
-          if (parseInt(r.base, 10) === TYPE.REPORT_COLUMN || parseInt(r.base, 10) === TYPE.GRANT) obj.ref = String(r.t || 0);
+          // PHP #419: include ref (raw val) for REPORT_COLUMN and GRANT base types
+          if (includeRef) obj.ref = r.val || '';
           return obj;
         });
         response['&main.a.&uni_obj.&uni_obj_all']      = uniObjAll;
