@@ -165,6 +165,20 @@ describe('POST /:db/auth', () => {
     expect(res.status).toBe(200);
     expect(res.body[0].error).toMatch(/Wrong credentials/i);
   });
+
+  it('returns 404 plain text when database does not exist (#427)', async () => {
+    // dbExists returns empty result set → table doesn't exist
+    mockQuery([[]]);
+
+    const res = await request(app)
+      .post(`/${DB}/auth?JSON`)
+      .send({ login: 'alice', pwd: 'Password1!' });
+
+    expect(res.status).toBe(404);
+    expect(res.text).toContain('does not exist');
+    // Must be plain text, not JSON (#427)
+    expect(res.headers['content-type']).not.toMatch(/json/);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
