@@ -5100,7 +5100,8 @@ router.get('/:db/:page*', async (req, res, next) => {
           objWhereParts.push('a.val LIKE ?');
           objWhereParams.push(vp);
         }
-        if (filterUp !== null && !isNaN(filterUp)) {
+        // PHP: F_U=0 means "show all non-root" (no parent filter); F_U>0 filters by parent
+        if (filterUp !== null && !isNaN(filterUp) && filterUp > 0) {
           objWhereParts.push('a.up = ?');
           objWhereParams.push(filterUp);
         }
@@ -5672,15 +5673,12 @@ router.get('/:db/:page*', async (req, res, next) => {
           }
         }
 
-        // #517: PHP returns _noobj block when F_U is set.
-        // When F_U > 0 AND no objects found, PHP returns ONLY &main.a + _noobj.
-        // F_U=0 is handled differently by PHP (vals.up!=0) — don't apply here.
+        // PHP #514/#517: When F_U > 0 and no objects found, return simplified _noobj response
+        // PHP's template engine skips &Uni_obj and all sub-blocks when SQL returns 0 rows
         if (filterUp !== null && filterUp > 0 && objRows.length === 0) {
           return res.json({
             '&main.a': { '_parent_.title': [typeVal] },
-            '&main.a._noobj': {
-              '_request_.f_u': [String(filterUp)],
-            },
+            '&main.a._noobj': { '_request_.f_u': [String(filterUp)] },
           });
         }
 
@@ -5689,7 +5687,7 @@ router.get('/:db/:page*', async (req, res, next) => {
         // PHP #419: cur_base_typ is the type's own base type, not each row's type
         const curBaseTypId = typeRow ? typeRow.base_type_id : 3;
         const includeRef = (curBaseTypId === TYPE.REPORT_COLUMN || curBaseTypId === TYPE.GRANT);
-        // #517: PHP only includes 'object' and '&uni_obj_all' when objects exist
+        // PHP #517: only include 'object' and '&uni_obj_all' when objects exist
         if (objRows.length > 0) {
           response['object']                             = objRows.map(r => {
             const obj = { id: String(r.id), val: r.val, up: String(r.up), base: String(r.base) };
@@ -5731,21 +5729,23 @@ router.get('/:db/:page*', async (req, res, next) => {
           }
         }
 
-        // #517: PHP template engine emits _noobj block whenever F_U is set
-        // (even when objects are found — the block contains the F_U value for client JS)
-        if (filterUp !== null) {
-          response['&main.a._noobj'] = {
-            '_request_.f_u': [String(filterUp)],
-          };
-        }
-
-        // PHP includes &no_page only when page is full (objRows.length >= limit)
-        if (objRows.length >= (objLimit || 20)) {
+        // PHP #514: &no_page — PHP checks object_count == DEFAULT_LIMIT (20)
+        const DEFAULT_LIMIT = 20;
+        if (objRows.length === DEFAULT_LIMIT) {
           response['&main.a.&uni_obj.&no_page'] = {
             id:    [String(typeId)],
             lnx:   [''],
             f_u:   [fuParam || '1'],
-            limit: [String(objLimit || 20)],
+            limit: [String(DEFAULT_LIMIT)],
+          };
+        }
+
+        // PHP #514: _NoObj block — PHP's template engine populates this whenever
+        // {_request_.f_u} resolves (i.e., F_U is present in the request), regardless
+        // of whether objects exist. It coexists with &uni_obj when objects are found.
+        if (allObjParams.F_U !== undefined) {
+          response['&main.a._noobj'] = {
+            '_request_.f_u': [String(filterUp !== null ? filterUp : '')]
           };
         }
 
@@ -10812,26 +10812,157 @@ router.get('/:db/dir_admin', legacyAuthMiddleware, async (req, res) => {
       return res.status(404).type('text/html; charset=UTF-8').send('File not found');
     }
 
-    // PHP parity: dir_admin always renders HTML (Make_tree(Get_file("dir_admin.html")))
-    // even when ?JSON=1 is set, because dir_admin is an HTML block, not an action.
-    // Serve the dir_admin.html template.
-    const nodePath = path.resolve(__dirname, '../../../public/templates/dir_admin.html');
-    if (fs.existsSync(nodePath)) {
-      return res.sendFile(nodePath);
-    }
-    const legacyTemplatePath = path.join(legacyPath, 'templates', 'dir_admin.html');
-    if (fs.existsSync(legacyTemplatePath)) {
-      return res.sendFile(legacyTemplatePath);
+    // PHP parity: dir_admin always renders HTML via Make_tree(Get_file("dir_admin.html"), "")
+    // followed by Parse_block(""). Even when ?JSON=1 is set, PHP renders the HTML template.
+    // We replicate the full template engine pipeline: makeTree → populate block data → parseBlock.
+
+    // Ensure the target directory exists (PHP: mkdir($path) if not exists)
+    if (!fs.existsSync(fullPath)) {
+      try { fs.mkdirSync(fullPath, { recursive: true }); } catch { /* ignore */ }
     }
 
-    // Fallback: render main page like PHP does for admin pages
-    const locale = getLocale(req, db);
-    const token = req.cookies[db] || req.headers['x-authorization'] || req.headers.authorization;
-    const rendered = await renderMainPage(db, token, locale);
-    if (rendered) {
-      return res.type('html').send(rendered);
+    // Parse template into block tree (PHP: Make_tree(Get_file("dir_admin.html"), ""))
+    // Try Node's public/templates first, then fall back to integram-server/templates
+    let templateText = await getFile(db, 'dir_admin.html', false);
+    if (!templateText) {
+      const legacyTplPath = path.join(legacyPath, 'templates', 'dir_admin.html');
+      if (fs.existsSync(legacyTplPath)) {
+        templateText = fs.readFileSync(legacyTplPath, 'utf8');
+      }
     }
-    return sendLegacyDie(res, 'Template not found');
+    if (!templateText) {
+      return sendLegacyDie(res, 'Template not found');
+    }
+    const blocks = {};
+    await makeTreeInner(blocks, templateText, '', db, {}, 0);
+
+    // PHP parity: PHP's Parse_block uses /\{([A-ZА-Я0-9\.&_ \-]+?)\}/ui to find placeholders.
+    // Patterns with characters like '+' (e.g. {'+'_global_.z} in JS code) are NOT treated as
+    // placeholders by PHP. Escape them so Node's parseBlock doesn't process them either.
+    const phpPlaceholderRe = /^[A-Za-z\u0400-\u04FF0-9.&_ -]+$/;
+    for (const key of Object.keys(blocks)) {
+      if (blocks[key].CONTENT) {
+        blocks[key].CONTENT = blocks[key].CONTENT.replace(/\{([^{}]+)\}/g, (match, inner) => {
+          if (phpPlaceholderRe.test(inner)) return match; // valid placeholder, keep
+          return '&#123;' + inner + '}'; // escape opening brace
+        });
+      }
+    }
+
+    // Build global template variables (PHP: $GLOBALS["GLOBAL_VARS"])
+    const token = req.cookies[db] || req.headers['x-authorization'] || req.headers.authorization;
+    let xsrf = '';
+    try {
+      const pool = getPool();
+      const { rows } = await execSql(pool, `SELECT x.val xsrf_val
+         FROM \`${db}\` u
+         JOIN \`${db}\` tok ON tok.up = u.id AND tok.t = ${TYPE.TOKEN} AND tok.val = ?
+         LEFT JOIN \`${db}\` x ON x.up = u.id AND x.t = ${TYPE.XSRF}
+         WHERE u.t = ${TYPE.USER} LIMIT 1`, [token], { label: 'dir_admin_xsrf' });
+      if (rows.length > 0) {
+        xsrf = rows[0].xsrf_val || generateXsrf(token, db, db);
+      }
+    } catch { xsrf = generateXsrf(token, db, db); }
+
+    const globalVars = { z: db, xsrf };
+
+    // Determine folder type and populate block data (PHP: case "&dir_admin")
+    const folderType = useDownload ? 'download' : 'templates';
+    const anotherType = useDownload ? 'templates' : 'download';
+    const resolvedAddPath = fullPath.startsWith(basePath)
+      ? fullPath.slice(basePath.length) || ''
+      : (add_path || '');
+
+    // Read directory contents (PHP: opendir + readdir loop)
+    const dirList = [];
+    const fileList = [];
+    const fileSize = [];
+    const fileTime = [];
+    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+      const entries = fs.readdirSync(fullPath);
+      for (const entry of entries) {
+        const entryPath = path.join(fullPath, entry);
+        try {
+          const stat = fs.statSync(entryPath);
+          if (stat.isDirectory()) {
+            dirList.push(entry);
+          } else {
+            fileList.push(entry);
+          }
+        } catch { /* skip unreadable entries */ }
+      }
+      dirList.sort();
+      fileList.sort();
+      for (const f of fileList) {
+        try {
+          const stat = fs.statSync(path.join(fullPath, f));
+          fileSize.push(normalSize(stat.size));
+          // PHP: date("d.m.Y H:i:s", filemtime($file)) — uses PHP's default timezone (UTC)
+          const d = new Date(stat.mtimeMs);
+          const pad = (n) => String(n).padStart(2, '0');
+          fileTime.push(
+            `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()} ` +
+            `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`
+          );
+        } catch {
+          fileSize.push('0 B');
+          fileTime.push('');
+        }
+      }
+    }
+
+    // Populate reportData for parseBlock (PHP populates $blocks[$block] arrays)
+    const reportData = {};
+
+    // &warnings block: only render if ?warning= is set
+    // PHP parity: when block has data placeholders but no data, Parse_block returns "".
+    // Replicate by clearing block content when there's no data.
+    const warningMsg = req.query.warning;
+    if (warningMsg) {
+      reportData['.&warnings'] = [{ WARNING: warningMsg }];
+    } else if (blocks['.&warnings']) {
+      blocks['.&warnings'].CONTENT = '';
+    }
+
+    // &dir_admin block: single row with folder metadata
+    reportData['.&dir_admin'] = [{
+      FOLDER: folderType,
+      ANOTHER: anotherType,
+      ADD_PATH: resolvedAddPath,
+      FILES: String(fileList.length),
+      FOLDERS: String(dirList.length),
+    }];
+
+    // &pattern block: breadcrumb path segments from add_path
+    // PHP: explode("/", substr($add_path, 1)) — even when add_path is empty,
+    // explode("/", "") gives [""], producing one row with PATH="/" and NAME="".
+    const patternRows = [];
+    const apStr = resolvedAddPath || '';
+    const segments = apStr.length > 0
+      ? apStr.replace(/^\//, '').split('/')
+      : [''];  // PHP: explode("/", "") → [""]
+    let cumPath = '';
+    for (const seg of segments) {
+      cumPath += '/' + seg;
+      patternRows.push({ PATH: cumPath, NAME: seg });
+    }
+    reportData['.&dir_admin.&pattern'] = patternRows;
+
+    // &dir_list block: one row per subdirectory
+    reportData['.&dir_admin.&dir_list'] = dirList.map(name => ({ NAME: name }));
+
+    // &file_list block: one row per file with size and time
+    reportData['.&dir_admin.&file_list'] = fileList.map((name, i) => ({
+      NAME: name,
+      SIZE: fileSize[i] || '',
+      TIME: fileTime[i] || '',
+    }));
+
+    // Render template (PHP: die(Parse_block("")))
+    // Note: PHP does NOT call localize() on dir_admin — <t9n> tags are left for
+    // client-side JS localize() in js.js. We must NOT resolve them server-side.
+    const html = parseBlock(blocks, '', reportData, globalVars);
+    return res.type('html').send(html);
   } catch (error) {
     logger.error('[Legacy dir_admin] Error', { error: error.message, db });
     sendLegacyDie(res, error.message );
