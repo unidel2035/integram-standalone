@@ -6309,6 +6309,11 @@ router.get('/:db/:page*', async (req, res, next) => {
         return res.json({ '&main.myrolemenu': mainMyrolemenu, '&main.&top_menu': buildTopMenu() });
       }
 
+      // ── Unknown page + JSON → return menu data (PHP default: case + isApi())
+      // PHP: unknown actions still render main.html and return api globals
+      const unknownMyrolemenu = await getMenuForToken(pool, db, token);
+      return res.json({ '&main.myrolemenu': unknownMyrolemenu, '&main.&top_menu': buildTopMenu() });
+
     } catch (err) {
       logger.error('[Legacy page JSON] Error', { error: err.message, stack: err.stack, db, page });
       console.error('[DEBUG JSON Error]', err);
@@ -6352,7 +6357,15 @@ router.get('/:db/:page*', async (req, res, next) => {
     return res.sendFile(customPath);
   }
 
-  // Fall through to other handlers or 404
+  // Unknown page — render main.html (PHP default: case renders main.html)
+  // Issue #414: PHP's switch($a) default: case renders main.html for any
+  // unrecognized action. Without this, unknown pages fall through to Express
+  // 404 handler instead of showing the app shell.
+  const locale = getLocale(req, db);
+  const rendered = await renderMainPage(db, token, locale);
+  if (rendered) {
+    return res.type('html').send(rendered);
+  }
   return next();
 });
 
@@ -14120,6 +14133,7 @@ router.post('/:db', async (req, res, next) => {
 
 // ============================================================================
 // Generic fallback for unknown actions
+// Issue #414: PHP default: case renders main.html for any unrecognized action.
 // ============================================================================
 
 router.post('/:db/:action', async (req, res) => {
@@ -14132,6 +14146,31 @@ router.post('/:db/:action', async (req, res) => {
 
   logger.warn('[Legacy API] Unknown action', { db, action, body: req.body });
 
+  const { token } = extractToken(req, db);
+
+  // API request → return menu data (PHP default: case + isApi() returns api globals)
+  if (isApiRequest(req)) {
+    if (!token) {
+      return res.status(200).json([{ error: t9n('auth_required', getLocale(req, db)) }]);
+    }
+    try {
+      const pool = getPool();
+      const mainMyrolemenu = await getMenuForToken(pool, db, token);
+      return res.json({ '&main.myrolemenu': mainMyrolemenu, '&main.&top_menu': buildTopMenu() });
+    } catch (err) {
+      return res.status(200).json([{ error: err.message }]);
+    }
+  }
+
+  // Non-API → render main.html (PHP default: case)
+  if (!token) {
+    return res.redirect(`/login.html?db=${db}&r=InvalidToken&uri=${req.originalUrl}`);
+  }
+  const locale = getLocale(req, db);
+  const rendered = await renderMainPage(db, token, locale);
+  if (rendered) {
+    return res.type('html').send(rendered);
+  }
   res.json({ success: false, error: `Unknown action: ${action}` });
 });
 
