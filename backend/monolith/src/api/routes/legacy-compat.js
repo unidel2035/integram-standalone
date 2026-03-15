@@ -6159,8 +6159,9 @@ router.get('/:db/:page*', async (req, res, next) => {
             typ:      [String(obj.t), String(obj.t)],
             up:       [String(obj.up)],
             typ_name: [objTypName, objTypName],
-            val:      [obj.val || ''],
+            val:      [obj.val || '', obj.val || ''],
             id:       [String(obj.id)],
+            disabled: [''],
           },
           '&main.a.&object.&edit_req': {
             type:                ['text'],
