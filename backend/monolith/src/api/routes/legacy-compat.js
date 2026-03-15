@@ -4994,8 +4994,8 @@ router.get('/:db/:page*', async (req, res, next) => {
   // These pages have their own router.get/all handlers registered after this catch-all;
   // without this skip they'd be served as HTML templates instead of hitting their handlers.
   const dedicatedPages = new Set([
-    'xsrf', 'terms', 'obj_meta', 'dir_admin', 'login', 'confirm', 'backup', 'csv_all',
-    'bki-export', 'bki-import', 'export', 'grants', 'check_grant', 'restore', 'download', 'upload',
+    'xsrf', 'terms', 'obj_meta', 'dir_admin', 'login', 'confirm', 'backup',
+    'csv_all', 'export', 'grants', 'check_grant', 'download',
   ]);
   if (db.startsWith('_') || db === 'api' || page.startsWith('_') || dedicatedPages.has(page)) {
     return next();

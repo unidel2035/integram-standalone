@@ -1,13 +1,13 @@
 # 02-ddl — Type/Column DDL
 
-13 MATCH / 2 DIFF out of 15 tests
+14 MATCH / 1 DIFF out of 15 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
 | 1 | POST /_d_new (SHORT type) | 200 | 200 | MATCH |
 | 2 | POST /_d_new (NUMBER type) | 200 | 200 | MATCH |
 | 3 | POST /_d_new (DATE type) | 200 | 200 | MATCH |
-| 4 | POST /_d_new (duplicate name) | 200 | 200 | DIFF: val[warnings]: PHP="Тип __ddl_short_1773564025455 уже сущес... Node="The Type __ddl_short_1773564025455 alre... |
+| 4 | POST /_d_new (duplicate name) | 200 | 200 | MATCH |
 | 5 | POST /_d_new (unique=1) | 200 | 200 | MATCH |
 | 6 | POST /_d_new (empty name) | 200 | 200 | MATCH |
 | 7 | POST /_d_save (rename) | 200 | 200 | MATCH |
@@ -21,12 +21,6 @@
 | 15 | POST /_d_del (non-existent) | 200 | 200 | MATCH |
 
 ## Diffs Detail
-
-### POST /_d_new (duplicate name)
-
-- val[warnings]: PHP="Тип __ddl_short_1773564025455 уже сущес... Node="The Type __ddl_short_1773564025455 alre...
-- PHP: `{"id":"","obj":"1000004083","next_act":"edit_types","args":"ext","warnings":"Тип __ddl_short_1773564025455 уже существует!"}`
-- Node: `{"args":"ext","id":"","next_act":"edit_types","obj":1000004083,"warnings":"The Type __ddl_short_1773564025455 already exists!"}`
 
 ### POST /_d_null (required=1)
 

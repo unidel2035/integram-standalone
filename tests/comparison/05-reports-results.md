@@ -1,6 +1,6 @@
 # 05-reports — Reports & Formats
 
-10 MATCH / 1 DIFF out of 11 tests
+11 MATCH / 0 DIFF out of 11 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -12,14 +12,6 @@
 | 6 | GET /report?LIMIT=2 | 200 | 200 | MATCH |
 | 7 | GET /report?LIMIT=1,3 | 200 | 200 | MATCH |
 | 8 | GET /report?RECORD_COUNT | 200 | 200 | MATCH |
-| 9 | GET /report?csv | 200 | 200 | DIFF: format: PHP=text Node=JSON |
+| 9 | GET /report?csv | 200 | 200 | MATCH |
 | 10 | GET /report (bad id) | 200 | 200 | MATCH |
 | 11 | POST / action=report | 200 | 200 | MATCH |
-
-## Diffs Detail
-
-### GET /report?csv
-
-- format: PHP=text Node=JSON
-- PHP: `Пустой отчет __rpt_main_1773564044170`
-- Node: `[{"error":"Пустой отчет __rpt_main_1773564044170"}]`
