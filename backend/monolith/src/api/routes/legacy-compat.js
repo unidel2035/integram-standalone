@@ -12510,14 +12510,17 @@ router.get('/:db/csv_all', async (req, res) => {
     const zipFilename = `${csvFilename}.zip`;
     const zipBuffer = buildZip(csvFilename, csvContent);
 
-    // Set headers for ZIP download
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename="${zipFilename}"`);
-    res.setHeader('Content-Length', zipBuffer.length);
+    // PHP parity: save ZIP to templates/custom/{db}/backups/ and 302 redirect (#452)
+    const backupsDir = path.join(legacyPath, 'templates', 'custom', db, 'backups');
+    if (!fs.existsSync(backupsDir)) {
+      fs.mkdirSync(backupsDir, { recursive: true });
+    }
+    fs.writeFileSync(path.join(backupsDir, zipFilename), zipBuffer);
 
     logger.info('[Legacy csv_all] Export completed', { db, filename: zipFilename });
 
-    res.send(zipBuffer);
+    // PHP: header("Location: /$z/dir_admin/?templates=1&add_path=/backups&gf=$name.zip");
+    res.redirect(302, `/${db}/dir_admin/?templates=1&add_path=/backups&gf=${zipFilename}`);
   } catch (error) {
     logger.error('[Legacy csv_all] Error', { error: error.message, db });
     res.status(500).send('Export failed: ' + error.message);
@@ -12832,14 +12835,17 @@ router.get('/:db/backup', async (req, res) => {
     const zipFilename = `${dmpFilename}.zip`;
     const zipBuffer = buildZip(dmpFilename, dumpContent);
 
-    // Set headers for ZIP download
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename="${zipFilename}"`);
-    res.setHeader('Content-Length', zipBuffer.length);
+    // PHP parity: save ZIP to templates/custom/{db}/backups/ and 302 redirect (#452)
+    const backupsDir = path.join(legacyPath, 'templates', 'custom', db, 'backups');
+    if (!fs.existsSync(backupsDir)) {
+      fs.mkdirSync(backupsDir, { recursive: true });
+    }
+    fs.writeFileSync(path.join(backupsDir, zipFilename), zipBuffer);
 
     logger.info('[Legacy backup] Export completed', { db, filename: zipFilename, rows: lastId });
 
-    res.send(zipBuffer);
+    // PHP: header("Location: /$z/dir_admin/?templates=1&add_path=/backups&gf=$name.zip");
+    res.redirect(302, `/${db}/dir_admin/?templates=1&add_path=/backups&gf=${zipFilename}`);
   } catch (error) {
     logger.error('[Legacy backup] Error', { error: error.message, db });
     res.status(500).send('Backup failed: ' + error.message);
