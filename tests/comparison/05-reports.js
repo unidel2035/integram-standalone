@@ -18,7 +18,7 @@ async function run() {
   // Setup: type + columns + objects for report data
   const mainType = await createType(`${PREFIX}main_${TS}`, 3);
   const col1 = await addColumn(mainType, 3);   // text
-  const col2 = await addColumn(mainType, 11);  // number
+  const col2 = await addColumn(mainType, 13);  // NUMBER (13, not 11=BOOLEAN)
 
   // Create objects with varied data
   for (const [name, num] of [['Alpha', 10], ['Beta', 20], ['Gamma', 30], ['Delta', 40], ['Epsilon', 50]]) {

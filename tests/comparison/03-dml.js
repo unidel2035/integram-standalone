@@ -18,7 +18,7 @@ async function run() {
   // Setup: type with 2 columns + objects
   const mainType = await createType(`${PREFIX}main_${TS}`, 3);
   const col1 = await addColumn(mainType, 3);   // text
-  const col2 = await addColumn(mainType, 11);  // number
+  const col2 = await addColumn(mainType, 13);  // NUMBER (13, not 11=BOOLEAN)
   const obj1 = await createObj(mainType, 'ObjA');
   const obj2 = await createObj(mainType, 'ObjB');
   const obj3 = await createObj(mainType, 'ObjC');
