@@ -5527,7 +5527,6 @@ router.get('/:db/:page*', async (req, res, next) => {
         const viewReqsVal   = [];
         // Track multi-select cell data: { reqKey: { id: [], val: [], ord: [], name: [] } }
         const multiselectcellData = {};
-        const hasArrReqs = reqDefStd.some(rd => rd.arr_id != null);
         if (hasReqs) {
           for (const o of objRows) {
             const oKey    = String(o.id);
@@ -5574,26 +5573,23 @@ router.get('/:db/:page*', async (req, res, next) => {
                 rowVals.push(v);
               }
             }
-            // Always include when arr-type reqs exist; otherwise only if some val
-            const hasData = hasArrReqs || rowVals.some(v => v !== '');
-            if (hasData) {
-              objReqs[oKey] = rowVals;
-              for (let i = 0; i < req_order.length; i++) {
-                const k = req_order[i];
-                const rd = reqDefStd[i];
-                const isArr = rd.arr_id != null;
-                // PHP uses 'REFERENCE' for base_typ=0 only; ref-type reqs use their actual base (SHORT)
-                const base = isArr ? 'SHORT' : (rd.base_typ === 0 ? 'REFERENCE' : (req_base[k] || 'SHORT'));
-                // PHP aligns: DATE/PWD → CENTER, NUMBER/SIGNED → RIGHT, DATETIME → LEFT, others → LEFT
-                let align = 'LEFT';
-                if (!isArr) {
-                  if (base === 'DATE' || base === 'PWD') align = 'CENTER';
-                  else if (base === 'NUMBER' || base === 'SIGNED') align = 'RIGHT';
-                }
-                viewReqsAlign.push(align);
-                viewReqsBase.push(base);
-                viewReqsVal.push(rowVals[i]);
+            // PHP always includes every object row in &object_reqs, even when all values are empty
+            objReqs[oKey] = rowVals;
+            for (let i = 0; i < req_order.length; i++) {
+              const k = req_order[i];
+              const rd = reqDefStd[i];
+              const isArr = rd.arr_id != null;
+              // PHP uses 'REFERENCE' for base_typ=0 only; ref-type reqs use their actual base (SHORT)
+              const base = isArr ? 'SHORT' : (rd.base_typ === 0 ? 'REFERENCE' : (req_base[k] || 'SHORT'));
+              // PHP aligns: DATE/PWD → CENTER, NUMBER/SIGNED → RIGHT, DATETIME → LEFT, others → LEFT
+              let align = 'LEFT';
+              if (!isArr) {
+                if (base === 'DATE' || base === 'PWD') align = 'CENTER';
+                else if (base === 'NUMBER' || base === 'SIGNED') align = 'RIGHT';
               }
+              viewReqsAlign.push(align);
+              viewReqsBase.push(base);
+              viewReqsVal.push(rowVals[i]);
             }
           }
         }
