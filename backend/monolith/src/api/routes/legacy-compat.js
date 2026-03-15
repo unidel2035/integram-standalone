@@ -2163,6 +2163,69 @@ function formatValView(typeId, val, tzone = 0) {
 }
 
 /**
+ * Async resolver for REPORT_COLUMN display names.
+ * Matches PHP Format_Val_View() lines 1454-1483: does a DB lookup to resolve
+ * a numeric val (column/table ID) into a human-readable name like
+ * "TableName -> ColumnName".
+ *
+ * @param {import('mysql2/promise').Pool} pool
+ * @param {string} db - database table name
+ * @param {string|number} val - the report column ID
+ * @returns {Promise<string>} resolved display name
+ */
+async function resolveReportColumnName(pool, db, val) {
+  if (val === '0' || val === 0) return 'Calculatable';
+  if (val === '' || val === null || val === undefined) return '';
+  const numVal = parseInt(val, 10);
+  if (!numVal) return String(val);
+
+  // PHP query (index.php:1461-1464):
+  // SELECT a.id, a.val, reqs.id req_id, refs.val req_val, reqs.val attr, ref_vals.val ref_val
+  // FROM $z a LEFT JOIN ($z reqs CROSS JOIN $z refs) ON refs.id=reqs.t AND reqs.up=a.id
+  //   LEFT JOIN $z ref_vals ON ref_vals.id=refs.t AND ref_vals.id!=ref_vals.t
+  // WHERE a.id=COALESCE((SELECT up FROM $z WHERE id=$val AND up!=0), $val)
+  const sql = `SELECT a.id, a.val, reqs.id req_id, refs.val req_val, reqs.val attr, ref_vals.val ref_val
+    FROM \`${db}\` a LEFT JOIN (\`${db}\` reqs CROSS JOIN \`${db}\` refs) ON refs.id=reqs.t AND reqs.up=a.id
+      LEFT JOIN \`${db}\` ref_vals ON ref_vals.id=refs.t AND ref_vals.id!=ref_vals.t
+    WHERE a.id=COALESCE((SELECT up FROM \`${db}\` WHERE id=? AND up!=0), ?)`;
+  const { rows } = await execSql(pool, sql, [numVal, numVal], { label: 'resolve_report_column_name' });
+  if (!rows || rows.length === 0) return String(val);
+
+  // Build REP_COLS map the same way PHP does
+  const repCols = {};
+  for (const row of rows) {
+    if (row.id != null && repCols[row.id] === undefined) {
+      repCols[row.id] = row.val;
+    }
+    if (row.req_id != null && repCols[row.req_id] === undefined) {
+      if (row.ref_val && String(row.ref_val).length > 0) {
+        // PHP: FetchAlias($row["attr"], $row["ref_val"])
+        const alias = fetchAliasFromAttr(row.attr, row.ref_val);
+        if (alias === row.ref_val) {
+          repCols[row.req_id] = row.val + ' -> ' + row.ref_val;
+        } else {
+          repCols[row.req_id] = row.val + ' -> ' + alias + ' (' + row.ref_val + ')';
+        }
+      } else {
+        repCols[row.req_id] = row.val + ' -> ' + row.req_val;
+      }
+    }
+  }
+
+  return repCols[numVal] !== undefined ? String(repCols[numVal]) : String(val);
+}
+
+/**
+ * Extract :ALIAS=xxx: from attribute string, falling back to orig.
+ * Matches PHP FetchAlias() (index.php:3959-3962).
+ */
+function fetchAliasFromAttr(attr, orig) {
+  if (!attr) return orig;
+  const m = String(attr).match(/:ALIAS=(.*?):/u);
+  return (m && m[1]) ? m[1] : orig;
+}
+
+/**
  * Get alignment for column based on type
  * Matches PHP's Get_Align() function
  */
@@ -4999,7 +5062,7 @@ router.get('/:db/:page*', async (req, res, next) => {
   // These pages have their own router.get/all handlers registered after this catch-all;
   // without this skip they'd be served as HTML templates instead of hitting their handlers.
   const dedicatedPages = new Set([
-    'xsrf', 'terms', 'obj_meta', 'dir_admin', 'login', 'confirm', 'backup',
+    'xsrf', 'terms', 'obj_meta', 'metadata', 'dir_admin', 'login', 'confirm', 'backup',
     'csv_all', 'export', 'grants', 'check_grant', 'download',
   ]);
   if (db.startsWith('_') || db === 'api' || page.startsWith('_') || dedicatedPages.has(page)) {
@@ -5580,8 +5643,12 @@ router.get('/:db/:page*', async (req, res, next) => {
                 }
               } else {
                 // Non-arr non-ref: stored val (already formatted, including FILE links)
-                const v = (reqsStd[oKey] && reqsStd[oKey][k] != null)
+                let v = (reqsStd[oKey] && reqsStd[oKey][k] != null)
                   ? String(reqsStd[oKey][k]) : '';
+                // PHP Format_Val_View: BOOLEAN values display as "X" (checked) or "" (unchecked)
+                if (req_base[k] === 'BOOLEAN') {
+                  v = (v !== '' && v !== '0') ? 'X' : '';
+                }
                 rowVals.push(v);
               }
             }
@@ -5593,10 +5660,10 @@ router.get('/:db/:page*', async (req, res, next) => {
               const isArr = rd.arr_id != null;
               // PHP uses 'REFERENCE' for base_typ=0 only; ref-type reqs use their actual base (SHORT)
               const base = isArr ? 'SHORT' : (rd.base_typ === 0 ? 'REFERENCE' : (req_base[k] || 'SHORT'));
-              // PHP aligns: DATE/PWD → CENTER, NUMBER/SIGNED → RIGHT, DATETIME → LEFT, others → LEFT
+              // PHP aligns: DATE/PWD/BOOLEAN → CENTER, NUMBER/SIGNED → RIGHT, others → LEFT
               let align = 'LEFT';
               if (!isArr) {
-                if (base === 'DATE' || base === 'PWD') align = 'CENTER';
+                if (base === 'DATE' || base === 'PWD' || base === 'BOOLEAN') align = 'CENTER';
                 else if (base === 'NUMBER' || base === 'SIGNED') align = 'RIGHT';
               }
               viewReqsAlign.push(align);
@@ -6962,7 +7029,16 @@ router.post('/:db/_m_new/:up?', legacyAuthMiddleware, legacyXsrfCheck, (req, res
     const args = hasReqs ? 'new1=1&' : (parentId !== 1 ? `F_U=${parentId}` : '');
 
     // Response escaping: htmlEsc(formatValView(...))
-    const displayVal = htmlEsc(String(formatValView(baseType, value, tzone)));
+    // Issue #548: For REPORT_COLUMN base types (used by report column and report FROM types),
+    // PHP resolves the numeric val to a human-readable name via DB lookup (Format_Val_View lines 1454-1483).
+    // The synchronous formatValView cannot do DB queries, so we resolve async here.
+    const baseTypeName = REV_BASE_TYPE[baseType];
+    let displayVal;
+    if (baseTypeName === 'REPORT_COLUMN' || (baseTypeName === 'GRANT' && value != 0 && value != 1 && value != 10)) {
+      displayVal = htmlEsc(await resolveReportColumnName(pool, db, value));
+    } else {
+      displayVal = htmlEsc(String(formatValView(baseType, value, tzone)));
+    }
 
     if (isApiRequest(req)) {
       return res.json({ id, obj: id, ord: parseInt(order, 10) || 0, next_act, args, val: displayVal });
@@ -9025,7 +9101,8 @@ router.post('/:db/_d_new/:parentTypeId?', legacyAuthMiddleware, legacyXsrfCheck,
     // Only use parentTypeId from URL path for child types (Node extension);
     // ignore req.body.up to match PHP behavior (#444)
     const parentId = parentTypeId ? parseInt(parentTypeId, 10) : 0;
-    const name = req.body.val || req.body.name || '';
+    // PHP: $_REQUEST = array_merge($_POST, $_GET) — GET overrides POST
+    const name = req.query.val ?? req.body.val ?? req.body.name ?? '';
 
     // PHP line 8630-8631: if($val == "") my_die("Empty type")
     if (!name) {
@@ -9055,9 +9132,10 @@ router.post('/:db/_d_new/:parentTypeId?', legacyAuthMiddleware, legacyXsrfCheck,
       if (dupeRows.length > 0) {
         const existingId = dupeRows[0].id;
         logger.info('[Legacy _d_new] Type already exists, returning existing', { db, existingId, name, baseType });
+        const locale = getLocale(req, db);
         return legacyRespond(req, res, db, {
           id: '', obj: existingId, next_act: 'edit_types', args: 'ext',
-          warnings: `Тип ${name} уже существует!`
+          warnings: t9n(`[RU]Тип ${name} уже существует![EN]The Type ${name} already exists!`, locale)
         });
       }
     }
@@ -9144,7 +9222,11 @@ router.post('/:db/_d_save/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legac
 
     logger.info('[Legacy _d_save] Type saved', { db, id, updates: req.body });
 
-    // PHP api_dump(): {id, obj, next_act:"edit_types", args, warnings}
+    // PHP api_dump(): [{id, obj, next_act:"edit_types", args, warnings}]
+    // PHP returns array-wrapped response for _d_save (issue #541)
+    if (isApiRequest(req)) {
+      return res.json([{ id, obj: id, next_act: 'edit_types', args: 'ext', warnings: '' }]);
+    }
     legacyRespond(req, res, db, { id, obj: id, next_act: 'edit_types', args: 'ext' });
   } catch (error) {
     logger.error('[Legacy _d_save] Error', { error: error.message, db });
@@ -9671,7 +9753,8 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
   try {
     const id = parseIdParam(reqId);
     if (isNaN(id)) {
-      return res.status(200).json([{ error: `Wrong id: ${reqId}` }]);
+      // PHP parity (issue #542): error is plain object, not array
+      return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify({ error: `Wrong id: ${reqId}` }));
     }
     const pool = getPool();
     const forced = req.body.forced !== undefined || req.query.forced !== undefined;
@@ -9680,7 +9763,8 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
     const { rows: [defRow] } = await execSql(pool, `SELECT def.up, def.t AS typ, def.ord, r.t AS parentT, r.val AS parentVal
        FROM \`${db}\` def, \`${db}\` r WHERE def.id = ? AND r.id = def.t`, [id], { label: 'post_db_d_del_req_reqId_select' });
     if (!defRow) {
-      return sendLegacyDie(res, 'Requisite not found');
+      // PHP parity (issue #542): error is plain object, not array
+      return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify({ error: 'Requisite not found' }));
     }
     const typeId = defRow.up;
     const myord = defRow.ord;
@@ -9721,10 +9805,10 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
           await recursiveDelete(pool, db, row.id);
         }
       } else {
-        // PHP parity: hard-block deletion (my_die() in PHP)
-        return res.status(400).json({
+        // PHP parity (issue #542): my_die() returns plain object with status 200
+        return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify({
           error: `You are going to delete a requisite if there are records of this type (total records: ${usageRow.cnt})!`
-        });
+        }));
       }
     }
 
@@ -9734,9 +9818,10 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
        WHERE \`${db}\`.t = ${TYPE.ROLE} AND \`${db}\`.up = 1
        AND reqs.up = \`${db}\`.id AND reqs.val = ? LIMIT 1`, [String(id), String(id)], { label: 'post_db_d_del_req_reqId_select' });
     if (repRoleRow) {
-      return res.status(400).json({
+      // PHP parity (issue #542): my_die() returns plain object with status 200
+      return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify({
         error: `The requisite is used in reports or roles!`
-      });
+      }));
     }
 
     // Delete the requisite
@@ -9747,12 +9832,13 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
 
     logger.info('[Legacy _d_del_req] Requisite deleted', { db, id, forced });
 
-    // PHP api_dump(): {id:type_id, obj:null, next_act:"edit_types", args:"ext"}
-    // PHP: after deleting a requisite, $obj is set to null (not the type ID)
-    legacyRespond(req, res, db, { id: typeId, obj: null, next_act: 'edit_types', args: 'ext' });
+    // PHP api_dump(): {id:type_id, obj:type_id, next_act:"edit_types", args:"ext"}
+    // PHP parity (issue #542): success response includes obj field
+    legacyRespond(req, res, db, { id: typeId, obj: typeId, next_act: 'edit_types', args: 'ext' });
   } catch (error) {
     logger.error('[Legacy _d_del_req] Error', { error: error.message, db });
-    sendLegacyDie(res, error.message );
+    // PHP parity (issue #542): error is plain object, not array
+    return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify({ error: error.message }));
   }
 });
 
@@ -10106,7 +10192,9 @@ router.all('/:db/obj_meta/:id', legacyAuthMiddleware, async (req, res) => {
         reqEntry.ref    = String(row.ref_col);
         reqEntry.ref_id = String(row.ref_id);
       }
-      if (row.attrs) reqEntry.attrs = row.attrs;
+      // PHP normalizes attrs to just "1" (flag indicating attributes exist)
+      // rather than exposing the raw attribute ID value from req.val
+      if (row.attrs) reqEntry.attrs = '1';
       reqs[String(row.ord)] = reqEntry;
     }
 
