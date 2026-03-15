@@ -5036,6 +5036,8 @@ router.get('/:db/:page*', async (req, res, next) => {
       //           F_{typeId}=value (filter main val, used by dubRecUniqText)
       if (page === 'object' && subId) {
         const allObjParams = { ...req.query, ...req.body };
+        // PHP: $GLOBALS["tzone"] = $_COOKIE["tzone"] ?? 0 (index.php:1211)
+        const tzone = parseInt(req.cookies && req.cookies.tzone || '0', 10);
 
         // Filter by main val exact match (dubRecUniqText sends F_{tid}=value)
         const filterVal = allObjParams[`F_${subId}`] !== undefined
@@ -14169,6 +14171,10 @@ export {
   localize,
   removeMasks,
   filterTermsRows,
+  formatValView,
+  formatObjVal,
+  REV_BASE_TYPE,
+  TYPE,
 };
 
 export default router;
