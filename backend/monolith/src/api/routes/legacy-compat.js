@@ -2738,12 +2738,17 @@ async function legacyAuthMiddleware(req, res, next) {
         }
 
         // PHP parity: update ACTIVITY timestamp on every authenticated request (index.php:1190-1193)
+        // PHP runs Exec_sql() synchronously so UPDATE commits before the page handler's
+        // SELECT.  We await to match that behaviour; this also guarantees that subsequent
+        // queries in this request see the value we just wrote.
         const actNow = String(Date.now() / 1000);
-        if (user.act_id) {
-          execSql(pool, `UPDATE \`${db}\` SET val = ? WHERE id = ?`, [actNow, user.act_id], { label: 'middleware_activity_update' }).catch(() => {});
-        } else {
-          execSql(pool, `INSERT INTO \`${db}\` (up, ord, t, val) VALUES (?, 0, ${TYPE.ACTIVITY}, ?)`, [user.uid, actNow], { label: 'middleware_activity_insert' }).catch(() => {});
-        }
+        try {
+          if (user.act_id) {
+            await execSql(pool, `UPDATE \`${db}\` SET val = ? WHERE id = ?`, [actNow, user.act_id], { label: 'middleware_activity_update' });
+          } else {
+            await execSql(pool, `INSERT INTO \`${db}\` (up, ord, t, val) VALUES (?, 0, ${TYPE.ACTIVITY}, ?)`, [user.uid, actNow], { label: 'middleware_activity_insert' });
+          }
+        } catch (_) { /* PHP's Exec_sql with $fatal=FALSE ignores errors */ }
 
         // PHP parity: secret auth — delete the cookie after validation (index.php:1194-1195)
         // PHP: setcookie($z, "", time() - 3600, "/") — removes the password cookie
