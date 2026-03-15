@@ -8910,10 +8910,11 @@ router.post('/:db/_d_new/:parentTypeId?', legacyAuthMiddleware, legacyXsrfCheck,
       return res.status(200).json([{ error: `Base type is invalid: ${baseType}` }]);
     }
 
-    // PHP line 8636-8641: duplicate (val, t) check at root level
+    // PHP line 8636-8641: duplicate (val, t) check — always at root level (up=0)
+    // PHP always checks for duplicates regardless of 'up' param, since _d_new always inserts at up=0
     // SELECT id FROM $z WHERE val='...' AND t=$t AND id!=t
     // If duplicate found: return existing id with warning (not an error)
-    if (parentId === 0) {
+    {
       const pool = getPool();
       const { rows: dupeRows } = await execSql(pool, `SELECT id FROM \`${db}\` WHERE val = ? AND t = ? AND id != t LIMIT 1`, [name, baseType], { label: 'post_db_d_new_parentTypeId_select' });
       if (dupeRows.length > 0) {
