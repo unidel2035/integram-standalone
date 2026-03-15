@@ -3342,6 +3342,16 @@ function isValidDbName(db) {
 }
 
 /**
+ * Parse and validate an ID parameter from URL.
+ * Returns a valid integer or NaN. Use with isNaN() check before SQL.
+ * PHP equivalent: is_numeric($com[3]) ? (int)$com[3] : error
+ */
+function parseIdParam(val) {
+  const n = parseInt(val, 10);
+  return isNaN(n) ? NaN : n;
+}
+
+/**
  * Check if database table exists
  */
 async function dbExists(db) {
@@ -7050,7 +7060,10 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, legacyXsrfCheck, (req, res
 
   try {
     const pool = getPool();
-    const originalId = parseInt(id, 10);
+    const originalId = parseIdParam(id);
+    if (isNaN(originalId)) {
+      return res.status(200).json([{ error: `Wrong id: ${id}` }]);
+    }
     const { grants, username, uid } = req.legacyUser || {};
     const tzone = parseInt(req.body.tzone || req.query.tzone || '0', 10);
     const clientIp = req.ip || '';
@@ -7477,10 +7490,10 @@ router.post('/:db/_m_del/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req
 
   try {
     const pool = getPool();
-    const objectId = parseInt(id, 10);
+    const objectId = parseIdParam(id);
     const { grants, username, uid } = req.legacyUser || {};
 
-    if (!objectId) {
+    if (!objectId || isNaN(objectId)) {
       return res.status(200).json([{ error: `Wrong id: ${id}` }]);
     }
 
@@ -7572,7 +7585,10 @@ router.post('/:db/_m_set/:id', legacyAuthMiddleware, legacyXsrfCheck, upload.any
 
   try {
     const pool = getPool();
-    const objectId = parseInt(id, 10);
+    const objectId = parseIdParam(id);
+    if (isNaN(objectId)) {
+      return res.status(200).json([{ error: `Wrong id: ${id}` }]);
+    }
     const { grants, username, uid } = req.legacyUser || {};
 
     // Grant check — PHP checks WRITE grant before setting attributes
@@ -7748,8 +7764,15 @@ router.post('/:db/_m_move/:id', legacyAuthMiddleware, legacyXsrfCheck, async (re
   }
 
   try {
-    const objectId = parseInt(id, 10);
-    const newParentId = parseInt(req.body.up, 10);
+    const objectId = parseIdParam(id);
+    const newParentId = parseIdParam(req.body.up);
+
+    if (isNaN(objectId)) {
+      return res.status(200).json([{ error: `Wrong id: ${id}` }]);
+    }
+    if (isNaN(newParentId)) {
+      return res.status(200).json([{ error: `Wrong parent id: ${req.body.up}` }]);
+    }
 
     const pool = getPool();
     const { grants, username } = req.legacyUser || {};
@@ -7845,7 +7868,10 @@ router.all('/:db/_dict/:typeId?', legacyAuthMiddleware, async (req, res) => {
 
     if (typeId) {
       // Get specific type with its requisites
-      const type = parseInt(typeId, 10);
+      const type = parseIdParam(typeId);
+      if (isNaN(type)) {
+        return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+      }
       query = `
         SELECT t.id, t.val AS name, t.t AS base_type, t.ord,
                r.id AS req_id, r.val AS req_name, r.t AS req_type, r.ord AS req_ord
@@ -7910,9 +7936,12 @@ router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
 
   try {
     const pool = getPool();
-    const type = parseInt(typeId, 10);
+    const type = parseIdParam(typeId);
+    if (isNaN(type)) {
+      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+    }
     const parentId = req.query.up !== undefined || req.body.up !== undefined
-      ? parseInt(req.query.up || req.body.up, 10)
+      ? parseIdParam(req.query.up || req.body.up)
       : null;
     const limit = parseInt(req.query.LIMIT || req.query.limit || req.body.LIMIT || req.body.limit || '50', 10);
     const offset = parseInt(req.query.F || req.query.offset || req.body.F || req.body.offset || '0', 10);
@@ -8053,14 +8082,17 @@ router.all('/:db/_list_join/:typeId', legacyAuthMiddleware, async (req, res) => 
 
   try {
     const pool = getPool();
-    const type = parseInt(typeId, 10);
+    const type = parseIdParam(typeId);
+    if (isNaN(type)) {
+      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+    }
     const parentId = req.query.up !== undefined || req.body.up !== undefined
-      ? parseInt(req.query.up || req.body.up, 10)
+      ? parseIdParam(req.query.up || req.body.up)
       : null;
     const limit = parseInt(req.query.LIMIT || req.body.LIMIT || '50', 10);
     const offset = parseInt(req.query.F || req.body.F || '0', 10);
     const search = req.query.q || req.body.q || '';
-    const joinReqs = (req.query.join || req.body.join || '').split(',').filter(Boolean).map(id => parseInt(id, 10));
+    const joinReqs = (req.query.join || req.body.join || '').split(',').filter(Boolean).map(id => parseIdParam(id)).filter(id => !isNaN(id));
 
     // Get type requisites for join
     const { rows: reqRows } = await execSql(pool, `SELECT id, val, t FROM ${db} WHERE up = ? ORDER BY ord`, [type], { label: 'joinReqs_select' });
@@ -8155,7 +8187,10 @@ router.all('/:db/_d_main/:typeId', legacyAuthMiddleware, async (req, res) => {
 
   try {
     const pool = getPool();
-    const type = parseInt(typeId, 10);
+    const type = parseIdParam(typeId);
+    if (isNaN(type)) {
+      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+    }
 
     // Get type info
     const { rows: typeRows } = await execSql(pool, `SELECT id, val AS name, t AS base_type, ord FROM ${db} WHERE id = ?`, [type], { label: 'joinReqs_select' });
@@ -8953,7 +8988,10 @@ router.post('/:db/_d_save/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legac
   }
 
   try {
-    const id = parseInt(typeId, 10);
+    const id = parseIdParam(typeId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+    }
     const pool = getPool();
 
     // PHP _d_save (line 8593): UPDATE $z SET t=$t, val='...', ord='$unique' WHERE id=$id
@@ -9019,7 +9057,10 @@ router.post('/:db/_d_del/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
   }
 
   try {
-    const id = parseInt(typeId, 10);
+    const id = parseIdParam(typeId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+    }
     const pool = getPool();
 
     // PHP parity: hard-block if type has existing instances (die() in PHP)
@@ -9079,7 +9120,10 @@ router.post('/:db/_d_req/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
   }
 
   try {
-    const parentId = parseInt(typeId, 10);
+    const parentId = parseIdParam(typeId);
+    if (isNaN(parentId)) {
+      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+    }
     const reqType = parseInt(req.body.t || '8', 10); // Default to CHARS
     const alias = req.body.alias || null;
     const required = req.body.required === '1' || req.body.required === true;
@@ -9170,7 +9214,10 @@ router.post('/:db/_d_alias/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
   }
 
   try {
-    const id = parseInt(reqId, 10);
+    const id = parseIdParam(reqId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${reqId}` }]);
+    }
     const newAlias = req.body.alias || req.body.val || '';
     const pool = getPool();
 
@@ -9223,7 +9270,10 @@ router.post('/:db/_d_null/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacy
   }
 
   try {
-    const id = parseInt(reqId, 10);
+    const id = parseIdParam(reqId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${reqId}` }]);
+    }
     const pool = getPool();
 
     // Get current value
@@ -9275,7 +9325,10 @@ router.post('/:db/_d_multi/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
   }
 
   try {
-    const id = parseInt(reqId, 10);
+    const id = parseIdParam(reqId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${reqId}` }]);
+    }
     const pool = getPool();
 
     // Get current value
@@ -9327,7 +9380,10 @@ router.post('/:db/_d_attrs/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
   }
 
   try {
-    const id = parseInt(reqId, 10);
+    const id = parseIdParam(reqId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${reqId}` }]);
+    }
     const pool = getPool();
 
     // Get current value
@@ -9383,7 +9439,10 @@ router.post('/:db/_d_up/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacyDd
   }
 
   try {
-    const id = parseInt(reqId, 10);
+    const id = parseIdParam(reqId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${reqId}` }]);
+    }
     const pool = getPool();
 
     // Get current object
@@ -9433,7 +9492,10 @@ router.post('/:db/_d_ord/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacyD
   }
 
   try {
-    const id = parseInt(reqId, 10);
+    const id = parseIdParam(reqId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${reqId}` }]);
+    }
     // PHP line 8721: $newOrd = (int)$_REQUEST["order"]  (not "ord")
     const newOrd = parseInt(req.body.order || req.query.order, 10);
 
@@ -9491,7 +9553,10 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
   }
 
   try {
-    const id = parseInt(reqId, 10);
+    const id = parseIdParam(reqId);
+    if (isNaN(id)) {
+      return res.status(200).json([{ error: `Wrong id: ${reqId}` }]);
+    }
     const pool = getPool();
     const forced = req.body.forced !== undefined || req.query.forced !== undefined;
 
@@ -9591,10 +9656,10 @@ router.post('/:db/_d_ref/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
   }
 
   try {
-    const id = parseInt(typeId, 10);
+    const id = parseIdParam(typeId);
 
-    if (!id) {
-      return res.status(200).json([{ error: `Invalid link (${id})`  }]);
+    if (!id || isNaN(id)) {
+      return res.status(200).json([{ error: `Invalid link (${typeId})`  }]);
     }
 
     const pool = getPool();
@@ -9646,7 +9711,10 @@ router.post('/:db/_m_up/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req,
   }
 
   try {
-    const objectId = parseInt(id, 10);
+    const objectId = parseIdParam(id);
+    if (isNaN(objectId)) {
+      return res.status(200).json([{ error: `Wrong id: ${id}` }]);
+    }
     const pool = getPool();
     const { grants, username } = req.legacyUser || {};
 
@@ -9702,7 +9770,10 @@ router.post('/:db/_m_ord/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req
   }
 
   try {
-    const objectId = parseInt(id, 10);
+    const objectId = parseIdParam(id);
+    if (isNaN(objectId)) {
+      return res.status(200).json([{ error: `Wrong id: ${id}` }]);
+    }
     // PHP uses $_REQUEST["order"] — comes from query string ?JSON&order=N
     const newOrd = parseInt(req.query.order ?? req.body.order ?? req.body.ord, 10);
 
@@ -9772,11 +9843,14 @@ router.post('/:db/_m_id/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req,
 
   try {
     const pool = getPool();
-    const oldId = parseInt(id, 10);
-    const newId = parseInt(req.body.new_id || req.query.new_id, 10);
+    const oldId = parseIdParam(id);
+    const newId = parseIdParam(req.body.new_id || req.query.new_id);
     const { grants, username } = req.legacyUser || {};
 
-    if (!newId || newId <= 0) {
+    if (isNaN(oldId)) {
+      return res.status(200).json([{ error: `Wrong id: ${id}` }]);
+    }
+    if (!newId || newId <= 0 || isNaN(newId)) {
       return res.status(200).json([{ error: 'new_id must be a positive integer' }]);
     }
     if (oldId === newId) {
@@ -9849,7 +9923,10 @@ router.all('/:db/obj_meta/:id', legacyAuthMiddleware, async (req, res) => {
 
   try {
     const pool = getPool();
-    const objectId = parseInt(id, 10);
+    const objectId = parseIdParam(id);
+    if (isNaN(objectId)) {
+      return res.status(200).json([{ error: `Wrong id: ${id}` }]);
+    }
 
     // PHP obj_meta query (index.php line 8827):
     // SELECT obj.id, obj.up, obj.t, obj.val,
@@ -9949,8 +10026,9 @@ router.all('/:db/metadata/:typeId?', legacyAuthMiddleware, async (req, res) => {
       return res.json(baseRows.map(r => ({ id: r.id, val: r.val })));
     }
 
-    const isOneType = typeId && parseInt(typeId, 10) > 0;
-    const id = isOneType ? parseInt(typeId, 10) : null;
+    const parsedTypeId = typeId ? parseIdParam(typeId) : NaN;
+    const isOneType = !isNaN(parsedTypeId) && parsedTypeId > 0;
+    const id = isOneType ? parsedTypeId : null;
 
     // Build query for types and their requisites
     let query;
@@ -11908,7 +11986,10 @@ router.get('/:db/export/:typeId', legacyAuthMiddleware, async (req, res) => {
 
   try {
     const pool = getPool();
-    const type = parseInt(typeId, 10);
+    const type = parseIdParam(typeId);
+    if (isNaN(type)) {
+      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+    }
 
     // Get type requisites for header
     const { rows: reqRows } = await execSql(pool, `SELECT id, val, t FROM ${db} WHERE up = ? ORDER BY ord`, [type], { label: 'get_db_export_typeId_select' });
@@ -12256,7 +12337,7 @@ router.get('/:db/csv_all', async (req, res) => {
     let csvContent = '\ufeff'; // BOM for UTF-8
 
     for (const typeId of Object.keys(typ)) {
-      const id = parseInt(typeId, 10);
+      const id = parseIdParam(typeId);
       csvContent += typ[typeId];
 
       const reqCount = (reqs[id] || []).length;
@@ -14155,6 +14236,7 @@ export {
   localize,
   removeMasks,
   filterTermsRows,
+  parseIdParam,
 };
 
 export default router;
