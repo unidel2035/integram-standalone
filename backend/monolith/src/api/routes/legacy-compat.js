@@ -7055,12 +7055,13 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, legacyXsrfCheck, (req, res
     let warnings = '';
 
     // Existence check + metadata protection
+    // PHP: exit("No such record") and exit("Cannot update meta-data") — plain text (index.php:7999,8001)
     const { rows: existCheck } = await execSql(pool, `SELECT id, up FROM \`${db}\` WHERE id = ? LIMIT 1`, [originalId], { label: 'post_db_m_save_id_select' });
     if (existCheck.length === 0) {
-      return res.status(200).json([{ error: 'Object not found' }]);
+      return res.status(200).send('No such record');
     }
     if (existCheck[0].up === 0) {
-      return res.status(200).json([{ error: 'Cannot modify metadata object' }]);
+      return res.status(200).send('Cannot update meta-data');
     }
 
     // Grant check — PHP checks WRITE grant before saving
@@ -7507,7 +7508,8 @@ router.post('/:db/_m_del/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req
        WHERE obj.id = ?`, [objectId], { label: 'post_db_m_del_id_select' });
 
     if (!row || row.pup == null) {
-      return res.status(200).json([{ error: 'Object not found' }]);
+      // PHP: die("Object not found") — plain text (index.php:8306)
+      return res.status(200).send('Object not found');
     }
 
     // PHP: if pup==0 → can't delete metadata
@@ -7749,10 +7751,15 @@ router.post('/:db/_m_move/:id', legacyAuthMiddleware, legacyXsrfCheck, async (re
     const objectId = parseInt(id, 10);
     const newParentId = parseInt(req.body.up, 10);
 
+    // PHP: die("Wrong id: $id") — plain text (index.php:8238-8239)
+    if (!objectId) {
+      return res.status(200).send(`Wrong id: ${id}`);
+    }
+
     const pool = getPool();
     const { grants, username } = req.legacyUser || {};
 
-    // Grant check on source object and target parent
+    // Grant check on source object — PHP: Check_Grant($id) uses my_die format
     if (!await checkGrant(pool, db, grants || {}, objectId, 0, 'WRITE', username || '')) {
       return res.status(200).json([{ error: 'Insufficient privileges' }]);
     }
@@ -7763,15 +7770,16 @@ router.post('/:db/_m_move/:id', legacyAuthMiddleware, legacyXsrfCheck, async (re
     // Fetch full object info (t, up, ord) before moving
     const { rows: objInfo } = await execSql(pool, `SELECT t, up, ord FROM \`${db}\` WHERE id = ? LIMIT 1`, [objectId], { label: 'post_db_m_move_id_select' });
     if (objInfo.length === 0) {
-      return res.status(200).json([{ error: 'Object not found' }]);
+      // PHP: exit("No such record") — plain text (index.php:8271)
+      return res.status(200).send('No such record');
     }
     const objType = objInfo[0].t;
     const oldParentId = objInfo[0].up;
     const oldOrd = objInfo[0].ord;
 
-    // Metadata protection: can't move root-level types
+    // PHP: exit("Cannot update meta-data") — plain text (index.php:8260)
     if (oldParentId === 0) {
-      return res.status(200).json([{ error: 'Cannot move metadata object' }]);
+      return res.status(200).send('Cannot update meta-data');
     }
 
     // Type mismatch guard: old parent and new parent must be of the same type
@@ -7779,10 +7787,12 @@ router.post('/:db/_m_move/:id', legacyAuthMiddleware, legacyXsrfCheck, async (re
        FROM \`${db}\` old_p, \`${db}\` new_p
        WHERE old_p.id = ? AND new_p.id = ?`, [oldParentId, newParentId], { label: 'post_db_m_move_id_select' });
     if (parentRows.length === 0) {
-      return res.status(200).json([{ error: 'Parent not found' }]);
+      // PHP: exit("No such record") — plain text (index.php:8271)
+      return res.status(200).send('No such record');
     }
     if (parentRows[0].ut !== parentRows[0].tt) {
-      return res.status(200).json([{ error: `Types mismatch ${objType}!=${parentRows[0].tt}` }]);
+      // PHP: exit("Types mismatch ...") — plain text (index.php:8262)
+      return res.status(200).send(`Types mismatch ${objType}!=${parentRows[0].tt}`);
     }
 
     // Same-parent no-op: skip if already under the target parent
@@ -9654,9 +9664,10 @@ router.post('/:db/_m_up/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req,
     }
 
     // Get current object
+    // PHP: exit("No arr recs") — plain text (index.php:7816)
     const obj = await getObjectById(db, objectId);
     if (!obj) {
-      return res.status(404).json([{ error: 'Object not found' }]);
+      return res.status(200).send('No arr recs');
     }
 
     // Find the previous sibling (same parent and type, lower order)
@@ -9775,10 +9786,11 @@ router.post('/:db/_m_id/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req,
     const { grants, username } = req.legacyUser || {};
 
     if (!newId || newId <= 0) {
-      return res.status(200).json([{ error: 'new_id must be a positive integer' }]);
+      // PHP: die("Invalid ID") — plain text, not JSON (index.php:8843)
+      return res.status(200).send('Invalid ID');
     }
     if (oldId === newId) {
-      return res.status(200).json([{ error: 'new_id must differ from current id' }]);
+      return res.status(200).send('Invalid ID');
     }
 
     // Grant check — PHP checks WRITE grant before ID change
@@ -9793,15 +9805,19 @@ router.post('/:db/_m_id/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req,
     }
     const up = objRows[0].up;
 
+    // PHP: SELECT up FROM $z WHERE id=$newId OR (id=$id AND up=0) — single query checks both
+    // If up===0, my_die("This id belongs to metadata"); if exists, my_die("The new id is occupied")
+    // Node splits into two queries for clarity but preserves my_die() [array] format
+
     // Metadata guard: can't change ID of metadata (root-level types)
     if (objRows[0].up === 0) {
-      return res.status(200).json([{ error: 'Cannot change ID of metadata object' }]);
+      return res.status(200).json([{ error: 'This id belongs to metadata' }]);
     }
 
     // Check that new_id is not already in use
     const { rows: existRows } = await execSql(pool, `SELECT id FROM \`${db}\` WHERE id = ? LIMIT 1`, [newId], { label: 'post_db_m_id_id_select' });
     if (existRows.length > 0) {
-      return res.status(200).json([{ error: `ID ${newId} is already in use` }]);
+      return res.status(200).json([{ error: 'The new id is occupied' }]);
     }
 
     // PHP: 3 UPDATEs to rename the id everywhere it appears — wrap in transaction
