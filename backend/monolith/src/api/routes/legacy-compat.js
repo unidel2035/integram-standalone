@@ -7674,6 +7674,11 @@ router.post('/:db/_m_set/:id', legacyAuthMiddleware, legacyXsrfCheck, upload.any
       const typeIdNum = parseInt(attrTypeId, 10);
       let finalValue = String(attrValue);
 
+      // PHP (index.php:7875): Check_Grant($obj, $t) — per-attribute grant check
+      if (!await checkGrant(pool, db, grants || {}, objectId, typeIdNum, 'WRITE', username || '')) {
+        return sendLegacyDie(res, 'Insufficient privileges');
+      }
+
       // Fetch attribute metadata (base_type, attrs) to detect references and :MULTI:
       const { rows: attrMeta } = await execSql(pool, `SELECT t AS base_type, val, up FROM \`${db}\` WHERE id = ? LIMIT 1`, [typeIdNum], { label: 'post_db_m_set_id_select' });
       const meta = attrMeta.length > 0 ? attrMeta[0] : null;
@@ -7840,32 +7845,37 @@ router.post('/:db/_m_move/:id', legacyAuthMiddleware, legacyXsrfCheck, async (re
       return sendLegacyDie(res, 'Insufficient privileges for target parent');
     }
 
-    // Fetch full object info (t, up, ord) before moving
-    const { rows: objInfo } = await execSql(pool, `SELECT t, up, ord FROM \`${db}\` WHERE id = ? LIMIT 1`, [objectId], { label: 'post_db_m_move_id_select' });
-    if (objInfo.length === 0) {
-      // PHP: exit("No such record") — plain text (index.php:8271)
-      return res.status(200).send('No such record');
-    }
-    const objType = objInfo[0].t;
-    const oldParentId = objInfo[0].up;
-    const oldOrd = objInfo[0].ord;
+    // PHP (index.php:8251-8253): single combined query with INNER JOIN on target's children.
+    // When target has no children, the INNER JOIN fails; MySQL's MAX() aggregate still
+    // returns one row but with NULL for non-aggregate columns.  PHP's loose comparison
+    // NULL==0 is true, so it triggers "Cannot update meta-data" in that case.
+    // We replicate the exact PHP query to get identical behaviour.
+    const { rows: moveInfo } = await execSql(pool, `SELECT a.up, a.t, up_rec.t AS ut, a.ord, target.t AS tt, COALESCE(MAX(reqs.ord)+1,1) AS new_ord
+       FROM \`${db}\` a, \`${db}\` up_rec, \`${db}\` target, \`${db}\` reqs
+       WHERE up_rec.id = a.up AND a.id = ? AND target.id = ? AND reqs.up = ?`, [objectId, newParentId, newParentId], { label: 'post_db_m_move_id_select' });
 
-    // PHP: exit("Cannot update meta-data") — plain text (index.php:8260)
-    if (oldParentId === 0) {
+    // PHP: mysqli_fetch_array returns false when no rows → else branch exit("No such record")
+    // But MySQL with MAX() aggregate + no GROUP BY always returns one row even on empty
+    // cross product — all non-aggregate columns become NULL.  In PHP, the fetch succeeds
+    // (returns a row), then $row["up"]==0 evaluates true because PHP: NULL == 0 is true.
+    // So PHP returns "Cannot update meta-data" even when the INNER JOIN found nothing.
+    // Replicate this: the aggregate always returns one row; treat NULL up as 0.
+    const row = moveInfo[0];
+    const objType = row.t;
+    const oldParentId = row.up;
+    const oldOrd = row.ord;
+    const newOrder = row.new_ord;
+
+    // PHP: exit("Cannot update meta-data") — plain text (index.php:8268-8269)
+    // PHP uses loose comparison: $row["up"]==0.  NULL==0 is true in PHP.
+    // In JS, null == 0 is false, so explicitly check for both null and 0.
+    if (oldParentId === null || oldParentId === 0) {
       return res.status(200).send('Cannot update meta-data');
     }
 
-    // Type mismatch guard: old parent and new parent must be of the same type
-    const { rows: parentRows } = await execSql(pool, `SELECT old_p.t AS ut, new_p.t AS tt
-       FROM \`${db}\` old_p, \`${db}\` new_p
-       WHERE old_p.id = ? AND new_p.id = ?`, [oldParentId, newParentId], { label: 'post_db_m_move_id_select' });
-    if (parentRows.length === 0) {
-      // PHP: exit("No such record") — plain text (index.php:8271)
-      return res.status(200).send('No such record');
-    }
-    if (parentRows[0].ut !== parentRows[0].tt) {
-      // PHP: exit("Types mismatch ...") — plain text (index.php:8262)
-      return res.status(200).send(`Types mismatch ${objType}!=${parentRows[0].tt}`);
+    // Type mismatch guard (index.php:8270-8271)
+    if (row.ut !== row.tt) {
+      return res.status(200).send(`Types mismatch ${objType}!=${row.tt}`);
     }
 
     // Same-parent no-op: skip if already under the target parent
@@ -7882,10 +7892,9 @@ router.post('/:db/_m_move/:id', legacyAuthMiddleware, legacyXsrfCheck, async (re
     // Order adjustment in old parent: shift down peers after removed object
     await execSql(pool, `UPDATE \`${db}\` SET ord = ord - 1 WHERE up = ? AND t = ? AND ord > ?`, [oldParentId, objType, oldOrd], { label: 'post_db_m_move_id_update' });
 
-    // PHP: COALESCE(MAX(reqs.ord)+1,1) where reqs.up=$up — no type filter (index.php:8244)
-    const { rows: [ordRow] } = await execSql(pool, `SELECT COALESCE(MAX(ord)+1, 1) AS next_ord FROM \`${db}\` WHERE up = ?`, [newParentId], { label: 'm_move_new_ord' });
-    const newOrder = ordRow ? ordRow.next_ord : 1;
-    await execSql(pool, `UPDATE \`${db}\` SET up = ?, ord = ? WHERE id = ?`, [newParentId, newOrder, objectId], { label: 'post_db_m_move_id_update' });
+    // PHP (index.php:8258-8267): when $up==1, uses ord=1 instead of MAX-based new_ord
+    const finalOrder = newParentId === 1 ? 1 : newOrder;
+    await execSql(pool, `UPDATE \`${db}\` SET up = ?, ord = ? WHERE id = ?`, [newParentId, finalOrder, objectId], { label: 'post_db_m_move_id_update' });
 
     logger.info('[Legacy _m_move] Object moved', { db, id: objectId, newParentId });
 
@@ -10075,8 +10084,28 @@ router.all('/:db/obj_meta/:id', legacyAuthMiddleware, async (req, res) => {
 
     logger.info('[Legacy obj_meta] Metadata retrieved', { db, id: objectId });
 
+    // PHP builds the JSON string manually with specific key order (index.php:8847-8865):
+    //   top-level: id, up, type, val, reqs
+    //   reqs entries: id, val, type[, arr_id][, ref, ref_id][, attrs]
+    // The phpJsonMiddleware sorts keys alphabetically, which breaks this order.
+    // Build the JSON string directly to match PHP's exact output.
+    const reqsObj = meta.reqs;
+    let reqsJson = '';
+    const reqKeys = Object.keys(reqsObj);
+    for (let i = 0; i < reqKeys.length; i++) {
+      const rk = reqKeys[i];
+      const re = reqsObj[rk];
+      let entryJson = `"id":${JSON.stringify(re.id)},"val":${JSON.stringify(re.val)},"type":${JSON.stringify(re.type)}`;
+      if (re.arr_id !== undefined) entryJson += `,"arr_id":${JSON.stringify(re.arr_id)}`;
+      if (re.ref !== undefined) entryJson += `,"ref":${JSON.stringify(re.ref)},"ref_id":${JSON.stringify(re.ref_id)}`;
+      if (re.attrs !== undefined) entryJson += `,"attrs":${JSON.stringify(re.attrs)}`;
+      reqsJson += (i > 0 ? ',' : '') + `${JSON.stringify(rk)}:{${entryJson}}`;
+    }
+    const jsonStr = `{"id":${JSON.stringify(meta.id)},"up":${JSON.stringify(meta.up)},"type":${JSON.stringify(meta.type)},"val":${JSON.stringify(meta.val)},"reqs":{${reqsJson}}}`;
+
     res.setHeader('Content-Disposition', `attachment;filename=${objectId}.json`);
-    res.json(meta);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(jsonStr);
   } catch (error) {
     logger.error('[Legacy obj_meta] Error', { error: error.message, db });
     sendLegacyDie(res, error.message );
