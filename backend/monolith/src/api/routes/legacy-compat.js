@@ -5756,13 +5756,10 @@ router.get('/:db/:page*', async (req, res, next) => {
           if (REV_BASE_TYPE[k]) { typBlock.typ.push(String(k)); typBlock.val.push(REV_BASE_TYPE[k]); }
         }
         // PHP: edit_types isApi() calls die() before myrolemenu/top_menu are added (#443)
-        // PHP: &Editables block sets ok=[""] only when Check_Types_Grant()=="WRITE",
-        // but the &Edit_Typs handler die()s at line 4316 which means &editables content
-        // was already processed by the template engine. However, testing shows PHP does NOT
-        // include &main.a.&editables in the JSON output — likely because the template engine
-        // only adds block data when it successfully iterates the block content, and &Editables
-        // processing may not populate the API vars in all cases. Match PHP: omit it.
+        // PHP: &Editables block sets ok=[""] when Check_Types_Grant()=="WRITE"
+        // PHP includes &main.a.&editables in the JSON output with ok:[""]
         return res.json({
+          '&main.a.&editables': { ok: [''] },
           '&main.a.&types':     typBlock,
           edit_types: editTypesET,
           types: REV_BASE_TYPE,
