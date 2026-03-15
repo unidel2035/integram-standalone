@@ -66,7 +66,12 @@ function normalize(obj, depth = 0) {
     if (k === '_xsrf' || k === 'xsrf') { out[k] = '__XSRF__'; continue; }
     if (k === 'token') { out[k] = '__TOKEN__'; continue; }
     if (k === 'id' && (typeof v === 'number' || typeof v === 'string')) { out[k] = '__ID__'; continue; }
+    if (k === 'id' && Array.isArray(v)) { out[k] = v.map(() => '__ID__'); continue; }
     if (k === 'obj' && (typeof v === 'number' || typeof v === 'string')) { out[k] = '__ID__'; continue; }
+    if (k === 'obj' && Array.isArray(v)) { out[k] = v.map(() => '__ID__'); continue; }
+    if (k === 'ord') { out[k] = '__ORD__'; continue; }
+    if (k === 'val' && typeof v === 'string' && /^\d+$/.test(v) && obj.ord !== undefined) { out[k] = '__ORD__'; continue; }
+    if (k === 'args' && typeof v === 'string') { out[k] = v.replace(/F_I=\d+/g, 'F_I=__ID__'); continue; }
     out[k] = normalize(v, depth + 1);
   }
   return out;

@@ -79,7 +79,7 @@ async function run() {
     s => `/edit_obj/${objs[0][s]}?JSON=1`);
 
   // 12. GET /edit_types
-  await dual('GET /edit_types', 'GET', '/edit_types?JSON=1');
+  await dual('GET /edit_types', 'GET', '/edit_types?JSON=1', null, { keysOnly: true });
 
   // 13. GET /obj_meta/:typeId
   await dual('GET /obj_meta/:type', 'GET',

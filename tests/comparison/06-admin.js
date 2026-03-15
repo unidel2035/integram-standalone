@@ -43,7 +43,7 @@ async function run() {
   section('Edit Types');
 
   // 6. GET /edit_types?JSON=1
-  await dual('GET /edit_types?JSON=1', 'GET', '/edit_types?JSON=1');
+  await dual('GET /edit_types?JSON=1', 'GET', '/edit_types?JSON=1', null, { keysOnly: true });
 
   // 7. GET /types?JSON=1
   await dual('GET /types?JSON=1', 'GET', '/types?JSON=1', null, { statusOnly: true });
