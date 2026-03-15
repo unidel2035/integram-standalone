@@ -32,7 +32,8 @@ async function http(baseUrl, method, path, body, cookie, extraHeaders = {}) {
   if (cookie) headers['Cookie'] = cookie;
   const opts = { method, headers, redirect: 'manual' };
   if (body && (method === 'POST' || method === 'PUT')) {
-    if (!headers['Content-Type']) headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    // FormData sets Content-Type automatically (multipart/form-data with boundary)
+    if (!headers['Content-Type'] && !(body instanceof FormData)) headers['Content-Type'] = 'application/x-www-form-urlencoded';
     opts.body = body;
   }
   try {
@@ -223,7 +224,7 @@ async function setup() {
   // so we need concrete types for SHORT(3), LONG(2), DATETIME(4), BOOL(7), NUMBER(11), etc.
   const ck = `${DB}=${token}`;
   const termsRes = await http(PHP, 'GET', `/${DB}/terms?JSON=1`, null, ck);
-  const BASE_IDS = [2, 3, 4, 7, 9, 11, 13, 14]; // base types we might need
+  const BASE_IDS = [2, 3, 4, 7, 8, 9, 10, 11, 13, 14]; // base types we might need (10=FILE, 8=CHARS)
   if (termsRes.json && Array.isArray(termsRes.json)) {
     for (const item of termsRes.json) {
       const bt = item.type;

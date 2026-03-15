@@ -6870,13 +6870,13 @@ async function getRequisiteByType(db, parentId, typeId) {
  * Parameters: up (parent ID), t (type ID), val, t{id}=value (attributes)
  * Supports file uploads for FILE-type requisites (multer memoryStorage).
  */
-router.post('/:db/_m_new/:up?', legacyAuthMiddleware, legacyXsrfCheck, (req, res, next) => {
-  // Use upload.any() so FILE-type requisites can be uploaded alongside text fields
+router.post('/:db/_m_new/:up?', legacyAuthMiddleware, (req, res, next) => {
+  // Parse multipart BEFORE xsrf check — PHP's $_POST auto-parses multipart
   upload.any()(req, res, (err) => {
     if (err) logger.warn('[Legacy _m_new] Multer error', { error: err.message });
     next();
   });
-}, async (req, res) => {
+}, legacyXsrfCheck, async (req, res) => {
   const { db, up } = req.params;
 
   const locale = getLocale(req, db);
@@ -7093,7 +7093,7 @@ router.post('/:db/_m_new/:up?', legacyAuthMiddleware, legacyXsrfCheck, (req, res
         // File blacklist check
         if (isBlacklisted(uploadedFile.originalname)) {
           logger.warn('[Legacy _m_new] Blacklisted file rejected', { db, filename: uploadedFile.originalname });
-          continue;
+          return sendLegacyDie(res, 'Недопустимый тип файла!');
         }
         const subdir = getSubdir(db, id);
         const uploadDir = path.join(legacyPath, 'download', db, subdir);
@@ -7364,13 +7364,13 @@ async function getCurrentValues(pool, db, id, typ, reqs, refTyps, arrTyps, revBt
  * PHP: index.php lines 7991-8163
  * When copybtn is set, copies the object and all its requisites.
  */
-router.post('/:db/_m_save/:id', legacyAuthMiddleware, legacyXsrfCheck, (req, res, next) => {
-  // Use upload.any() so FILE-type requisites can be uploaded alongside text fields
+router.post('/:db/_m_save/:id', legacyAuthMiddleware, (req, res, next) => {
+  // Parse multipart BEFORE xsrf check — PHP's $_POST auto-parses multipart
   upload.any()(req, res, (err) => {
     if (err) logger.warn('[Legacy _m_save] Multer error', { error: err.message });
     next();
   });
-}, async (req, res) => {
+}, legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -7594,7 +7594,7 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, legacyXsrfCheck, (req, res
         if (uploadedFile) {
           if (isBlacklisted(uploadedFile.originalname)) {
             logger.warn('[Legacy _m_save] Blacklisted file rejected', { db, filename: uploadedFile.originalname });
-            continue;
+            return sendLegacyDie(res, 'Недопустимый тип файла!');
           }
           const subdir = getSubdir(db, objectId);
           const uploadDir = path.join(legacyPath, 'download', db, subdir);
@@ -7903,7 +7903,7 @@ router.post('/:db/_m_del/:id', legacyAuthMiddleware, legacyXsrfCheck, async (req
  * Parameters: t{id}=value (attributes to set), or t{id}=<file> for inline file upload
  * saveInlineFile in smartq.js uploads file as t{reqId} and reads json.args as download path
  */
-router.post('/:db/_m_set/:id', legacyAuthMiddleware, legacyXsrfCheck, upload.any(), async (req, res) => {
+router.post('/:db/_m_set/:id', legacyAuthMiddleware, upload.any(), legacyXsrfCheck, async (req, res) => {
   const { db, id } = req.params;
 
   if (!isValidDbName(db)) {
@@ -7969,10 +7969,10 @@ router.post('/:db/_m_set/:id', legacyAuthMiddleware, legacyXsrfCheck, upload.any
       // Handle inline file upload (saveInlineFile in smartq.js)
       const uploadedFile = fileByField[`t${attrTypeId}`];
       if (uploadedFile) {
-        // File blacklist check
+        // File blacklist check — PHP parity: BlackList() calls my_die() which stops execution
         if (isBlacklisted(uploadedFile.originalname)) {
           logger.warn('[Legacy _m_set] Blacklisted file rejected', { db, filename: uploadedFile.originalname });
-          continue;
+          return sendLegacyDie(res, 'Недопустимый тип файла!');
         }
 
         const subdir = getSubdir(db, objectId);
