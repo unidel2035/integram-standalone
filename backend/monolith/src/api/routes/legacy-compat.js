@@ -3995,13 +3995,16 @@ router.post('/:db/checkcode', async (req, res) => {
 
       // PHP checkcode does NOT set a cookie — client sets it from JSON response (#430)
 
-      return res.status(200).json({ token: newToken, _xsrf: newXsrf });
+      // PHP: die('{"token":"...","_xsrf":"..."}') — text/html content type
+      return res.status(200).type('text/html').send(JSON.stringify({ token: newToken, _xsrf: newXsrf }));
     } else {
-      return res.status(200).json({ error: 'user not found' });
+      // PHP: die('{"error":"user not found"}') — text/html content type
+      return res.status(200).type('text/html').send('{"error":"user not found"}');
     }
   } catch (error) {
     logger.error({ error: error.message, db }, '[Legacy CheckCode] Error');
-    return res.status(200).json({ error: 'invalid data' });
+    // PHP: die('{"error":"invalid data"}') — text/html content type
+    return res.status(200).type('text/html').send('{"error":"invalid data"}');
   }
 });
 
