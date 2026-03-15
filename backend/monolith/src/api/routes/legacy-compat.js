@@ -9615,12 +9615,13 @@ router.post('/:db/_d_ref/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
     }
 
     // PHP: if(($row["up"] != 0) || ($row["t"] == $id)) die("Invalid $id type")
-    if (row.up !== 0 || row.t === id) {
+    // Use Number() to match PHP loose comparison — mysql2 may return numeric strings
+    if (Number(row.up) !== 0 || Number(row.t) === id) {
       return res.status(200).json([{ error: `Invalid ${id} type`  }]);
     }
 
     let refId;
-    if (row.refId > 0) {
+    if (Number(row.refId) > 0) {
       // Reference already exists — return existing
       refId = row.refId;
     } else {
