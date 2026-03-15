@@ -23,6 +23,26 @@ function getSortedKeys(obj) {
 }
 
 /**
+ * Encode a string as a JSON string with JSON_HEX_QUOT behavior (Issue #424).
+ *
+ * PHP's json_encode($val, JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) encodes
+ * double-quote characters inside string values as \u0022 instead of \".
+ * This function replicates that behavior for Node.js parity.
+ *
+ * @param {string} value - The string to encode
+ * @returns {string} - JSON-encoded string with \u0022 instead of \"
+ */
+function jsonHexQuot(value) {
+  // JSON.stringify wraps in quotes and escapes inner quotes as \"
+  // Replace escaped quotes \" with \u0022 to match PHP JSON_HEX_QUOT
+  const encoded = JSON.stringify(value);
+  // Only replace \" that are escaped quotes inside the string (not the outer quotes).
+  // The outer quotes are at positions 0 and encoded.length-1.
+  // Inner \" sequences appear as the two-char sequence: backslash + quote.
+  return encoded.slice(0, 1) + encoded.slice(1, -1).replace(/\\"/g, '\\u0022') + encoded.slice(-1);
+}
+
+/**
  * Recursively sort all keys in an object alphabetically.
  * Note: Due to V8's automatic numeric key sorting, the returned object may not
  * preserve alphabetical order for numeric keys. Use jsonStringifySorted() for
@@ -102,7 +122,7 @@ function _stringify(value, indent, space) {
     if (!isFinite(value)) return 'null';
     return String(value);
   }
-  if (typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'string') return jsonHexQuot(value);
 
   // Handle Date objects
   if (value instanceof Date) {
@@ -130,7 +150,7 @@ function _stringify(value, indent, space) {
       // Skip undefined values in objects
       if (val === undefined) continue;
       const valStr = _stringify(val, nextIndent, space);
-      const keyStr = JSON.stringify(k);
+      const keyStr = jsonHexQuot(k);
       pairs.push((space ? ' '.repeat(nextIndent) : '') + keyStr + sep + valStr);
     }
 
@@ -185,9 +205,12 @@ export function phpJsonMiddleware() {
   };
 }
 
+export { jsonHexQuot };
+
 export default {
   sortKeysRecursive,
   jsonStringifySorted,
   sendSortedJson,
-  phpJsonMiddleware
+  phpJsonMiddleware,
+  jsonHexQuot
 };
