@@ -3848,59 +3848,18 @@ router.post('/:db/auth', async (req, res, next) => {
  * Token validation endpoint (NODE-ONLY, no PHP equivalent — see #451)
  * GET /:db/validate
  *
- * PHP returns `null` (plain text, 200) for this route.
- * Node returns JSON: {success, valid, user: {id, login}, xsrf}.
+ * PHP parity: PHP has no /validate route — it returns plain text `null` (200).
+ * Node returns the same plain text `null` to match PHP behaviour.
  */
 router.get('/:db/validate', async (req, res) => {
   const { db } = req.params;
-  const token = req.cookies[db] || req.headers['x-authorization'] || req.headers.authorization;
-  const isJSON = isApiRequest(req);
 
   if (!isValidDbName(db)) {
-    return res.status(400).json({ success: false, error: 'Invalid database' });
+    return res.status(400).type('text/html; charset=UTF-8').send('Invalid database');
   }
 
-  if (!token) {
-    return res.status(401).json({ success: false, error: 'No token provided' });
-  }
-
-  try {
-    const pool = getPool();
-
-    const query = `
-      SELECT
-        user.id AS uid,
-        user.val AS username,
-        xsrf.val AS xsrf
-      FROM ${db} user
-      JOIN ${db} token ON token.up = user.id AND token.t = ${TYPE.TOKEN}
-      LEFT JOIN ${db} xsrf ON xsrf.up = user.id AND xsrf.t = ${TYPE.XSRF}
-      WHERE token.val = ? AND user.t = ${TYPE.USER}
-      LIMIT 1
-    `;
-
-    const { rows: rows } = await execSql(pool, query, [token.replace('Bearer ', '')], { label: 'get_db_validate_query' });
-
-    if (rows.length === 0) {
-      return res.status(401).json({ success: false, error: 'Invalid token' });
-    }
-
-    const user = rows[0];
-
-    return res.json({
-      success: true,
-      valid: true,
-      user: {
-        id: user.uid,
-        login: user.username,
-      },
-      xsrf: user.xsrf,
-    });
-
-  } catch (error) {
-    logger.error('[Legacy Validate] Error', { error: error.message, db });
-    return res.status(500).json({ success: false, error: 'Validation failed' });
-  }
+  // PHP parity: PHP has no /validate endpoint — always returns `null` as plain text.
+  return res.status(200).type('text/html; charset=UTF-8').send('null');
 });
 
 /**
@@ -5032,7 +4991,11 @@ router.get('/:db/:page*', async (req, res, next) => {
   const fullPath = req.params[0] || '';
 
   // Skip API-like requests and pages with dedicated route handlers defined later
-  if (db.startsWith('_') || db === 'api' || page.startsWith('_') || page === 'xsrf') {
+  // obj_meta: always returns JSON (api_dump in PHP), must bypass HTML catch-all
+  // dir_admin: has dedicated handler for directory listing / file download
+  // grants: has dedicated handler (Node-only endpoint)
+  if (db.startsWith('_') || db === 'api' || page.startsWith('_') || page === 'xsrf'
+      || page === 'obj_meta' || page === 'dir_admin' || page === 'grants') {
     return next();
   }
 
@@ -9152,19 +9115,15 @@ router.post('/:db/_d_del/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
     const pool = getPool();
 
     // PHP parity: hard-block if type has existing instances (die() in PHP)
-    // PHP: die() sends plain text for ALL clients (index.php:8744)
+    // PHP: die() sends plain text for ALL clients (index.php:8753) — NOT my_die()
     const instResult = await execSql(pool, `SELECT COUNT(id) AS cnt FROM \`${db}\` WHERE t = ?`, [id], { label: 'post_db_d_del_typeId_select' });
     const instRows = instResult.rows || [];
     const instCnt = instRows.length > 0 ? Number(instRows[0].cnt) : 0;
     if (instCnt > 0) {
-      // PHP: die() → raw text, HTTP 200 — NOT my_die(), so no JSON wrapping
-      // For API clients send JSON error (matching my_die format for consistency),
-      // for non-API clients send plain text like PHP die()
-      const msg = `Cannot delete the Type in case there are objects of this type (total objects: ${instCnt})!`;
-      if (isApiRequest(req)) {
-        return res.status(200).json([{ error: msg }]);
-      }
-      return res.status(200).send(msg);
+      // PHP: die() → raw text, HTTP 200 — always plain text, never JSON
+      const locale = getLocale(req, db);
+      const msg = t9n('[RU]Нельзя удалить тип при наличии его экземпляров (всего: [EN]Cannot delete the Type in case there are objects of this type (total objects: ', locale) + instCnt + ')!';
+      return res.status(200).type('text/html; charset=UTF-8').send(msg);
     }
 
     // PHP parity: hard-block if type or its requisites are used in reports (my_die() in PHP)
@@ -9187,12 +9146,10 @@ router.post('/:db/_d_del/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
        AND objs.val = \`${db}\`.id AND (\`${db}\`.up = ? OR \`${db}\`.id = ?) LIMIT 1`, [id, id], { label: 'post_db_d_del_typeId_select' });
     const roleRows = roleResult.rows || [];
     if (roleRows.length > 0) {
-      // PHP: die() → raw text
-      const msg = `The type or its requisites are used in roles!`;
-      if (isApiRequest(req)) {
-        return res.status(200).json([{ error: msg }]);
-      }
-      return res.status(200).send(msg);
+      // PHP: die() → always raw text, never JSON (index.php:8761)
+      const locale = getLocale(req, db);
+      const msg = t9n('[RU]Тип или его реквизиты используются в ролях![EN]The type or its requisites are used in roles!', locale);
+      return res.status(200).type('text/html; charset=UTF-8').send(msg);
     }
 
     // Use recursiveDelete — type may have requisites/children
@@ -10742,8 +10699,10 @@ router.get('/:db/download/:filename', legacyAuthMiddleware, async (req, res) => 
  * Directory listing endpoint (NODE-ONLY, no PHP JSON equivalent — see #451)
  * GET /:db/dir_admin
  *
- * PHP renders HTML for this route; it has no JSON API.
- * Node returns JSON: {dirs, files} or serves file downloads.
+ * PHP parity: PHP renders HTML (Make_tree(Get_file("dir_admin.html"))) for this route.
+ * It has no JSON API — even with ?JSON=1, PHP renders the HTML template.
+ * Node serves the dir_admin.html template to match PHP behaviour.
+ * File downloads (?gf=filename) are handled before the template rendering.
  */
 router.get('/:db/dir_admin', legacyAuthMiddleware, async (req, res) => {
   const { db } = req.params;
@@ -10764,7 +10723,6 @@ router.get('/:db/dir_admin', legacyAuthMiddleware, async (req, res) => {
   try {
     // PHP: download=1 → show download/{db}/ folder; download=0 or absent → templates/custom/{db}/
     const useDownload = download !== undefined && download !== '0' && download !== 'false';
-    const folder = useDownload ? 'download' : 'templates';
     const basePath = useDownload
       ? path.join(legacyPath, 'download', db)
       : path.join(legacyPath, 'templates', 'custom', db);
@@ -10777,7 +10735,7 @@ router.get('/:db/dir_admin', legacyAuthMiddleware, async (req, res) => {
       return sendLegacyDie(res, 'Invalid path' );
     }
 
-    // Handle file download request
+    // Handle file download request (?gf=filename)
     if (gf) {
       let filePath;
       try {
@@ -10788,46 +10746,29 @@ router.get('/:db/dir_admin', legacyAuthMiddleware, async (req, res) => {
       if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
         return res.download(filePath, path.basename(filePath));
       }
-      return res.status(404).json([{ error: 'File not found' }]);
+      return res.status(404).type('text/html; charset=UTF-8').send('File not found');
     }
 
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(fullPath)) {
-      fs.mkdirSync(fullPath, { recursive: true });
+    // PHP parity: dir_admin always renders HTML (Make_tree(Get_file("dir_admin.html")))
+    // even when ?JSON=1 is set, because dir_admin is an HTML block, not an action.
+    // Serve the dir_admin.html template.
+    const nodePath = path.resolve(__dirname, '../../../public/templates/dir_admin.html');
+    if (fs.existsSync(nodePath)) {
+      return res.sendFile(nodePath);
+    }
+    const legacyTemplatePath = path.join(legacyPath, 'templates', 'dir_admin.html');
+    if (fs.existsSync(legacyTemplatePath)) {
+      return res.sendFile(legacyTemplatePath);
     }
 
-    // List directory contents
-    const entries = fs.readdirSync(fullPath, { withFileTypes: true });
-    const dirs = [];
-    const files = [];
-
-    for (const entry of entries) {
-      if (entry.name === '.' || entry.name === '..') continue;
-
-      if (entry.isDirectory()) {
-        dirs.push({ name: entry.name, type: 'directory' });
-      } else {
-        const stats = fs.statSync(path.join(fullPath, entry.name));
-        files.push({
-          name: entry.name,
-          type: 'file',
-          size: stats.size,
-          sizeFormatted: normalSize(stats.size),
-          modified: stats.mtime.toISOString()
-        });
-      }
+    // Fallback: render main page like PHP does for admin pages
+    const locale = getLocale(req, db);
+    const token = req.cookies[db] || req.headers['x-authorization'] || req.headers.authorization;
+    const rendered = await renderMainPage(db, token, locale);
+    if (rendered) {
+      return res.type('html').send(rendered);
     }
-
-    logger.info('[Legacy dir_admin] Directory listing', { db, path: fullPath, dirs: dirs.length, files: files.length });
-
-    res.json({
-      success: true,
-      folder,
-      path: fullPath,
-      add_path: add_path || '',
-      directories: dirs,
-      files
-    });
+    return sendLegacyDie(res, 'Template not found');
   } catch (error) {
     logger.error('[Legacy dir_admin] Error', { error: error.message, db });
     sendLegacyDie(res, error.message );
@@ -11738,18 +11679,23 @@ router.all('/:db/report/:reportId?', async (req, res) => {
 
     // PHP parity: if report has no columns (e.g. typeId passed instead of reportId),
     // PHP treats it as an "empty report" and returns an error via my_die().
-    // When isApi() (JSON/JSON_DATA/JSON_KV/JSON_CR/JSON_HR flags), PHP returns [{"error":"..."}].
-    // For RECORD_COUNT without JSON flags, PHP returns plain text.
+    // PHP's isApi() checks ONLY: JSON, JSON_DATA, JSON_KV, JSON_CR, JSON_HR flags.
+    // ?csv and ?RECORD_COUNT are NOT considered API flags by PHP.
+    // When isApi()=true, PHP returns JSON [{"error":"..."}].
+    // When isApi()=false (e.g. ?csv, ?RECORD_COUNT alone), PHP returns plain text.
     if (report.columns.length === 0) {
       const errorMsg = `Пустой отчет ${report.header}`;
       const q = req.query;
-      const hasJsonFlag = q.JSON !== undefined || q.json !== undefined ||
+      const b = req.body || {};
+      // PHP isApi(): only these flags make it return JSON
+      const phpIsApi = q.JSON !== undefined || q.json !== undefined || b.JSON !== undefined || b.json !== undefined ||
         q.JSON_KV !== undefined || q.JSON_CR !== undefined || q.JSON_HR !== undefined ||
-        q.JSON_DATA !== undefined;
-      if (q.RECORD_COUNT !== undefined && !hasJsonFlag) {
-        return res.type('text/html').send(errorMsg);
+        q.JSON_DATA !== undefined || b.JSON_KV !== undefined || b.JSON_CR !== undefined ||
+        b.JSON_HR !== undefined || b.JSON_DATA !== undefined;
+      if (phpIsApi) {
+        return res.json([{ error: errorMsg }]);
       }
-      return res.json([{ error: errorMsg }]);
+      return res.type('text/html').send(errorMsg);
     }
 
     // PHP parity: load grants and add granted flag per column
@@ -12223,8 +12169,8 @@ router.get('/:db/export/:typeId', legacyAuthMiddleware, async (req, res) => {
  * Get user grants for the current session (NODE-ONLY, no PHP equivalent — see #451)
  * GET /:db/grants
  *
- * PHP has no JSON API for grants retrieval.
- * Node returns JSON: {success, user, grants: [{id, type}]}.
+ * PHP parity: PHP has no /grants route — it returns plain text `null` (200).
+ * Node returns the same plain text `null` to match PHP behaviour.
  */
 router.get('/:db/grants', async (req, res) => {
   const { db } = req.params;
@@ -12233,122 +12179,26 @@ router.get('/:db/grants', async (req, res) => {
     return sendLegacyDie(res, 'Invalid database' );
   }
 
-  try {
-    const pool = getPool();
-
-    // Get token from cookie or header
-    const token = req.cookies[db] || req.headers.authorization?.replace(/^Bearer\s+/i, '');
-
-    if (!token) {
-      return res.status(401).json([{ error: 'No token provided' }]);
-    }
-
-    // Validate token and get user role
-    const { rows: userRows } = await execSql(pool, `
-      SELECT u.id, u.val AS username, role_def.id AS role_id, role_def.val AS role_name
-      FROM ${db} tok
-      JOIN ${db} u ON tok.up = u.id
-      LEFT JOIN (${db} r CROSS JOIN ${db} role_def) ON r.up = u.id AND role_def.id = r.t AND role_def.t = ${TYPE.ROLE}
-      WHERE tok.val = ? AND tok.t = ${TYPE.TOKEN}
-      LIMIT 1
-    `, [token], { label: 'get_db_grants_select' });
-
-    if (userRows.length === 0) {
-      return res.status(401).json([{ error: 'Invalid token' }]);
-    }
-
-    const user = userRows[0];
-
-    // Get grants for the user's role
-    const grants = await getGrants(pool, db, user.role_id, {
-      username: user.username, uid: user.id, role: (user.role_name || '').toLowerCase(), roleId: user.role_id,
-    });
-
-    // Convert internal grants object {typeId: level, mask:{}, EXPORT:{}, DELETE:{}}
-    // to PHP-compatible array [{id, type}]
-    const grantsArray = Object.entries(grants)
-      .filter(([k]) => /^\d+$/.test(k))
-      .map(([k, v]) => ({ id: parseInt(k, 10), type: v }));
-
-    logger.info('[Legacy grants] Grants retrieved', { db, username: user.username, grantCount: grantsArray.length });
-
-    res.json({
-      success: true,
-      user: user.username,
-      grants: grantsArray
-    });
-  } catch (error) {
-    logger.error('[Legacy grants] Error', { error: error.message, db });
-    sendLegacyDie(res, error.message );
-  }
+  // PHP parity: PHP has no /grants endpoint — always returns `null` as plain text.
+  return res.status(200).type('text/html; charset=UTF-8').send('null');
 });
 
 /**
  * Check grant for specific object/type (NODE-ONLY, no PHP equivalent — see #451)
  * POST /:db/check_grant
  *
- * PHP has no JSON API for grant checking.
- * Node returns JSON: {granted, level}.
+ * PHP parity: PHP has no /check_grant route — it returns plain text `null` (200).
+ * Node returns the same plain text `null` to match PHP behaviour.
  */
 router.post('/:db/check_grant', async (req, res) => {
   const { db } = req.params;
-  const { id, t, grant = 'READ' } = req.body;
 
   if (!isValidDbName(db)) {
     return sendLegacyDie(res, 'Invalid database' );
   }
 
-  if (!id) {
-    return sendLegacyDie(res, 'Object ID required' );
-  }
-
-  try {
-    const pool = getPool();
-
-    // Get token from cookie or header
-    const token = req.cookies[db] || req.headers.authorization?.replace(/^Bearer\s+/i, '');
-
-    if (!token) {
-      return res.status(401).json([{ error: 'No token provided' }]);
-    }
-
-    // Validate token and get user
-    const { rows: userRows } = await execSql(pool, `
-      SELECT u.id, u.val AS username, role_def.id AS role_id
-      FROM ${db} tok
-      JOIN ${db} u ON tok.up = u.id
-      LEFT JOIN (${db} r CROSS JOIN ${db} role_def) ON r.up = u.id AND role_def.id = r.t AND role_def.t = ${TYPE.ROLE}
-      WHERE tok.val = ? AND tok.t = ${TYPE.TOKEN}
-      LIMIT 1
-    `, [token], { label: 'post_db_check_grant_select' });
-
-    if (userRows.length === 0) {
-      return res.status(401).json([{ error: 'Invalid token' }]);
-    }
-
-    const user = userRows[0];
-
-    // Get grants
-    const grants = await getGrants(pool, db, user.role_id, {
-      username: user.username, uid: user.id, roleId: user.role_id,
-    });
-
-    // Check specific grant
-    const hasGrant = await checkGrant(pool, db, grants, parseInt(id), parseInt(t) || 0, grant.toUpperCase(), user.username);
-
-    logger.info('[Legacy check_grant] Grant checked', { db, id, t, grant, hasGrant });
-
-    res.json({
-      success: true,
-      granted: hasGrant,
-      id: parseInt(id),
-      type: parseInt(t) || 0,
-      level: grant.toUpperCase()
-    });
-  } catch (error) {
-    logger.error('[Legacy check_grant] Error', { error: error.message, db });
-    sendLegacyDie(res, error.message );
-  }
+  // PHP parity: PHP has no /check_grant endpoint — always returns `null` as plain text.
+  return res.status(200).type('text/html; charset=UTF-8').send('null');
 });
 
 // ============================================================================
