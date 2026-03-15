@@ -74,7 +74,7 @@ async function run() {
     s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&t=3&JSON=1`);
 
   // 10. Add number column
-  const colNum = await addColumn(t1, 11);
+  const colNum = await addColumn(t1, 13);  // NUMBER (13, not 11=BOOLEAN)
   await dual('POST /_d_req (number column)', 'POST',
     s => `/_d_req/${t1[s]}`,
     s => `_xsrf=${s === 'php' ? xsrfPhp : xsrfNode}&t=11&JSON=1`);
