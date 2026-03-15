@@ -5032,7 +5032,13 @@ router.get('/:db/:page*', async (req, res, next) => {
   const fullPath = req.params[0] || '';
 
   // Skip API-like requests and pages with dedicated route handlers defined later
-  if (db.startsWith('_') || db === 'api' || page.startsWith('_') || page === 'xsrf' || page === 'terms') {
+  // These pages have their own router.get/all handlers registered after this catch-all;
+  // without this skip they'd be served as HTML templates instead of hitting their handlers.
+  const dedicatedPages = new Set([
+    'xsrf', 'terms', 'login', 'confirm', 'backup', 'csv_all', 'bki-export', 'bki-import',
+    'export', 'grants', 'check_grant', 'restore', 'download', 'upload',
+  ]);
+  if (db.startsWith('_') || db === 'api' || page.startsWith('_') || dedicatedPages.has(page)) {
     return next();
   }
 
@@ -12762,6 +12768,7 @@ router.get('/:db/backup', async (req, res) => {
     const pool = getPool();
 
     // Get token and verify grants
+    // PHP: backup is behind auth — if no valid token, PHP calls login() → 302 redirect
     const token = req.cookies[db] || req.headers.authorization?.replace(/^Bearer\s+/i, '');
     let username = '';
     let grants = {};
@@ -12782,6 +12789,11 @@ router.get('/:db/backup', async (req, res) => {
           username: userRows[0].username, roleId: userRows[0].role_id,
         });
       }
+    }
+
+    // No valid user → redirect to login (PHP parity: login($z) → 302)
+    if (!username) {
+      return res.redirect(`/login.html?db=${db}&uri=${encodeURIComponent(req.originalUrl)}`);
     }
 
     // Check EXPORT grant

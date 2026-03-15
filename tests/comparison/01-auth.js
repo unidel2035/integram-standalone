@@ -63,7 +63,7 @@ async function run() {
 
   // 15. POST /auth — non-existent database (#427: must return 404 + plain text)
   {
-    const fakeDb = 'zzz_nonexistent_db_427';
+    const fakeDb = 'zzznoexist427';
     const body = `login=${USER}&pwd=${PASS}&JSON=1`;
     const [php, node] = await Promise.all([
       http(PHP, 'POST', `/${fakeDb}/auth`, body),
