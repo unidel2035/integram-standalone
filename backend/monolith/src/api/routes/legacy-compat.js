@@ -8953,7 +8953,10 @@ router.post('/:db/_d_new/:parentTypeId?', legacyAuthMiddleware, legacyXsrfCheck,
   }
 
   try {
-    const parentId = parseInt(parentTypeId || req.body.up || '0', 10);
+    // PHP _d_new (line 8637): Insert(0, $unique, $t, $val) — always inserts at up=0
+    // Only use parentTypeId from URL path for child types (Node extension);
+    // ignore req.body.up to match PHP behavior (#444)
+    const parentId = parentTypeId ? parseInt(parentTypeId, 10) : 0;
     const name = req.body.val || req.body.name || '';
 
     // PHP line 8630-8631: if($val == "") my_die("Empty type")
