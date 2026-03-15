@@ -8003,8 +8003,8 @@ router.all('/:db/_dict/:typeId?', legacyAuthMiddleware, async (req, res) => {
  * GET/POST /:db/_list/:typeId
  * Parameters: up (parent), LIMIT, F (offset/from), q (search), sort, dir, f_0, f_{reqId}
  *
- * PHP returns `null` (plain text, 200) for this route.
- * Node returns structured JSON: {data, total, limit, offset}.
+ * PHP returns `null` (plain text, 200) for this route (no handler).
+ * Node returns newline-separated plain text: each line is "id\tval" (tab-separated).
  */
 router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
   const { db, typeId } = req.params;
@@ -8017,7 +8017,7 @@ router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
     const pool = getPool();
     const type = parseIdParam(typeId);
     if (isNaN(type)) {
-      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+      return res.status(200).type('text/html').send(`Wrong id: ${typeId}`);
     }
     const parentId = req.query.up !== undefined || req.body.up !== undefined
       ? parseIdParam(req.query.up || req.body.up)
@@ -8131,13 +8131,11 @@ router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
       reqs: reqMap[row.id] || {},
     }));
 
-    // Return in PHP-compatible format
-    res.json({
-      data: objects,
-      total,
-      limit,
-      offset,
-    });
+    // Return in PHP-compatible format: newline-separated plain text (id\tval per line)
+    // PHP has no _list handler and returns `null` for this route.
+    // Node returns the actual data as newline-separated text to match PHP's text format.
+    const lines = objects.map(o => `${o.id}\t${o.val}`);
+    res.type('text/html').send(lines.join('\n'));
   } catch (error) {
     logger.error('[Legacy _list] Error', { error: error.message, db });
     sendLegacyDie(res, error.message );
@@ -8149,8 +8147,8 @@ router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
  * GET/POST /:db/_list_join/:typeId
  * Parameters: up (parent), LIMIT, F (offset/from), q (search), join (comma-separated requisite IDs to join)
  *
- * PHP returns `null` (plain text, 200) for this route.
- * Node returns structured JSON: {data, total, limit, offset, requisites}.
+ * PHP returns `null` (plain text, 200) for this route (no handler).
+ * Node returns newline-separated plain text: each line is "id\tval[\treq1\treq2\t...]" (tab-separated).
  *
  * This endpoint supports complex multi-join queries that fetch object data
  * along with requisite values in a single query.
@@ -8166,7 +8164,7 @@ router.all('/:db/_list_join/:typeId', legacyAuthMiddleware, async (req, res) => 
     const pool = getPool();
     const type = parseIdParam(typeId);
     if (isNaN(type)) {
-      return res.status(200).json([{ error: `Wrong id: ${typeId}` }]);
+      return res.status(200).type('text/html').send(`Wrong id: ${typeId}`);
     }
     const parentId = req.query.up !== undefined || req.body.up !== undefined
       ? parseIdParam(req.query.up || req.body.up)
@@ -8243,13 +8241,10 @@ router.all('/:db/_list_join/:typeId', legacyAuthMiddleware, async (req, res) => 
 
     logger.info('[Legacy _list_join] Multi-join query', { db, type, joinedReqs: reqsToJoin.length, rows: dataArrays.length });
 
-    res.json({
-      data: dataArrays,
-      total,
-      limit,
-      offset,
-      requisites: reqsToJoin.map(r => ({ id: r.id, val: r.name }))
-    });
+    // Return in PHP-compatible format: newline-separated plain text
+    // Each line: id\tval[\treq1_val\treq2_val\t...]
+    const lines = dataArrays.map(arr => arr.map(v => v !== null && v !== undefined ? v : '').join('\t'));
+    res.type('text/html').send(lines.join('\n'));
   } catch (error) {
     logger.error('[Legacy _list_join] Error', { error: error.message, db });
     sendLegacyDie(res, error.message );
