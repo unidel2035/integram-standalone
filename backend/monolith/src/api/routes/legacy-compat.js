@@ -5723,7 +5723,7 @@ router.get('/:db/:page*', async (req, res, next) => {
 
       // ── GET /:db/edit_types?JSON
       // PHP: index.php &edit_typs case (lines 4293-4318), processes edit_types.html
-      // Returns: &main.myrolemenu + &main.a.&types + &main.a.&editables + edit_types + types + editable
+      // Returns: &main.a.&types + &main.a.&editables + edit_types + types + editable
       if (page === 'edit_types') {
         const { rows: etRows } = await execSql(pool, `SELECT typs.id, typs.t, refs.id AS ref_val, typs.ord AS uniq,
                   CASE WHEN refs.id != refs.t THEN refs.val ELSE typs.val END AS val,
@@ -5759,10 +5759,8 @@ router.get('/:db/:page*', async (req, res, next) => {
         for (const k of PHP_BASICS_ORDER) {
           if (REV_BASE_TYPE[k]) { typBlock.typ.push(String(k)); typBlock.val.push(REV_BASE_TYPE[k]); }
         }
-        const mainMyrolemenu = await getMenuForToken(pool, db, token);
+        // PHP: edit_types isApi() calls die() before myrolemenu/top_menu are added (#443)
         return res.json({
-          '&main.myrolemenu':   mainMyrolemenu,
-          '&main.&top_menu':    buildTopMenu(),
           '&main.a.&types':     typBlock,
           '&main.a.&editables': { ok: [''] },
           edit_types: editTypesET,
