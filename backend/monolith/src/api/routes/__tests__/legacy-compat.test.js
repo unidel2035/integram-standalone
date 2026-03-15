@@ -575,12 +575,12 @@ describe('POST /:db/_d_new', () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
   it('creates type and returns api_dump response', async () => {
-    // getNextOrder for new type (up=0)
-    const ordResp = [[{ max_ord: 3 }]];
+    // duplicate check (no match)
+    const dupeResp = [[]];
     // insertRow for type
     const insertResp = [{ insertId: 200 }];
 
-    mockQuery(ordResp, insertResp);
+    mockQuery(dupeResp, insertResp);
 
     const res = await request(app)
       .post(`/${DB}/_d_new`)
@@ -591,6 +591,47 @@ describe('POST /:db/_d_new', () => {
     expect(res.body).toMatchObject({
       next_act: 'edit_types',
     });
+  });
+
+  it('returns warnings field when duplicate type name exists (#446)', async () => {
+    // duplicate check returns existing id
+    const dupeResp = [[{ id: 42 }]];
+
+    mockQuery(dupeResp);
+
+    const res = await request(app)
+      .post(`/${DB}/_d_new`)
+      .send({ val: 'ExistingType', t: '3' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      obj: 42,
+      next_act: 'edit_types',
+      args: 'ext',
+    });
+    // PHP sets: $GLOBALS["warning"] = "Тип $val уже существует!"
+    expect(res.body.warnings).toContain('ExistingType');
+    expect(res.body.warnings).toContain('already exists');
+  });
+
+  it('returns warnings for duplicate even when up != 0 (#446)', async () => {
+    // PHP always checks duplicates at root level regardless of up param
+    const dupeResp = [[{ id: 99 }]];
+
+    mockQuery(dupeResp);
+
+    const res = await request(app)
+      .post(`/${DB}/_d_new`)
+      .send({ val: 'DupeType', t: '3', up: '1' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      obj: 99,
+      next_act: 'edit_types',
+      args: 'ext',
+    });
+    expect(res.body.warnings).toContain('DupeType');
+    expect(res.body.warnings).toContain('already exists');
   });
 });
 
