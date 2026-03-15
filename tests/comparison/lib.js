@@ -72,6 +72,9 @@ function normalize(obj, depth = 0) {
     if (k === 'ord') { out[k] = '__ORD__'; continue; }
     if (k === 'val' && typeof v === 'string' && /^\d+$/.test(v) && obj.ord !== undefined) { out[k] = '__ORD__'; continue; }
     if (k === 'args' && typeof v === 'string') { out[k] = v.replace(/F_I=\d+/g, 'F_I=__ID__'); continue; }
+    if (k === 'f_i' && Array.isArray(v)) { out[k] = v.map(x => /^\d{5,}$/.test(x) ? '__ID__' : x); continue; }
+    if (k === '_request_.f_u' && Array.isArray(v)) { out[k] = v.map(x => /^\d{5,}$/.test(x) ? '__ID__' : x); continue; }
+    if (k === 'filter' && Array.isArray(v)) { out[k] = v.map(x => typeof x === 'string' ? x.replace(/F_I=\d+/g, 'F_I=__ID__') : x); continue; }
     out[k] = normalize(v, depth + 1);
   }
   return out;
