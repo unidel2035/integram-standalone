@@ -5734,7 +5734,8 @@ router.get('/:db/:page*', async (req, res, next) => {
           // filter_req_rcm: text-filterable reqs (not DATE/DATETIME/NUMBER/SIGNED)
           // filter_req_dns: range-filterable reqs (DATE/DATETIME/NUMBER/SIGNED) with FR_/TO_ keys
           const DNS_BASES = new Set(['DATE', 'DATETIME', 'NUMBER', 'SIGNED']);
-          const FILTER_EXCLUDED_BASES = new Set(['DATE', 'DATETIME', 'NUMBER', 'SIGNED', 'BOOLEAN']);
+          // PHP: only DATE/DATETIME/NUMBER/SIGNED go to dns (range); BOOLEAN goes to rcm (text filter)
+          const FILTER_EXCLUDED_BASES = new Set(['DATE', 'DATETIME', 'NUMBER', 'SIGNED']);
           const rcmKeys = req_order.filter(k => !FILTER_EXCLUDED_BASES.has(req_base[k]));
           response['&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm'] = {
             f_typ:          rcmKeys.map(k => `F_${k}`),
