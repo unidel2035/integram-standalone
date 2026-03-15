@@ -3755,17 +3755,17 @@ router.post('/:db/auth', async (req, res, next) => {
     let msg = '';
     if (changePassword) {
       if (npw1.length < 6) {
-        msg = t9n('[RU]Новый пароль должен быть не короче 6 символов[EN]Password must be at least 6 symbols long', locale);
+        msg += t9n('[RU]Новый пароль должен быть не короче 6 символов[EN]Password must be at lest 6 symbols long', locale) + ' [errShort]. ';
       } else if (npw1 === password) {
-        msg = t9n('[RU]Новый пароль должен отличаться от старого[EN]The new password must differ from the old one', locale);
+        msg += t9n('[RU]Новый пароль должен отличаться от старого[EN]The new password must differ from the old one', locale) + ' [errOld]. ';
       } else if (npw1 !== npw2) {
-        msg = t9n('[RU]Введите новый пароль дважды одинаково[EN]Please input the same password twice', locale);
+        msg += t9n('[RU]Введите новый пароль дважды одинаково[EN]Please input the same password twice', locale) + ' [errDiffer]. ';
       } else {
         // Update password
         const newPwdHash = phpCompatibleHash(login, npw1, db);
         if (user.pwd_id) {
           await execSql(pool, `UPDATE ${db} SET val = ? WHERE id = ?`, [newPwdHash, user.pwd_id], { label: 'query_update' });
-          msg = t9n('[RU]Пароль успешно изменен[EN]The password has been changed', locale);
+          msg += t9n('[RU]Пароль успешно изменен[EN]The password has been changed', locale);
           logger.info('[Legacy Auth] Password changed', { db, login });
         }
       }
