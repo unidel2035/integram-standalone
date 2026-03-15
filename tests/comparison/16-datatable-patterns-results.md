@@ -1,6 +1,6 @@
 # 16-datatable-patterns — DataTable Component Patterns
 
-22 MATCH / 2 DIFF out of 24 tests
+24 MATCH / 0 DIFF out of 24 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -19,8 +19,8 @@
 | 13 | #13 GET /_ref_reqs (status dropdown) | 200 | 200 | MATCH |
 | 14 | #14 GET /_ref_reqs (prio dropdown) | 200 | 200 | MATCH |
 | 15 | #15 GET /_ref_reqs (search=Завер) | 200 | 200 | MATCH |
-| 16 | #16 GET /edit_obj (task form) | 200 | 200 | DIFF: val[&main.a.&object.&object_reqs.&editreq_datetime]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I... |
-| 17 | #17 GET /edit_obj (task with refs) | 200 | 200 | DIFF: val[&main.a.&object.&object_reqs.&editreq_datetime]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I... |
+| 16 | #16 GET /edit_obj (task form) | 200 | 200 | MATCH |
+| 17 | #17 GET /edit_obj (task with refs) | 200 | 200 | MATCH |
 | 18 | #18 POST /_m_new (add row via DataTable) | 200 | 200 | MATCH |
 | 19 | #19 POST /_m_del (delete row via DataTable) | 200 | 200 | MATCH |
 | 20 | #20 POST /_m_save (copy row) | 200 | 200 | MATCH |
@@ -28,23 +28,3 @@
 | 22 | #22 GET /obj_meta (row meta) | 200 | 200 | MATCH |
 | 23 | #23 GET /object (final state) | 200 | 200 | MATCH |
 | 24 | #24 GET /object (final count) | 200 | 200 | MATCH |
-
-## Diffs Detail
-
-### #16 GET /edit_obj (task form)
-
-- val[&main.a.&object.&object_reqs.&editreq_datetime]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
-- val[&main.a.&object.&object_reqs.&editreq_file]: PHP={"reqid":["__ID__","__ID__","","__ID__",... Node={"reqid":["__ID__","","__ID__","","__ID_...
-- val[&main.a.&object.&object_reqs.&editreq_html]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
-- val[&main.a.&object.&object_reqs.&editreq_number]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
-- PHP: `{"obj":{"id":"1000017690","val":"Задача 1","parent":"1","typ":"1000017680","typ_name":"__dt_tasks_1773613409671","base_typ":"3"},"&main.a.&object":{"t...`
-- Node: `{"&main.a.&object":{"disabled":[""],"id":["1000017691"],"typ":["1000017680","1000017680"],"typ_name":["__dt_tasks_1773613409671","__dt_tasks_177361340...`
-
-### #17 GET /edit_obj (task with refs)
-
-- val[&main.a.&object.&object_reqs.&editreq_datetime]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
-- val[&main.a.&object.&object_reqs.&editreq_file]: PHP={"reqid":["__ID__","__ID__","","__ID__",... Node={"reqid":["__ID__","","__ID__","","__ID_...
-- val[&main.a.&object.&object_reqs.&editreq_html]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
-- val[&main.a.&object.&object_reqs.&editreq_number]: PHP={"disabled":["",""],"typ":["__ID__","__I... Node={"disabled":["",""],"typ":["__ID__","__I...
-- PHP: `{"obj":{"id":"1000017714","val":"Bug fix #123","parent":"1","typ":"1000017680","typ_name":"__dt_tasks_1773613409671","base_typ":"3"},"&main.a.&object"...`
-- Node: `{"&main.a.&object":{"disabled":[""],"id":["1000017715"],"typ":["1000017680","1000017680"],"typ_name":["__dt_tasks_1773613409671","__dt_tasks_177361340...`

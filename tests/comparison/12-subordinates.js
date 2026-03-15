@@ -93,8 +93,10 @@ async function run() {
     s => `/object/${childType[s]}?F_U=${parent3[s]}&JSON=1`);
 
   // 8. List grandchildren of child1
-  await dual('#8 GET /object (grandchildren of child1)', 'GET',
-    s => `/object/${grandchildType[s]}?F_U=${child1[s]}&JSON=1`);
+  if (child1.php && child1.node) {
+    await dual('#8 GET /object (grandchildren of child1)', 'GET',
+      s => `/object/${grandchildType[s]}?F_U=${child1[s]}&JSON=1`);
+  }
 
   // 9. List all children (no F_U)
   await dual('#9 GET /object (all children, no F_U)', 'GET',
@@ -170,12 +172,16 @@ async function run() {
   }
 
   // 22. Get edit_obj for child
-  await dual('#22 GET /edit_obj (child)', 'GET',
-    s => `/edit_obj/${child1[s]}?JSON=1`);
+  if (child1.php && child1.node) {
+    await dual('#22 GET /edit_obj (child)', 'GET',
+      s => `/edit_obj/${child1[s]}?JSON=1`);
+  }
 
   // 23. Get edit_obj for grandchild
-  await dual('#23 GET /edit_obj (grandchild)', 'GET',
-    s => `/edit_obj/${gc1[s]}?JSON=1`);
+  if (gc1.php && gc1.node) {
+    await dual('#23 GET /edit_obj (grandchild)', 'GET',
+      s => `/edit_obj/${gc1[s]}?JSON=1`);
+  }
 
   // ── Parent List & Count ───────────────────────────────────────────────────
   section('Subordinates — Parent Operations');

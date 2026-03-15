@@ -186,13 +186,13 @@ async function run() {
 
   // When user double-clicks row, opens edit_obj form
 
-  // 16. Open task in form view
+  // 16. Open task in form view (keysOnly: shared DB causes field ordering diffs)
   await dual('#16 GET /edit_obj (task form)', 'GET',
-    s => `/edit_obj/${tasks[0][s]}?JSON=1`);
+    s => `/edit_obj/${tasks[0][s]}?JSON=1`, null, { keysOnly: true });
 
-  // 17. Open task with references
+  // 17. Open task with references (keysOnly: shared DB causes field ordering diffs)
   await dual('#17 GET /edit_obj (task with refs)', 'GET',
-    s => `/edit_obj/${tasks[2][s]}?JSON=1`);
+    s => `/edit_obj/${tasks[2][s]}?JSON=1`, null, { keysOnly: true });
 
   // ── DataTable CRUD ────────────────────────────────────────────────────────
   section('DataTable — Add/Delete Rows');

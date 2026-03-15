@@ -5716,6 +5716,15 @@ router.get('/:db/:page*', async (req, res, next) => {
                 } else {
                   rowVals.push('');
                 }
+              } else if (req_base[k] === 'BUTTON') {
+                // PHP parity: BUTTON reqs render as <A HREF="/{db}/{attrs_url}">***</A>
+                // PHP: removeMasks strips :NOT_NULL:, :MULTI:, :ALIAS=...: then replaces [ID]/[VAL]
+                let btnAttrs = (req_attrs[k] || '')
+                  .replace(/:NOT_NULL:/g, '').replace(/:MULTI:/g, '').replace(/:ALIAS=[^:]*:/g, '');
+                btnAttrs = btnAttrs
+                  .replace(/\[ID\]/g, String(o.id))
+                  .replace(/\[VAL\]/g, o.val || '');
+                rowVals.push(` <A HREF="/${db}/${btnAttrs}">***</A>`);
               } else {
                 // Non-arr non-ref: stored val (already formatted by formatObjVal in reqsStd)
                 let v = (reqsStd[oKey] && reqsStd[oKey][k] != null)
@@ -6005,14 +6014,16 @@ router.get('/:db/:page*', async (req, res, next) => {
       // ── GET /:db/edit_obj/:id?JSON → PHP format
       if ((page === 'edit_obj' || page === 'edit') && subId) {
         // 1. Object row + type name / base type
+        // PHP parity: SELECT ... FROM $z a, $z typs WHERE a.id=$id AND a.up!=0 AND typs.id=a.t AND typs.up=0
+        // a.up!=0 ensures it's an object (not a type), typs.up=0 ensures the type is root-level
         const { rows: objResult } = await execSql(pool, `SELECT o.id, o.val, o.up, o.t,
                   t.val AS type_name,
                   t.t   AS base_type_id
            FROM \`${db}\` o
-           LEFT JOIN \`${db}\` t ON t.id = o.t
-           WHERE o.id = ?`, [subId], { label: 'query_select' });
+           JOIN \`${db}\` t ON t.id = o.t AND t.up = 0
+           WHERE o.id = ? AND o.up != 0`, [subId], { label: 'query_select' });
         if (objResult.length === 0) {
-          // PHP parity (#549): PHP returns 200 with text message for deleted objects
+          // PHP parity (#549): PHP returns 200 with text message for deleted/not-found objects
           res.set('Content-Type', 'text/html; charset=UTF-8');
           return res.status(200).send(`Объект ${subId} не найден, вероятно, он был удален`);
         }

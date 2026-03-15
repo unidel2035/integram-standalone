@@ -1,6 +1,6 @@
 # 09-tables-crud
 
-**24 MATCH / 1 DIFF** out of 25 tests
+**25 MATCH / 0 DIFF** out of 25 tests
 
 | # | Test | Method | PHP | Node | Result |
 |---|------|--------|-----|------|--------|
@@ -20,7 +20,7 @@
 | 14 | #14 POST /_d_multi (toggle ON) | POST | 200 | 200 | MATCH |
 | 15 | #15 POST /_d_up (move col up) | POST | 200 | 200 | MATCH |
 | 16 | #16 POST /_d_ref (add ref col) | POST | 200 | 200 | MATCH |
-| 17 | #17 GET /metadata (single type) | GET | 200 | 200 | DIFF |
+| 17 | #17 GET /metadata (single type) | GET | 200 | 200 | MATCH |
 | 18 | #18 GET /edit_types | GET | 200 | 200 | MATCH |
 | 19 | #19 GET /terms | GET | 200 | 200 | MATCH |
 | 20 | #20 GET /dict?JSON=1 | GET | 200 | 200 | MATCH |
@@ -29,15 +29,3 @@
 | 23 | #23 POST /_d_del_req (non-existent) | POST | 200 | 200 | MATCH |
 | 24 | #24 POST /_d_del (empty type) | POST | 200 | 200 | MATCH |
 | 25 | #25 POST /_d_del (non-existent) | POST | 200 | 200 | MATCH |
-
----
-### DIFF 17: #17 GET /metadata (single type)
-
-- **PHP path:** `/metadata/1000017582?JSON=1`
-- **Node path:** `/metadata/1000017583?JSON=1`
-- **PHP status:** 200
-- **Node status:** 200
-
-- val[reqs]: PHP=[{"id":"__ID__","num":1,"orig":"__ID__",... Node=[{"id":"__ID__","num":1,"orig":"__ID__",...
-
-Full responses: [17-php.json](./17-php.json) | [17-node.json](./17-node.json)
