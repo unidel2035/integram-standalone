@@ -7404,7 +7404,8 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, legacyXsrfCheck, (req, res
           if (!hasGrant) continue;
           const existing = await getRequisiteByType(db, objectId, bTypeId);
           if (existing) {
-            await deleteRow(db, existing.id);
+            // PHP: Delete($ids[$key]) — recursive (index.php:5602)
+            await recursiveDelete(pool, db, existing.id);
           }
         }
       }
@@ -7722,7 +7723,7 @@ router.post('/:db/_m_set/:id', legacyAuthMiddleware, legacyXsrfCheck, upload.any
       if (existing) {
         if (finalValue === '' || finalValue === null) {
           // PHP: Delete($cur_id) — recursive delete for empty scalar (index.php:7937)
-          await execSql(pool, `DELETE FROM \`${db}\` WHERE id = ? OR up = ?`, [existing.id, existing.id], { label: 'm_set_delete_empty' });
+          await recursiveDelete(pool, db, existing.id);
           lastReqId = '';
         } else {
           await updateRowValue(db, existing.id, finalValue);
