@@ -1,6 +1,6 @@
 # 06-admin — Admin & Metadata
 
-13 MATCH / 3 DIFF out of 16 tests
+14 MATCH / 2 DIFF out of 16 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -9,9 +9,9 @@
 | 3 | GET /dict?JSON=1 | 200 | 200 | MATCH |
 | 4 | GET /dict/:type?JSON=1 | 200 | 200 | MATCH |
 | 5 | GET /dict (bad id) | 200 | 200 | MATCH |
-| 6 | GET /edit_types?JSON=1 | 200 | 200 | DIFF: keys: PHP=[&main.a.&editables,&main.a.&types,edit_types,editable,types] Node=[&main.a.&types,edit_types,editable,types] |
+| 6 | GET /edit_types?JSON=1 | 200 | 200 | DIFF: val[edit_types]: PHP={"0":["1000001489","1000001488","220822"... Node={"0":["1000001489","1000001488","220822"... |
 | 7 | GET /types?JSON=1 | 200 | 200 | MATCH |
-| 8 | GET /obj_meta/:type | 200 | 200 | DIFF: val[reqs]: PHP={"":{"id":"__ID__","val":"","type":""}} Node={"":{"id":"__ID__","type":"","val":""}} |
+| 8 | GET /obj_meta/:type | 200 | 200 | MATCH |
 | 9 | GET /obj_meta (bad id) | 200 | 200 | MATCH |
 | 10 | GET /form?JSON=1 | 200 | 200 | MATCH |
 | 11 | GET /sql?JSON=1 | 200 | 200 | MATCH |
@@ -31,17 +31,9 @@
 
 ### GET /edit_types?JSON=1
 
-- keys: PHP=[&main.a.&editables,&main.a.&types,edit_types,editable,types] Node=[&main.a.&types,edit_types,editable,types]
-- val[&main.a.&editables]: PHP={"ok":[""]} Node=
 - val[edit_types]: PHP={"0":["1000001489","1000001488","220822"... Node={"0":["1000001489","1000001488","220822"...
 - PHP: `{"&main.a.&types":{"typ":["3","8","9","13","14","11","12","4","10","2","7","6","5","15","16","17"],"val":["SHORT","CHARS","DATE","NUMBER","SIGNED","BO...`
-- Node: `{"&main.a.&types":{"typ":["3","8","9","13","14","11","12","4","10","2","7","6","5","15","16","17"],"val":["SHORT","CHARS","DATE","NUMBER","SIGNED","BO...`
-
-### GET /obj_meta/:type
-
-- val[reqs]: PHP={"":{"id":"__ID__","val":"","type":""}} Node={"":{"id":"__ID__","type":"","val":""}}
-- PHP: `{"id":"1000004267","up":"0","type":"3","val":"__adm_main_1773566536441","reqs":{"":{"id":"","val":"","type":""}}}`
-- Node: `{"id":"1000004267","reqs":{"":{"id":"","type":"","val":""}},"type":"3","up":"0","val":"__adm_main_1773566536441"}`
+- Node: `{"&main.a.&editables":{"ok":[""]},"&main.a.&types":{"typ":["3","8","9","13","14","11","12","4","10","2","7","6","5","15","16","17"],"val":["SHORT","CH...`
 
 ### GET /dir_admin?JSON=1
 
