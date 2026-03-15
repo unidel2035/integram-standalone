@@ -6806,12 +6806,13 @@ router.post('/:db/_m_new/:up?', legacyAuthMiddleware, legacyXsrfCheck, (req, res
     // Uniqueness check: PHP uses $unique (type's ord), any non-zero value (#416)
     // PHP: if($unique && !isset($max_val)) — skip when auto-increment already set value
     if (parseInt(unique, 10) && !maxValWasSet) {
-      const { rows: existingObj } = await execSql(pool, `SELECT id FROM \`${db}\` WHERE val = ? AND t = ? AND up = ? LIMIT 1`, [value, typeId, parentId], { label: 'query_select' });
+      const { rows: existingObj } = await execSql(pool, `SELECT id, ord FROM \`${db}\` WHERE val = ? AND t = ? AND up = ? LIMIT 1`, [value, typeId, parentId], { label: 'query_select' });
       if (existingObj.length > 0) {
         const existId = existingObj[0].id;
-        warning = 'Object already exists';
+        const existOrd = existingObj[0].ord;
+        warning = t9n('[RU]Запись уже существует[EN]The record already exists', locale);
         if (isApiRequest(req)) {
-          return res.json({ id: existId, obj: typeId, ord: 0, next_act: 'edit_obj', args: '', val: htmlEsc(formatValView(baseType, value, tzone)), warning });
+          return res.json({ id: existId, obj: typeId, ord: existOrd, next_act: 'edit_obj', args: 'exists1=1', val: htmlEsc(value), warning });
         }
         return res.redirect(`/${db}/edit_obj/${existId}`);
       }
