@@ -13,6 +13,15 @@ let token = '';
 let xsrfPhp = '', xsrfNode = '';
 const results = [];
 
+/**
+ * Map of base type IDs to concrete type IDs usable with _d_req.
+ * PHP's _d_req rejects base types (where id == t in DB), so we need
+ * concrete types that have the desired base type.
+ * Populated in setup() by scanning /terms.
+ * If no concrete type exists for a base type, one is created.
+ */
+const concreteTypes = {};
+
 // ── HTTP ──────────────────────────────────────────────────────────────────────
 
 async function http(baseUrl, method, path, body, cookie, extraHeaders = {}) {
@@ -202,7 +211,32 @@ async function setup() {
   xsrfNode = xN.json?._xsrf || '';
   if (!xsrfPhp || !xsrfNode) throw new Error('XSRF fetch failed');
 
+  // Build concrete type map: PHP _d_req rejects base types (id==t),
+  // so we need concrete types for SHORT(3), LONG(2), DATETIME(4), BOOL(7), NUMBER(11), etc.
+  const ck = `${DB}=${token}`;
+  const termsRes = await http(PHP, 'GET', `/${DB}/terms?JSON=1`, null, ck);
+  const BASE_IDS = [2, 3, 4, 7, 9, 11, 13, 14]; // base types we might need
+  if (termsRes.json && Array.isArray(termsRes.json)) {
+    for (const item of termsRes.json) {
+      const bt = item.type;
+      if (BASE_IDS.includes(bt) && !concreteTypes[bt]) {
+        concreteTypes[bt] = item.id;
+      }
+    }
+  }
+  // Create concrete types for any base types that don't have one yet
+  for (const bt of BASE_IDS) {
+    if (!concreteTypes[bt]) {
+      const name = `__sys_bt${bt}_${Date.now()}`;
+      const res = await http(PHP, 'POST', `/${DB}/_d_new`, `_xsrf=${xsrfPhp}&val=${encodeURIComponent(name)}&t=${bt}&up=1&JSON=1`, ck);
+      if (res.json?.obj) {
+        concreteTypes[bt] = Number(res.json.obj);
+        console.log(`  Created concrete type for base ${bt}: ${concreteTypes[bt]}`);
+      }
+    }
+  }
   console.log(`Token: ${token.slice(0, 8)}...`);
+  console.log(`Concrete types: ${JSON.stringify(concreteTypes)}`);
   return { token, xsrfPhp, xsrfNode };
 }
 
@@ -253,9 +287,11 @@ async function createType(name, baseType = 3, extra = '') {
 
 async function addColumn(typeIds, colType = 3) {
   const ck = `${DB}=${token}`;
+  // PHP _d_req rejects base type IDs (e.g. 3, 11, 4, 7) — need concrete type ID
+  const concreteId = concreteTypes[colType] || colType;
   const [php, node] = await Promise.all([
-    http(PHP, 'POST', `/${DB}/_d_req/${typeIds.php}`, `_xsrf=${xsrfPhp}&t=${colType}&JSON=1`, ck),
-    http(NODE, 'POST', `/${DB}/_d_req/${typeIds.node}`, `_xsrf=${xsrfNode}&t=${colType}&JSON=1`, ck),
+    http(PHP, 'POST', `/${DB}/_d_req/${typeIds.php}`, `_xsrf=${xsrfPhp}&t=${concreteId}&JSON=1`, ck),
+    http(NODE, 'POST', `/${DB}/_d_req/${typeIds.node}`, `_xsrf=${xsrfNode}&t=${concreteId}&JSON=1`, ck),
   ]);
   return { php: Number(php.json?.id), node: Number(node.json?.id) };
 }
