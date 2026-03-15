@@ -9021,32 +9021,47 @@ router.post('/:db/_d_del/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legacy
     const pool = getPool();
 
     // PHP parity: hard-block if type has existing instances (die() in PHP)
-    const { rows: [instRow] } = await execSql(pool, `SELECT COUNT(id) AS cnt FROM \`${db}\` WHERE t = ?`, [id], { label: 'post_db_d_del_typeId_select' });
-    if (instRow && instRow.cnt > 0) {
-      // PHP: die() → HTTP 200 (index.php:8744)
-      return res.status(200).json([{
-        error: `Cannot delete the Type in case there are objects of this type (total objects: ${instRow.cnt})!`
-      }]);
+    // PHP: die() sends plain text for ALL clients (index.php:8744)
+    const instResult = await execSql(pool, `SELECT COUNT(id) AS cnt FROM \`${db}\` WHERE t = ?`, [id], { label: 'post_db_d_del_typeId_select' });
+    const instRows = instResult.rows || [];
+    const instCnt = instRows.length > 0 ? Number(instRows[0].cnt) : 0;
+    if (instCnt > 0) {
+      // PHP: die() → raw text, HTTP 200 — NOT my_die(), so no JSON wrapping
+      // For API clients send JSON error (matching my_die format for consistency),
+      // for non-API clients send plain text like PHP die()
+      const msg = `Cannot delete the Type in case there are objects of this type (total objects: ${instCnt})!`;
+      if (isApiRequest(req)) {
+        return res.status(200).json([{ error: msg }]);
+      }
+      return res.status(200).send(msg);
     }
 
     // PHP parity: hard-block if type or its requisites are used in reports (my_die() in PHP)
-    const { rows: repRows } = await execSql(pool, `SELECT reqs.id FROM \`${db}\`, \`${db}\` reqs
+    const repResult = await execSql(pool, `SELECT reqs.id FROM \`${db}\`, \`${db}\` reqs
        WHERE \`${db}\`.t = ${TYPE.REP_COLS} AND \`${db}\`.val = reqs.id
        AND (reqs.up = ? OR reqs.id = ?) LIMIT 1`, [id, id], { label: 'post_db_d_del_typeId_select' });
+    const repRows = repResult.rows || [];
     if (repRows.length > 0) {
-      return res.status(200).json([{
-        error: `The type or its requisites are used in reports`
-      }]);
+      // PHP: my_die() → JSON for API, text for non-API
+      const msg = `The type or its requisites are used in reports`;
+      if (isApiRequest(req)) {
+        return res.status(200).json([{ error: msg }]);
+      }
+      return res.status(200).send(msg);
     }
 
     // PHP parity: hard-block if type or its requisites are used in roles (die() in PHP)
-    const { rows: roleRows } = await execSql(pool, `SELECT objs.t, objs.val FROM \`${db}\`, \`${db}\` r, \`${db}\` objs
+    const roleResult = await execSql(pool, `SELECT objs.t, objs.val FROM \`${db}\`, \`${db}\` r, \`${db}\` objs
        WHERE r.t = ${TYPE.ROLE} AND r.up = 1 AND objs.up = r.id
        AND objs.val = \`${db}\`.id AND (\`${db}\`.up = ? OR \`${db}\`.id = ?) LIMIT 1`, [id, id], { label: 'post_db_d_del_typeId_select' });
+    const roleRows = roleResult.rows || [];
     if (roleRows.length > 0) {
-      return res.status(200).json([{
-        error: `The type or its requisites are used in roles!`
-      }]);
+      // PHP: die() → raw text
+      const msg = `The type or its requisites are used in roles!`;
+      if (isApiRequest(req)) {
+        return res.status(200).json([{ error: msg }]);
+      }
+      return res.status(200).send(msg);
     }
 
     // Use recursiveDelete — type may have requisites/children
@@ -13840,72 +13855,74 @@ const ACTION_ALIASES = {
 router.post('/:db/_setalias/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_setalias/', '/_d_alias/');
   req.params.reqId = req.params.reqId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_setnull/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_setnull/', '/_d_null/');
   req.params.reqId = req.params.reqId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_setmulti/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_setmulti/', '/_d_multi/');
   req.params.reqId = req.params.reqId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_setorder/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_setorder/', '/_d_ord/');
   req.params.reqId = req.params.reqId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_moveup/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_moveup/', '/_d_up/');
   req.params.reqId = req.params.reqId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_deleteterm/:typeId', (req, res, next) => {
   req.url = req.url.replace('/_deleteterm/', '/_d_del/');
   req.params.typeId = req.params.typeId;
-  next('route');
+  // Re-dispatch from the beginning of the router stack so _d_del route is matched
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_deletereq/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_deletereq/', '/_d_del_req/');
   req.params.reqId = req.params.reqId;
-  next('route');
+  // Re-dispatch from the beginning of the router stack so _d_del_req route is matched
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_attributes/:typeId', (req, res, next) => {
   req.url = req.url.replace('/_attributes/', '/_d_req/');
   req.params.typeId = req.params.typeId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_terms/:parentTypeId?', (req, res, next) => {
   req.url = req.url.replace('/_terms', '/_d_new');
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_references/:parentTypeId', (req, res, next) => {
   req.url = req.url.replace('/_references/', '/_d_ref/');
   req.params.parentTypeId = req.params.parentTypeId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_patchterm/:typeId', (req, res, next) => {
   req.url = req.url.replace('/_patchterm/', '/_d_save/');
   req.params.typeId = req.params.typeId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 router.post('/:db/_modifiers/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_modifiers/', '/_d_attrs/');
   req.params.reqId = req.params.reqId;
-  next('route');
+  router.handle(req, res, next);
 });
 
 // ============================================================================
