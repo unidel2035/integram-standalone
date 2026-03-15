@@ -4076,6 +4076,8 @@ router.post('/:db/auth', async (req, res, next) => {
     if (rows.length === 0) {
       // PHP: login($z, $u, "WRONG_CONT", ...) — user not found
       if (isJSON) {
+        // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+        res.setHeader('Content-Disposition', 'attachment;filename=login.json');
         return res.status(200).json({
           message: 'WRONG_CONT',
           db,
@@ -4167,6 +4169,8 @@ router.post('/:db/auth', async (req, res, next) => {
 
       logger.info({ username, phone: userRow.phone }, '[Legacy Reset] SMS password reset (SMS not sent in standalone mode)');
 
+      // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+      res.setHeader('Content-Disposition', 'attachment;filename=login.json');
       return res.status(200).json({
         message: 'SMS',
         db,
@@ -4180,6 +4184,8 @@ router.post('/:db/auth', async (req, res, next) => {
     res.cookie(db, '', { maxAge: 0, path: '/' });
     res.cookie('secret', '', { maxAge: 0, path: '/' });
 
+    // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+    res.setHeader('Content-Disposition', 'attachment;filename=login.json');
     return res.status(200).json({
       message: 'WRONG_CONT',
       db,
@@ -4715,6 +4721,8 @@ router.post('/my/register', async (req, res) => {
   // PHP calls login($db, "", "toConfirm") which with isApi() returns:
   // {"message":"toConfirm","db":"my","login":"","details":""}
   if (isJSON) {
+    // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+    res.setHeader('Content-Disposition', 'attachment;filename=login.json');
     return res.json({ message: 'toConfirm', db: 'my', login: '', details: '' });
   }
 
@@ -4753,6 +4761,8 @@ router.all('/:db/exit', async (req, res) => {
   // PHP exit calls login($z) which with isApi() returns:
   // {"message":"","db":"<db>","login":"","details":""}
   if (isApiRequest(req)) {
+    // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+    res.setHeader('Content-Disposition', 'attachment;filename=login.json');
     return res.json({ message: '', db, login: '', details: '' });
   }
 
@@ -8452,6 +8462,8 @@ router.get('/:db/xsrf', async (req, res) => {
     if (rows.length === 0) {
       // Invalid token — clear cookie, return empty session
       res.clearCookie(db, { path: '/' });
+      // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+      res.setHeader('Content-Disposition', 'attachment;filename=login.json');
       return res.status(200).json({ _xsrf: '', token: null, user: '', role: '', id: '0', msg: '' });
     }
 
@@ -8474,6 +8486,8 @@ router.get('/:db/xsrf', async (req, res) => {
     });
   } catch (error) {
     logger.error({ error: error.message, db }, '[Legacy xsrf] Error');
+    // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+    res.setHeader('Content-Disposition', 'attachment;filename=login.json');
     return res.status(200).json({ _xsrf: '', token: null, user: '', role: '', id: '0', msg: '' });
   }
 });
@@ -10347,9 +10361,13 @@ router.post('/:db/jwt', async (req, res) => {
 
     // PHP authJWT() response: {_xsrf, token, id, user}
     // id is a string (PHP mysqli_fetch_array returns strings)
+    // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+    res.setHeader('Content-Disposition', 'attachment;filename=login.json');
     res.status(200).json({ _xsrf: newXsrf, token: newToken, id: String(user.uid), user: user.uname });
   } catch (error) {
     logger.error('[Legacy jwt] Error', { error: error.message, db });
+    // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+    res.setHeader('Content-Disposition', 'attachment;filename=login.json');
     res.status(200).json({ error: 'JWT verification failed' });
   }
 });
@@ -10387,14 +10405,20 @@ async function handleConfirm(req, res) {
         // PHP: UPDATE $z SET val='p' WHERE id=$row[0]
         await execSql(pool, `UPDATE \`${db}\` SET val=? WHERE id=?`, [p, row.id], { label: 'u_update' });
         // PHP: login($z, $_REQUEST["u"], "confirm") → in API mode: {"message":"confirm","db":db,"login":u,"details":""}
+        // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+        res.setHeader('Content-Disposition', 'attachment;filename=login.json');
         return res.status(200).json({ message: 'confirm', db, login: u, details: '' });
       }
     }
 
     // PHP: login($z, urlencode($_REQUEST["u"]), "obsolete")
+    // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+    res.setHeader('Content-Disposition', 'attachment;filename=login.json');
     return res.status(200).json({ message: 'obsolete', db, login: encodeURIComponent(u), details: '' });
   } catch (error) {
     logger.error('[Legacy confirm] Error', { error: error.message, db });
+    // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
+    res.setHeader('Content-Disposition', 'attachment;filename=login.json');
     return res.status(200).json({ message: 'obsolete', db, login: encodeURIComponent(u), details: '' });
   }
 }
