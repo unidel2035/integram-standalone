@@ -784,8 +784,9 @@ function generateXsrf(a, b, db) {
  */
 async function updateTokens(pool, db, row) {
   const safeDb = sanitizeIdentifier(db);
-  // PHP parity (#420): reuse existing token if present, only generate new if none
-  const token = row.tok_val || crypto.randomBytes(32).toString('hex');
+  // PHP parity (#420): reuse existing token if row exists (check tok ID, not value)
+  // PHP: if($row["tok"]) $token = $row["token"]; else $token = md5(microtime(TRUE));
+  const token = row.tok ? row.tok_val : generateToken();
   const xsrf  = generateXsrf(token, db, db);
 
   // Update or insert token row
@@ -4420,7 +4421,7 @@ router.get('/auth.asp', async (req, res) => {
       const updated = await updateTokens(pool, z, {
         uid: row.uid,
         tok: row.tok_id,
-        tok_val: row.tok_val,
+        tok_val: row.token,
         xsrf: row.xsrf_id,
         act: row.act_id,
       });
@@ -4568,7 +4569,13 @@ router.get('/my/register', async (req, res) => {
     await execSql(pool, 'UPDATE my SET val = ? WHERE id = ?', [hashedPwd, row.pid], { label: 'get_my_register_update' });
 
     // PHP line 98: updateTokens(row) — create/update token, xsrf, activity + set cookie
-    const { token } = await updateTokens(pool, 'my', row);
+    const { token } = await updateTokens(pool, 'my', {
+      uid: row.uid,
+      tok: row.tok,
+      tok_val: row.token,
+      xsrf: row.xsrf,
+      act: row.act,
+    });
 
     res.cookie('my', token, { maxAge: 2592000 * 12 * 1000, path: '/' });
 
