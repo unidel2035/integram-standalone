@@ -5485,11 +5485,8 @@ router.get('/:db/:page*', async (req, res, next) => {
           }
         }
 
-        // ── 6. &main.myrolemenu ─────────────────────────────────────────────
-        let mainMyrolemenu = { href: [], name: [] };
-        mainMyrolemenu = await getMenuForToken(pool, db, token);
-
-        // ── 7. Build response ───────────────────────────────────────────────
+        // ── 6. Build response ────────────────────────────────────────────
+        // NOTE: PHP's object.html does not include myrolemenu, so we skip fetching it.
         const typeBaseTypeName = typeRow
           ? (REV_BASE_TYPE[typeRow.base_type_id] || 'SHORT')
           : 'SHORT';
@@ -5629,9 +5626,8 @@ router.get('/:db/:page*', async (req, res, next) => {
         const hasObjReqs = Object.keys(objReqs).length > 0;
         const hasMultiselectcell = Object.keys(multiselectcellData).length > 0;
 
+        // PHP's object.html does NOT include myrolemenu or top_menu blocks
         const response = {
-          '&main.myrolemenu': mainMyrolemenu,
-          // NOTE: PHP's object.html does NOT include &top_menu block, so we don't add it here
           '&main.a': { '_parent_.title': [typeVal] },
           type: { id: typeId, up: typeUp, val: typeVal, base: typeBaseTypeName },
           base: { id: String(typeRow ? typeRow.base_type_id : 3), unique: typeUnique },
@@ -5641,7 +5637,6 @@ router.get('/:db/:page*', async (req, res, next) => {
             f_u:      [fuParam],
             up:       [String(typeUp)],
             unique:   [typeUnique],
-            base_typ: [String(typeRow ? typeRow.base_type_id : 3)],
             filter:   [filterStr, filterStr],
             val:      [typeVal],
             typ:      [String(typeId)],
@@ -5802,9 +5797,14 @@ router.get('/:db/:page*', async (req, res, next) => {
           if (REV_BASE_TYPE[k]) { typBlock.typ.push(String(k)); typBlock.val.push(REV_BASE_TYPE[k]); }
         }
         // PHP: edit_types isApi() calls die() before myrolemenu/top_menu are added (#443)
+        // PHP: &Editables block sets ok=[""] only when Check_Types_Grant()=="WRITE",
+        // but the &Edit_Typs handler die()s at line 4316 which means &editables content
+        // was already processed by the template engine. However, testing shows PHP does NOT
+        // include &main.a.&editables in the JSON output — likely because the template engine
+        // only adds block data when it successfully iterates the block content, and &Editables
+        // processing may not populate the API vars in all cases. Match PHP: omit it.
         return res.json({
           '&main.a.&types':     typBlock,
-          '&main.a.&editables': { ok: [''] },
           edit_types: editTypesET,
           types: REV_BASE_TYPE,
           editable: 1,
@@ -6183,9 +6183,8 @@ router.get('/:db/:page*', async (req, res, next) => {
             typ:      [String(obj.t), String(obj.t)],
             up:       [String(obj.up)],
             typ_name: [objTypName, objTypName],
-            val:      [obj.val || '', obj.val || ''],
+            val:      [obj.val || ''],
             id:       [String(obj.id)],
-            disabled: [''],
           },
           '&main.a.&object.&edit_req': {
             type:                ['text'],
