@@ -2,7 +2,7 @@
 /**
  * 02-ddl: PHP vs Node.js — Type/Column DDL operations
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, deleteType, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -156,6 +156,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '02-ddl-results.md'), generateMD('02-ddl — Type/Column DDL'));
+  writeReports('02-ddl', join(dir, '..', 'reports'));
   console.log(`\nWrote 02-ddl-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

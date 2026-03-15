@@ -5,7 +5,7 @@
  *   _d_new, _d_save, _d_del, _d_req, _d_del_req, _d_alias, _d_attrs,
  *   _d_null, _d_multi, _d_up, _d_ref, edit_types, metadata
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, deleteType, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -189,6 +189,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '09-tables-crud-results.md'), generateMD('09-tables-crud — Table CRUD'));
+  writeReports('09-tables-crud', join(dir, '..', 'reports'));
   console.log(`\nWrote 09-tables-crud-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

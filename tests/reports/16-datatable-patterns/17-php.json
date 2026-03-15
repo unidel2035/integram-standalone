@@ -1,0 +1,176 @@
+{
+  "obj": {
+    "id": "1000008516",
+    "val": "Bug fix #123",
+    "parent": "1",
+    "typ": "1000008494",
+    "typ_name": "__dt_tasks_1773581675455",
+    "base_typ": "3"
+  },
+  "&main.a.&object": {
+    "typ": [
+      "1000008494",
+      "1000008494"
+    ],
+    "up": [
+      "1"
+    ],
+    "typ_name": [
+      "__dt_tasks_1773581675455",
+      "__dt_tasks_1773581675455"
+    ],
+    "val": [
+      "Bug fix #123",
+      "Bug fix #123"
+    ],
+    "id": [
+      "1000008516"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "type": [
+      "text"
+    ],
+    "typ": [
+      "1000008494"
+    ],
+    "_parent_.val": [
+      "Bug fix #123"
+    ],
+    "_parent_.disabled": [
+      ""
+    ]
+  },
+  "reqs": {
+    "1000008495": {
+      "type": "__adv_products_1773534190136_n",
+      "order": "1",
+      "value": "Bug fix #123",
+      "base": "SHORT",
+      "arr": 0,
+      "arr_type": null
+    },
+    "1000008496": {
+      "type": "__sys_bt2_1773581673776",
+      "order": "2",
+      "value": "Fix critical bug",
+      "base": "HTML",
+      "arr": 0,
+      "arr_type": null
+    },
+    "1000008497": {
+      "type": "__sys_bt13_1773581675528",
+      "order": "3",
+      "value": "2",
+      "base": "NUMBER",
+      "arr": 0,
+      "arr_type": null
+    },
+    "1000008498": {
+      "type": "__sys_bt4_1773581675515",
+      "order": "4",
+      "value": "01.01.1970 00:00:20",
+      "base": "DATETIME",
+      "arr": 0,
+      "arr_type": null
+    },
+    "1000008499": {
+      "type": "__sys_bt11_1773581673797",
+      "order": "5",
+      "value": "X",
+      "base": "BOOLEAN",
+      "arr": 0,
+      "arr_type": null
+    }
+  },
+  "&main.a.&object.&object_reqs": {
+    "typ": [
+      "1000008495",
+      "1000008496",
+      "1000008497",
+      "1000008498",
+      "1000008499"
+    ],
+    "typ_name": [
+      "__adv_products_1773534190136_n",
+      "__sys_bt2_1773581673776",
+      "__sys_bt13_1773581675528",
+      "__sys_bt4_1773581675515",
+      "__sys_bt11_1773581673797"
+    ],
+    "enable_save": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_short": {
+    "typ": [
+      "1000008495"
+    ],
+    "val": [
+      "Bug fix #123"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      "1000008517",
+      "1000008518",
+      "1000008519",
+      "1000008520",
+      "1000008521"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_html": {
+    "typ": [
+      "1000008496"
+    ],
+    "disabled": [
+      ""
+    ],
+    "val": [
+      "Fix critical bug"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_number": {
+    "typ": [
+      "1000008497"
+    ],
+    "val": [
+      "2"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_datetime": {
+    "typ": [
+      "1000008498"
+    ],
+    "val": [
+      "01.01.1970 00:00:20"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_boolean": {
+    "typ": [
+      "1000008499"
+    ],
+    "checked": [
+      "CHECKED"
+    ],
+    "disabled": [
+      ""
+    ]
+  }
+}

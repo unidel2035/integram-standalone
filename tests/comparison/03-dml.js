@@ -2,7 +2,7 @@
 /**
  * 03-dml: PHP vs Node.js — Object DML operations
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -130,6 +130,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '03-dml-results.md'), generateMD('03-dml — Object DML'));
+  writeReports('03-dml', join(dir, '..', 'reports'));
   console.log(`\nWrote 03-dml-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

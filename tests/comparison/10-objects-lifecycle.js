@@ -5,7 +5,7 @@
  *   _m_new, _m_save, _m_set, _m_del, _m_up, _m_ord, _m_move, _m_id
  *   edit_obj, object list, object count
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -214,6 +214,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '10-objects-lifecycle-results.md'), generateMD('10-objects-lifecycle — Full Object Lifecycle'));
+  writeReports('10-objects-lifecycle', join(dir, '..', 'reports'));
   console.log(`\nWrote 10-objects-lifecycle-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

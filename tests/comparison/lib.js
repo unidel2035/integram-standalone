@@ -2,6 +2,8 @@
  * Shared library for PHP vs Node.js comparison tests.
  * No skipping. No "Node-only". Send same request to both, compare results.
  */
+import { mkdirSync, writeFileSync as _writeFileSync } from 'fs';
+import { join as _join } from 'path';
 
 const PHP  = 'http://127.0.0.1:8082';
 const NODE = process.env.NODE_URL || 'http://127.0.0.1:8081';
@@ -55,6 +57,15 @@ function short(s, n = 100) {
 }
 
 /**
+ * Mask dynamic IDs in a string — numbers >= 10000 are likely type/requisite/object IDs.
+ */
+function maskIds(s) {
+  if (typeof s !== 'string') return s;
+  // F_1000006760 → F___ID__, standalone large numbers, arr-type="204212"
+  return s.replace(/\d{5,}/g, '__ID__');
+}
+
+/**
  * Normalize JSON for comparison — replace IDs, tokens, timestamps with placeholders.
  * This way we compare structure and non-variable values.
  */
@@ -62,29 +73,23 @@ function normalize(obj, depth = 0) {
   if (depth > 10) return obj;
   if (obj === null || obj === undefined) return obj;
   if (Array.isArray(obj)) return obj.map(v => normalize(v, depth + 1));
-  if (typeof obj === 'number') return obj;
-  if (typeof obj === 'string') return obj;
+  if (typeof obj === 'number') return obj >= 10000 ? '__ID__' : obj;
+  if (typeof obj === 'string') return maskIds(obj);
   if (typeof obj !== 'object') return obj;
 
-  // Sort keys to avoid false diffs from JSON key ordering
-  // (PHP preserves insertion order, Node sorts alphabetically via middleware)
   const out = {};
   for (const k of Object.keys(obj).sort()) {
+    // Mask dynamic IDs in keys too (e.g. "1000006747": [...])
+    const nk = /^\d{5,}$/.test(k) ? '__ID__' : k;
     const v = obj[k];
-    // Known variable fields — normalize
-    if (k === '_xsrf' || k === 'xsrf') { out[k] = '__XSRF__'; continue; }
-    if (k === 'token') { out[k] = '__TOKEN__'; continue; }
-    if (k === 'id' && (typeof v === 'number' || typeof v === 'string')) { out[k] = '__ID__'; continue; }
-    if (k === 'id' && Array.isArray(v)) { out[k] = v.map(() => '__ID__'); continue; }
-    if (k === 'obj' && (typeof v === 'number' || typeof v === 'string')) { out[k] = '__ID__'; continue; }
-    if (k === 'obj' && Array.isArray(v)) { out[k] = v.map(() => '__ID__'); continue; }
-    if (k === 'ord') { out[k] = '__ORD__'; continue; }
-    if (k === 'val' && typeof v === 'string' && /^\d+$/.test(v) && obj.ord !== undefined) { out[k] = '__ORD__'; continue; }
-    if (k === 'args' && typeof v === 'string') { out[k] = v.replace(/F_I=\d+/g, 'F_I=__ID__'); continue; }
-    if (k === 'f_i' && Array.isArray(v)) { out[k] = v.map(x => /^\d{5,}$/.test(x) ? '__ID__' : x); continue; }
-    if (k === '_request_.f_u' && Array.isArray(v)) { out[k] = v.map(x => /^\d{5,}$/.test(x) ? '__ID__' : x); continue; }
-    if (k === 'filter' && Array.isArray(v)) { out[k] = v.map(x => typeof x === 'string' ? x.replace(/F_I=\d+/g, 'F_I=__ID__') : x); continue; }
-    out[k] = normalize(v, depth + 1);
+    if (k === '_xsrf' || k === 'xsrf') { out[nk] = '__XSRF__'; continue; }
+    if (k === 'token') { out[nk] = '__TOKEN__'; continue; }
+    if (k === 'id' && (typeof v === 'number' || typeof v === 'string')) { out[nk] = '__ID__'; continue; }
+    if (k === 'id' && Array.isArray(v)) { out[nk] = v.map(() => '__ID__'); continue; }
+    if (k === 'obj' && (typeof v === 'number' || typeof v === 'string')) { out[nk] = '__ID__'; continue; }
+    if (k === 'obj' && Array.isArray(v)) { out[nk] = v.map(() => '__ID__'); continue; }
+    if (k === 'ord') { out[nk] = '__ORD__'; continue; }
+    out[nk] = normalize(v, depth + 1);
   }
   return out;
 }
@@ -187,7 +192,10 @@ async function dual(name, method, pathFn, bodyFn = null, opts = {}) {
   const entry = {
     name, match, diffs,
     phpStatus: php.status, nodeStatus: node.status,
-    phpBody: short(php.body, 200), nodeBody: short(node.body, 200),
+    phpBody: php.body, nodeBody: node.body,
+    phpJson: php.json, nodeJson: node.json,
+    phpPath, nodePath,
+    method,
   };
   results.push(entry);
 
@@ -371,12 +379,70 @@ function generateMD(filename) {
   return lines.join('\n');
 }
 
+/**
+ * Write detailed reports to tests/reports/{testName}/
+ * - summary.md — overview table + diff details
+ * - For each DIFF test: {N}-php.json and {N}-node.json with full responses
+ */
+function writeReports(testName, reportsBase) {
+  const dir = _join(reportsBase, testName);
+  mkdirSync(dir, { recursive: true });
+
+  const matchCount = results.filter(r => r.match).length;
+  const diffCount = results.filter(r => !r.match).length;
+  const total = results.length;
+
+  const lines = [
+    `# ${testName}`,
+    ``,
+    `**${matchCount} MATCH / ${diffCount} DIFF** out of ${total} tests`,
+    ``,
+    `| # | Test | Method | PHP | Node | Result |`,
+    `|---|------|--------|-----|------|--------|`,
+  ];
+
+  results.forEach((r, i) => {
+    const n = String(i + 1).padStart(2, '0');
+    const result = r.match ? 'MATCH' : `DIFF`;
+    lines.push(`| ${n} | ${r.name} | ${r.method} | ${r.phpStatus} | ${r.nodeStatus} | ${result} |`);
+  });
+
+  // Detailed diffs
+  let diffIdx = 0;
+  for (const r of results) {
+    const i = results.indexOf(r);
+    const n = String(i + 1).padStart(2, '0');
+
+    if (!r.match) {
+      diffIdx++;
+      lines.push('', `---`, `### DIFF ${n}: ${r.name}`, '');
+      lines.push(`- **PHP path:** \`${r.phpPath}\``);
+      lines.push(`- **Node path:** \`${r.nodePath}\``);
+      lines.push(`- **PHP status:** ${r.phpStatus}`);
+      lines.push(`- **Node status:** ${r.nodeStatus}`);
+      lines.push('');
+      for (const d of r.diffs) lines.push(`- ${d}`);
+      lines.push('');
+      lines.push(`Full responses: [${n}-php.json](./${n}-php.json) | [${n}-node.json](./${n}-node.json)`);
+
+      // Write full response files
+      const phpData = r.phpJson !== null ? JSON.stringify(r.phpJson, null, 2) : r.phpBody;
+      const nodeData = r.nodeJson !== null ? JSON.stringify(r.nodeJson, null, 2) : r.nodeBody;
+      _writeFileSync(_join(dir, `${n}-php.json`), phpData);
+      _writeFileSync(_join(dir, `${n}-node.json`), nodeData);
+    }
+  }
+
+  _writeFileSync(_join(dir, 'summary.md'), lines.join('\n'));
+  console.log(`\nReports written to ${dir}/`);
+}
+
 export {
   PHP, NODE, DB, USER, PASS,
   http, short, normalize, compare, dual,
   setup, preCleanup, deleteObj, deleteType,
   createType, addColumn, addRefColumn, createObj,
-  section, summary, generateMD, results,
+  section, summary, generateMD, writeReports, results,
   token, xsrfPhp, xsrfNode,
 };
 

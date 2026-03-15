@@ -5,7 +5,7 @@
  *   Cell editing, row editing, directory caching, batch operations,
  *   object list with all column data, edit_obj for form view
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -241,6 +241,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '16-datatable-patterns-results.md'), generateMD('16-datatable-patterns — DataTable Component Patterns'));
+  writeReports('16-datatable-patterns', join(dir, '..', 'reports'));
   console.log(`\nWrote 16-datatable-patterns-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

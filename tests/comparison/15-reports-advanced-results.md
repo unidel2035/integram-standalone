@@ -7,12 +7,12 @@
 | 1 | #1 GET /object/22 (report list) | 200 | 200 | DIFF: val[&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs]: PHP={"align":["LEFT","LEFT","LEFT","LEFT","L... Node={"align":["LEFT","LEFT","LEFT","LEFT","L... |
 | 2 | #2 GET /edit_types | 200 | 200 | MATCH |
 | 3 | #3 POST /_m_new/22 (create report) | 200 | 200 | MATCH |
-| 4 | #4 GET /edit_obj (new report) | 200 | 200 | DIFF: val[&main.a.&object.&buttons]: PHP={"attrs":["report/1000006453"],"val":["R... Node={"attrs":["report/1000006454"],"val":["R... |
+| 4 | #4 GET /edit_obj (new report) | 200 | 200 | DIFF: val[reqs]: PHP={"97":{"base":"CHARS","order":"4","type"... Node={"97":{"base":"CHARS","order":"4","type"... |
 | 5 | #5 POST /_m_new/44 (add FROM) | 200 | 200 | MATCH |
 | 6 | #6 POST /_m_new/28 (add val column) | 200 | 200 | MATCH |
 | 7 | #7 POST /_m_new/28 (add num column) | 200 | 200 | MATCH |
 | 8 | #8 POST /_m_new/28 (add date column) | 200 | 200 | MATCH |
-| 9 | #9 GET /edit_obj (report with columns) | 200 | 200 | DIFF: val[&main.a.&object.&buttons]: PHP={"attrs":["report/1000006453"],"val":["R... Node={"attrs":["report/1000006454"],"val":["R... |
+| 9 | #9 GET /edit_obj (report with columns) | 200 | 200 | DIFF: val[reqs]: PHP={"97":{"base":"CHARS","order":"4","type"... Node={"97":{"base":"CHARS","order":"4","type"... |
 | 10 | #10 POST /_m_save (set execute flag) | 200 | 200 | MATCH |
 | 11 | #11 GET /report (execute JSON) | 200 | 200 | MATCH |
 | 12 | #12 GET /report (LIMIT=2) | 200 | 200 | MATCH |
@@ -36,37 +36,33 @@
 
 ### #4 GET /edit_obj (new report)
 
-- val[&main.a.&object.&buttons]: PHP={"attrs":["report/1000006453"],"val":["R... Node={"attrs":["report/1000006454"],"val":["R...
-- val[&main.a.&object.&object_reqs.&editreq_array]: PHP={"_parent_.arr_num":["0","0","0"],"_pare... Node={"_parent_.arr_num":["0","0","0"],"_pare...
 - val[reqs]: PHP={"97":{"base":"CHARS","order":"4","type"... Node={"97":{"base":"CHARS","order":"4","type"...
-- PHP: `{"obj":{"id":"1000006453","val":"__rpt_report_1773579365027","parent":"1","typ":"22","typ_name":"Query","base_typ":"3"},"&main.a.&object":{"typ":["22"...`
-- Node: `{"&main.a.&object":{"disabled":[""],"id":["1000006454"],"typ":["22","22"],"typ_name":["Query","Query"],"up":["1"],"val":["__rpt_report_1773579365027",...`
+- PHP: `{"obj":{"id":"1000008465","val":"__rpt_report_1773581674602","parent":"1","typ":"22","typ_name":"Query","base_typ":"3"},"&main.a.&object":{"typ":["22"...`
+- Node: `{"&main.a.&object":{"disabled":[""],"id":["1000008466"],"typ":["22","22"],"typ_name":["Query","Query"],"up":["1"],"val":["__rpt_report_1773581674602",...`
 
 ### #9 GET /edit_obj (report with columns)
 
-- val[&main.a.&object.&buttons]: PHP={"attrs":["report/1000006453"],"val":["R... Node={"attrs":["report/1000006454"],"val":["R...
-- val[&main.a.&object.&object_reqs.&editreq_array]: PHP={"_parent_.arr_num":["3","0","1"],"_pare... Node={"_parent_.arr_num":["3","0","1"],"_pare...
 - val[reqs]: PHP={"97":{"base":"CHARS","order":"4","type"... Node={"97":{"base":"CHARS","order":"4","type"...
-- PHP: `{"obj":{"id":"1000006453","val":"__rpt_report_1773579365027","parent":"1","typ":"22","typ_name":"Query","base_typ":"3"},"&main.a.&object":{"typ":["22"...`
-- Node: `{"&main.a.&object":{"disabled":[""],"id":["1000006454"],"typ":["22","22"],"typ_name":["Query","Query"],"up":["1"],"val":["__rpt_report_1773579365027",...`
+- PHP: `{"obj":{"id":"1000008465","val":"__rpt_report_1773581674602","parent":"1","typ":"22","typ_name":"Query","base_typ":"3"},"&main.a.&object":{"typ":["22"...`
+- Node: `{"&main.a.&object":{"disabled":[""],"id":["1000008466"],"typ":["22","22"],"typ_name":["Query","Query"],"up":["1"],"val":["__rpt_report_1773581674602",...`
 
 ### #15 GET /metadata (report)
 
 - format: PHP=text Node=JSON
-- PHP: `Invalid Term id 1000006453`
-- Node: `{"id":"1000006454","reqs":[{"arr_id":"28","attrs":"1000006423","id":"1000006458","num":1,"orig":"28","type":"16","val":"Query fields"},{"arr_id":"44",...`
+- PHP: `Invalid Term id 1000008465`
+- Node: `{"id":"1000008466","reqs":[{"arr_id":"28","attrs":"1000008437","id":"1000008469","num":1,"orig":"28","type":"16","val":"Query fields"},{"arr_id":"44",...`
 
 ### #16 GET /object/28 (report columns)
 
 - keys: PHP=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...] Node=[&main.a,&main.a.&uni_obj,&main.a.&uni_obj.&delete,&main.a.&u...]
-- val[&main.a.&uni_obj]: PHP={"base_typ":["16"],"create_granted":["bl... Node={"base_typ":["16"],"create_granted":["bl...
 - val[&main.a.&uni_obj.&new_req_report_column]: PHP={"_parent_.typ":["28"],"new_req":[""]} Node=
 - val[&main.a.&uni_obj.&new_req_report_column.&rep_col_list]: PHP={"id":["__ID__","__ID__","__ID__","__ID_... Node=
-- PHP: `{"&main.a":{"_parent_.title":["Query fields"]},"type":{"id":28,"up":1000006453,"val":"Query fields","base":"REPORT_COLUMN"},"base":{"id":"16","unique"...`
-- Node: `{"&main.a":{"_parent_.title":["Query fields"]},"&main.a._noobj":{"_request_.f_u":["1000006454"]},"&main.a.&uni_obj":{"base_typ":["16"],"create_granted...`
+- val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT","LEFT","LEFT"],"id":["_... Node={"align":["LEFT","LEFT","LEFT"],"id":["_...
+- PHP: `{"&main.a":{"_parent_.title":["Query fields"]},"type":{"id":28,"up":1000008465,"val":"Query fields","base":"REPORT_COLUMN"},"base":{"id":"16","unique"...`
+- Node: `{"&main.a":{"_parent_.title":["Query fields"]},"&main.a._noobj":{"_request_.f_u":["1000008466"]},"&main.a.&uni_obj":{"base_typ":["16"],"create_granted...`
 
 ### #19 GET /edit_obj (deleted report)
 
 - format: PHP=text Node=JSON
-- PHP: `Объект 1000006453 не найден, вероятно, он был удален`
+- PHP: `Объект 1000008465 не найден, вероятно, он был удален`
 - Node: `{}`

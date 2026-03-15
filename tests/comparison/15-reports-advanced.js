@@ -5,7 +5,7 @@
  *   Create report, add columns, add FROM, execute, clone, delete
  *   SmartQ report format, CSV export, pagination
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -205,6 +205,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '15-reports-advanced-results.md'), generateMD('15-reports-advanced — Report CRUD & Execution'));
+  writeReports('15-reports-advanced', join(dir, '..', 'reports'));
   console.log(`\nWrote 15-reports-advanced-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

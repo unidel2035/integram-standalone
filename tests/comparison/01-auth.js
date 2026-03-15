@@ -2,7 +2,7 @@
 /**
  * 01-auth: PHP vs Node.js — Auth & Session endpoints
  */
-import { PHP, NODE, DB, USER, PASS, http, dual, setup, section, summary, generateMD, getXsrf, cookie, results } from './lib.js';
+import { PHP, NODE, DB, USER, PASS, http, dual, setup, section, summary, generateMD, writeReports, getXsrf, cookie, results } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -83,6 +83,7 @@ async function run() {
   // Summary
   const s = summary();
   const md = generateMD('01-auth — Auth & Session');
+  writeReports('01-auth', join(dir, '..', 'reports'));
   writeFileSync(join(dir, '01-auth-results.md'), md);
   console.log(`\nWrote 01-auth-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);

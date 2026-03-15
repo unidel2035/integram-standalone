@@ -1,0 +1,176 @@
+{
+  "obj": {
+    "id": "1000008502",
+    "val": "Задача 1",
+    "parent": "1",
+    "typ": "1000008494",
+    "typ_name": "__dt_tasks_1773581675455",
+    "base_typ": "3"
+  },
+  "&main.a.&object": {
+    "typ": [
+      "1000008494",
+      "1000008494"
+    ],
+    "up": [
+      "1"
+    ],
+    "typ_name": [
+      "__dt_tasks_1773581675455",
+      "__dt_tasks_1773581675455"
+    ],
+    "val": [
+      "Задача 1",
+      "Задача 1"
+    ],
+    "id": [
+      "1000008502"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "type": [
+      "text"
+    ],
+    "typ": [
+      "1000008494"
+    ],
+    "_parent_.val": [
+      "Задача 1"
+    ],
+    "_parent_.disabled": [
+      ""
+    ]
+  },
+  "reqs": {
+    "1000008495": {
+      "type": "__adv_products_1773534190136_n",
+      "order": "1",
+      "value": "Задача 1 (обновлена)",
+      "base": "SHORT",
+      "arr": 0,
+      "arr_type": null
+    },
+    "1000008496": {
+      "type": "__sys_bt2_1773581673776",
+      "order": "2",
+      "value": "Описание первой задачи",
+      "base": "HTML",
+      "arr": 0,
+      "arr_type": null
+    },
+    "1000008497": {
+      "type": "__sys_bt13_1773581675528",
+      "order": "3",
+      "value": "12",
+      "base": "NUMBER",
+      "arr": 0,
+      "arr_type": null
+    },
+    "1000008498": {
+      "type": "__sys_bt4_1773581675515",
+      "order": "4",
+      "value": "01.04.2025 09:00:00",
+      "base": "DATETIME",
+      "arr": 0,
+      "arr_type": null
+    },
+    "1000008499": {
+      "type": "__sys_bt11_1773581673797",
+      "order": "5",
+      "value": "X",
+      "base": "BOOLEAN",
+      "arr": 0,
+      "arr_type": null
+    }
+  },
+  "&main.a.&object.&object_reqs": {
+    "typ": [
+      "1000008495",
+      "1000008496",
+      "1000008497",
+      "1000008498",
+      "1000008499"
+    ],
+    "typ_name": [
+      "__adv_products_1773534190136_n",
+      "__sys_bt2_1773581673776",
+      "__sys_bt13_1773581675528",
+      "__sys_bt4_1773581675515",
+      "__sys_bt11_1773581673797"
+    ],
+    "enable_save": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_short": {
+    "typ": [
+      "1000008495"
+    ],
+    "val": [
+      "Задача 1 (обновлена)"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      "1000008503",
+      "1000008504",
+      "1000008505",
+      "1000008506",
+      "1000008507"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_html": {
+    "typ": [
+      "1000008496"
+    ],
+    "disabled": [
+      ""
+    ],
+    "val": [
+      "Описание первой задачи"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_number": {
+    "typ": [
+      "1000008497"
+    ],
+    "val": [
+      "12"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_datetime": {
+    "typ": [
+      "1000008498"
+    ],
+    "val": [
+      "01.04.2025 09:00:00"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_boolean": {
+    "typ": [
+      "1000008499"
+    ],
+    "checked": [
+      "CHECKED"
+    ],
+    "disabled": [
+      ""
+    ]
+  }
+}

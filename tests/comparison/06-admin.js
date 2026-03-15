@@ -2,7 +2,7 @@
 /**
  * 06-admin: PHP vs Node.js — Admin, metadata, terms, dict, dir_admin
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -95,6 +95,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '06-admin-results.md'), generateMD('06-admin — Admin & Metadata'));
+  writeReports('06-admin', join(dir, '..', 'reports'));
   console.log(`\nWrote 06-admin-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

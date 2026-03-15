@@ -1,6 +1,6 @@
 # 02-ddl — Type/Column DDL
 
-17 MATCH / 3 DIFF out of 20 tests
+18 MATCH / 2 DIFF out of 20 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -21,7 +21,7 @@
 | 15 | POST /_d_ord (order=1) | 200 | 200 | MATCH |
 | 16 | POST /_d_alias | 200 | 200 | MATCH |
 | 17 | POST /_d_attrs | 200 | 200 | MATCH |
-| 18 | POST /_d_del_req | 200 | 200 | DIFF: keys: PHP=[args,id,next_act,obj,warnings] Node=[error] |
+| 18 | POST /_d_del_req | 200 | 200 | MATCH |
 | 19 | POST /_d_del (empty type) | 200 | 200 | MATCH |
 | 20 | POST /_d_del (non-existent) | 200 | 200 | MATCH |
 
@@ -30,20 +30,11 @@
 ### POST /_d_save (rename)
 
 - type: PHP=object Node=array
-- PHP: `{"id":1000006101,"obj":1000006101,"next_act":"edit_types","args":"ext","warnings":""}`
-- Node: `[{"args":"ext","id":1000006101,"next_act":"edit_types","obj":1000006101,"warnings":""}]`
+- PHP: `{"id":1000008122,"obj":1000008122,"next_act":"edit_types","args":"ext","warnings":""}`
+- Node: `[{"args":"ext","id":1000008122,"next_act":"edit_types","obj":1000008122,"warnings":""}]`
 
 ### POST /_d_save (unique=1)
 
 - type: PHP=object Node=array
-- PHP: `{"id":1000006101,"obj":1000006101,"next_act":"edit_types","args":"ext","warnings":""}`
-- Node: `[{"args":"ext","id":1000006101,"next_act":"edit_types","obj":1000006101,"warnings":""}]`
-
-### POST /_d_del_req
-
-- keys: PHP=[args,id,next_act,obj,warnings] Node=[error]
-- val[args]: PHP="ext" Node=
-- val[id]: PHP="__ID__" Node=
-- val[next_act]: PHP="edit_types" Node=
-- PHP: `{"id":"1000006101","obj":"1000006101","next_act":"edit_types","args":"ext","warnings":""}`
-- Node: `{"error":"Requisite not found"}`
+- PHP: `{"id":1000008122,"obj":1000008122,"next_act":"edit_types","args":"ext","warnings":""}`
+- Node: `[{"args":"ext","id":1000008122,"next_act":"edit_types","obj":1000008122,"warnings":""}]`

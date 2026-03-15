@@ -2,7 +2,7 @@
 /**
  * 08-export: PHP vs Node.js — Export, backup, csv_all
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -76,6 +76,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '08-export-results.md'), generateMD('08-export — Export & Backup'));
+  writeReports('08-export', join(dir, '..', 'reports'));
   console.log(`\nWrote 08-export-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

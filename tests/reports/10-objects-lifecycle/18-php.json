@@ -1,0 +1,170 @@
+{
+  "obj": {
+    "id": "1000008254",
+    "val": "Beta_updated",
+    "parent": "1",
+    "typ": "1000008246",
+    "typ_name": "__obj_main_1773581671040",
+    "base_typ": "3"
+  },
+  "&main.a.&object": {
+    "typ": [
+      "1000008246",
+      "1000008246"
+    ],
+    "up": [
+      "1"
+    ],
+    "typ_name": [
+      "__obj_main_1773581671040",
+      "__obj_main_1773581671040"
+    ],
+    "val": [
+      "Beta_updated",
+      "Beta_updated"
+    ],
+    "id": [
+      "1000008254"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "type": [
+      "text"
+    ],
+    "typ": [
+      "1000008246"
+    ],
+    "_parent_.val": [
+      "Beta_updated"
+    ],
+    "_parent_.disabled": [
+      ""
+    ]
+  },
+  "reqs": {
+    "1000008247": {
+      "type": "__adm_main_1773581385333",
+      "order": "1",
+      "value": "text_value",
+      "base": "SHORT",
+      "arr": "1",
+      "arr_type": "1000007726"
+    },
+    "1000008248": {
+      "type": "__sys_bt13_1773581671100",
+      "order": "2",
+      "value": "42",
+      "base": "NUMBER",
+      "arr": "1",
+      "arr_type": null
+    },
+    "1000008249": {
+      "type": "__sys_bt4_1773581653979",
+      "order": "3",
+      "value": "",
+      "base": "DATETIME"
+    },
+    "1000008250": {
+      "type": "__sys_bt11_1773581653988",
+      "order": "4",
+      "value": "",
+      "base": "BOOLEAN"
+    },
+    "1000008251": {
+      "type": "__sys_bt2_1773581653974",
+      "order": "5",
+      "value": "",
+      "base": "HTML"
+    }
+  },
+  "&main.a.&object.&object_reqs": {
+    "typ": [
+      "1000008247",
+      "1000008248",
+      "1000008249",
+      "1000008250",
+      "1000008251"
+    ],
+    "typ_name": [
+      "__adm_main_1773581385333",
+      "__sys_bt13_1773581671100",
+      "__sys_bt4_1773581653979",
+      "__sys_bt11_1773581653988",
+      "__sys_bt2_1773581653974"
+    ],
+    "enable_save": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_array": {
+    "typ": [
+      "1000007726"
+    ],
+    "_parent_.id": [
+      "1000008254"
+    ],
+    "_parent_.arr_num": [
+      "1"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      "1000008273",
+      "1000008274",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_number": {
+    "typ": [
+      "1000008248"
+    ],
+    "val": [
+      "42"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_datetime": {
+    "typ": [
+      "1000008249"
+    ],
+    "val": [
+      ""
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_boolean": {
+    "typ": [
+      "1000008250"
+    ],
+    "checked": [
+      ""
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_html": {
+    "typ": [
+      "1000008251"
+    ],
+    "disabled": [
+      ""
+    ],
+    "val": [
+      ""
+    ]
+  }
+}

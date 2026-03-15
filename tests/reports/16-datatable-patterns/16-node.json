@@ -1,0 +1,155 @@
+{
+  "&main.a.&object": {
+    "disabled": [
+      ""
+    ],
+    "id": [
+      "1000008501"
+    ],
+    "typ": [
+      "1000008494",
+      "1000008494"
+    ],
+    "typ_name": [
+      "__dt_tasks_1773581675455",
+      "__dt_tasks_1773581675455"
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "Задача 1",
+      "Задача 1"
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "_parent_.disabled": [
+      ""
+    ],
+    "_parent_.val": [
+      "Задача 1"
+    ],
+    "typ": [
+      "1000008494"
+    ],
+    "type": [
+      "text"
+    ]
+  },
+  "&main.a.&object.&object_reqs": {
+    "enable_save": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "typ": [
+      "1000008495",
+      "1000008496",
+      "1000008497",
+      "1000008498",
+      "1000008499"
+    ],
+    "typ_name": [
+      "__adv_products_1773534190136_n",
+      "__sys_bt2_1773581673776",
+      "__sys_bt13_1773581675528",
+      "__sys_bt4_1773581675515",
+      "__sys_bt11_1773581673797"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_boolean": {
+    "checked": [
+      ""
+    ],
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000008499"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_datetime": {
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000008498"
+    ],
+    "val": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_number": {
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000008497"
+    ],
+    "val": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_short": {
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000008495"
+    ],
+    "val": [
+      ""
+    ]
+  },
+  "obj": {
+    "base_typ": "3",
+    "id": "1000008501",
+    "parent": "1",
+    "typ": "1000008494",
+    "typ_name": "__dt_tasks_1773581675455",
+    "val": "Задача 1"
+  },
+  "reqs": {
+    "1000008495": {
+      "base": "SHORT",
+      "order": "1",
+      "type": "__adv_products_1773534190136_n",
+      "value": ""
+    },
+    "1000008496": {
+      "base": "HTML",
+      "order": "2",
+      "type": "__sys_bt2_1773581673776",
+      "value": ""
+    },
+    "1000008497": {
+      "base": "NUMBER",
+      "order": "3",
+      "type": "__sys_bt13_1773581675528",
+      "value": ""
+    },
+    "1000008498": {
+      "base": "DATETIME",
+      "order": "4",
+      "type": "__sys_bt4_1773581675515",
+      "value": ""
+    },
+    "1000008499": {
+      "base": "BOOLEAN",
+      "order": "5",
+      "type": "__sys_bt11_1773581673797",
+      "value": ""
+    }
+  }
+}

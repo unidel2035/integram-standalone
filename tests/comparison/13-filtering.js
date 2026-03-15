@@ -5,7 +5,7 @@
  *   F_I (exact match), F_T (text search), F_U (parent filter),
  *   sort/asc/desc, LIMIT, pg, object count
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -225,6 +225,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '13-filtering-results.md'), generateMD('13-filtering — Filtering, Sorting, Pagination'));
+  writeReports('13-filtering', join(dir, '..', 'reports'));
   console.log(`\nWrote 13-filtering-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

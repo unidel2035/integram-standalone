@@ -1,11 +1,11 @@
 # 03-dml — Object DML
 
-14 MATCH / 2 DIFF out of 16 tests
+13 MATCH / 3 DIFF out of 16 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
 | 1 | POST /_m_new | 200 | 200 | MATCH |
-| 2 | POST /_m_new (empty val) | 200 | 200 | MATCH |
+| 2 | POST /_m_new (empty val) | 200 | 200 | DIFF: val[val]: PHP="1" Node="5" |
 | 3 | POST /_m_save (rename) | 200 | 200 | MATCH |
 | 4 | POST /_m_save (copy) | 200 | 200 | MATCH |
 | 5 | POST /_m_set (text) | 200 | 200 | DIFF: type: PHP=object Node=array |
@@ -23,14 +23,20 @@
 
 ## Diffs Detail
 
+### POST /_m_new (empty val)
+
+- val[val]: PHP="1" Node="5"
+- PHP: `{"id":1000008150,"obj":1000008150,"ord":1,"next_act":"edit_obj","args":"new1=1&","val":"1"}`
+- Node: `{"args":"new1=1&","id":1000008149,"next_act":"edit_obj","obj":1000008149,"ord":5,"val":"5"}`
+
 ### POST /_m_set (text)
 
 - type: PHP=object Node=array
-- PHP: `{"id":1000006132,"obj":1000006122,"next_act":"nul","args":"","warnings":""}`
+- PHP: `{"id":1000008153,"obj":1000008144,"next_act":"nul","args":"","warnings":""}`
 - Node: `[{"error":"Couldn't execute query [insertRow_query] Unknown column 'NaN' in 'VALUES' (INSERT INTO `my` (up, ord, t, val) VALUES (?, ?, ?, ?))"}]`
 
 ### POST /_m_set (clear)
 
 - type: PHP=object Node=array
-- PHP: `{"id":"","obj":1000006124,"next_act":"nul","args":"","warnings":""}`
+- PHP: `{"id":"","obj":1000008146,"next_act":"nul","args":"","warnings":""}`
 - Node: `[{"error":"Couldn't execute query [insertRow_query] Unknown column 'NaN' in 'VALUES' (INSERT INTO `my` (up, ord, t, val) VALUES (?, ?, ?, ?))"}]`

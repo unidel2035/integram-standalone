@@ -2,7 +2,7 @@
 /**
  * 07-refs-multi: PHP vs Node.js — References, multiselect, subordinate tables, lookup
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -163,6 +163,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '07-refs-multi-results.md'), generateMD('07-refs-multi — References & Multiselect'));
+  writeReports('07-refs-multi', join(dir, '..', 'reports'));
   console.log(`\nWrote 07-refs-multi-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

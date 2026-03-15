@@ -5,7 +5,7 @@
  *   Lookup tables, reference columns, _ref_reqs, dropdown options,
  *   multiselect add/remove, directory caching
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -199,6 +199,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '11-directories-results.md'), generateMD('11-directories — Справочники & References'));
+  writeReports('11-directories', join(dir, '..', 'reports'));
   console.log(`\nWrote 11-directories-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

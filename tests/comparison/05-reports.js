@@ -2,7 +2,7 @@
 /**
  * 05-reports: PHP vs Node.js — Report endpoints & JSON formats
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -108,6 +108,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '05-reports-results.md'), generateMD('05-reports — Reports & Formats'));
+  writeReports('05-reports', join(dir, '..', 'reports'));
   console.log(`\nWrote 05-reports-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

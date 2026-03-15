@@ -5,7 +5,7 @@
  *   _d_multi toggle, _m_set add, _m_del remove,
  *   _ref_reqs for multiselect, edit_obj with multiselect data
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -245,6 +245,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '14-multiselect-results.md'), generateMD('14-multiselect — Multiselect Operations'));
+  writeReports('14-multiselect', join(dir, '..', 'reports'));
   console.log(`\nWrote 14-multiselect-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

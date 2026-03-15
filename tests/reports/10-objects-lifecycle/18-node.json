@@ -1,0 +1,155 @@
+{
+  "&main.a.&object": {
+    "disabled": [
+      ""
+    ],
+    "id": [
+      "1000008255"
+    ],
+    "typ": [
+      "1000008246",
+      "1000008246"
+    ],
+    "typ_name": [
+      "__obj_main_1773581671040",
+      "__obj_main_1773581671040"
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "Beta_updated",
+      "Beta_updated"
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "_parent_.disabled": [
+      ""
+    ],
+    "_parent_.val": [
+      "Beta_updated"
+    ],
+    "typ": [
+      "1000008246"
+    ],
+    "type": [
+      "text"
+    ]
+  },
+  "&main.a.&object.&object_reqs": {
+    "enable_save": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "typ": [
+      "1000008247",
+      "1000008248",
+      "1000008249",
+      "1000008250",
+      "1000008251"
+    ],
+    "typ_name": [
+      "__adm_main_1773581385333",
+      "__sys_bt13_1773581671100",
+      "__sys_bt4_1773581653979",
+      "__sys_bt11_1773581653988",
+      "__sys_bt2_1773581653974"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_array": {
+    "_parent_.arr_num": [
+      "0"
+    ],
+    "_parent_.id": [
+      "1000008255"
+    ],
+    "typ": [
+      "1000007726"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_boolean": {
+    "checked": [
+      ""
+    ],
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000008250"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_datetime": {
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000008249"
+    ],
+    "val": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_number": {
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000008248"
+    ],
+    "val": [
+      ""
+    ]
+  },
+  "obj": {
+    "base_typ": "3",
+    "id": "1000008255",
+    "parent": "1",
+    "typ": "1000008246",
+    "typ_name": "__obj_main_1773581671040",
+    "val": "Beta_updated"
+  },
+  "reqs": {
+    "1000008247": {
+      "base": "SHORT",
+      "order": "1",
+      "type": "__adm_main_1773581385333",
+      "value": ""
+    },
+    "1000008248": {
+      "base": "NUMBER",
+      "order": "2",
+      "type": "__sys_bt13_1773581671100",
+      "value": ""
+    },
+    "1000008249": {
+      "base": "DATETIME",
+      "order": "3",
+      "type": "__sys_bt4_1773581653979",
+      "value": ""
+    },
+    "1000008250": {
+      "base": "BOOLEAN",
+      "order": "4",
+      "type": "__sys_bt11_1773581653988",
+      "value": ""
+    },
+    "1000008251": {
+      "base": "HTML",
+      "order": "5",
+      "type": "__sys_bt2_1773581653974",
+      "value": ""
+    }
+  }
+}

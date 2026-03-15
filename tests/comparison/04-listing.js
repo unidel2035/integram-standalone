@@ -2,7 +2,7 @@
 /**
  * 04-listing: PHP vs Node.js — Listing, filtering, querying endpoints
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, deleteType, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -130,6 +130,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '04-listing-results.md'), generateMD('04-listing — Listing & Querying'));
+  writeReports('04-listing', join(dir, '..', 'reports'));
   console.log(`\nWrote 04-listing-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

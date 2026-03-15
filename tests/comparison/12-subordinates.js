@@ -5,7 +5,7 @@
  *   Hierarchical types (up=parentId), F_U filter, _m_move,
  *   subordinate tables, tree navigation
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, createType, addColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, createObj, deleteType, deleteObj, getXsrf, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -208,6 +208,7 @@ async function run() {
 
   const s = summary();
   writeFileSync(join(dir, '12-subordinates-results.md'), generateMD('12-subordinates — Подчинённости'));
+  writeReports('12-subordinates', join(dir, '..', 'reports'));
   console.log(`\nWrote 12-subordinates-results.md`);
   process.exit(s.diffCount > 0 ? 1 : 0);
 }

@@ -1,6 +1,6 @@
 # 12-subordinates — Подчинённости
 
-23 MATCH / 4 DIFF out of 27 tests
+24 MATCH / 3 DIFF out of 27 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -27,7 +27,7 @@
 | 21 | #21 POST /_m_set (child requisite) | 200 | 200 | MATCH |
 | 22 | #22 GET /edit_obj (child) | 500 | 200 | DIFF: status: PHP=500 Node=200 |
 | 23 | #23 GET /edit_obj (grandchild) | 500 | 200 | DIFF: status: PHP=500 Node=200 |
-| 24 | #24 GET /object (parent list) | 200 | 200 | DIFF: val[&main.a.&uni_obj]: PHP={"base_typ":["3"],"create_granted":["blo... Node={"base_typ":["3"],"create_granted":["blo... |
+| 24 | #24 GET /object (parent list) | 200 | 200 | MATCH |
 | 25 | #25 POST /_m_del (delete child) | 200 | 200 | MATCH |
 | 26 | #26 GET /object (parent2 after child delete) | 200 | 200 | MATCH |
 | 27 | #27 POST /_m_del (parent with children) | 200 | 200 | MATCH |
@@ -37,8 +37,8 @@
 ### #8 GET /object (grandchildren of child1)
 
 - val[&main.a.&uni_obj]: PHP={"base_typ":["3"],"create_granted":["blo... Node={"base_typ":["3"],"create_granted":["blo...
-- PHP: `{"&main.a":{"_parent_.title":["__sub_grandchild_1773579362063"]},"type":{"id":1000006306,"up":1,"val":"__sub_grandchild_1773579362063","base":"SHORT"}...`
-- Node: `{"&main.a":{"_parent_.title":["__sub_grandchild_1773579362063"]},"&main.a._noobj":{"_request_.f_u":["NaN"]},"&main.a.&uni_obj":{"base_typ":["3"],"crea...`
+- PHP: `{"&main.a":{"_parent_.title":["__sub_grandchild_1773581672402"]},"type":{"id":1000008331,"up":1,"val":"__sub_grandchild_1773581672402","base":"SHORT"}...`
+- Node: `{"&main.a":{"_parent_.title":["__sub_grandchild_1773581672402"]},"&main.a._noobj":{"_request_.f_u":["NaN"]},"&main.a.&uni_obj":{"base_typ":["3"],"crea...`
 
 ### #22 GET /edit_obj (child)
 
@@ -53,12 +53,3 @@
 - format: PHP=text Node=JSON
 - PHP: ``
 - Node: `[{"error":"objectId required: /my/edit_obj/{id}?JSON"}]`
-
-### #24 GET /object (parent list)
-
-- val[&main.a.&uni_obj]: PHP={"base_typ":["3"],"create_granted":["blo... Node={"base_typ":["3"],"create_granted":["blo...
-- val[&main.a.&uni_obj.&filter_val_rcm]: PHP={"f_typ":["F_1000006300"],"filter":[""]} Node={"f_typ":["F_1000006301"],"filter":[""]}
-- val[&main.a.&uni_obj.&new_req]: PHP={"_parent_.typ":["1000006300"],"_parent_... Node={"_parent_.typ":["1000006301"],"_parent_...
-- val[&main.a.&uni_obj.&uni_obj_head]: PHP={"arr_type":[""],"array":[""],"base_typ"... Node={"arr_type":[""],"array":[""],"base_typ"...
-- PHP: `{"&main.a":{"_parent_.title":["__sub_parent_1773579362063"]},"type":{"id":1000006300,"up":1,"val":"__sub_parent_1773579362063","base":"SHORT"},"base":...`
-- Node: `{"&main.a":{"_parent_.title":["__sub_parent_1773579362063"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":[""],"fi...`
