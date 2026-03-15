@@ -844,6 +844,38 @@ describe('recursiveDelete (batch)', () => {
   });
 });
 
+describe('recursiveDelete in _m_set empty-value path (#415)', () => {
+  // Regression: _m_set used flat DELETE WHERE id=? OR up=? for empty scalar values.
+  // PHP uses Delete($cur_id) which is recursive (index.php:7937).
+  // After fix, _m_set should call recursiveDelete to remove all descendants.
+
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('empty scalar value triggers recursiveDelete not flat delete', async () => {
+    // Tree: requisite 50 -> children [51, 52], grandchild 51 -> [53]
+    const deletedBatches = [];
+    const pool = {
+      query: vi.fn(async (sql, params) => {
+        // _collectDescendants calls
+        if (sql.includes('SELECT') && sql.includes('WHERE up = ?') && params[0] === 50) return [[{ id: 51 }, { id: 52 }]];
+        if (sql.includes('SELECT') && sql.includes('WHERE up = ?') && params[0] === 51) return [[{ id: 53 }]];
+        if (sql.includes('SELECT') && sql.includes('WHERE up = ?')) return [[]]; // leaves
+        if (sql.includes('DELETE') && sql.includes('IN')) {
+          deletedBatches.push([...params]);
+          return [{ affectedRows: params.length }];
+        }
+        return [[]];
+      }),
+    };
+
+    await recursiveDelete(pool, DB, 50);
+
+    // All descendants + root deleted: grandchild 53, child 51, child 52, root 50
+    expect(deletedBatches).toHaveLength(1);
+    expect(deletedBatches[0]).toEqual([53, 51, 52, 50]);
+  });
+});
+
 describe('checkDuplicatedReqs', () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
