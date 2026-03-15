@@ -7523,7 +7523,10 @@ function base64UrlDecode($input) {
     return base64_decode(strtr($input, '-_', '+/'));
 }
 function verifyJWT($jwt, $publicKey) {
-    list($header, $payload, $signature) = explode('.', $jwt, 3);
+    $parts = explode('.', $jwt, 3);
+    if(count($parts) < 3)
+        return false;
+    list($header, $payload, $signature) = $parts;
 
     if(!$signature)
 	    die("{\"warning\":\"Incorrect JWT\"}");
@@ -7606,13 +7609,19 @@ Exec_sql("SET SESSION optimizer_search_depth = 9", "Search depth");
 switch($a)  # Check actions, which don't require authentication
 {
 	case "jwt":
-        $params = verifyJWT($_POST["jwt"], JWT_PUBLIC_KEY);
-        if($params){
-            $params = json_decode($params["payload"], false);
-            authJWT($params->data->userId);
-        }
-        else
+        try {
+            if(!isset($_POST["jwt"]) || !$_POST["jwt"])
+                die("{\"error\":\"JWT verification failed\"}");
+            $params = verifyJWT($_POST["jwt"], JWT_PUBLIC_KEY);
+            if($params){
+                $params = json_decode($params["payload"], false);
+                authJWT($params->data->userId);
+            }
+            else
+                die("{\"error\":\"JWT verification failed\"}");
+        } catch (\Throwable $e) {
             die("{\"error\":\"JWT verification failed\"}");
+        }
 		break;
 		
 	case "auth":
