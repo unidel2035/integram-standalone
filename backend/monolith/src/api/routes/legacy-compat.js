@@ -6640,10 +6640,12 @@ router.post('/:db/_m_new/:up?', legacyAuthMiddleware, legacyXsrfCheck, (req, res
     // PHP parity: index.php lines 8378-8407
     let redirectToEdit = null; // set if we find an empty object to reuse
     let redirectMaxVal = 0;    // maxVal for the redirect response
+    let maxValWasSet = false;  // PHP: tracks whether $max_val was isset (skip uniqueness check)
     if (!value) {
       if (baseType === TYPE.NUMBER) {
         if (unique) {
           // PHP: unique numeric — find MAX val scoped to parent, check for empty object reuse
+          maxValWasSet = true; // PHP: $max_val is isset after this block
           const { rows: maxRows } = await execSql(pool, `SELECT MAX(CAST(val AS UNSIGNED)) AS maxVal FROM \`${db}\` WHERE t = ? AND up = ?`, [typeId, parentId], { label: 'query_select' });
           const maxVal = (maxRows[0]?.maxVal || 0);
 
@@ -6728,8 +6730,9 @@ router.post('/:db/_m_new/:up?', legacyAuthMiddleware, legacyXsrfCheck, (req, res
       req.body['t' + reqId] = resolved;
     }
 
-    // Uniqueness check: PHP checks any non-zero ord value (#416)
-    if (parseInt(order, 10)) {
+    // Uniqueness check: PHP uses $unique (type's ord), any non-zero value (#416)
+    // PHP: if($unique && !isset($max_val)) — skip when auto-increment already set value
+    if (parseInt(unique, 10) && !maxValWasSet) {
       const { rows: existingObj } = await execSql(pool, `SELECT id FROM \`${db}\` WHERE val = ? AND t = ? AND up = ? LIMIT 1`, [value, typeId, parentId], { label: 'query_select' });
       if (existingObj.length > 0) {
         const existId = existingObj[0].id;
