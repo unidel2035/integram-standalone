@@ -3828,8 +3828,11 @@ router.post('/:db/auth', async (req, res, next) => {
 });
 
 /**
- * Token validation endpoint
+ * Token validation endpoint (NODE-ONLY, no PHP equivalent — see #451)
  * GET /:db/validate
+ *
+ * PHP returns `null` (plain text, 200) for this route.
+ * Node returns JSON: {success, valid, user: {id, login}, xsrf}.
  */
 router.get('/:db/validate', async (req, res) => {
   const { db } = req.params;
@@ -7905,9 +7908,12 @@ router.all('/:db/_dict/:typeId?', legacyAuthMiddleware, async (req, res) => {
 });
 
 /**
- * _list - Get list of objects
+ * _list - Get list of objects (NODE-ONLY, no PHP equivalent — see #451)
  * GET/POST /:db/_list/:typeId
- * Parameters: up (parent), LIMIT, F (offset/from), q (search)
+ * Parameters: up (parent), LIMIT, F (offset/from), q (search), sort, dir, f_0, f_{reqId}
+ *
+ * PHP returns `null` (plain text, 200) for this route.
+ * Node returns structured JSON: {data, total, limit, offset}.
  */
 router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
   const { db, typeId } = req.params;
@@ -8045,9 +8051,12 @@ router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
 });
 
 /**
- * _list_join - List objects with multi-join queries
+ * _list_join - List objects with multi-join queries (NODE-ONLY, no PHP equivalent — see #451)
  * GET/POST /:db/_list_join/:typeId
  * Parameters: up (parent), LIMIT, F (offset/from), q (search), join (comma-separated requisite IDs to join)
+ *
+ * PHP returns `null` (plain text, 200) for this route.
+ * Node returns structured JSON: {data, total, limit, offset, requisites}.
  *
  * This endpoint supports complex multi-join queries that fetch object data
  * along with requisite values in a single query.
@@ -10556,8 +10565,11 @@ router.get('/:db/download/:filename', legacyAuthMiddleware, async (req, res) => 
 });
 
 /**
- * Directory listing endpoint
+ * Directory listing endpoint (NODE-ONLY, no PHP JSON equivalent — see #451)
  * GET /:db/dir_admin
+ *
+ * PHP renders HTML for this route; it has no JSON API.
+ * Node returns JSON: {dirs, files} or serves file downloads.
  */
 router.get('/:db/dir_admin', legacyAuthMiddleware, async (req, res) => {
   const { db } = req.params;
@@ -12015,8 +12027,11 @@ router.get('/:db/export/:typeId', legacyAuthMiddleware, async (req, res) => {
 // ============================================================================
 
 /**
- * Get user grants for the current session
+ * Get user grants for the current session (NODE-ONLY, no PHP equivalent — see #451)
  * GET /:db/grants
+ *
+ * PHP has no JSON API for grants retrieval.
+ * Node returns JSON: {success, user, grants: [{id, type}]}.
  */
 router.get('/:db/grants', async (req, res) => {
   const { db } = req.params;
@@ -12076,8 +12091,11 @@ router.get('/:db/grants', async (req, res) => {
 });
 
 /**
- * Check grant for specific object/type
+ * Check grant for specific object/type (NODE-ONLY, no PHP equivalent — see #451)
  * POST /:db/check_grant
+ *
+ * PHP has no JSON API for grant checking.
+ * Node returns JSON: {granted, level}.
  */
 router.post('/:db/check_grant', async (req, res) => {
   const { db } = req.params;

@@ -9,7 +9,7 @@
 | POST | `/auth` | `JSON=1` | `login`, `pwd`, `tzone`, `change=1`, `npw1`, `npw2`, `secret` |
 | GET | `/auth` | `secret=` | — |
 | GET | `/xsrf` | `JSON=1` | — |
-| GET | `/validate` | `JSON=1` | — |
+| GET | `/validate` | `JSON=1` | — | **NODE-ONLY** (#451) |
 | POST | `/getcode` | — | `u`, `login`, `tzone` |
 | POST | `/checkcode` | — | `u`, `login`, `c`, `code` |
 | GET | `/confirm` | `JSON=1` | — |
@@ -61,8 +61,8 @@
 | GET | `/metadata/:typeId` | `JSON=1` |
 | GET | `/obj_meta/:objId` | — |
 | GET | `/_ref_reqs/:reqId` | `q=search`, `q=@ID` |
-| GET | `/_list/:typeId` | `JSON=1`, `q=search`, `LIMIT=N`, `F=offset`, `sort=col`, `dir=asc\|desc`, `up=parentId` |
-| GET | `/_list_join/:typeId` | `JSON=1`, `q=search`, `LIMIT=N`, `F=offset` |
+| GET | `/_list/:typeId` | `JSON=1`, `q=search`, `LIMIT=N`, `F=offset`, `sort=col`, `dir=asc\|desc`, `up=parentId` | **NODE-ONLY** (#451) |
+| GET | `/_list_join/:typeId` | `JSON=1`, `q=search`, `LIMIT=N`, `F=offset` | **NODE-ONLY** (#451) |
 | GET | `/_dict` | `JSON=1` |
 | GET | `/_dict/:typeId` | `JSON=1` |
 | GET | `/_d_main/:typeId` | `JSON=1` |
@@ -80,12 +80,12 @@
 
 | Method | Endpoint | Query params | Body params |
 |--------|----------|-------------|-------------|
-| GET | `/dir_admin` | `JSON=1` | — |
+| GET | `/dir_admin` | `JSON=1` | — | **NODE-ONLY** (#451) |
 | GET | `/sql` | `JSON=1` | — |
 | GET | `/form` | `JSON=1` | — |
 | GET | `/dict` | `JSON=1` | — |
-| GET | `/grants` | `JSON=1` | — |
-| POST | `/check_grant` | — | `grant=ddl`, `JSON=1` |
+| GET | `/grants` | `JSON=1` | — | **NODE-ONLY** (#451) |
+| POST | `/check_grant` | — | `grant=ddl`, `JSON=1` | **NODE-ONLY** (#451) |
 | GET | `/csv_all` | — | — |
 | GET | `/backup` | — | — |
 | GET | `/export/:typeId` | — | — |
@@ -118,6 +118,19 @@
 | `EQ_col=val` | Exact match |
 | `LIKE_col=val` | Contains (LIKE %val%) |
 | `q=search` | Full-text search |
+
+## Node-Only Endpoints (no PHP equivalent — #451)
+
+These endpoints exist only in the Node.js backend. PHP either returns `null` (plain text, 200) or renders HTML with no JSON API. They are **not bugs** — they are Node-only features that have no PHP counterpart to compare against.
+
+| Method | Endpoint | Node Response |
+|--------|----------|---------------|
+| GET | `/_list/:typeId?JSON=1` | `{data, total, limit, offset}` |
+| GET | `/_list_join/:typeId?JSON=1` | `{data, total, limit, offset, requisites}` |
+| GET | `/validate?JSON=1` | `{success, valid, user: {id, login}, xsrf}` |
+| GET | `/dir_admin?JSON=1` | `{dirs, files}` or file download |
+| GET | `/grants?JSON=1` | `{success, user, grants: [{id, type}]}` |
+| POST | `/check_grant` | `{granted, level}` |
 
 ## Not Tested
 
