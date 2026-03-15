@@ -5300,9 +5300,21 @@ router.get('/:db/:page*', async (req, res, next) => {
         // Matches PHP index.php object API response builder exactly.
 
         // ── 1. Type metadata ────────────────────────────────────────────────
-        const { rows: [typeRow = undefined] } = await execSql(pool, `SELECT t.id, t.val, t.t AS base_type_id, t.up, t.ord AS type_ord
-           FROM \`${db}\` t
-           WHERE t.id = ?`, [subId], { label: 'orderColId_select' });
+        // PHP parity: index.php &main case "object" (line 4059) uses a query that
+        // only returns rows for types where (obj.up=0 OR par.up=0), meaning:
+        //   - Top-level types (up=0), OR
+        //   - Types referenced as a requisite column of a top-level type
+        // For sub-types (up != 0) that aren't used as columns, PHP dies with
+        // "Type $id not found" and never renders &uni_obj. (#527)
+        const { rows: [typeRow = undefined] } = await execSql(pool, `SELECT obj.val, obj.t AS base_type_id, par.id AS parent_obj, obj.ord AS type_ord, obj.id, obj.up
+           FROM \`${db}\` obj
+           LEFT JOIN (\`${db}\` par CROSS JOIN \`${db}\` req) ON par.up=0 AND req.up=par.id AND req.t=obj.id
+           WHERE obj.id = ? AND (obj.up=0 OR par.up=0)`, [subId], { label: 'orderColId_select' });
+
+        // PHP parity: if &main query returns no row, die with "Type $id not found"
+        if (!typeRow) {
+          return res.status(200).type('text/html; charset=UTF-8').send(`Тип ${subId} не найден`);
+        }
 
         // ── 2. Req field definitions — PHP-compatible SQL (index.php line 5770) ──
         // Key = typs.id when arr child exists (ord=1); a.id otherwise.
