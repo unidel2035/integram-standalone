@@ -5678,15 +5678,13 @@ router.get('/:db/:page*', async (req, res, next) => {
           }
         }
 
-        // PHP #514: When F_U > 0 and no objects found, return simplified _noobj response
+        // PHP #514/#517: When F_U > 0 and no objects found, return simplified _noobj response
         // PHP's template engine skips &Uni_obj and all sub-blocks when SQL returns 0 rows
-        // with a parent filter, resulting in only &main.a and &main.a._noobj
         if (filterUp !== null && filterUp > 0 && objRows.length === 0) {
-          const noObjResponse = {
+          return res.json({
             '&main.a': { '_parent_.title': [typeVal] },
             '&main.a._noobj': { '_request_.f_u': [String(filterUp)] },
-          };
-          return res.json(noObjResponse);
+          });
         }
 
         // Note: PHP does not include 'total' in object JSON response.
@@ -5694,8 +5692,7 @@ router.get('/:db/:page*', async (req, res, next) => {
         // PHP #419: cur_base_typ is the type's own base type, not each row's type
         const curBaseTypId = typeRow ? typeRow.base_type_id : 3;
         const includeRef = (curBaseTypId === TYPE.REPORT_COLUMN || curBaseTypId === TYPE.GRANT);
-
-        // PHP: only include 'object' and '&uni_obj_all' when there are actual objects
+        // PHP #517: only include 'object' and '&uni_obj_all' when objects exist
         if (objRows.length > 0) {
           response['object']                             = objRows.map(r => {
             const obj = { id: String(r.id), val: r.val, up: String(r.up), base: String(r.base) };
@@ -5737,9 +5734,7 @@ router.get('/:db/:page*', async (req, res, next) => {
           }
         }
 
-        // PHP #514: &no_page — PHP checks object_count == DEFAULT_LIMIT (20), ignoring
-        // custom LIMIT param. For API requests, object_count_total is never set so the
-        // condition reduces to: number of returned rows === DEFAULT_LIMIT (20).
+        // PHP #514: &no_page — PHP checks object_count == DEFAULT_LIMIT (20)
         const DEFAULT_LIMIT = 20;
         if (objRows.length === DEFAULT_LIMIT) {
           response['&main.a.&uni_obj.&no_page'] = {
