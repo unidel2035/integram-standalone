@@ -169,6 +169,7 @@ export function estimateIRR(app) {
 // ── Projects ──────────────────────────────────────────────────────────────
 
 export const TYPE_PROJECTS = 1155
+export const STATUS_PORTFOLIO = 81238  // Статус "Портфель" — реальные компании фонда из Яндекс.Диска
 
 /**
  * Возвращает нормализованный массив проектов.
@@ -181,11 +182,17 @@ function parseFullApplication(description) {
   try { return JSON.parse(m[1]) } catch { return {} }
 }
 
-export async function getProjects() {
-  // Use object/{typeId} endpoint (GET, no _xsrf needed)
-  const data = await api(`object/${TYPE_PROJECTS}?JSON_KV`)
-  const objects = data.object || []
-  const reqs    = data.reqs   || {}
+export async function getProjects({ statusId } = {}) {
+  // Integram returns max 20 per page — fetch all pages
+  let objects = [], reqs = {}, pg = 1
+  while (true) {
+    const data = await api(`object/${TYPE_PROJECTS}?JSON_KV&l=100&pg=${pg}`)
+    const batch = data.object || []
+    Object.assign(reqs, data.reqs || {})
+    objects.push(...batch)
+    if (batch.length < 20) break  // last page
+    pg++
+  }
 
   // Helper: parse ref value "typeId:objectId" → objectId string
   const refId = (r, refKey) => {
@@ -195,7 +202,7 @@ export async function getProjects() {
     return parts.length === 2 ? parts[1] : raw
   }
 
-  return objects.map(obj => {
+  const mapped = objects.map(obj => {
     const r    = reqs[obj.id] || {}
     const desc = r['1158'] || ''
     const fa   = parseFullApplication(desc)
@@ -226,6 +233,10 @@ export async function getProjects() {
       mediaRef:         Number(r['53253'] || 0),   // Медиа (arr_id 53253) — прикреплённый питч-дек
     }
   })
+
+  // Client-side filter by statusId if provided (Integram doesn't support server-side ref filtering)
+  if (statusId) return mapped.filter(p => String(p.statusId) === String(statusId))
+  return mapped
 }
 
 export async function getProject(id) {

@@ -299,7 +299,7 @@ import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
-import { getPortfolio, getProjects } from '@/services/fstApi'
+import { getProjects, STATUS_PORTFOLIO } from '@/services/fstApi'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
@@ -445,55 +445,34 @@ const portfolioLoading = ref(false)
 async function loadPortfolioFromDb() {
   portfolioLoading.value = true
   try {
-    const [portfolioRows, projectRows] = await Promise.all([getPortfolio(), getProjects()])
-    const projectMap = Object.fromEntries(projectRows.map(p => [p.id, p]))
+    // Загружаем реальные компании напрямую из type 1155 со статусом "Портфель"
+    const projectRows = await getProjects({ statusId: STATUS_PORTFOLIO })
 
-    if (portfolioRows.length === 0) return  // оставить дефолтные моковые данные
+    const subfundById = { '1096': 'БАС', '1098': 'РОБО', '1100': 'МЭ', '7283': 'AI/Tech' }
+    const stageById   = { '1102': 'Pre-seed', '1103': 'Посевная', '1104': 'Раунд A', '1105': 'Раунд B', '1106': 'Раунд C' }
 
-    // Статус проекта → цвет риска (fst/1088: 1115=Новый, 1117=На рассмотрении ИК, 1119=Одобрен, 1125=В работе, 1127=Закрыт)
-    const riskByStatus = { '1119': 'green', '1125': 'green', '1117': 'yellow', '1115': 'yellow', '1127': 'red' }
-    const subfundById  = { '1096': 'БАС', '1098': 'РОБО', '1100': 'МЭ' }
-    const stageById    = { '1102': 'Pre-seed', '1103': 'Посевная', '1104': 'Раунд A', '1105': 'Раунд B', '1106': 'Раунд C' }
-
-    companies.value = portfolioRows.map((row, idx) => {
-      const project   = projectMap[row.projectId] || {}
-      // Субфонд: сначала из портфельной записи, потом из проекта
-      const subfund   = row.subfund || subfundById[String(project.subfundId)] || 'БАС'
-      const stage     = row.stage  || stageById[String(project.stageId)]    || '—'
-      // riskLevel: из JSON метрик (приоритет) → из статуса проекта
-      const riskLevel = row.riskLevel || riskByStatus[String(row.riskStatusId)] || 'green'
-
-      // Базовые KPI из метрик (уже распарсены в getPortfolio())
-      const kpis = [
-        { name: 'Выручка',    actual: row.revenue    || 0,  target: Math.round((row.revenue    || 0) * 1.3), unit: 'млн ₽' },
-        { name: 'TRL',        actual: row.trl        || 0,  target: (row.trl || 0) + 1,                     unit: 'уровень' },
-        { name: 'Сотрудники', actual: row.headcount  || 0,  target: Math.round((row.headcount  || 0) * 1.2), unit: 'чел.' },
-        { name: 'Runway',     actual: row.runway     || 0,  target: 12,                                     unit: 'мес.' },
-      ]
-
-      // Дополняем моковыми данными для полей, которых нет в БД (alerts, sensors, events)
-      const mockBase = companies.value.find(c => c.name === row.name) || companies.value[idx % companies.value.length] || {}
-      return {
-        ...mockBase,
-        id:       row.id,
-        name:     row.name,
-        inn:      row.inn      || mockBase.inn      || '',
-        subfund,
-        stage,
-        health:   row.health   || row.kpi || mockBase.health || 50,
-        riskLevel,
-        revenue:  row.revenue  || mockBase.revenue  || 0,
-        runway:   row.runway   || mockBase.runway   || 0,
-        trl:      row.trl      || mockBase.trl      || 0,
-        headcount: row.headcount || mockBase.headcount || 0,
-        invested: row.invested || 0,
-        nav:      row.nav      || 0,
-        fstShare: row.fstShare || 0,
-        kpis:     kpis,
-        aiReport: row.aiReport || mockBase.aiReport || null,
-        updatedAt: row.updatedAt || null,
-      }
-    })
+    companies.value = projectRows.map(row => ({
+      id:        row.id,
+      name:      row.name,
+      inn:       row.inn || '',
+      subfund:   subfundById[String(row.subfundId)] || '—',
+      stage:     stageById[String(row.stageId)] || '—',
+      health:    50,
+      riskLevel: 'green',
+      revenue:   0,
+      runway:    0,
+      trl:       row.trl || 0,
+      headcount: row.employees || 0,
+      invested:  row.amount || 0,
+      nav:       0,
+      fstShare:  0,
+      kpis:      [{ name: 'TRL', actual: row.trl || 0, target: (row.trl || 0) + 1, unit: 'уровень' }],
+      aiReport:  null,
+      updatedAt: null,
+      alerts:    [],
+      sensors:   [],
+      events:    [],
+    }))
     lastUpdate.value = new Date().toLocaleTimeString('ru-RU')
     toast.add({ severity: 'success', summary: 'Данные загружены из fst', life: 2000 })
   } catch (err) {
@@ -521,147 +500,7 @@ const subfundOptions = [null, 'БАС', 'РОБО', 'МЭ']
 const statusOptions = [null, 'Зелёный', 'Жёлтый', 'Красный']
 
 // ─── Portfolio data ───────────────────────────────────────────────────────────
-const companies = ref([
-  {
-    id: 1, name: 'АвиаЛогик', inn: '7701234567', subfund: 'БАС', stage: 'Посевная',
-    health: 78, riskLevel: 'green', revenue: 18, runway: 14, trl: 6, headcount: 11,
-    kpis: [
-      { name: 'Выручка', actual: 18, target: 20, unit: 'млн ₽' },
-      { name: 'TRL', actual: 6, target: 7, unit: 'уровень' },
-      { name: 'Сотрудники', actual: 11, target: 12, unit: 'чел.' },
-      { name: 'Патенты', actual: 2, target: 2, unit: 'шт.' },
-      { name: 'Контракты', actual: 1, target: 1, unit: 'шт.' },
-    ],
-    alerts: [],
-    sensors: [
-      { type: 'egrul', name: 'ЕГРЮЛ', msg: 'Без изменений. Директор: Иванов А.Р.', level: 'ok' },
-      { type: 'patents', name: 'Патенты', msg: '2 патента зарегистрированы. Новых заявок нет.', level: 'ok' },
-      { type: 'hiring', name: 'Найм (HH.ru)', msg: '3 открытые вакансии. Динамика: +1 чел/мес.', level: 'ok' },
-      { type: 'runway', name: 'Runway', msg: '14 мес. остатка. Выше порога 6 мес.', level: 'ok' },
-      { type: 'contracts', name: 'Контракты', msg: '1 контракт (ФГУП Росаэронавигация)', level: 'ok' },
-      { type: 'news', name: 'Новости', msg: 'Нейтральный сентимент. 3 публикации за месяц.', level: 'ok' },
-      { type: 'regulatory', name: 'Регуляторика', msg: 'Сертификация БПЛА — в процессе (Росавиация)', level: 'warn' },
-      { type: 'tech', name: 'Технологии', msg: 'TRL 6 подтверждён лабораторными испытаниями', level: 'ok' },
-    ],
-    events: [
-      { id: 1, title: 'Первый контракт с ФГУП Росаэронавигация', date: '2026-02-15', type: 'Контракт' },
-      { id: 2, title: 'Патент № 2026-АЛ-001 зарегистрирован', date: '2026-01-28', type: 'IP' },
-      { id: 3, title: 'Команда расширена до 11 человек', date: '2026-01-10', type: 'Найм' },
-      { id: 4, title: 'Транш 1 (15 млн ₽) выплачен', date: '2025-12-01', type: 'Финансы' },
-    ],
-  },
-  {
-    id: 2, name: 'МикроСхема', inn: '7705551234', subfund: 'МЭ', stage: 'Раунд A',
-    health: 45, riskLevel: 'yellow', revenue: 42, runway: 7, trl: 7, headcount: 28,
-    kpis: [
-      { name: 'Выручка', actual: 42, target: 80, unit: 'млн ₽' },
-      { name: 'TRL', actual: 7, target: 8, unit: 'уровень' },
-      { name: 'Сотрудники', actual: 28, target: 35, unit: 'чел.' },
-      { name: 'Контракты', actual: 2, target: 5, unit: 'шт.' },
-      { name: 'Локализация', actual: 65, target: 80, unit: '%' },
-    ],
-    alerts: [
-      { type: 'runway', severity: 'warn', msg: 'Runway < 9 мес. Требуется транш 2.' },
-      { type: 'revenue', severity: 'warn', msg: 'Выручка 53% от плана Q1' },
-    ],
-    sensors: [
-      { type: 'egrul', name: 'ЕГРЮЛ', msg: 'Без изменений', level: 'ok' },
-      { type: 'patents', name: 'Патенты', msg: '5 патентов. При TRL 7 ожидается 7+', level: 'warn' },
-      { type: 'hiring', name: 'Найм (HH.ru)', msg: 'Найм замедлился. -2 вакансии за месяц.', level: 'warn' },
-      { type: 'runway', name: 'Runway', msg: '7 мес. — ниже порога 9 мес.', level: 'warn' },
-      { type: 'contracts', name: 'Контракты', msg: '2 контракта из 5 по плану', level: 'warn' },
-      { type: 'news', name: 'Новости', msg: 'Нейтральный сентимент', level: 'ok' },
-      { type: 'regulatory', name: 'Регуляторика', msg: 'Сертификация завершена по 3 компонентам', level: 'ok' },
-      { type: 'tech', name: 'Технологии', msg: 'TRL 7 подтверждён. Масштабирование Q2.', level: 'ok' },
-    ],
-    events: [
-      { id: 1, title: 'Runway опустился ниже 9 мес.', date: '2026-03-01', type: 'Риск' },
-      { id: 2, title: 'Контракт с Роснано подписан', date: '2026-02-20', type: 'Контракт' },
-      { id: 3, title: 'Запрос на досрочный транш 2', date: '2026-03-04', type: 'Финансы' },
-    ],
-  },
-  {
-    id: 3, name: 'РоботАгро', inn: '5011900321', subfund: 'РОБО', stage: 'Pre-seed',
-    health: 88, riskLevel: 'green', revenue: 5, runway: 20, trl: 4, headcount: 6,
-    kpis: [
-      { name: 'Выручка', actual: 5, target: 5, unit: 'млн ₽' },
-      { name: 'TRL', actual: 4, target: 5, unit: 'уровень' },
-      { name: 'Сотрудники', actual: 6, target: 6, unit: 'чел.' },
-      { name: 'Пилоты', actual: 1, target: 2, unit: 'шт.' },
-    ],
-    alerts: [],
-    sensors: [
-      { type: 'egrul', name: 'ЕГРЮЛ', msg: 'Без изменений', level: 'ok' },
-      { type: 'patents', name: 'Патенты', msg: '1 заявка на рассмотрении', level: 'ok' },
-      { type: 'hiring', name: 'Найм (HH.ru)', msg: '2 вакансии инженеров', level: 'ok' },
-      { type: 'runway', name: 'Runway', msg: '20 мес. Отлично.', level: 'ok' },
-      { type: 'contracts', name: 'Контракты', msg: '1 пилот с агрохолдингом «АгроСеверо»', level: 'ok' },
-      { type: 'news', name: 'Новости', msg: 'Позитивные публикации в АгроМедиа', level: 'ok' },
-      { type: 'regulatory', name: 'Регуляторика', msg: 'Требования к агро-БПЛА — отсутствуют риски', level: 'ok' },
-      { type: 'tech', name: 'Технологии', msg: 'TRL 4. Следующая веха: лётные испытания', level: 'ok' },
-    ],
-    events: [
-      { id: 1, title: 'Подписан пилот с АгроСеверо', date: '2026-02-28', type: 'Контракт' },
-      { id: 2, title: 'Патентная заявка подана в Роспатент', date: '2026-01-15', type: 'IP' },
-      { id: 3, title: 'Транш 1 (8 млн ₽) выплачен', date: '2025-11-01', type: 'Финансы' },
-    ],
-  },
-  {
-    id: 4, name: 'АэроСпектр', inn: '7812345678', subfund: 'БАС', stage: 'Раунд A',
-    health: 22, riskLevel: 'red', revenue: 12, runway: 4, trl: 6, headcount: 18,
-    kpis: [
-      { name: 'Выручка', actual: 12, target: 60, unit: 'млн ₽' },
-      { name: 'TRL', actual: 6, target: 7, unit: 'уровень' },
-      { name: 'Сотрудники', actual: 18, target: 25, unit: 'чел.' },
-      { name: 'Контракты', actual: 0, target: 3, unit: 'шт.' },
-    ],
-    alerts: [
-      { type: 'runway', severity: 'danger', msg: 'КРИТИЧНО: Runway 4 мес. Срочно нужен транш.' },
-      { type: 'revenue', severity: 'danger', msg: 'Выручка 20% от плана. Риск дефолта.' },
-    ],
-    sensors: [
-      { type: 'egrul', name: 'ЕГРЮЛ', msg: 'Изменение адреса юрлица 01.03.2026', level: 'warn' },
-      { type: 'patents', name: 'Патенты', msg: '0 патентов при TRL 6 — критический риск IP', level: 'critical' },
-      { type: 'hiring', name: 'Найм (HH.ru)', msg: 'Найм остановлен. Уволены 3 чел. за квартал.', level: 'critical' },
-      { type: 'runway', name: 'Runway', msg: '4 мес. — КРИТИЧНО. Требуется срочный транш.', level: 'critical' },
-      { type: 'contracts', name: 'Контракты', msg: '0 контрактов. Переговоры с ФКУ сорвались.', level: 'critical' },
-      { type: 'news', name: 'Новости', msg: 'Негативный сентимент. 1 упоминание в связи со срывом гос.тендера', level: 'warn' },
-      { type: 'regulatory', name: 'Регуляторика', msg: 'Отказ в сертификации Росавиации. Апелляция.', level: 'critical' },
-      { type: 'tech', name: 'Технологии', msg: 'TRL 6 зафиксирован но не растёт 2+ кварталов', level: 'warn' },
-    ],
-    events: [
-      { id: 1, title: 'КРИТИЧНО: Runway < 5 мес.', date: '2026-03-05', type: 'Риск' },
-      { id: 2, title: 'Отказ Росавиации в сертификации', date: '2026-02-18', type: 'Риск' },
-      { id: 3, title: 'Срыв тендера ФКУ на 30 млн ₽', date: '2026-02-10', type: 'Риск' },
-      { id: 4, title: 'Уволены 3 ключевых инженера', date: '2026-01-20', type: 'Найм' },
-    ],
-  },
-  {
-    id: 5, name: 'НейроДрон', inn: '6670345678', subfund: 'БАС', stage: 'Посевная',
-    health: 65, riskLevel: 'green', revenue: 8, runway: 16, trl: 5, headcount: 9,
-    kpis: [
-      { name: 'Выручка', actual: 8, target: 10, unit: 'млн ₽' },
-      { name: 'TRL', actual: 5, target: 6, unit: 'уровень' },
-      { name: 'Сотрудники', actual: 9, target: 10, unit: 'чел.' },
-      { name: 'Патенты', actual: 1, target: 2, unit: 'шт.' },
-    ],
-    alerts: [],
-    sensors: [
-      { type: 'egrul', name: 'ЕГРЮЛ', msg: 'Без изменений', level: 'ok' },
-      { type: 'patents', name: 'Патенты', msg: '1 патент. Новая заявка в очереди.', level: 'ok' },
-      { type: 'hiring', name: 'Найм', msg: '2 вакансии. Активный поиск ML-инженера', level: 'ok' },
-      { type: 'runway', name: 'Runway', msg: '16 мес. Норма', level: 'ok' },
-      { type: 'contracts', name: 'Контракты', msg: 'LOI подписан с Аэрофлотом', level: 'ok' },
-      { type: 'news', name: 'Новости', msg: 'Нейтральный сентимент', level: 'ok' },
-      { type: 'regulatory', name: 'Регуляторика', msg: 'Без нарушений', level: 'ok' },
-      { type: 'tech', name: 'Технологии', msg: 'TRL 5. Испытания Q2.', level: 'ok' },
-    ],
-    events: [
-      { id: 1, title: 'LOI с Аэрофлотом подписан', date: '2026-02-25', type: 'Контракт' },
-      { id: 2, title: 'Участие в форуме СберТех', date: '2026-02-10', type: 'PR' },
-    ],
-  },
-])
+const companies = ref([])
 
 const selectedCompany = ref(null)
 const refreshing = ref(false)
