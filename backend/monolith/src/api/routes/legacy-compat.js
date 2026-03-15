@@ -5779,6 +5779,11 @@ router.get('/:db/:page*', async (req, res, next) => {
             return obj;
           });
           response['&main.a.&uni_obj.&uni_obj_all']      = uniObjAll;
+          // PHP: &head_ord and &head_ord_n appear when f_u > 1 (subordinate listing)
+          if (fuParam && parseInt(fuParam, 10) > 1) {
+            response['&main.a.&uni_obj.&head_ord']   = { filler: [''] };
+            response['&main.a.&uni_obj.&head_ord_n'] = { filler: [''] };
+          }
         }
 
         if (hasReqs && Object.keys(reqsStd).length > 0) {
