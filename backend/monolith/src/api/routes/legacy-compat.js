@@ -5402,11 +5402,8 @@ router.get('/:db/:page*', async (req, res, next) => {
         const req_order   = [];
         const arr_type    = {};
         const ref_type    = {};
-        const seenReqKeys = new Set();
         for (const rd of reqDefStd) {
           const k = String(rd.t);
-          if (seenReqKeys.has(k)) continue; // skip duplicates from JOIN
-          seenReqKeys.add(k);
           // PHP: base_typ=0 → 'TAB_DELIMITER' in req_base (section separator)
           req_base[k]    = rd.base_typ === 0 ? 'TAB_DELIMITER' : (REV_BASE_TYPE[rd.base_typ] || 'SHORT');
           req_base_id[k] = String(rd.base_typ);
@@ -5565,6 +5562,10 @@ router.get('/:db/:page*', async (req, res, next) => {
             ref: [], multi: [], array: [], mandatory: [], grant: [],
             arr_type: [], ref_type: [], typ: [], base_typ: [], id: [], filter: [], val: []
           };
+          // PHP: $GLOBALS["ORDER_VAL"] = isset($_REQUEST["order_val"]) ? (order_val=="val" ? "val" : (int)order_val) : 0
+          const headOrderVal = allObjParams.order_val !== undefined
+            ? (allObjParams.order_val === 'val' ? 'val' : parseInt(allObjParams.order_val, 10))
+            : 0;
           for (const rd of reqDefStd) {
             const k     = String(rd.t);
             const isArr = rd.arr_id != null;
@@ -5582,7 +5583,10 @@ router.get('/:db/:page*', async (req, res, next) => {
             head.typ.push(String(rd.req_row_id));  // actual req row id (a.id)
             head.base_typ.push(String(rd.base_typ));
             head.id.push(String(typeId));
-            head.filter.push('');
+            // PHP: if(!isset($_REQUEST["desc"]) && ($GLOBALS["ORDER_VAL"]==$row["t"])) "$f&desc=0" else $f
+            head.filter.push(
+              (allObjParams.desc === undefined && headOrderVal == rd.t) ? `${filterStr}&desc=0` : filterStr
+            );
             // PHP: FetchAlias extracts :ALIAS=xxx: from attrs for display name
             head.val.push(req_type[k]);  // already computed with alias above
           }
@@ -5593,7 +5597,15 @@ router.get('/:db/:page*', async (req, res, next) => {
         const uniObjAll = {
           id:    objRows.map(r => String(r.id)),
           align: objRows.map(() => 'LEFT'),
-          val:   objRows.map(r => r.val || ''),
+          val:   objRows.map(r => {
+            const v = r.val || '';
+            // PHP: if(!isset($_REQUEST["full"]) && (mb_strlen($row["val"]) > VAL_LIM))
+            //   htmlspecialchars(mb_substr($row["val"], 0, 127)) . "..."
+            if (allObjParams.full === undefined && v.length > 127) {
+              return htmlEsc(v.substring(0, 127)) + '...';
+            }
+            return htmlEsc(v);
+          }),
         };
 
         // &object_reqs and view_reqs: for each object × each req type
@@ -5606,11 +5618,26 @@ router.get('/:db/:page*', async (req, res, next) => {
         const viewReqsVal   = [];
         // Track multi-select cell data: { reqKey: { id: [], val: [], ord: [], name: [] } }
         const multiselectcellData = {};
+        // PHP iterates $GLOBALS["REQS"] (dict) for view_reqs — unique keys only
+        // reqDefStd may have duplicate t values (e.g. two arr-type reqs referencing same type)
+        // Deduplicate for per-object rendering, matching PHP's dict iteration
+        const uniqueReqDefs = [];
+        const seenReqT = new Set();
+        for (const rd of reqDefStd) {
+          const k = String(rd.t);
+          if (!seenReqT.has(k)) {
+            seenReqT.add(k);
+            uniqueReqDefs.push(rd);
+          }
+        }
+        // Build unique req_order for view_reqs iteration
+        const uniqueReqOrder = uniqueReqDefs.map(rd => String(rd.t));
+
         if (hasReqs) {
           for (const o of objRows) {
             const oKey    = String(o.id);
             const rowVals = [];
-            for (const rd of reqDefStd) {
+            for (const rd of uniqueReqDefs) {
               const k = String(rd.t);
               if (rd.arr_id != null) {
                 // Arr-type: always emit count link (count=0 if no data)
@@ -5646,21 +5673,30 @@ router.get('/:db/:page*', async (req, res, next) => {
                   rowVals.push('');
                 }
               } else {
-                // Non-arr non-ref: stored val (already formatted, including FILE links)
+                // Non-arr non-ref: stored val
                 let v = (reqsStd[oKey] && reqsStd[oKey][k] != null)
                   ? String(reqsStd[oKey][k]) : '';
-                // PHP Format_Val_View: BOOLEAN values display as "X" (checked) or "" (unchecked)
-                if (req_base[k] === 'BOOLEAN') {
-                  v = (v !== '' && v !== '0') ? 'X' : '';
+                if (v !== '') {
+                  const base = req_base[k] || 'SHORT';
+                  if (base === 'FILE') {
+                    // PHP: Format_Val_View handles FILE links without htmlspecialchars
+                    v = formatObjVal(base, v);
+                  } else if (allObjParams.full === undefined && v.length > 127) {
+                    // PHP: mb_substr($val, 0, VAL_LIM) + "..." with htmlspecialchars
+                    v = formatObjVal(base, htmlEsc(v.substring(0, 127))) + '...';
+                  } else {
+                    // PHP: htmlspecialchars + Format_Val_View
+                    v = formatObjVal(base, htmlEsc(v));
+                  }
                 }
                 rowVals.push(v);
               }
             }
             // PHP always includes every object row in &object_reqs, even when all values are empty
             objReqs[oKey] = rowVals;
-            for (let i = 0; i < req_order.length; i++) {
-              const k = req_order[i];
-              const rd = reqDefStd[i];
+            for (let i = 0; i < uniqueReqOrder.length; i++) {
+              const k = uniqueReqOrder[i];
+              const rd = uniqueReqDefs[i];
               const isArr = rd.arr_id != null;
               // PHP uses 'REFERENCE' for base_typ=0 only; ref-type reqs use their actual base (SHORT)
               const base = isArr ? 'SHORT' : (rd.base_typ === 0 ? 'REFERENCE' : (req_base[k] || 'SHORT'));
@@ -5732,28 +5768,40 @@ router.get('/:db/:page*', async (req, res, next) => {
         };
 
         if (hasReqs) {
+          // PHP: &uni_obj_head_filter iterates $GLOBALS["REQS"] (dict) — unique keys
           response['&main.a.&uni_obj.&uni_obj_head_filter'] = {
-            typ: req_order,
+            typ: uniqueReqOrder,
           };
           // filter_req_rcm: text-filterable reqs (not DATE/DATETIME/NUMBER/SIGNED)
           // filter_req_dns: range-filterable reqs (DATE/DATETIME/NUMBER/SIGNED) with FR_/TO_ keys
           const DNS_BASES = new Set(['DATE', 'DATETIME', 'NUMBER', 'SIGNED']);
           // PHP: only DATE/DATETIME/NUMBER/SIGNED go to dns (range); BOOLEAN goes to rcm (text filter)
           const FILTER_EXCLUDED_BASES = new Set(['DATE', 'DATETIME', 'NUMBER', 'SIGNED']);
-          const rcmKeys = req_order.filter(k => !FILTER_EXCLUDED_BASES.has(req_base[k]));
+          const rcmKeys = uniqueReqOrder.filter(k => !FILTER_EXCLUDED_BASES.has(req_base[k]));
+          // PHP: filter = $_REQUEST["F_$cur_typ"] ? str_replace('"', '&#34;', val) : ''
           response['&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm'] = {
             f_typ:          rcmKeys.map(k => `F_${k}`),
             '_parent_.ref': rcmKeys.map(k => ref_type[k] || k),
-            filter:         rcmKeys.map(() => ''),
+            filter:         rcmKeys.map(k => {
+              const v = allObjParams[`F_${k}`];
+              return v !== undefined ? String(v).replace(/"/g, '&#34;') : '';
+            }),
             '_parent_.dd':  rcmKeys.map(k => ref_type[k] ? 'dropdown-toggle' : ''),
           };
-          const dnsKeys = req_order.filter(k => DNS_BASES.has(req_base[k]));
+          const dnsKeys = uniqueReqOrder.filter(k => DNS_BASES.has(req_base[k]));
           if (dnsKeys.length > 0) {
+            // PHP: filter_fr/to = $_REQUEST["FR_/TO_$cur_typ"]
             response['&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_dns'] = {
               f_typ_fr:  dnsKeys.map(k => `FR_${k}`),
-              filter_fr: dnsKeys.map(() => ''),
+              filter_fr: dnsKeys.map(k => {
+                const v = allObjParams[`FR_${k}`];
+                return v !== undefined ? String(v).replace(/ /g, '') : '';
+              }),
               f_typ_to:  dnsKeys.map(k => `TO_${k}`),
-              filter_to: dnsKeys.map(() => ''),
+              filter_to: dnsKeys.map(k => {
+                const v = allObjParams[`TO_${k}`];
+                return v !== undefined ? String(v).replace(/ /g, '') : '';
+              }),
             };
           }
         }
@@ -5775,7 +5823,8 @@ router.get('/:db/:page*', async (req, res, next) => {
         // PHP #517: only include 'object' and '&uni_obj_all' when objects exist
         if (objRows.length > 0) {
           response['object']                             = objRows.map(r => {
-            const obj = { id: String(r.id), val: r.val, up: String(r.up), base: String(r.base) };
+            // PHP: htmlentities for val in object list output
+            const obj = { id: String(r.id), up: String(r.up), val: htmlEsc(r.val || ''), base: String(r.base) };
             // PHP #418: include ord when viewing child objects (f_u > 1)
             if (fuParam && parseInt(fuParam, 10) > 1) obj.ord = String(r.ord || 0);
             // PHP #419: include ref (raw val) for REPORT_COLUMN and GRANT base types
@@ -5791,7 +5840,7 @@ router.get('/:db/:page*', async (req, res, next) => {
         }
 
         // PHP parity (#550): BUTTON reqs get "***" value for every object
-        const buttonKeys = req_order.filter(k => req_base[k] === 'BUTTON');
+        const buttonKeys = uniqueReqOrder.filter(k => req_base[k] === 'BUTTON');
         if (buttonKeys.length > 0 && objRows.length > 0) {
           for (const r of objRows) {
             const oKey = String(r.id);
@@ -9248,51 +9297,51 @@ router.post('/:db/_d_save/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legac
     // PHP _d_save (line 8593): UPDATE $z SET t=$t, val='...', ord='$unique' WHERE id=$id
     // Always updates val, t, and ord (unique flag).
     // $unique = isset($_REQUEST["unique"]) ? 1 : 0 (line 7788)
-    const val = req.body.val;
-    const t = req.body.t !== undefined ? parseInt(req.body.t, 10) : undefined;
-    // unique flag: 1 if param present, 0 otherwise (like PHP)
+    // PHP: $val = isset($_REQUEST["val"]) ? $_REQUEST["val"] : "";
+    const val = req.body.val !== undefined ? req.body.val : '';
+    // PHP: $t = isset($_REQUEST["t"]) ? (int)$_REQUEST["t"] : 0;
+    const t = req.body.t !== undefined ? parseInt(req.body.t, 10) : 0;
+    // PHP: $unique = isset($_REQUEST["unique"]) ? 1 : 0;
     const unique = (req.body.unique !== undefined || req.query.unique !== undefined) ? 1 : 0;
 
-    if (val === undefined && t === undefined) {
-      return sendLegacyDie(res, 'No fields to update' );
+    // PHP: if($val == "") my_die("Неверный тип ($val)")
+    if (!val) {
+      return sendLegacyDie(res, `Неверный тип (${val}) `);
     }
 
-    // PHP parity: duplicate name check (index.php:8586-8588)
-    // PHP: LEFT JOIN dup ON dup.id!=$id AND dup.id!=dup.t AND dup.val='$val' AND dup.t=$t WHERE dup.id IS NULL
-    // Checks same name AND same base type, excluding self and self-referential rows
-    if (val !== undefined && t !== undefined) {
-      const { rows: dupeRows } = await execSql(pool, `SELECT id FROM \`${db}\` WHERE id != ? AND id != t AND val = ? AND t = ? LIMIT 1`, [id, val, t], { label: 'unique_select' });
-      if (dupeRows.length > 0) {
-        return sendLegacyDie(res, `Type with name "${val}" already exists`);
+    // PHP combined query: SELECT obj + LEFT JOIN dup to check duplicates
+    // If row returned → no duplicate found. If no row → duplicate exists.
+    const { rows: objRows } = await execSql(pool,
+      `SELECT obj.t, obj.val, obj.ord FROM \`${db}\` obj
+       LEFT JOIN \`${db}\` dup ON dup.id != ? AND dup.id != dup.t AND dup.val = ? AND dup.t = ?
+       WHERE obj.id = ? AND dup.id IS NULL`,
+      [id, val, t, id], { label: 'd_save_check' });
+
+    if (objRows.length > 0) {
+      const row = objRows[0];
+      // PHP: if(($row["t"] != 0) && ($t == 0)) my_die("Неверный базовый тип ($t)")
+      if (row.t != 0 && t === 0) {
+        return sendLegacyDie(res, `Неверный базовый тип (${t}) `);
       }
-    } else if (val !== undefined) {
-      // When base type not changing, check against current base type
-      const { rows: curRows } = await execSql(pool, `SELECT t FROM \`${db}\` WHERE id = ? LIMIT 1`, [id], { label: 'cur_type_select' });
-      const curT = curRows.length > 0 ? curRows[0].t : 0;
-      const { rows: dupeRows } = await execSql(pool, `SELECT id FROM \`${db}\` WHERE id != ? AND id != t AND val = ? AND t = ? LIMIT 1`, [id, val, curT], { label: 'unique_select' });
-      if (dupeRows.length > 0) {
-        return sendLegacyDie(res, `Type with name "${val}" already exists`);
+      // PHP: if(($row["t"] != $t) || ($row["val"] != $val) || ($row["ord"] != $unique)) UPDATE
+      if (row.t != t || row.val != val || row.ord != unique) {
+        await execSql(pool, `UPDATE \`${db}\` SET t = ?, val = ?, ord = ? WHERE id = ?`,
+          [t, val, unique, id], { label: 'd_save_update' });
       }
+    } else {
+      // Duplicate found — PHP uses REV_BT[$t] for the message
+      const btName = REV_BASE_TYPE[t] || t;
+      return sendLegacyDie(res, `Тип ${val} с базовым типом ${btName} уже существует. `);
     }
 
-    const updates = [];
-    const params = [];
-    if (val !== undefined) { updates.push('val = ?'); params.push(val); }
-    if (t !== undefined) { updates.push('t = ?'); params.push(t); }
-    // Always update ord (unique flag) when saving a type, matching PHP behavior
-    updates.push('ord = ?');
-    params.push(unique);
-
-    params.push(id);
-    await execSql(pool, `UPDATE \`${db}\` SET ${updates.join(', ')} WHERE id = ?`, params, { label: 'unique_update' });
-
+    const obj = id;
     logger.info('[Legacy _d_save] Type saved', { db, id, updates: req.body });
 
     // PHP api_dump(): {id, obj, next_act:"edit_types", args, warnings}
     if (isApiRequest(req)) {
-      return res.json({ id, obj: id, next_act: 'edit_types', args: 'ext', warnings: '' });
+      return res.json({ id, obj, next_act: 'edit_types', args: 'ext', warnings: '' });
     }
-    legacyRespond(req, res, db, { id, obj: id, next_act: 'edit_types', args: 'ext' });
+    legacyRespond(req, res, db, { id, obj, next_act: 'edit_types', args: 'ext' });
   } catch (error) {
     logger.error('[Legacy _d_save] Error', { error: error.message, db });
     sendLegacyDie(res, error.message );
@@ -9897,8 +9946,8 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
 
     logger.info('[Legacy _d_del_req] Requisite deleted', { db, id, forced });
 
-    // PHP api_dump(): {id:type_id, obj:null, next_act:"edit_types", args:"ext"}
-    legacyRespond(req, res, db, { id: typeId, obj: null, next_act: 'edit_types', args: 'ext', warnings: '' });
+    // PHP: $id = $obj = $myup (line 8803) — both set to parent type ID after deletion
+    legacyRespond(req, res, db, { id: typeId, obj: typeId, next_act: 'edit_types', args: 'ext', warnings: '' });
   } catch (error) {
     logger.error('[Legacy _d_del_req] Error', { error: error.message, db });
     // PHP parity (issue #542): error is plain object, not array
