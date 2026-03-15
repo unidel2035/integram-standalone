@@ -231,9 +231,11 @@ async function preCleanup(prefix) {
 
 async function createType(name, baseType = 3, extra = '') {
   const ck = `${DB}=${token}`;
+  const extraPhp = typeof extra === 'function' ? extra('php') : extra;
+  const extraNode = typeof extra === 'function' ? extra('node') : extra;
   const [php, node] = await Promise.all([
-    http(PHP, 'POST', `/${DB}/_d_new`, `_xsrf=${xsrfPhp}&val=${encodeURIComponent(name)}&t=${baseType}${extra}&up=1&JSON=1`, ck),
-    http(NODE, 'POST', `/${DB}/_d_new`, `_xsrf=${xsrfNode}&val=${encodeURIComponent(name)}&t=${baseType}${extra}&up=1&JSON=1`, ck),
+    http(PHP, 'POST', `/${DB}/_d_new`, `_xsrf=${xsrfPhp}&val=${encodeURIComponent(name)}&t=${baseType}${extraPhp}&up=1&JSON=1`, ck),
+    http(NODE, 'POST', `/${DB}/_d_new`, `_xsrf=${xsrfNode}&val=${encodeURIComponent(name)}&t=${baseType}${extraNode}&up=1&JSON=1`, ck),
   ]);
   return { php: Number(php.json?.obj), node: Number(node.json?.obj) };
 }

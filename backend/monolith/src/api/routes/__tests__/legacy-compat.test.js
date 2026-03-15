@@ -537,16 +537,17 @@ describe('POST /:db/_m_id/:id', () => {
       .send({ new_id: '999' });
 
     expect(res.status).toBe(200);
-    expect(res.body[0].error).toMatch(/already in use/i);
+    expect(res.body[0].error).toMatch(/occupied/i);
   });
 
-  it('returns error when new_id is missing', async () => {
+  it('returns plain text "Invalid ID" when new_id is missing (PHP: die("Invalid ID"))', async () => {
     const res = await request(app)
       .post(`/${DB}/_m_id/100`)
       .send({});
 
     expect(res.status).toBe(200);
-    expect(res.body[0].error).toMatch(/positive integer/i);
+    // PHP: die("Invalid ID") — plain text, not JSON array
+    expect(res.text).toBe('Invalid ID');
   });
 });
 

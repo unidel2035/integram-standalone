@@ -84,7 +84,7 @@ async function run() {
   section('Subordinate Tables (up/parent)');
 
   // 9. Create sub-type under parent type
-  const subType = await createType(`${PREFIX}sub_${TS}`, 3, `&up=${parentType.php}`);
+  const subType = await createType(`${PREFIX}sub_${TS}`, 3, s => `&up=${parentType[s]}`);
   // Note: sub-type created with up=parentType — makes it subordinate
 
   // 10. List sub-type objects
