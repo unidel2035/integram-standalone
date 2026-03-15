@@ -5431,12 +5431,15 @@ router.get('/:db/:page*', async (req, res, next) => {
         const typeBaseTypeName = typeRow
           ? (REV_BASE_TYPE[typeRow.base_type_id] || 'SHORT')
           : 'SHORT';
-        const typeUnique = (typeRow && typeRow.type_ord && String(typeRow.type_ord) !== '0')
+        // PHP: $blocks["&main"]["CUR_VARS"]["unique"] === "1" ? "unique" : ""
+        // unique comes from ord field; only ord=1 gives "unique"
+        const typeUnique = (typeRow && String(typeRow.type_ord) === '1')
           ? 'unique' : '';
         const typeId  = typeRow ? typeRow.id  : subId;
         const typeVal = typeRow ? typeRow.val  : '';
-        // PHP computes up=1 for user-defined types (id != t), up=0 for base types
-        const typeUp  = typeRow ? (typeRow.id !== typeRow.base_type_id ? 1 : 0) : 0;
+        // PHP: ($f_u > 1) ? $f_u : 1  — uses the F_U param, defaults to 1
+        const fuParamNum = allObjParams.F_U !== undefined ? parseInt(allObjParams.F_U, 10) : 1;
+        const typeUp  = fuParamNum > 1 ? fuParamNum : 1;
 
         // Filter params for uni_obj
         const fuParam = allObjParams.F_U !== undefined ? String(allObjParams.F_U) : '';
@@ -5580,8 +5583,8 @@ router.get('/:db/:page*', async (req, res, next) => {
             filter:   [filterStr, filterStr],
             val:      [typeVal],
             typ:      [String(typeId)],
-            f_i:      [''],
-            lnx:      ['0'],
+            f_i:      [allObjParams.F_I !== undefined ? String(parseInt(allObjParams.F_I, 10)) : ''],
+            lnx:      [allObjParams.lnx !== undefined ? String(parseInt(allObjParams.lnx, 10)) : '0'],
           },
           '&main.a.&uni_obj.&delete': { ok: [''] },
           '&main.a.&uni_obj.&export': { ok: [''] },
