@@ -5672,20 +5672,35 @@ router.get('/:db/:page*', async (req, res, next) => {
           }
         }
 
+        // #517: PHP returns _noobj block when F_U is set.
+        // When F_U > 0 AND no objects found, PHP returns ONLY &main.a + _noobj.
+        // F_U=0 is handled differently by PHP (vals.up!=0) — don't apply here.
+        if (filterUp !== null && filterUp > 0 && objRows.length === 0) {
+          return res.json({
+            '&main.a': { '_parent_.title': [typeVal] },
+            '&main.a._noobj': {
+              '_request_.f_u': [String(filterUp)],
+            },
+          });
+        }
+
         // Note: PHP does not include 'total' in object JSON response.
         // objTotal is still used below for pagination (&no_page block).
         // PHP #419: cur_base_typ is the type's own base type, not each row's type
         const curBaseTypId = typeRow ? typeRow.base_type_id : 3;
         const includeRef = (curBaseTypId === TYPE.REPORT_COLUMN || curBaseTypId === TYPE.GRANT);
-        response['object']                             = objRows.map(r => {
-          const obj = { id: String(r.id), val: r.val, up: String(r.up), base: String(r.base) };
-          // PHP #418: include ord when viewing child objects (f_u > 1)
-          if (fuParam && parseInt(fuParam, 10) > 1) obj.ord = String(r.ord || 0);
-          // PHP #419: include ref (raw val) for REPORT_COLUMN and GRANT base types
-          if (includeRef) obj.ref = r.val || '';
-          return obj;
-        });
-        response['&main.a.&uni_obj.&uni_obj_all']      = uniObjAll;
+        // #517: PHP only includes 'object' and '&uni_obj_all' when objects exist
+        if (objRows.length > 0) {
+          response['object']                             = objRows.map(r => {
+            const obj = { id: String(r.id), val: r.val, up: String(r.up), base: String(r.base) };
+            // PHP #418: include ord when viewing child objects (f_u > 1)
+            if (fuParam && parseInt(fuParam, 10) > 1) obj.ord = String(r.ord || 0);
+            // PHP #419: include ref (raw val) for REPORT_COLUMN and GRANT base types
+            if (includeRef) obj.ref = r.val || '';
+            return obj;
+          });
+          response['&main.a.&uni_obj.&uni_obj_all']      = uniObjAll;
+        }
 
         if (hasReqs && Object.keys(reqsStd).length > 0) {
           response['reqs'] = reqsStd;
@@ -5714,6 +5729,14 @@ router.get('/:db/:page*', async (req, res, next) => {
               response['&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs.&multiselectcell'] = msBlock;
             }
           }
+        }
+
+        // #517: PHP template engine emits _noobj block whenever F_U is set
+        // (even when objects are found — the block contains the F_U value for client JS)
+        if (filterUp !== null) {
+          response['&main.a._noobj'] = {
+            '_request_.f_u': [String(filterUp)],
+          };
         }
 
         // PHP includes &no_page only when page is full (objRows.length >= limit)
