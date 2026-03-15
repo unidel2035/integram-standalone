@@ -2,6 +2,6 @@
   "args": "ext",
   "id": "",
   "next_act": "edit_types",
-  "obj": 1000010783,
-  "warnings": ""
+  "obj": 1000012669,
+  "warnings": "Тип __tbl_long_1773586331450 уже существует!"
 }

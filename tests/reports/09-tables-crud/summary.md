@@ -1,13 +1,13 @@
 # 09-tables-crud
 
-**22 MATCH / 3 DIFF** out of 25 tests
+**25 MATCH / 0 DIFF** out of 25 tests
 
 | # | Test | Method | PHP | Node | Result |
 |---|------|--------|-----|------|--------|
-| 01 | #1 POST /_d_new (basic type) | POST | 200 | 200 | DIFF |
-| 02 | #2 POST /_d_new (LONG base) | POST | 200 | 200 | DIFF |
+| 01 | #1 POST /_d_new (basic type) | POST | 200 | 200 | MATCH |
+| 02 | #2 POST /_d_new (LONG base) | POST | 200 | 200 | MATCH |
 | 03 | #3 POST /_d_new (empty name) | POST | 200 | 200 | MATCH |
-| 04 | #4 POST /_d_new (subordinate) | POST | 200 | 200 | DIFF |
+| 04 | #4 POST /_d_new (subordinate) | POST | 200 | 200 | MATCH |
 | 05 | #5 POST /_d_req (SHORT col) | POST | 200 | 200 | MATCH |
 | 06 | #6 POST /_d_req (NUMBER col) | POST | 200 | 200 | MATCH |
 | 07 | #7 POST /_d_req (DATE col) | POST | 200 | 200 | MATCH |
@@ -29,39 +29,3 @@
 | 23 | #23 POST /_d_del_req (non-existent) | POST | 200 | 200 | MATCH |
 | 24 | #24 POST /_d_del (empty type) | POST | 200 | 200 | MATCH |
 | 25 | #25 POST /_d_del (non-existent) | POST | 200 | 200 | MATCH |
-
----
-### DIFF 01: #1 POST /_d_new (basic type)
-
-- **PHP path:** `/_d_new`
-- **Node path:** `/_d_new`
-- **PHP status:** 200
-- **Node status:** 200
-
-- val[warnings]: PHP="Тип __tbl_verify___ID__ уже существует!... Node=""
-
-Full responses: [01-php.json](./01-php.json) | [01-node.json](./01-node.json)
-
----
-### DIFF 02: #2 POST /_d_new (LONG base)
-
-- **PHP path:** `/_d_new`
-- **Node path:** `/_d_new`
-- **PHP status:** 200
-- **Node status:** 200
-
-- val[warnings]: PHP="Тип __tbl_long___ID__ уже существует!" Node=""
-
-Full responses: [02-php.json](./02-php.json) | [02-node.json](./02-node.json)
-
----
-### DIFF 04: #4 POST /_d_new (subordinate)
-
-- **PHP path:** `/_d_new`
-- **Node path:** `/_d_new`
-- **PHP status:** 200
-- **Node status:** 200
-
-- val[warnings]: PHP="Тип __tbl_sub___ID__ уже существует!" Node=""
-
-Full responses: [04-php.json](./04-php.json) | [04-node.json](./04-node.json)

@@ -5,7 +5,7 @@
  *   _d_new, _d_save, _d_del, _d_req, _d_del_req, _d_alias, _d_attrs,
  *   _d_null, _d_multi, _d_up, _d_ref, edit_types, metadata
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, deleteType, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, deleteType, getXsrf, getConcreteType, cookie } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -21,26 +21,26 @@ async function run() {
   // ── Create Types ──────────────────────────────────────────────────────────
   section('Table CRUD — Create Types');
 
-  // 1. Create basic type (table)
+  // 1. Create basic type (table) — unique names per server to avoid shared-DB duplicate warnings
   const t1 = await createType(`${PREFIX}basic_${TS}`, 3);
   await dual('#1 POST /_d_new (basic type)', 'POST',
     '/_d_new',
-    s => `_xsrf=${getXsrf(s)}&val=${encodeURIComponent(`${PREFIX}verify_${TS}`)}&t=3&up=1&JSON=1`);
+    s => `_xsrf=${getXsrf(s)}&val=${encodeURIComponent(`${PREFIX}verify_${s}_${TS}`)}&t=3&up=1&JSON=1`);
 
   // 2. Create type with LONG base
   await dual('#2 POST /_d_new (LONG base)', 'POST',
     '/_d_new',
-    s => `_xsrf=${getXsrf(s)}&val=${encodeURIComponent(`${PREFIX}long_${TS}`)}&t=2&up=1&JSON=1`);
+    s => `_xsrf=${getXsrf(s)}&val=${encodeURIComponent(`${PREFIX}long_${s}_${TS}`)}&t=2&up=1&JSON=1`);
 
   // 3. Create type with empty name
   await dual('#3 POST /_d_new (empty name)', 'POST',
     '/_d_new',
     s => `_xsrf=${getXsrf(s)}&val=&t=3&up=1&JSON=1`);
 
-  // 4. Create subordinate type (up=parentId)
+  // 4. Create subordinate type (up=parentId) — unique names per server
   await dual('#4 POST /_d_new (subordinate)', 'POST',
     s => '/_d_new',
-    s => `_xsrf=${getXsrf(s)}&val=${encodeURIComponent(`${PREFIX}sub_${TS}`)}&t=3&up=${t1[s]}&JSON=1`);
+    s => `_xsrf=${getXsrf(s)}&val=${encodeURIComponent(`${PREFIX}sub_${s}_${TS}`)}&t=3&up=${t1[s]}&JSON=1`);
 
   // ── Add Columns (Requisites) ──────────────────────────────────────────────
   section('Table CRUD — Add Columns');
@@ -158,11 +158,20 @@ async function run() {
   // ── Delete Columns ────────────────────────────────────────────────────────
   section('Table CRUD — Delete Columns');
 
-  // 22. Delete requisite
-  if (col3.php && col3.node) {
-    await dual('#22 POST /_d_del_req (delete col)', 'POST',
-      s => `/_d_del_req/${col3[s]}`,
-      s => `_xsrf=${getXsrf(s)}&forced=1&JSON=1`);
+  // 22. Delete requisite — create separate columns per server (shared DB: same col would be deleted twice)
+  {
+    const ck = cookie();
+    const ct9 = getConcreteType(9);
+    const ct14 = getConcreteType(14);
+    const phpAdd = await http(PHP, 'POST', `/${DB}/_d_req/${t1.php}`, `_xsrf=${xsrfPhp}&t=${ct9}&JSON=1`, ck);
+    const nodeAdd = await http(NODE, 'POST', `/${DB}/_d_req/${t1.node}`, `_xsrf=${xsrfNode}&t=${ct14}&JSON=1`, ck);
+    const delPhp = Number(phpAdd.json?.id);
+    const delNode = Number(nodeAdd.json?.id);
+    if (delPhp && delNode && delPhp !== delNode) {
+      await dual('#22 POST /_d_del_req (delete col)', 'POST',
+        s => `/_d_del_req/${s === 'php' ? delPhp : delNode}`,
+        s => `_xsrf=${getXsrf(s)}&forced=1&JSON=1`);
+    }
   }
 
   // 23. Delete non-existent requisite

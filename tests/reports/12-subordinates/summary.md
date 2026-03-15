@@ -35,8 +35,8 @@
 ---
 ### DIFF 08: #8 GET /object (grandchildren of child1)
 
-- **PHP path:** `/object/1000008331?F_U=NaN&JSON=1`
-- **Node path:** `/object/1000008331?F_U=NaN&JSON=1`
+- **PHP path:** `/object/1000015333?F_U=NaN&JSON=1`
+- **Node path:** `/object/1000015333?F_U=NaN&JSON=1`
 - **PHP status:** 200
 - **Node status:** 200
 

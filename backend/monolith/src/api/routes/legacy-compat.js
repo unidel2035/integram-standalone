@@ -2054,13 +2054,32 @@ function formatVal(typeId, val, tzone = 0) {
     case 'DATETIME':
       if (val && !String(val).startsWith('[')) {
         val = String(val).trim();
-        if (parseInt(val) > 10000) {
-          // Already a timestamp
-          return parseInt(val) - tzone;
+        // PHP parity: if ISO format (YYYY.MM.DD...), reformat to dd.mm.yyyy
+        const dtIso = val.match(/^(\d{4})(.)(\d{2})(.)(\d{2})/);
+        if (dtIso) {
+          val = dtIso[5] + '.' + dtIso[3] + '.' + dtIso[1] + val.substring(10);
         }
-        const parsed = Date.parse(val);
-        if (!isNaN(parsed)) {
-          return Math.floor(parsed / 1000) - tzone;
+        // PHP 8 parity: "$val > 10000" — non-numeric string compared to int
+        // uses string comparison: "15.06.2025..." > "10000" → true
+        const dtNum = Number(val);
+        const dtGt = isNaN(dtNum) ? (val > String(10000)) : (dtNum > 10000);
+        if (dtGt) {
+          return parseInt(val, 10) - tzone;
+        }
+        // PHP: strtotime($val) — parse dd.mm.yyyy HH:MM:SS
+        const dtDot = val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+        if (dtDot) {
+          const dtIsoStr = `${dtDot[3]}-${dtDot[2].padStart(2,'0')}-${dtDot[1].padStart(2,'0')}T${(dtDot[4]||'0').padStart(2,'0')}:${dtDot[5]||'00'}:${dtDot[6]||'00'}`;
+          const dtTs = Math.floor(new Date(dtIsoStr).getTime() / 1000);
+          if (!isNaN(dtTs) && dtTs >= 10000) {
+            return dtTs - tzone;
+          }
+        }
+        // Fallback: generic Date.parse
+        const dtParsed = Date.parse(val);
+        if (!isNaN(dtParsed)) {
+          const dtTs2 = Math.floor(dtParsed / 1000);
+          if (dtTs2 >= 10000) return dtTs2 - tzone;
         }
       }
       break;
@@ -2090,9 +2109,9 @@ function formatValView(typeId, val, tzone = 0) {
         if (valStr.length > 8) {
           // DATETIME stored as timestamp — PHP: date("d.m.Y", $val + tzone)
           const date = new Date((parseInt(val) + tzone) * 1000);
-          const dd = String(date.getDate()).padStart(2, '0');
-          const mm = String(date.getMonth() + 1).padStart(2, '0');
-          const yyyy = date.getFullYear();
+          const dd = String(date.getUTCDate()).padStart(2, '0');
+          const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const yyyy = date.getUTCFullYear();
           return `${dd}.${mm}.${yyyy}`;
         }
         // YYYYMMDD format
@@ -2103,13 +2122,14 @@ function formatValView(typeId, val, tzone = 0) {
     case 'DATETIME':
       if (val) {
         // PHP: date("d.m.Y H:i:s", (int)$val + $GLOBALS["tzone"])
+        // PHP server runs in UTC, so use UTC methods
         const date = new Date((parseInt(val) + tzone) * 1000);
-        const dd = String(date.getDate()).padStart(2, '0');
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const yyyy = date.getFullYear();
-        const hh = String(date.getHours()).padStart(2, '0');
-        const mi = String(date.getMinutes()).padStart(2, '0');
-        const ss = String(date.getSeconds()).padStart(2, '0');
+        const dd = String(date.getUTCDate()).padStart(2, '0');
+        const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const yyyy = date.getUTCFullYear();
+        const hh = String(date.getUTCHours()).padStart(2, '0');
+        const mi = String(date.getUTCMinutes()).padStart(2, '0');
+        const ss = String(date.getUTCSeconds()).padStart(2, '0');
         return `${dd}.${mm}.${yyyy} ${hh}:${mi}:${ss}`;
       }
       break;
@@ -2272,30 +2292,9 @@ function formatDateForStorage(val, baseType) {
   if (val.startsWith('[') || val.startsWith('_request_.')) return val;
 
   if (baseType === 'DATETIME') {
-    // PHP DATETIME: converts to Unix timestamp (seconds since epoch)
-    // 1. If ISO format (YYYY.MM.DD...), reformat to dd.mm.yyyy first
-    const isoMatch = val.match(/^(\d{4})(.)(\d{2})(.)(\d{2})/);
-    if (isoMatch) {
-      val = isoMatch[5] + '.' + isoMatch[3] + '.' + isoMatch[1] + val.substring(10);
-    }
-    // 2. If numeric > 10000, it's already a timestamp
-    const numVal = Number(val);
-    if (!isNaN(numVal) && numVal > 10000) {
-      return Math.floor(numVal); // tzone=0
-    }
-    // 3. Try strtotime equivalent
-    const ts = Math.floor(new Date(val).getTime() / 1000);
-    if (isNaN(ts) || ts < 10000) {
-      // Try DATE format first, then strtotime
-      const dateFormatted = formatDateForStorage(val, 'DATE');
-      // Convert YYYYMMDD to a parseable date
-      const y = dateFormatted.substring(0, 4);
-      const m = dateFormatted.substring(4, 6);
-      const d = dateFormatted.substring(6, 8);
-      const ts2 = Math.floor(new Date(`${y}-${m}-${d}`).getTime() / 1000);
-      return isNaN(ts2) ? val : ts2; // tzone=0
-    }
-    return ts; // tzone=0
+    // PHP 8 parity of Format_Val() DATETIME case
+    // Uses same logic as formatVal() DATETIME — delegates to it
+    return formatVal(TYPE.DATETIME, val, 0);
   }
 
   // DATE: store as YYYYMMDD
@@ -5190,6 +5189,12 @@ router.get('/:db/:page*', async (req, res, next) => {
             objLimit = parseInt(parts[0], 10) || 20;
           }
         }
+        // PHP parity: pg parameter — offset = DEFAULT_LIMIT * (pg - 1)
+        // PHP: $pg = (DEFAULT_LIMIT * ($GLOBALS["PG"] - 1)).",";
+        const pgParam = parseInt(allObjParams.pg || '1', 10);
+        if (pgParam > 1) {
+          objOffset = 20 * (pgParam - 1);  // DEFAULT_LIMIT = 20
+        }
 
         const objWhereParts  = ['a.t = ?', 'a.up != 0'];  // up=0 = type root row, excluded like PHP
         const objWhereParams = [subId];
@@ -5712,20 +5717,18 @@ router.get('/:db/:page*', async (req, res, next) => {
                   rowVals.push('');
                 }
               } else {
-                // Non-arr non-ref: stored val
+                // Non-arr non-ref: stored val (already formatted by formatObjVal in reqsStd)
                 let v = (reqsStd[oKey] && reqsStd[oKey][k] != null)
                   ? String(reqsStd[oKey][k]) : '';
+                // reqsStd values are already Format_Val_View'd; only apply htmlEsc + truncation
                 if (v !== '') {
                   const base = req_base[k] || 'SHORT';
                   if (base === 'FILE') {
-                    // PHP: Format_Val_View handles FILE links without htmlspecialchars
-                    v = formatObjVal(base, v);
+                    // FILE links are already fully formatted — pass through
                   } else if (allObjParams.full === undefined && v.length > 127) {
-                    // PHP: mb_substr($val, 0, VAL_LIM) + "..." with htmlspecialchars
-                    v = formatObjVal(base, htmlEsc(v.substring(0, 127))) + '...';
+                    v = htmlEsc(v.substring(0, 127)) + '...';
                   } else {
-                    // PHP: htmlspecialchars + Format_Val_View
-                    v = formatObjVal(base, htmlEsc(v));
+                    v = htmlEsc(v);
                   }
                 }
                 rowVals.push(v);
@@ -6126,13 +6129,13 @@ router.get('/:db/:page*', async (req, res, next) => {
 
         // PHP datetime display: Unix float timestamp → DD.MM.YYYY HH:MM:SS (UTC)
         function formatDatetime(v) {
-          // PHP: date("d.m.Y H:i:s", (int)$val + tzone) — uses server local time
+          // PHP: date("d.m.Y H:i:s", (int)$val + tzone) — PHP server is UTC
           if (!v) return v;
           const num = parseFloat(v);
           if (isNaN(num)) return v;
           const d = new Date(Math.floor(num) * 1000);
           const p = n => String(n).padStart(2, '0');
-          return `${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+          return `${p(d.getUTCDate())}.${p(d.getUTCMonth()+1)}.${d.getUTCFullYear()} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
         }
 
         // PHP GetSubdir/GetFilename → build file download href

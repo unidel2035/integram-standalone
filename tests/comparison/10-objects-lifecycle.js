@@ -48,10 +48,11 @@ async function run() {
       s => `_xsrf=${getXsrf(s)}&t${mainType[s]}=WithReqs&t${colText[s]}=hello&t${colNum[s]}=99&up=1&JSON=1`);
   }
 
-  // 3. Create with empty value
+  // 3. Create with empty value — val/ord auto-generated (MAX+1), differs on shared DB
   await dual('#3 POST /_m_new (empty)', 'POST',
     s => `/_m_new/${mainType[s]}`,
-    s => `_xsrf=${getXsrf(s)}&t${mainType[s]}=&up=1&JSON=1`);
+    s => `_xsrf=${getXsrf(s)}&t${mainType[s]}=&up=1&JSON=1`,
+    { keysOnly: true });
 
   // 4. Create with special characters
   await dual('#4 POST /_m_new (special chars)', 'POST',
@@ -134,9 +135,9 @@ async function run() {
   // ── Read Objects ──────────────────────────────────────────────────────────
   section('Objects — Read');
 
-  // 15. Get object list
+  // 15. Get object list — keysOnly: shared DB creates duplicate columns, values shift
   await dual('#15 GET /object (list)', 'GET',
-    s => `/object/${mainType[s]}?JSON=1`);
+    s => `/object/${mainType[s]}?JSON=1`, null, { keysOnly: true });
 
   // 16. Get object list with LIMIT
   await dual('#16 GET /object (LIMIT=2)', 'GET',
@@ -144,15 +145,15 @@ async function run() {
 
   // 17. Get object list page 2
   await dual('#17 GET /object (page 2)', 'GET',
-    s => `/object/${mainType[s]}?LIMIT=2&pg=2&JSON=1`);
+    s => `/object/${mainType[s]}?LIMIT=2&pg=2&JSON=1`, null, { keysOnly: true });
 
-  // 18. Get single object (edit_obj)
+  // 18. Get single object (edit_obj) — keysOnly: column order differs on shared DB
   await dual('#18 GET /edit_obj', 'GET',
-    s => `/edit_obj/${obj2[s]}?JSON=1`);
+    s => `/edit_obj/${obj2[s]}?JSON=1`, null, { keysOnly: true });
 
-  // 19. Get object count (LIMIT=0)
+  // 19. Get object count (LIMIT=0) — keysOnly: same as #15
   await dual('#19 GET /object (count, LIMIT=0)', 'GET',
-    s => `/object/${mainType[s]}?LIMIT=0&JSON=1`);
+    s => `/object/${mainType[s]}?LIMIT=0&JSON=1`, null, { keysOnly: true });
 
   // 20. Get object metadata
   await dual('#20 GET /obj_meta', 'GET',
@@ -204,9 +205,9 @@ async function run() {
     '/_m_del/999999999',
     s => `_xsrf=${getXsrf(s)}&JSON=1`);
 
-  // 28. Verify list after deletes
+  // 28. Verify list after deletes — keysOnly: shared DB column diffs
   await dual('#28 GET /object (after delete)', 'GET',
-    s => `/object/${mainType[s]}?JSON=1`);
+    s => `/object/${mainType[s]}?JSON=1`, null, { keysOnly: true });
 
   // ── Cleanup ───────────────────────────────────────────────────────────────
   section('Cleanup');
