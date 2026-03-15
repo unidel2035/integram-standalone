@@ -11550,6 +11550,22 @@ router.all('/:db/report/:reportId?', async (req, res) => {
       return res.status(404).json([{ error: 'Report not found' }]);
     }
 
+    // PHP parity: if report has no columns (e.g. typeId passed instead of reportId),
+    // PHP treats it as an "empty report" and returns an error via my_die().
+    // When isApi() (JSON/JSON_DATA/JSON_KV/JSON_CR/JSON_HR flags), PHP returns [{"error":"..."}].
+    // For RECORD_COUNT without JSON flags, PHP returns plain text.
+    if (report.columns.length === 0) {
+      const errorMsg = `Пустой отчет ${report.header}`;
+      const q = req.query;
+      const hasJsonFlag = q.JSON !== undefined || q.json !== undefined ||
+        q.JSON_KV !== undefined || q.JSON_CR !== undefined || q.JSON_HR !== undefined ||
+        q.JSON_DATA !== undefined;
+      if (q.RECORD_COUNT !== undefined && !hasJsonFlag) {
+        return res.type('text/html').send(errorMsg);
+      }
+      return res.json([{ error: errorMsg }]);
+    }
+
     // PHP parity: load grants and add granted flag per column
     const token = req.cookies[db] || req.headers.authorization?.replace(/^Bearer\s+/i, '');
     let username = '';
