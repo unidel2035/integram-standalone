@@ -1,6 +1,6 @@
-# Parallel Issue Solver — PHP→Node.js Parity Audit (v2)
+# Parallel Issue Solver — PHP→Node.js Parity Audit (v3)
 
-Run all 28 issue-solving agents in parallel. Each agent works in its own worktree branch and creates a PR.
+Run all 44 issue-solving agents in parallel. Each agent works in its own worktree branch and creates a PR.
 
 ## System Prompt (shared by all agents)
 
@@ -125,6 +125,47 @@ Each issue should be solved in a separate worktree with `isolation: "worktree"`.
 | 27 | [#430](https://github.com/unidel2035/integram-standalone/issues/430) | `fix/issue-430-checkcode-cookie` | `checkcode` sets cookie — PHP does not |
 | 28 | [#431](https://github.com/unidel2035/integram-standalone/issues/431) | `fix/issue-431-expires-header-format` | Expires header uses GMT format — PHP uses +0000 (RFC 2822) |
 
+### Group 6 — CRITICAL (P0): DML response format + NaN bugs (from comparison tests)
+
+| # | Issue | Branch | Description |
+|---|-------|--------|-------------|
+| 29 | [#439](https://github.com/unidel2035/integram-standalone/issues/439) | `fix/issue-439-dml-array-vs-object` | DML endpoints (`_m_new`, `_m_save`, `_m_del`, `_m_up`, `_m_ord`, `_m_move`, `_m_id`) return array `[{...}]` instead of object `{...}` |
+| 30 | [#448](https://github.com/unidel2035/integram-standalone/issues/448) | `fix/issue-448-nan-in-sql` | NaN passed into SQL queries (`_d_null`, `_m_save`, `_m_del`) — ID parsing failures |
+| 31 | [#441](https://github.com/unidel2035/integram-standalone/issues/441) | `fix/issue-441-json-data-empty` | Object `JSON_DATA` returns empty array `[]` instead of actual data |
+| 32 | [#442](https://github.com/unidel2035/integram-standalone/issues/442) | `fix/issue-442-edit-obj-error` | `edit_obj` returns error `typeId required` — PHP derives typeId from object ID |
+| 33 | [#449](https://github.com/unidel2035/integram-standalone/issues/449) | `fix/issue-449-d-del-with-objects` | `_d_del` allows deleting type with objects — PHP blocks deletion |
+
+### Group 7 — HIGH (P1): Object listing + report structure (from comparison tests)
+
+| # | Issue | Branch | Description |
+|---|-------|--------|-------------|
+| 34 | [#440](https://github.com/unidel2035/integram-standalone/issues/440) | `fix/issue-440-object-listing-structure` | Object listing JSON has extra fields (`base`, `unique` differs), wrong `&uni_obj` structure |
+| 35 | [#445](https://github.com/unidel2035/integram-standalone/issues/445) | `fix/issue-445-report-format-mismatch` | Report endpoints return object instead of array; wrong behavior for type-based reports |
+| 36 | [#444](https://github.com/unidel2035/integram-standalone/issues/444) | `fix/issue-444-obj-meta-up-value` | `obj_meta` returns `up=1` instead of `up=0` for root types |
+| 37 | [#447](https://github.com/unidel2035/integram-standalone/issues/447) | `fix/issue-447-d-ref-error` | `_d_ref` returns error `Invalid N type` instead of success object |
+
+### Group 8 — MEDIUM (P2): Extra keys, warnings, status codes (from comparison tests)
+
+| # | Issue | Branch | Description |
+|---|-------|--------|-------------|
+| 38 | [#443](https://github.com/unidel2035/integram-standalone/issues/443) | `fix/issue-443-edit-types-extra-keys` | `edit_types` returns extra keys (`&top_menu`, `myrolemenu`) not present in PHP |
+| 39 | [#446](https://github.com/unidel2035/integram-standalone/issues/446) | `fix/issue-446-d-new-duplicate-warning` | `_d_new` with duplicate name doesn't set `warnings` field like PHP |
+| 40 | [#450](https://github.com/unidel2035/integram-standalone/issues/450) | `fix/issue-450-ref-reqs-404` | `_ref_reqs` returns 404 for non-existent ID — PHP returns 200 with `[]` |
+| 41 | [#452](https://github.com/unidel2035/integram-standalone/issues/452) | `fix/issue-452-backup-status-code` | `backup` returns 200 with ZIP — PHP returns 302 redirect |
+
+### Group 9 — PHP bugs (from comparison tests)
+
+| # | Issue | Branch | Description |
+|---|-------|--------|-------------|
+| 42 | [#453](https://github.com/unidel2035/integram-standalone/issues/453) | `fix/issue-453-php-jwt-500` | PHP `jwt` endpoint returns 500 instead of JSON error on invalid/empty token |
+
+### Group 10 — INFO / test bugs (from comparison tests)
+
+| # | Issue | Branch | Description |
+|---|-------|--------|-------------|
+| 43 | [#451](https://github.com/unidel2035/integram-standalone/issues/451) | `info/issue-451-node-only-endpoints` | Node-only endpoints (`_list`, `validate`, `grants`, `dir_admin`) — no PHP equivalent |
+| 44 | [#454](https://github.com/unidel2035/integram-standalone/issues/454) | `fix/issue-454-test-subordinate-type` | Test bug: subordinate type creation passes PHP parent ID to both servers |
+
 ## Launch command (Claude Code)
 
 To launch all agents in parallel, use the Agent tool with `isolation: "worktree"` for each issue. Example per-agent prompt:
@@ -144,10 +185,20 @@ Then solve it:
 ## Recommended solve order
 
 1. **First**: Group 1 (#405–#410) — these break the frontend completely
-2. **Then**: Group 2 (#411–#415) — data format issues that corrupt displayed data
-3. **Then**: Group 3 (#416–#422) — logic bugs that cause data integrity issues
-4. **Then**: Group 4 (#423–#429) — header/message parity
-5. **Last**: Group 5 (#430–#432) — cosmetic differences
+2. **Then**: Group 6 (#439, #448, #441, #442, #449) — DML response format + NaN (from comparison tests)
+3. **Then**: Group 2 (#411–#414) — data format issues that corrupt displayed data
+4. **Then**: Group 7 (#440, #445, #444, #447) — object listing + report structure
+5. **Then**: Group 3 (#415–#421) — logic bugs that cause data integrity issues
+6. **Then**: Group 4 (#422–#428) — header/message parity
+7. **Then**: Group 8 (#443, #446, #450, #452) — extra keys, warnings, status codes
+8. **Then**: Group 5 (#429–#431) — cosmetic differences
+9. **Then**: Group 9 (#453) — PHP bugs
+10. **Last**: Group 10 (#451, #454) — info / test fixes
 
 All groups can be parallelized internally (no dependencies between issues within a group).
-Cross-group dependencies: #411 (Format_Val_View) may interact with #432 (ref_id prefix) — both modify JSON_DATA builder.
+
+Cross-group dependencies:
+- #411 (Format_Val_View) may interact with #432 (ref_id prefix) — both modify JSON_DATA builder.
+- #439 (DML array vs object) may interact with #405–#407 (error format) — both touch response wrapping.
+- #448 (NaN in SQL) is likely root cause of many #439 failures — fix #448 first.
+- #441 (JSON_DATA empty) may be related to #411/#432 (JSON_DATA formatting).
