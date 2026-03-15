@@ -4,7 +4,7 @@
  */
 
 const PHP  = 'http://127.0.0.1:8082';
-const NODE = 'http://127.0.0.1:8081';
+const NODE = process.env.NODE_URL || 'http://127.0.0.1:8081';
 const DB   = 'my';
 const USER = 'testbot';
 const PASS = 'test123';
@@ -57,8 +57,11 @@ function normalize(obj, depth = 0) {
   if (typeof obj === 'string') return obj;
   if (typeof obj !== 'object') return obj;
 
+  // Sort keys to avoid false diffs from JSON key ordering
+  // (PHP preserves insertion order, Node sorts alphabetically via middleware)
   const out = {};
-  for (const [k, v] of Object.entries(obj)) {
+  for (const k of Object.keys(obj).sort()) {
+    const v = obj[k];
     // Known variable fields — normalize
     if (k === '_xsrf' || k === 'xsrf') { out[k] = '__XSRF__'; continue; }
     if (k === 'token') { out[k] = '__TOKEN__'; continue; }

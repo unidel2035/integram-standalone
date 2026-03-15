@@ -5459,9 +5459,18 @@ router.get('/:db/:page*', async (req, res, next) => {
         const fuParamNum = allObjParams.F_U !== undefined ? parseInt(allObjParams.F_U, 10) : 1;
         const typeUp  = fuParamNum > 1 ? fuParamNum : 1;
 
-        // Filter params for uni_obj
+        // Filter params for uni_obj — PHP gathers all F_/FR_/TO_ params into a filter string
         const fuParam = allObjParams.F_U !== undefined ? String(allObjParams.F_U) : '';
-        const filterStr = fuParam ? `&F_U=${fuParam}` : '';
+        // PHP: foreach($_REQUEST as $key => $value) if(($value!="") && (preg_match("/(F\_|FR\_|TO\_)/", $key))) $f .= "&".$key."=".$value;
+        let filterStr = '';
+        for (const [k, v] of Object.entries(allObjParams)) {
+          if (v !== undefined && String(v) !== '' && /^(F_|FR_|TO_)/.test(k)) {
+            filterStr += `&${k}=${String(v).replace(/"/g, '&#34;')}`;
+          }
+        }
+        if (allObjParams.f_show_all !== undefined) filterStr += '&f_show_all=1';
+        if (allObjParams.full !== undefined) filterStr += '&full=0';
+        if (allObjParams.lnx !== undefined && String(allObjParams.lnx) === '1') filterStr += '&lnx=1';
 
         const hasReqs = reqDefStd.length > 0;
 
@@ -5592,14 +5601,20 @@ router.get('/:db/:page*', async (req, res, next) => {
           base: { id: String(typeRow ? typeRow.base_type_id : 3), unique: typeUnique },
           '&main.a.&uni_obj': {
             create_granted: ['block'],
+            // PHP: filter gets &desc=0 appended when order_val=val and desc is not set
+            // PHP template engine duplicates same value via {FILTER}/{filter} dual placeholders
+            filter:   (() => {
+              const fv = (allObjParams.desc === undefined && orderByVal) ? `${filterStr}&desc=0` : filterStr;
+              return [fv, fv];
+            })(),
             id:       [String(typeId)],
-            f_u:      [fuParam],
             up:       [String(typeUp)],
-            unique:   [typeUnique],
-            filter:   [filterStr, filterStr],
-            val:      [typeVal],
             typ:      [String(typeId)],
+            val:      [typeVal],
+            base_typ: [String(typeRow ? typeRow.base_type_id : 3)],
+            unique:   [typeUnique],
             f_i:      [allObjParams.F_I !== undefined ? String(parseInt(allObjParams.F_I, 10)) : ''],
+            f_u:      [allObjParams.F_U !== undefined ? String(parseInt(allObjParams.F_U, 10)) : ''],
             lnx:      [allObjParams.lnx !== undefined ? String(parseInt(allObjParams.lnx, 10)) : '0'],
           },
           '&main.a.&uni_obj.&delete': { ok: [''] },
@@ -5622,9 +5637,13 @@ router.get('/:db/:page*', async (req, res, next) => {
           response['&main.a.&uni_obj.&uni_obj_head'] = uniObjHead;
         }
 
+        // PHP: &filter_val_rcm populates filter with the F_{typeId} request value if present
+        const filterValRcmValue = allObjParams[`F_${typeId}`] !== undefined
+          ? String(allObjParams[`F_${typeId}`]).replace(/"/g, '&#34;')
+          : '';
         response['&main.a.&uni_obj.&filter_val_rcm'] = {
           f_typ:  [`F_${typeId}`],
-          filter: [''],
+          filter: [filterValRcmValue],
         };
 
         if (hasReqs) {
@@ -5653,7 +5672,8 @@ router.get('/:db/:page*', async (req, res, next) => {
           }
         }
 
-        response['total']                              = objTotal;
+        // Note: PHP does not include 'total' in object JSON response.
+        // objTotal is still used below for pagination (&no_page block).
         // PHP #419: cur_base_typ is the type's own base type, not each row's type
         const curBaseTypId = typeRow ? typeRow.base_type_id : 3;
         const includeRef = (curBaseTypId === TYPE.REPORT_COLUMN || curBaseTypId === TYPE.GRANT);
