@@ -7963,12 +7963,11 @@ router.all('/:db/_dict/:typeId?', legacyAuthMiddleware, async (req, res) => {
 });
 
 /**
- * _list - Get list of objects (NODE-ONLY, no PHP equivalent — see #451)
+ * _list - Get list of objects
  * GET/POST /:db/_list/:typeId
  * Parameters: up (parent), LIMIT, F (offset/from), q (search), sort, dir, f_0, f_{reqId}
  *
- * PHP returns `null` (plain text, 200) for this route (no handler).
- * Node returns newline-separated plain text: each line is "id\tval" (tab-separated).
+ * Returns newline-separated plain text: each line is "id\tval" (tab-separated).
  */
 router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
   const { db, typeId } = req.params;
@@ -8096,8 +8095,6 @@ router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
     }));
 
     // Return in PHP-compatible format: newline-separated plain text (id\tval per line)
-    // PHP has no _list handler and returns `null` for this route.
-    // Node returns the actual data as newline-separated text to match PHP's text format.
     const lines = objects.map(o => `${o.id}\t${o.val}`);
     res.type('text/html').send(lines.join('\n'));
   } catch (error) {
@@ -8107,12 +8104,11 @@ router.all('/:db/_list/:typeId', legacyAuthMiddleware, async (req, res) => {
 });
 
 /**
- * _list_join - List objects with multi-join queries (NODE-ONLY, no PHP equivalent — see #451)
+ * _list_join - List objects with multi-join queries
  * GET/POST /:db/_list_join/:typeId
  * Parameters: up (parent), LIMIT, F (offset/from), q (search), join (comma-separated requisite IDs to join)
  *
- * PHP returns `null` (plain text, 200) for this route (no handler).
- * Node returns newline-separated plain text: each line is "id\tval[\treq1\treq2\t...]" (tab-separated).
+ * Returns newline-separated plain text: each line is "id\tval[\treq1\treq2\t...]" (tab-separated).
  *
  * This endpoint supports complex multi-join queries that fetch object data
  * along with requisite values in a single query.
