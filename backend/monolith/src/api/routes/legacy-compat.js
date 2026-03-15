@@ -5032,7 +5032,7 @@ router.get('/:db/:page*', async (req, res, next) => {
   const fullPath = req.params[0] || '';
 
   // Skip API-like requests and pages with dedicated route handlers defined later
-  if (db.startsWith('_') || db === 'api' || page.startsWith('_') || page === 'xsrf') {
+  if (db.startsWith('_') || db === 'api' || page.startsWith('_') || page === 'xsrf' || page === 'terms') {
     return next();
   }
 
@@ -8542,7 +8542,8 @@ router.get('/:db/_ref_reqs/:refId', legacyAuthMiddleware, async (req, res) => {
       // Main query found no rows: either ID doesn't exist, or par.up != 0
       const { rows: simpleRows } = await execSql(pool, `SELECT r.t, r.up FROM ${db} r WHERE r.id = ?`, [id], { label: 'get_db_ref_reqs_refId_select' });
       if (simpleRows.length === 0) {
-        return res.status(404).json([{ error: 'Reference not found' }]);
+        // PHP returns 200 with empty array for invalid/missing IDs
+        return res.status(200).json([]);
       }
 
       // Type definitions (up=0) are not reference requisites — return empty array like PHP
@@ -9038,7 +9039,7 @@ router.post('/:db/_d_new/:parentTypeId?', legacyAuthMiddleware, legacyXsrfCheck,
         logger.info('[Legacy _d_new] Type already exists, returning existing', { db, existingId, name, baseType });
         return legacyRespond(req, res, db, {
           id: '', obj: existingId, next_act: 'edit_types', args: 'ext',
-          warnings: `The Type ${name} already exists!`
+          warnings: `Тип ${name} уже существует!`
         });
       }
     }
@@ -9734,9 +9735,9 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
 
     logger.info('[Legacy _d_del_req] Requisite deleted', { db, id, forced });
 
-    // PHP api_dump(): {id:type_id, obj:type_id, next_act:"edit_types", args:"ext"}
-    // PHP: $id = $obj = $row["up"] (parent type string from DB row), so both are strings
-    legacyRespond(req, res, db, { id: String(typeId), obj: String(typeId), next_act: 'edit_types', args: 'ext' });
+    // PHP api_dump(): {id:type_id, obj:null, next_act:"edit_types", args:"ext"}
+    // PHP: after deleting a requisite, $obj is set to null (not the type ID)
+    legacyRespond(req, res, db, { id: typeId, obj: null, next_act: 'edit_types', args: 'ext' });
   } catch (error) {
     logger.error('[Legacy _d_del_req] Error', { error: error.message, db });
     sendLegacyDie(res, error.message );
