@@ -10789,8 +10789,9 @@ router.get('/:db/dir_admin', legacyAuthMiddleware, async (req, res) => {
   }
 
   try {
-    // PHP: download=1 → show download/{db}/ folder; download=0 or absent → templates/custom/{db}/
-    const useDownload = download !== undefined && download !== '0' && download !== 'false';
+    // PHP parity: isset($_REQUEST["download"]) — true whenever ?download is present in query
+    // string, regardless of its value (even ?download=0). Only absent → templates mode.
+    const useDownload = download !== undefined;
     const basePath = useDownload
       ? path.join(legacyPath, 'download', db)
       : path.join(legacyPath, 'templates', 'custom', db);
