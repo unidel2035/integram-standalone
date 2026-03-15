@@ -701,19 +701,21 @@ describe('legacyXsrfCheck', () => {
     expect(next).toHaveBeenCalled();
   });
 
-  it('returns error (HTTP 200) for XSRF mismatch', () => {
+  it('returns error (HTTP 403) for XSRF mismatch', () => {
     const req = {
       method: 'POST',
       legacyUser: { xsrf: 'correct-xsrf' },
       body: { _xsrf: 'wrong-xsrf' },
+      params: { db: 'my' },
+      cookies: {},
     };
     const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
     const next = vi.fn();
 
     legacyXsrfCheck(req, res, next);
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith([{ error: 'Invalid or expired CSRF token' }]);
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith([{ error: 'Неверный или устаревший токен CSRF<br/>' }]);
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -731,13 +733,13 @@ describe('legacyXsrfCheck', () => {
   });
 
   it('returns error when legacyUser is missing', () => {
-    const req = { method: 'POST', body: { _xsrf: 'any' } };
+    const req = { method: 'POST', body: { _xsrf: 'any' }, params: { db: 'my' }, cookies: {} };
     const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
     const next = vi.fn();
 
     legacyXsrfCheck(req, res, next);
 
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(403);
     expect(next).not.toHaveBeenCalled();
   });
 });
@@ -991,7 +993,7 @@ describe('Phase 2: middleware wiring', () => {
     const token = 'dml-token';
     const xsrf = generateXsrf(token, DB, DB);
 
-    it('POST _m_save with wrong XSRF → error (HTTP 200)', async () => {
+    it('POST _m_save with wrong XSRF → error (HTTP 403)', async () => {
       // Auth middleware: token lookup returns user
       mockQuery(
         [[{ uid: 1, uname: 'alice', xsrf_val: xsrf, role_val: 'Manager', roleId: 7 }]],
@@ -1003,8 +1005,8 @@ describe('Phase 2: middleware wiring', () => {
         .set('Cookie', `${DB}=${token}`)
         .send({ _xsrf: 'wrong-xsrf', val: 'test' });
 
-      expect(res.status).toBe(200);
-      expect(res.body).toEqual([{ error: 'Invalid or expired CSRF token' }]);
+      expect(res.status).toBe(403);
+      expect(res.body).toEqual([{ error: 'Неверный или устаревший токен CSRF<br/>' }]);
     });
   });
 
@@ -1529,6 +1531,7 @@ describe('Admin backdoor token auth (#380)', () => {
       method: 'POST',
       params: { db: DB },
       body: { val: 'test' },  // no _xsrf field
+      cookies: {},
       legacyUser: {
         uid: 5,
         username: 'alice',
@@ -1547,7 +1550,7 @@ describe('Admin backdoor token auth (#380)', () => {
 
     // Non-admin user without matching _xsrf should get CSRF error
     expect(next).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(403);
   });
 });
 

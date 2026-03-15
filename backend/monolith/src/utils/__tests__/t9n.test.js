@@ -78,4 +78,24 @@ describe('t9n — i18n translation function', () => {
       expect(t9n(key, lang)).toBe(expected);
     });
   });
+
+  describe('CSRF error message parity (Issue #422)', () => {
+    it('RU matches PHP: "Неверный или устаревший токен CSRF<br/>"', () => {
+      expect(t9n('invalid_csrf', 'RU')).toBe('Неверный или устаревший токен CSRF<br/>');
+    });
+
+    it('EN matches PHP: "Invalid or expired CSRF token <br/>"', () => {
+      expect(t9n('invalid_csrf', 'EN')).toBe('Invalid or expired CSRF token <br/>');
+    });
+
+    it('includes <br/> tag (PHP parity)', () => {
+      expect(t9n('invalid_csrf', 'RU')).toContain('<br/>');
+      expect(t9n('invalid_csrf', 'EN')).toContain('<br/>');
+    });
+
+    it('uses "устаревший" not "просроченный" (PHP parity)', () => {
+      expect(t9n('invalid_csrf', 'RU')).toContain('устаревший');
+      expect(t9n('invalid_csrf', 'RU')).not.toContain('просроченный');
+    });
+  });
 });
