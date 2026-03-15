@@ -5906,7 +5906,8 @@ router.get('/:db/:page*', async (req, res, next) => {
            LEFT JOIN \`${db}\` t ON t.id = o.t
            WHERE o.id = ?`, [subId], { label: 'query_select' });
         if (objResult.length === 0) {
-          return res.status(404).json([{ error: 'Object not found' }]);
+          // PHP parity (#549): PHP returns 200 with empty response for deleted objects
+          return res.status(200).json({});
         }
         const obj         = objResult[0];
         const objTypName   = obj.type_name    || String(obj.t);
