@@ -1298,6 +1298,7 @@ function formatObjVal(base, rawVal) {
     return v;
   }
   if (base === 'PWD') return '******';
+  if (base === 'BOOLEAN') return (v !== '' && v !== '0') ? 'X' : '';
   return v;
 }
 
@@ -6075,6 +6076,7 @@ router.get('/:db/:page*', async (req, res, next) => {
         const dateTyp = [], dateVal = [], dateDis = [];
         const arrTypBld = [], arrParId = [], arrParNum = [];
         const memoTyp = [], memoVal = [], memoDis = [];
+        const htmlTyp = [], htmlVal = [], htmlDis = [];
         const numTyp = [], numVal = [], numDis = [];
         const charsTyp = [], charsVal = [], charsDis = [];
         const dtTyp = [], dtVal = [], dtDis = [];
@@ -6189,6 +6191,7 @@ router.get('/:db/:page*', async (req, res, next) => {
               }
               case 'PWD':      pwdTyp.push(k);   pwdVal.push(v);   pwdDis.push(dis);   break;
               case 'MEMO':     memoTyp.push(k);  memoVal.push(v);  memoDis.push(dis);  break;
+              case 'HTML':     htmlTyp.push(k);  htmlVal.push(v);  htmlDis.push(dis);  break;
               case 'BOOLEAN':  boolTyp.push(k);  boolChecked.push(v !== '' ? 'CHECKED' : ''); boolDis.push(dis); break;
             }
             if (meta.attrs.includes(NOT_NULL) && v === '') nullableNN.push('*');
@@ -6358,6 +6361,10 @@ router.get('/:db/:page*', async (req, res, next) => {
           if (memoTyp.length > 0)
             editResp['&main.a.&object.&object_reqs.&editreq_memo'] =
               { typ: memoTyp, disabled: memoDis, val: memoVal };
+
+          if (htmlTyp.length > 0)
+            editResp['&main.a.&object.&object_reqs.&editreq_html'] =
+              { typ: htmlTyp, disabled: htmlDis, val: htmlVal };
 
           if (numTyp.length > 0)
             editResp['&main.a.&object.&object_reqs.&editreq_number'] =
@@ -7447,9 +7454,14 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, legacyXsrfCheck, (req, res
 
       let finalValue = String(attrValue);
 
-      // Fetch attribute metadata (base_type, attrs) for processing
-      const { rows: attrMeta } = await execSql(pool, `SELECT t AS base_type, val FROM \`${db}\` WHERE id = ? LIMIT 1`, [typeIdNum], { label: 'query_select' });
-      const meta = attrMeta.length > 0 ? attrMeta[0] : null;
+      // Fetch attribute metadata — resolve concrete type to base type via JOIN
+      const { rows: attrMeta } = await execSql(pool,
+        `SELECT typs.t AS base_type, typs.val,
+                CASE WHEN refs.id IS NULL THEN typs.t ELSE refs.t END AS resolved_base
+         FROM \`${db}\` typs
+         LEFT JOIN \`${db}\` refs ON refs.id = typs.t AND refs.id != refs.t
+         WHERE typs.id = ? LIMIT 1`, [typeIdNum], { label: 'query_select' });
+      const meta = attrMeta.length > 0 ? { ...attrMeta[0], base_type: attrMeta[0].resolved_base } : null;
       const baseType = meta ? meta.base_type : 0;
 
       // PASSWORDSTARS skip: don't update PASSWORD/TOKEN/XSRF fields with masked value
@@ -7836,9 +7848,15 @@ router.post('/:db/_m_set/:id', legacyAuthMiddleware, legacyXsrfCheck, upload.any
         return sendLegacyDie(res, 'Insufficient privileges');
       }
 
-      // Fetch attribute metadata (base_type, attrs) to detect references and :MULTI:
-      const { rows: attrMeta } = await execSql(pool, `SELECT t AS base_type, val, up FROM \`${db}\` WHERE id = ? LIMIT 1`, [typeIdNum], { label: 'post_db_m_set_id_select' });
-      const meta = attrMeta.length > 0 ? attrMeta[0] : null;
+      // Fetch attribute metadata — resolve concrete type to base type via JOIN
+      // PHP resolves base_type through $GLOBALS["basics"] chain; Node uses same JOIN as object list
+      const { rows: attrMeta } = await execSql(pool,
+        `SELECT typs.t AS base_type, typs.val, typs.up,
+                CASE WHEN refs.id IS NULL THEN typs.t ELSE refs.t END AS resolved_base
+         FROM \`${db}\` typs
+         LEFT JOIN \`${db}\` refs ON refs.id = typs.t AND refs.id != refs.t
+         WHERE typs.id = ? LIMIT 1`, [typeIdNum], { label: 'post_db_m_set_id_select' });
+      const meta = attrMeta.length > 0 ? { ...attrMeta[0], base_type: attrMeta[0].resolved_base } : null;
 
       // Handle inline file upload (saveInlineFile in smartq.js)
       const uploadedFile = fileByField[`t${attrTypeId}`];
@@ -9267,10 +9285,9 @@ router.post('/:db/_d_save/:typeId', legacyAuthMiddleware, legacyXsrfCheck, legac
 
     logger.info('[Legacy _d_save] Type saved', { db, id, updates: req.body });
 
-    // PHP api_dump(): [{id, obj, next_act:"edit_types", args, warnings}]
-    // PHP returns array-wrapped response for _d_save (issue #541)
+    // PHP api_dump(): {id, obj, next_act:"edit_types", args, warnings}
     if (isApiRequest(req)) {
-      return res.json([{ id, obj: id, next_act: 'edit_types', args: 'ext', warnings: '' }]);
+      return res.json({ id, obj: id, next_act: 'edit_types', args: 'ext', warnings: '' });
     }
     legacyRespond(req, res, db, { id, obj: id, next_act: 'edit_types', args: 'ext' });
   } catch (error) {
@@ -9808,8 +9825,8 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
     const { rows: [defRow] } = await execSql(pool, `SELECT def.up, def.t AS typ, def.ord, r.t AS parentT, r.val AS parentVal
        FROM \`${db}\` def, \`${db}\` r WHERE def.id = ? AND r.id = def.t`, [id], { label: 'post_db_d_del_req_reqId_select' });
     if (!defRow) {
-      // PHP parity (issue #542): error is plain object, not array
-      return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify({ error: 'Requisite not found' }));
+      // PHP parity: non-existent requisite returns success with obj:null (not error)
+      return legacyRespond(req, res, db, { id, obj: null, next_act: 'edit_types', args: 'ext', warnings: '' });
     }
     const typeId = defRow.up;
     const myord = defRow.ord;
@@ -9877,9 +9894,8 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
 
     logger.info('[Legacy _d_del_req] Requisite deleted', { db, id, forced });
 
-    // PHP api_dump(): {id:type_id, obj:type_id, next_act:"edit_types", args:"ext"}
-    // PHP parity (issue #542): success response includes obj field
-    legacyRespond(req, res, db, { id: typeId, obj: typeId, next_act: 'edit_types', args: 'ext' });
+    // PHP api_dump(): {id:type_id, obj:null, next_act:"edit_types", args:"ext"}
+    legacyRespond(req, res, db, { id: typeId, obj: null, next_act: 'edit_types', args: 'ext', warnings: '' });
   } catch (error) {
     logger.error('[Legacy _d_del_req] Error', { error: error.message, db });
     // PHP parity (issue #542): error is plain object, not array
