@@ -5786,6 +5786,17 @@ router.get('/:db/:page*', async (req, res, next) => {
           }
         }
 
+        // PHP parity (#550): BUTTON reqs get "***" value for every object
+        const buttonKeys = req_order.filter(k => req_base[k] === 'BUTTON');
+        if (buttonKeys.length > 0 && objRows.length > 0) {
+          for (const r of objRows) {
+            const oKey = String(r.id);
+            if (!reqsStd[oKey]) reqsStd[oKey] = {};
+            for (const bk of buttonKeys) {
+              reqsStd[oKey][bk] = '***';
+            }
+          }
+        }
         if (hasReqs && Object.keys(reqsStd).length > 0) {
           response['reqs'] = reqsStd;
         }
