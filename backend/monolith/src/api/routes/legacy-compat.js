@@ -8937,10 +8937,10 @@ router.post('/:db/_d_new/:parentTypeId?', legacyAuthMiddleware, legacyXsrfCheck,
       return res.status(200).json([{ error: `Base type is invalid: ${baseType}` }]);
     }
 
-    // PHP line 8636-8641: duplicate (val, t) check at root level
+    // PHP line 8636-8641: duplicate (val, t) check — PHP always checks since types always have up=0
     // SELECT id FROM $z WHERE val='...' AND t=$t AND id!=t
     // If duplicate found: return existing id with warning (not an error)
-    if (parentId === 0) {
+    {
       const pool = getPool();
       const { rows: dupeRows } = await execSql(pool, `SELECT id FROM \`${db}\` WHERE val = ? AND t = ? AND id != t LIMIT 1`, [name, baseType], { label: 'post_db_d_new_parentTypeId_select' });
       if (dupeRows.length > 0) {
@@ -8956,13 +8956,11 @@ router.post('/:db/_d_new/:parentTypeId?', legacyAuthMiddleware, legacyXsrfCheck,
     // PHP line 7788: $unique = isset($_REQUEST["unique"]) ? 1 : 0
     // PHP line 8327: "Ord=1 means the Obj must be unique" — for root-level types (up=0) ord IS the unique flag
     // PHP _d_new: Insert(0, $unique, $t, $val) — always inserts at up=0, ord = unique flag (0 or 1)
-    // For child types (parentId != 0, Node.js extension), use sequential ord via getNextOrder
-    const order = (parentId === 0)
-      ? ((req.body.unique !== undefined || req.query.unique !== undefined) ? 1 : 0)
-      : await getNextOrder(db, parentId);
+    // PHP always uses up=0 for type meta rows regardless of parentId parameter (#441)
+    const order = (req.body.unique !== undefined || req.query.unique !== undefined) ? 1 : 0;
 
-    // Insert the new type
-    const id = await insertRow(db, parentId, order, baseType, name);
+    // Insert the new type — PHP always uses up=0 for the type meta row
+    const id = await insertRow(db, 0, order, baseType, name);
 
     logger.info('[Legacy _d_new] Type created', { db, id, name, baseType, parentId });
 
