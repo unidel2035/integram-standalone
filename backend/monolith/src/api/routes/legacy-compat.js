@@ -5230,10 +5230,14 @@ router.get('/:db/:page*', async (req, res, next) => {
             const objIds = objRows.map(r => r.id);
             const ph = objIds.map(() => '?').join(',');
             const { rows: reqVals } = await execSql(pool,
-              `SELECT reqs.up, typs.id AS t, reqs.val, typs.t AS ref_type, typs.val AS refr, COUNT(1) AS arr_num
+              `SELECT reqs.up,
+                      typs.id AS t,
+                      CASE WHEN typs.up = 0 THEN 0 ELSE reqs.id END AS id,
+                      CASE WHEN typs.up = 0 THEN 0 ELSE reqs.val END AS val,
+                      typs.t AS ref_type, typs.val AS refr, COUNT(1) AS arr_num
                FROM \`${db}\` reqs JOIN \`${db}\` typs ON typs.id = reqs.t
                WHERE reqs.up IN (${ph})
-               GROUP BY reqs.val, reqs.id, typs.id
+               GROUP BY reqs.up, val, id, t, refr
                ORDER BY reqs.up, reqs.ord`, objIds, { label: 'json_data_reqvals' });
 
             // PHP processes values differently for refs vs non-refs:
