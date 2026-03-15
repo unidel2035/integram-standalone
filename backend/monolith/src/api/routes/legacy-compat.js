@@ -2088,9 +2088,12 @@ function formatValView(typeId, val, tzone = 0) {
       if (val) {
         const valStr = String(val);
         if (valStr.length > 8) {
-          // DATETIME stored as timestamp
+          // DATETIME stored as timestamp — PHP: date("d.m.Y", $val + tzone)
           const date = new Date((parseInt(val) + tzone) * 1000);
-          return date.toLocaleDateString('ru-RU');
+          const dd = String(date.getDate()).padStart(2, '0');
+          const mm = String(date.getMonth() + 1).padStart(2, '0');
+          const yyyy = date.getFullYear();
+          return `${dd}.${mm}.${yyyy}`;
         }
         // YYYYMMDD format
         return valStr.slice(6, 8) + '.' + valStr.slice(4, 6) + '.' + valStr.slice(0, 4);
@@ -2099,8 +2102,15 @@ function formatValView(typeId, val, tzone = 0) {
 
     case 'DATETIME':
       if (val) {
+        // PHP: date("d.m.Y H:i:s", (int)$val + $GLOBALS["tzone"])
         const date = new Date((parseInt(val) + tzone) * 1000);
-        return date.toLocaleString('ru-RU');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        const hh = String(date.getHours()).padStart(2, '0');
+        const mi = String(date.getMinutes()).padStart(2, '0');
+        const ss = String(date.getSeconds()).padStart(2, '0');
+        return `${dd}.${mm}.${yyyy} ${hh}:${mi}:${ss}`;
       }
       break;
 
@@ -2256,10 +2266,39 @@ function getAlign(typeId) {
  *   dd.mm.yyyy / dd/mm/yyyy → yyyymmdd
  *   yyyy-mm-dd / yyyy/mm/dd → yyyymmdd
  */
-function formatDateForStorage(val) {
+function formatDateForStorage(val, baseType) {
   if (!val || val === '' || val === 'NULL') return val;
   val = String(val).trim();
   if (val.startsWith('[') || val.startsWith('_request_.')) return val;
+
+  if (baseType === 'DATETIME') {
+    // PHP DATETIME: converts to Unix timestamp (seconds since epoch)
+    // 1. If ISO format (YYYY.MM.DD...), reformat to dd.mm.yyyy first
+    const isoMatch = val.match(/^(\d{4})(.)(\d{2})(.)(\d{2})/);
+    if (isoMatch) {
+      val = isoMatch[5] + '.' + isoMatch[3] + '.' + isoMatch[1] + val.substring(10);
+    }
+    // 2. If numeric > 10000, it's already a timestamp
+    const numVal = Number(val);
+    if (!isNaN(numVal) && numVal > 10000) {
+      return Math.floor(numVal); // tzone=0
+    }
+    // 3. Try strtotime equivalent
+    const ts = Math.floor(new Date(val).getTime() / 1000);
+    if (isNaN(ts) || ts < 10000) {
+      // Try DATE format first, then strtotime
+      const dateFormatted = formatDateForStorage(val, 'DATE');
+      // Convert YYYYMMDD to a parseable date
+      const y = dateFormatted.substring(0, 4);
+      const m = dateFormatted.substring(4, 6);
+      const d = dateFormatted.substring(6, 8);
+      const ts2 = Math.floor(new Date(`${y}-${m}-${d}`).getTime() / 1000);
+      return isNaN(ts2) ? val : ts2; // tzone=0
+    }
+    return ts; // tzone=0
+  }
+
+  // DATE: store as YYYYMMDD
   // ISO: YYYY[-/.]MM[-/.]DD
   const iso = val.match(/^(\d{4})[-\/.]?(\d{2})[-\/.]?(\d{2})/);
   if (iso) return iso[1] + iso[2] + iso[3];
@@ -2479,7 +2518,7 @@ function constructWhere(key, filter, curTyp, joinReq, ctx) {
       // DATE/DATETIME: format values for storage
       const isDate = baseType === 'DATE';
       if ((baseType === 'DATE' || baseType === 'DATETIME') && value !== '%') {
-        value = formatDateForStorage(value);
+        value = formatDateForStorage(value, baseType);
       }
 
       if (baseType === 'DATE' || baseType === 'DATETIME' ||
@@ -6087,12 +6126,13 @@ router.get('/:db/:page*', async (req, res, next) => {
 
         // PHP datetime display: Unix float timestamp → DD.MM.YYYY HH:MM:SS (UTC)
         function formatDatetime(v) {
+          // PHP: date("d.m.Y H:i:s", (int)$val + tzone) — uses server local time
           if (!v) return v;
           const num = parseFloat(v);
           if (isNaN(num)) return v;
           const d = new Date(Math.floor(num) * 1000);
           const p = n => String(n).padStart(2, '0');
-          return `${p(d.getUTCDate())}.${p(d.getUTCMonth()+1)}.${d.getUTCFullYear()} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+          return `${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
         }
 
         // PHP GetSubdir/GetFilename → build file download href
