@@ -11689,7 +11689,7 @@ router.all('/:db/report/:reportId?', async (req, res) => {
     const report = await compileReport(pool, db, id);
 
     if (!report) {
-      return res.status(404).json([{ error: 'Report not found' }]);
+      return res.status(200).json([{ error: `Report #${id} was not found` }]);
     }
 
     // PHP parity: if report has no columns (e.g. typeId passed instead of reportId),
@@ -14127,7 +14127,7 @@ router.post('/:db', async (req, res, next) => {
     // Compile and execute the report
     const report = await compileReport(pool, db, reportId);
     if (!report) {
-      return res.status(404).json([{ error: 'Report not found' }]);
+      return res.status(200).json([{ error: `Report #${reportId} was not found` }]);
     }
 
     // Parse filters from request
