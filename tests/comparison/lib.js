@@ -149,8 +149,8 @@ function compare(php, node, opts = {}) {
         diffs.push(`size: PHP=${php.size} Node=${node.size}`);
       }
     } else {
-      const pb = php.body.trim();
-      const nb = node.body.trim();
+      const pb = maskIds(php.body.trim());
+      const nb = maskIds(node.body.trim());
       if (pb !== nb) diffs.push(`body: PHP=${short(pb,50)} Node=${short(nb,50)}`);
     }
   } else {
