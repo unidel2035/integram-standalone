@@ -6062,6 +6062,8 @@ router.get('/:db/:page*', async (req, res, next) => {
         const dtTyp = [], dtVal = [], dtDis = [];
         const pwdTyp = [], pwdVal = [], pwdDis = [];
         const fileTyp = [], fileVal = [], fileDis = [];
+        const boolTyp = [], boolChecked = [], boolDis = [];
+        const buttonsVal = [], buttonsAttrs = [];
         const msId = [], msVal = [], msOrd = [], msName = [], msDis = [];
         const seekParTyp = [], seekMore = [];
         const refTypesNeeded = new Set();
@@ -6069,7 +6071,22 @@ router.get('/:db/:page*', async (req, res, next) => {
         for (const k of reqsMetaOrder) {
           const meta     = reqsMeta.get(k);
           const baseName = meta.base_typ === 0 ? 'TAB_DELIMITER' : (REV_BASE_TYPE[meta.base_typ] || null);
-          if (baseName === 'BUTTON') continue;
+          if (baseName === 'BUTTON') {
+            // PHP: remember buttons to show as &buttons block later
+            // $blocks["BUTTONS"][$GLOBALS["REQS"][$key]["val"]] = $GLOBALS["REQS"][$key]["attrs"];
+            const btnAttrs = (meta.attrs || '').replace(/\[ID\]/g, String(subId)).replace(/\[VAL\]/g, obj.val || '');
+            buttonsVal.push(meta.type_val);
+            buttonsAttrs.push(btnAttrs);
+            // PHP still includes BUTTON reqs in the reqs2 API response
+            reqs2[k] = {
+              type: meta.type_val,
+              order: String(meta.ord ?? '0'),
+              value: '',
+              base: 'BUTTON',
+            };
+            if (meta.attrs) reqs2[k].attrs = meta.attrs;
+            continue;
+          }
 
           const row = getReqRow(k);
           let   v   = row.val != null ? String(row.val) : '';
@@ -6154,6 +6171,7 @@ router.get('/:db/:page*', async (req, res, next) => {
               }
               case 'PWD':      pwdTyp.push(k);   pwdVal.push(v);   pwdDis.push(dis);   break;
               case 'MEMO':     memoTyp.push(k);  memoVal.push(v);  memoDis.push(dis);  break;
+              case 'BOOLEAN':  boolTyp.push(k);  boolChecked.push(v !== '' ? 'CHECKED' : ''); boolDis.push(dis); break;
             }
             if (meta.attrs.includes(NOT_NULL) && v === '') nullableNN.push('*');
           }
@@ -6346,7 +6364,16 @@ router.get('/:db/:page*', async (req, res, next) => {
           if (seekParTyp.length > 0)
             editResp['&main.a.&object.&object_reqs.&editreq_reference.&seek_refs'] =
               { '_parent_.typ': seekParTyp, more: seekMore };
+
+          if (boolTyp.length > 0)
+            editResp['&main.a.&object.&object_reqs.&editreq_boolean'] =
+              { typ: boolTyp, checked: boolChecked, disabled: boolDis };
         }
+
+        // &buttons block: PHP collects BUTTON-type reqs and renders them separately
+        if (buttonsVal.length > 0)
+          editResp['&main.a.&object.&buttons'] =
+            { val: buttonsVal, attrs: buttonsAttrs };
 
         return res.json(editResp);
       }
