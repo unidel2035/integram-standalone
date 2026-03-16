@@ -1,0 +1,5 @@
+[
+  {
+    "error": "Couldn't execute query [insertRow_query] Incorrect string value: '\\xF0\\x9F\\x9A\\x80 e...' for column `integram`.`my`.`val` at row 1 (INSERT INTO `my` (up, ord, t, val) VALUES (?, ?, ?, ?))"
+  }
+]

@@ -3965,7 +3965,14 @@ router.get('/:db/validate', async (req, res) => {
     return res.status(400).type('text/html; charset=UTF-8').send('Invalid database');
   }
 
-  // PHP parity: PHP has no /validate endpoint — always returns `null` as plain text.
+  // PHP parity: /validate is not a special route — it goes through Validate_Token().
+  // Without a valid cookie, PHP returns 401 (login page redirect).
+  const { token } = extractToken(req, db);
+  if (!token) {
+    return res.status(401).type('text/html; charset=UTF-8').send('');
+  }
+
+  // With a valid token, PHP returns `null` as plain text.
   return res.status(200).type('text/html; charset=UTF-8').send('null');
 });
 
@@ -8706,9 +8713,13 @@ router.get('/:db/xsrf', async (req, res) => {
   const { db } = req.params;
   const { token } = extractToken(req, db);
 
-  if (!token || !isValidDbName(db)) {
-    // No token — return minimal info (client will redirect to login)
-    return res.status(200).json({ _xsrf: '', token: null, user: '', role: '', id: '0', msg: '' });
+  if (!isValidDbName(db)) {
+    return res.status(400).type('text/html; charset=UTF-8').send('Invalid database');
+  }
+
+  if (!token) {
+    // PHP parity: /xsrf is inside Validate_Token() block — no cookie = 401
+    return res.status(401).type('text/html; charset=UTF-8').send('');
   }
 
   try {
@@ -8726,11 +8737,9 @@ router.get('/:db/xsrf', async (req, res) => {
        LIMIT 1`, [token], { label: 'get_db_xsrf_select' });
 
     if (rows.length === 0) {
-      // Invalid token — clear cookie, return empty session
+      // PHP parity: invalid token → Validate_Token() fails → login() → 401
       res.clearCookie(db, { path: '/' });
-      // PHP: api_dump(..., "login.json") → Content-Disposition: attachment;filename=login.json
-      res.setHeader('Content-Disposition', 'attachment;filename=login.json');
-      return res.status(200).json({ _xsrf: '', token: null, user: '', role: '', id: '0', msg: '' });
+      return res.status(401).type('text/html; charset=UTF-8').send('');
     }
 
     const user = rows[0];
