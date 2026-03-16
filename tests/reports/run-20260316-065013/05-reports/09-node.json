@@ -1,0 +1,1370 @@
+[
+  {
+    "id": 206338,
+    "name": "SmartQuery_1765661211022",
+    "ord": 0,
+    "val": "SmartQuery_1765661211022"
+  },
+  {
+    "id": 236803,
+    "name": "SmartQuery_1767843477448",
+    "ord": 0,
+    "val": "SmartQuery_1767843477448"
+  },
+  {
+    "id": 227844,
+    "name": "SmartQuery_1767619596395",
+    "ord": 0,
+    "val": "SmartQuery_1767619596395"
+  },
+  {
+    "id": 209414,
+    "name": "agent_onboarding",
+    "ord": 0,
+    "val": "agent_onboarding"
+  },
+  {
+    "id": 228870,
+    "name": "SmartQuery_1767621101174",
+    "ord": 0,
+    "val": "SmartQuery_1767621101174"
+  },
+  {
+    "id": 237574,
+    "name": "NaturalQuery_1767950798151",
+    "ord": 0,
+    "val": "NaturalQuery_1767950798151"
+  },
+  {
+    "id": 1288,
+    "name": "planPrice",
+    "ord": 0,
+    "val": "planPrice"
+  },
+  {
+    "id": 204296,
+    "name": "NaturalQuery_1765128615610",
+    "ord": 0,
+    "val": "NaturalQuery_1765128615610"
+  },
+  {
+    "id": 238089,
+    "name": "NaturalQuery_1768115639560",
+    "ord": 0,
+    "val": "NaturalQuery_1768115639560"
+  },
+  {
+    "id": 238347,
+    "name": "SmartQuery_1771476839684",
+    "ord": 0,
+    "val": "SmartQuery_1771476839684"
+  },
+  {
+    "id": 210444,
+    "name": "Реквизит наименовать",
+    "ord": 0,
+    "val": "Реквизит наименовать"
+  },
+  {
+    "id": 229132,
+    "name": "SmartQuery_1767621267850",
+    "ord": 0,
+    "val": "SmartQuery_1767621267850"
+  },
+  {
+    "id": 228365,
+    "name": "SmartQuery_1767620480933",
+    "ord": 0,
+    "val": "SmartQuery_1767620480933"
+  },
+  {
+    "id": 229390,
+    "name": "SmartQuery_1767640736165",
+    "ord": 0,
+    "val": "SmartQuery_1767640736165"
+  },
+  {
+    "id": 228112,
+    "name": "SmartQuery_1767620044558",
+    "ord": 0,
+    "val": "SmartQuery_1767620044558"
+  },
+  {
+    "id": 1042,
+    "name": "user_convertBonus",
+    "ord": 0,
+    "val": "user_convertBonus"
+  },
+  {
+    "id": 227859,
+    "name": "SmartQuery_1767619598651",
+    "ord": 0,
+    "val": "SmartQuery_1767619598651"
+  },
+  {
+    "id": 227604,
+    "name": "SmartQuery_1767618109999",
+    "ord": 0,
+    "val": "SmartQuery_1767618109999"
+  },
+  {
+    "id": 237588,
+    "name": "SmartQuery_1767950809304",
+    "ord": 0,
+    "val": "SmartQuery_1767950809304"
+  },
+  {
+    "id": 228885,
+    "name": "SmartQuery_1767621103410",
+    "ord": 0,
+    "val": "SmartQuery_1767621103410"
+  },
+  {
+    "id": 236821,
+    "name": "SmartQuery_1767843491041",
+    "ord": 0,
+    "val": "SmartQuery_1767843491041"
+  },
+  {
+    "id": 204310,
+    "name": "SmartQuery_1765128626594",
+    "ord": 0,
+    "val": "SmartQuery_1765128626594"
+  },
+  {
+    "id": 1559,
+    "name": "planName",
+    "ord": 0,
+    "val": "planName"
+  },
+  {
+    "id": 208151,
+    "name": "SmartQuery_1766048408170",
+    "ord": 0,
+    "val": "SmartQuery_1766048408170"
+  },
+  {
+    "id": 228632,
+    "name": "SmartQuery_1767620883030",
+    "ord": 0,
+    "val": "SmartQuery_1767620883030"
+  },
+  {
+    "id": 59928,
+    "name": " Db Billing months",
+    "ord": 0,
+    "val": " Db Billing months"
+  },
+  {
+    "id": 2586,
+    "name": "user_aff",
+    "ord": 0,
+    "val": "user_aff"
+  },
+  {
+    "id": 228380,
+    "name": "SmartQuery_1767620485983",
+    "ord": 0,
+    "val": "SmartQuery_1767620485983"
+  },
+  {
+    "id": 229405,
+    "name": "SmartQuery_1767640744581",
+    "ord": 0,
+    "val": "SmartQuery_1767640744581"
+  },
+  {
+    "id": 229917,
+    "name": "SmartQuery_1767688912794",
+    "ord": 0,
+    "val": "SmartQuery_1767688912794"
+  },
+  {
+    "id": 197150,
+    "name": "Организации пользователя",
+    "ord": 0,
+    "val": "Организации пользователя"
+  },
+  {
+    "id": 220446,
+    "name": "app_menu_doc",
+    "ord": 0,
+    "val": "app_menu_doc"
+  },
+  {
+    "id": 228127,
+    "name": "SmartQuery_1767620046879",
+    "ord": 0,
+    "val": "SmartQuery_1767620046879"
+  },
+  {
+    "id": 237599,
+    "name": "SmartQuery_1767950826356",
+    "ord": 0,
+    "val": "SmartQuery_1767950826356"
+  },
+  {
+    "id": 210464,
+    "name": "SmartQuery_1766393347404",
+    "ord": 0,
+    "val": "SmartQuery_1766393347404"
+  },
+  {
+    "id": 206369,
+    "name": "SmartQuery_1765661395728",
+    "ord": 0,
+    "val": "SmartQuery_1765661395728"
+  },
+  {
+    "id": 227874,
+    "name": "SmartQuery_1767619600851",
+    "ord": 0,
+    "val": "SmartQuery_1767619600851"
+  },
+  {
+    "id": 227619,
+    "name": "SmartQuery_1767618114167",
+    "ord": 0,
+    "val": "SmartQuery_1767618114167"
+  },
+  {
+    "id": 292,
+    "name": "user_db",
+    "ord": 0,
+    "val": "user_db"
+  },
+  {
+    "id": 1316,
+    "name": "paidThisMonth",
+    "ord": 0,
+    "val": "paidThisMonth"
+  },
+  {
+    "id": 228900,
+    "name": "SmartQuery_1767621105687",
+    "ord": 0,
+    "val": "SmartQuery_1767621105687"
+  },
+  {
+    "id": 228647,
+    "name": "SmartQuery_1767620885213",
+    "ord": 0,
+    "val": "SmartQuery_1767620885213"
+  },
+  {
+    "id": 210472,
+    "name": "SmartQuery_1766393361081",
+    "ord": 0,
+    "val": "SmartQuery_1766393361081"
+  },
+  {
+    "id": 236072,
+    "name": "NaturalQuery_1767705196834",
+    "ord": 0,
+    "val": "NaturalQuery_1767705196834"
+  },
+  {
+    "id": 210218,
+    "name": "SmartQuery_1766392376090",
+    "ord": 0,
+    "val": "SmartQuery_1766392376090"
+  },
+  {
+    "id": 208428,
+    "name": "всего_поступлений",
+    "ord": 0,
+    "val": "всего_поступлений"
+  },
+  {
+    "id": 17452,
+    "name": " Test_stats_unique",
+    "ord": 0,
+    "val": " Test_stats_unique"
+  },
+  {
+    "id": 229420,
+    "name": "SmartQuery_1767640752318",
+    "ord": 0,
+    "val": "SmartQuery_1767640752318"
+  },
+  {
+    "id": 237612,
+    "name": "NaturalQuery_1767951273602",
+    "ord": 0,
+    "val": "NaturalQuery_1767951273602"
+  },
+  {
+    "id": 228142,
+    "name": "SmartQuery_1767620048971",
+    "ord": 0,
+    "val": "SmartQuery_1767620048971"
+  },
+  {
+    "id": 9520,
+    "name": " Test_stats",
+    "ord": 0,
+    "val": " Test_stats"
+  },
+  {
+    "id": 206384,
+    "name": "SmartQuery_1765661434240",
+    "ord": 0,
+    "val": "SmartQuery_1765661434240"
+  },
+  {
+    "id": 227889,
+    "name": "SmartQuery_1767619603122",
+    "ord": 0,
+    "val": "SmartQuery_1767619603122"
+  },
+  {
+    "id": 227634,
+    "name": "SmartQuery_1767618116609",
+    "ord": 0,
+    "val": "SmartQuery_1767618116609"
+  },
+  {
+    "id": 8755,
+    "name": "user_Test",
+    "ord": 0,
+    "val": "user_Test"
+  },
+  {
+    "id": 229939,
+    "name": "SmartQuery_1767688938102",
+    "ord": 0,
+    "val": "SmartQuery_1767688938102"
+  },
+  {
+    "id": 228662,
+    "name": "SmartQuery_1767620887515",
+    "ord": 0,
+    "val": "SmartQuery_1767620887515"
+  },
+  {
+    "id": 236086,
+    "name": "SmartQuery_1767705207995",
+    "ord": 0,
+    "val": "SmartQuery_1767705207995"
+  },
+  {
+    "id": 5431,
+    "name": " billing",
+    "ord": 0,
+    "val": " billing"
+  },
+  {
+    "id": 313,
+    "name": "user_me",
+    "ord": 0,
+    "val": "user_me"
+  },
+  {
+    "id": 2618,
+    "name": "user_aff_paid",
+    "ord": 0,
+    "val": "user_aff_paid"
+  },
+  {
+    "id": 237626,
+    "name": "SmartQuery_1767951283812",
+    "ord": 0,
+    "val": "SmartQuery_1767951283812"
+  },
+  {
+    "id": 229435,
+    "name": "SmartQuery_1767640755121",
+    "ord": 0,
+    "val": "SmartQuery_1767640755121"
+  },
+  {
+    "id": 228157,
+    "name": "SmartQuery_1767620051103",
+    "ord": 0,
+    "val": "SmartQuery_1767620051103"
+  },
+  {
+    "id": 46397,
+    "name": " Activities monthly",
+    "ord": 0,
+    "val": " Activities monthly"
+  },
+  {
+    "id": 208448,
+    "name": "1",
+    "ord": 0,
+    "val": "1"
+  },
+  {
+    "id": 227904,
+    "name": "SmartQuery_1767619695426",
+    "ord": 0,
+    "val": "SmartQuery_1767619695426"
+  },
+  {
+    "id": 227649,
+    "name": "SmartQuery_1767618118911",
+    "ord": 0,
+    "val": "SmartQuery_1767618118911"
+  },
+  {
+    "id": 236097,
+    "name": "SmartQuery_1767705219246",
+    "ord": 0,
+    "val": "SmartQuery_1767705219246"
+  },
+  {
+    "id": 229188,
+    "name": "SmartQuery_1767640235162",
+    "ord": 0,
+    "val": "SmartQuery_1767640235162"
+  },
+  {
+    "id": 228677,
+    "name": "SmartQuery_1767620891473",
+    "ord": 0,
+    "val": "SmartQuery_1767620891473"
+  },
+  {
+    "id": 1095,
+    "name": "user_Tnx",
+    "ord": 0,
+    "val": "user_Tnx"
+  },
+  {
+    "id": 228424,
+    "name": "SmartQuery_1767620503664",
+    "ord": 0,
+    "val": "SmartQuery_1767620503664"
+  },
+  {
+    "id": 236616,
+    "name": "NaturalQuery_1767787792244",
+    "ord": 0,
+    "val": "NaturalQuery_1767787792244"
+  },
+  {
+    "id": 6473,
+    "name": "dmx_Db",
+    "ord": 0,
+    "val": "dmx_Db"
+  },
+  {
+    "id": 209225,
+    "name": "my_tokens",
+    "ord": 0,
+    "val": "my_tokens"
+  },
+  {
+    "id": 229450,
+    "name": "SmartQuery_1767640757506",
+    "ord": 0,
+    "val": "SmartQuery_1767640757506"
+  },
+  {
+    "id": 197196,
+    "name": "Все базы данных",
+    "ord": 0,
+    "val": "Все базы данных"
+  },
+  {
+    "id": 228172,
+    "name": "SmartQuery_1767620053359",
+    "ord": 0,
+    "val": "SmartQuery_1767620053359"
+  },
+  {
+    "id": 205901,
+    "name": "balance",
+    "ord": 0,
+    "val": "balance"
+  },
+  {
+    "id": 227919,
+    "name": "SmartQuery_1767619697856",
+    "ord": 0,
+    "val": "SmartQuery_1767619697856"
+  },
+  {
+    "id": 208976,
+    "name": "session_chat",
+    "ord": 0,
+    "val": "session_chat"
+  },
+  {
+    "id": 227664,
+    "name": "SmartQuery_1767618121222",
+    "ord": 0,
+    "val": "SmartQuery_1767618121222"
+  },
+  {
+    "id": 229203,
+    "name": "SmartQuery_1767640238168",
+    "ord": 0,
+    "val": "SmartQuery_1767640238168"
+  },
+  {
+    "id": 228692,
+    "name": "SmartQuery_1767620894034",
+    "ord": 0,
+    "val": "SmartQuery_1767620894034"
+  },
+  {
+    "id": 238164,
+    "name": "SmartQuery_1768214672712",
+    "ord": 0,
+    "val": "SmartQuery_1768214672712"
+  },
+  {
+    "id": 236630,
+    "name": "SmartQuery_1767787805289",
+    "ord": 0,
+    "val": "SmartQuery_1767787805289"
+  },
+  {
+    "id": 228439,
+    "name": "SmartQuery_1767620506662",
+    "ord": 0,
+    "val": "SmartQuery_1767620506662"
+  },
+  {
+    "id": 228956,
+    "name": "SmartQuery_1767621149251",
+    "ord": 0,
+    "val": "SmartQuery_1767621149251"
+  },
+  {
+    "id": 227934,
+    "name": "SmartQuery_1767619700241",
+    "ord": 0,
+    "val": "SmartQuery_1767619700241"
+  },
+  {
+    "id": 227679,
+    "name": "SmartQuery_1767618777872",
+    "ord": 0,
+    "val": "SmartQuery_1767618777872"
+  },
+  {
+    "id": 229218,
+    "name": "SmartQuery_1767640240430",
+    "ord": 0,
+    "val": "SmartQuery_1767640240430"
+  },
+  {
+    "id": 228454,
+    "name": "SmartQuery_1767620509339",
+    "ord": 0,
+    "val": "SmartQuery_1767620509339"
+  },
+  {
+    "id": 149351,
+    "name": " HiLoad",
+    "ord": 0,
+    "val": " HiLoad"
+  },
+  {
+    "id": 236648,
+    "name": "SmartQuery_1767787816938",
+    "ord": 0,
+    "val": "SmartQuery_1767787816938"
+  },
+  {
+    "id": 210281,
+    "name": "SmartQuery_1766392506136",
+    "ord": 0,
+    "val": "SmartQuery_1766392506136"
+  },
+  {
+    "id": 237162,
+    "name": "NaturalQuery_1767943675220",
+    "ord": 0,
+    "val": "NaturalQuery_1767943675220"
+  },
+  {
+    "id": 197995,
+    "name": "spaces",
+    "ord": 0,
+    "val": "spaces"
+  },
+  {
+    "id": 206443,
+    "name": "SmartQuery_1765664220246",
+    "ord": 0,
+    "val": "SmartQuery_1765664220246"
+  },
+  {
+    "id": 209259,
+    "name": "my_paid",
+    "ord": 0,
+    "val": "my_paid"
+  },
+  {
+    "id": 217707,
+    "name": "SmartQuery_1766573747194",
+    "ord": 0,
+    "val": "SmartQuery_1766573747194"
+  },
+  {
+    "id": 228971,
+    "name": "SmartQuery_1767621154666",
+    "ord": 0,
+    "val": "SmartQuery_1767621154666"
+  },
+  {
+    "id": 230251,
+    "name": "SmartQuery_1767694213930",
+    "ord": 0,
+    "val": "SmartQuery_1767694213930"
+  },
+  {
+    "id": 227949,
+    "name": "SmartQuery_1767619702419",
+    "ord": 0,
+    "val": "SmartQuery_1767619702419"
+  },
+  {
+    "id": 227694,
+    "name": "SmartQuery_1767618781858",
+    "ord": 0,
+    "val": "SmartQuery_1767618781858"
+  },
+  {
+    "id": 197232,
+    "name": "Связать базы",
+    "ord": 0,
+    "val": "Связать базы"
+  },
+  {
+    "id": 1905,
+    "name": "user_pay",
+    "ord": 0,
+    "val": "user_pay"
+  },
+  {
+    "id": 229233,
+    "name": "SmartQuery_1767640242818",
+    "ord": 0,
+    "val": "SmartQuery_1767640242818"
+  },
+  {
+    "id": 238451,
+    "name": "Find docs with 916814",
+    "ord": 0,
+    "val": "Find docs with 916814"
+  },
+  {
+    "id": 228469,
+    "name": "SmartQuery_1767620511859",
+    "ord": 0,
+    "val": "SmartQuery_1767620511859"
+  },
+  {
+    "id": 217718,
+    "name": "SmartQuery_1766574263512",
+    "ord": 0,
+    "val": "SmartQuery_1766574263512"
+  },
+  {
+    "id": 228216,
+    "name": "SmartQuery_1767620354289",
+    "ord": 0,
+    "val": "SmartQuery_1767620354289"
+  },
+  {
+    "id": 237176,
+    "name": "SmartQuery_1767943682936",
+    "ord": 0,
+    "val": "SmartQuery_1767943682936"
+  },
+  {
+    "id": 208761,
+    "name": "SmartQuery_1766156982506",
+    "ord": 0,
+    "val": "SmartQuery_1766156982506"
+  },
+  {
+    "id": 228986,
+    "name": "SmartQuery_1767621157258",
+    "ord": 0,
+    "val": "SmartQuery_1767621157258"
+  },
+  {
+    "id": 227964,
+    "name": "SmartQuery_1767619704586",
+    "ord": 0,
+    "val": "SmartQuery_1767619704586"
+  },
+  {
+    "id": 227709,
+    "name": "SmartQuery_1767618784378",
+    "ord": 0,
+    "val": "SmartQuery_1767618784378"
+  },
+  {
+    "id": 228736,
+    "name": "SmartQuery_1767620997937",
+    "ord": 0,
+    "val": "SmartQuery_1767620997937"
+  },
+  {
+    "id": 229248,
+    "name": "SmartQuery_1767640245336",
+    "ord": 0,
+    "val": "SmartQuery_1767640245336"
+  },
+  {
+    "id": 229507,
+    "name": "SmartQuery_1767640867147",
+    "ord": 0,
+    "val": "SmartQuery_1767640867147"
+  },
+  {
+    "id": 228484,
+    "name": "SmartQuery_1767620514401",
+    "ord": 0,
+    "val": "SmartQuery_1767620514401"
+  },
+  {
+    "id": 208773,
+    "name": "SmartQuery_1766156996473",
+    "ord": 0,
+    "val": "SmartQuery_1766156996473"
+  },
+  {
+    "id": 236677,
+    "name": "SmartQuery_1767802961733",
+    "ord": 0,
+    "val": "SmartQuery_1767802961733"
+  },
+  {
+    "id": 1158,
+    "name": "user_HiBonus",
+    "ord": 0,
+    "val": "user_HiBonus"
+  },
+  {
+    "id": 228231,
+    "name": "SmartQuery_1767620357011",
+    "ord": 0,
+    "val": "SmartQuery_1767620357011"
+  },
+  {
+    "id": 229001,
+    "name": "SmartQuery_1767621159392",
+    "ord": 0,
+    "val": "SmartQuery_1767621159392"
+  },
+  {
+    "id": 198027,
+    "name": "tokens",
+    "ord": 0,
+    "val": "tokens"
+  },
+  {
+    "id": 4492,
+    "name": " Uniques",
+    "ord": 0,
+    "val": " Uniques"
+  },
+  {
+    "id": 227724,
+    "name": "SmartQuery_1767618786684",
+    "ord": 0,
+    "val": "SmartQuery_1767618786684"
+  },
+  {
+    "id": 143,
+    "name": "",
+    "ord": 0,
+    "val": ""
+  },
+  {
+    "id": 228751,
+    "name": "SmartQuery_1767621000234",
+    "ord": 0,
+    "val": "SmartQuery_1767621000234"
+  },
+  {
+    "id": 2192,
+    "name": "user_newTnx",
+    "ord": 0,
+    "val": "user_newTnx"
+  },
+  {
+    "id": 208784,
+    "name": "ai_model",
+    "ord": 0,
+    "val": "ai_model"
+  },
+  {
+    "id": 59793,
+    "name": " Db Billing daily",
+    "ord": 0,
+    "val": " Db Billing daily"
+  },
+  {
+    "id": 129937,
+    "name": "Stats",
+    "ord": 0,
+    "val": "Stats"
+  },
+  {
+    "id": 229522,
+    "name": "SmartQuery_1767640870199",
+    "ord": 0,
+    "val": "SmartQuery_1767640870199"
+  },
+  {
+    "id": 236691,
+    "name": "SmartQuery_1767802980084",
+    "ord": 0,
+    "val": "SmartQuery_1767802980084"
+  },
+  {
+    "id": 228246,
+    "name": "SmartQuery_1767620360882",
+    "ord": 0,
+    "val": "SmartQuery_1767620360882"
+  },
+  {
+    "id": 229016,
+    "name": "SmartQuery_1767621161684",
+    "ord": 0,
+    "val": "SmartQuery_1767621161684"
+  },
+  {
+    "id": 227739,
+    "name": "SmartQuery_1767618789004",
+    "ord": 0,
+    "val": "SmartQuery_1767618789004"
+  },
+  {
+    "id": 197276,
+    "name": "Доступ к базе данных",
+    "ord": 0,
+    "val": "Доступ к базе данных"
+  },
+  {
+    "id": 220317,
+    "name": "SmartQuery_1766641123633",
+    "ord": 0,
+    "val": "SmartQuery_1766641123633"
+  },
+  {
+    "id": 228766,
+    "name": "SmartQuery_1767621002938",
+    "ord": 0,
+    "val": "SmartQuery_1767621002938"
+  },
+  {
+    "id": 229537,
+    "name": "SmartQuery_1767640872995",
+    "ord": 0,
+    "val": "SmartQuery_1767640872995"
+  },
+  {
+    "id": 236705,
+    "name": "SmartQuery_1767802992766",
+    "ord": 0,
+    "val": "SmartQuery_1767802992766"
+  },
+  {
+    "id": 236962,
+    "name": "SmartQuery_1767853596106",
+    "ord": 0,
+    "val": "SmartQuery_1767853596106"
+  },
+  {
+    "id": 228261,
+    "name": "SmartQuery_1767620364733",
+    "ord": 0,
+    "val": "SmartQuery_1767620364733"
+  },
+  {
+    "id": 229285,
+    "name": "SmartQuery_1767640637917",
+    "ord": 0,
+    "val": "SmartQuery_1767640637917"
+  },
+  {
+    "id": 228008,
+    "name": "SmartQuery_1767619874527",
+    "ord": 0,
+    "val": "SmartQuery_1767619874527"
+  },
+  {
+    "id": 169,
+    "name": "MyRoleMenu",
+    "ord": 0,
+    "val": "MyRoleMenu"
+  },
+  {
+    "id": 227754,
+    "name": "SmartQuery_1767619214813",
+    "ord": 0,
+    "val": "SmartQuery_1767619214813"
+  },
+  {
+    "id": 228781,
+    "name": "SmartQuery_1767621005675",
+    "ord": 0,
+    "val": "SmartQuery_1767621005675"
+  },
+  {
+    "id": 236719,
+    "name": "SmartQuery_1767803016020",
+    "ord": 0,
+    "val": "SmartQuery_1767803016020"
+  },
+  {
+    "id": 236975,
+    "name": "NaturalQuery_1767853859565",
+    "ord": 0,
+    "val": "NaturalQuery_1767853859565"
+  },
+  {
+    "id": 8368,
+    "name": "  turnovers",
+    "ord": 0,
+    "val": "  turnovers"
+  },
+  {
+    "id": 228528,
+    "name": "SmartQuery_1767620744263",
+    "ord": 0,
+    "val": "SmartQuery_1767620744263"
+  },
+  {
+    "id": 229552,
+    "name": "SmartQuery_1767640875314",
+    "ord": 0,
+    "val": "SmartQuery_1767640875314"
+  },
+  {
+    "id": 197298,
+    "name": "app_menu",
+    "ord": 0,
+    "val": "app_menu"
+  },
+  {
+    "id": 177587,
+    "name": "userStats",
+    "ord": 0,
+    "val": "userStats"
+  },
+  {
+    "id": 228276,
+    "name": "SmartQuery_1767620367238",
+    "ord": 0,
+    "val": "SmartQuery_1767620367238"
+  },
+  {
+    "id": 229300,
+    "name": "SmartQuery_1767640641432",
+    "ord": 0,
+    "val": "SmartQuery_1767640641432"
+  },
+  {
+    "id": 208311,
+    "name": "SmartQuery_1766074423262",
+    "ord": 0,
+    "val": "SmartQuery_1766074423262"
+  },
+  {
+    "id": 228023,
+    "name": "SmartQuery_1767619877676",
+    "ord": 0,
+    "val": "SmartQuery_1767619877676"
+  },
+  {
+    "id": 227769,
+    "name": "SmartQuery_1767619217204",
+    "ord": 0,
+    "val": "SmartQuery_1767619217204"
+  },
+  {
+    "id": 177338,
+    "name": "CRM",
+    "ord": 0,
+    "val": "CRM"
+  },
+  {
+    "id": 187,
+    "name": "intReports",
+    "ord": 0,
+    "val": "intReports"
+  },
+  {
+    "id": 228796,
+    "name": "SmartQuery_1767621008199",
+    "ord": 0,
+    "val": "SmartQuery_1767621008199"
+  },
+  {
+    "id": 236732,
+    "name": "SmartQuery_1767803055847",
+    "ord": 0,
+    "val": "SmartQuery_1767803055847"
+  },
+  {
+    "id": 236989,
+    "name": "SmartQuery_1767853866594",
+    "ord": 0,
+    "val": "SmartQuery_1767853866594"
+  },
+  {
+    "id": 228543,
+    "name": "SmartQuery_1767620747099",
+    "ord": 0,
+    "val": "SmartQuery_1767620747099"
+  },
+  {
+    "id": 229567,
+    "name": "SmartQuery_1767640877737",
+    "ord": 0,
+    "val": "SmartQuery_1767640877737"
+  },
+  {
+    "id": 236481,
+    "name": "SmartQuery_1767720387371",
+    "ord": 0,
+    "val": "SmartQuery_1767720387371"
+  },
+  {
+    "id": 229315,
+    "name": "SmartQuery_1767640644833",
+    "ord": 0,
+    "val": "SmartQuery_1767640644833"
+  },
+  {
+    "id": 228038,
+    "name": "SmartQuery_1767619879892",
+    "ord": 0,
+    "val": "SmartQuery_1767619879892"
+  },
+  {
+    "id": 237511,
+    "name": "NaturalQuery_1767946145238",
+    "ord": 0,
+    "val": "NaturalQuery_1767946145238"
+  },
+  {
+    "id": 206280,
+    "name": "SmartQuery_1765660038579",
+    "ord": 0,
+    "val": "SmartQuery_1765660038579"
+  },
+  {
+    "id": 227784,
+    "name": "SmartQuery_1767619219390",
+    "ord": 0,
+    "val": "SmartQuery_1767619219390"
+  },
+  {
+    "id": 22985,
+    "name": " del_empty",
+    "ord": 0,
+    "val": " del_empty"
+  },
+  {
+    "id": 197066,
+    "name": "уд",
+    "ord": 0,
+    "val": "уд"
+  },
+  {
+    "id": 42698,
+    "name": " Activities daily",
+    "ord": 0,
+    "val": " Activities daily"
+  },
+  {
+    "id": 972,
+    "name": "admPay",
+    "ord": 0,
+    "val": "admPay"
+  },
+  {
+    "id": 228558,
+    "name": "SmartQuery_1767620750323",
+    "ord": 0,
+    "val": "SmartQuery_1767620750323"
+  },
+  {
+    "id": 237006,
+    "name": "NaturalQuery_1767855018288",
+    "ord": 0,
+    "val": "NaturalQuery_1767855018288"
+  },
+  {
+    "id": 238287,
+    "name": "SmartQuery_1771476830058",
+    "ord": 0,
+    "val": "SmartQuery_1771476830058"
+  },
+  {
+    "id": 229072,
+    "name": "SmartQuery_1767621258944",
+    "ord": 0,
+    "val": "SmartQuery_1767621258944"
+  },
+  {
+    "id": 1746,
+    "name": "Db",
+    "ord": 0,
+    "val": "Db"
+  },
+  {
+    "id": 229330,
+    "name": "SmartQuery_1767640647132",
+    "ord": 0,
+    "val": "SmartQuery_1767640647132"
+  },
+  {
+    "id": 208341,
+    "name": "исп_токенов",
+    "ord": 0,
+    "val": "исп_токенов"
+  },
+  {
+    "id": 228053,
+    "name": "SmartQuery_1767619882131",
+    "ord": 0,
+    "val": "SmartQuery_1767619882131"
+  },
+  {
+    "id": 237525,
+    "name": "SmartQuery_1767946160662",
+    "ord": 0,
+    "val": "SmartQuery_1767946160662"
+  },
+  {
+    "id": 227799,
+    "name": "SmartQuery_1767619221650",
+    "ord": 0,
+    "val": "SmartQuery_1767619221650"
+  },
+  {
+    "id": 217,
+    "name": "intFormFields",
+    "ord": 0,
+    "val": "intFormFields"
+  },
+  {
+    "id": 9180,
+    "name": "user_Test_stats",
+    "ord": 0,
+    "val": "user_Test_stats"
+  },
+  {
+    "id": 236508,
+    "name": "SmartQuery_1767720827376",
+    "ord": 0,
+    "val": "SmartQuery_1767720827376"
+  },
+  {
+    "id": 237020,
+    "name": "SmartQuery_1767855026090",
+    "ord": 0,
+    "val": "SmartQuery_1767855026090"
+  },
+  {
+    "id": 8413,
+    "name": " old billing",
+    "ord": 0,
+    "val": " old billing"
+  },
+  {
+    "id": 228573,
+    "name": "SmartQuery_1767620752560",
+    "ord": 0,
+    "val": "SmartQuery_1767620752560"
+  },
+  {
+    "id": 238302,
+    "name": "SmartQuery_1771476832552",
+    "ord": 0,
+    "val": "SmartQuery_1771476832552"
+  },
+  {
+    "id": 229087,
+    "name": "SmartQuery_1767621261180",
+    "ord": 0,
+    "val": "SmartQuery_1767621261180"
+  },
+  {
+    "id": 228320,
+    "name": "SmartQuery_1767620474021",
+    "ord": 0,
+    "val": "SmartQuery_1767620474021"
+  },
+  {
+    "id": 229345,
+    "name": "SmartQuery_1767640649529",
+    "ord": 0,
+    "val": "SmartQuery_1767640649529"
+  },
+  {
+    "id": 236769,
+    "name": "SmartQuery_1767843279756",
+    "ord": 0,
+    "val": "SmartQuery_1767843279756"
+  },
+  {
+    "id": 228068,
+    "name": "SmartQuery_1767619884328",
+    "ord": 0,
+    "val": "SmartQuery_1767619884328"
+  },
+  {
+    "id": 227814,
+    "name": "SmartQuery_1767619224364",
+    "ord": 0,
+    "val": "SmartQuery_1767619224364"
+  },
+  {
+    "id": 206055,
+    "name": "потребление_токенов",
+    "ord": 0,
+    "val": "потребление_токенов"
+  },
+  {
+    "id": 236519,
+    "name": "SmartQuery_1767720836512",
+    "ord": 0,
+    "val": "SmartQuery_1767720836512"
+  },
+  {
+    "id": 228840,
+    "name": "SmartQuery_1767621096627",
+    "ord": 0,
+    "val": "SmartQuery_1767621096627"
+  },
+  {
+    "id": 238056,
+    "name": "NaturalQuery_1768114992944",
+    "ord": 0,
+    "val": "NaturalQuery_1768114992944"
+  },
+  {
+    "id": 204266,
+    "name": "SmartQuery_1765128455105",
+    "ord": 0,
+    "val": "SmartQuery_1765128455105"
+  },
+  {
+    "id": 25836,
+    "name": " Users",
+    "ord": 0,
+    "val": " Users"
+  },
+  {
+    "id": 228588,
+    "name": "SmartQuery_1767620754890",
+    "ord": 0,
+    "val": "SmartQuery_1767620754890"
+  },
+  {
+    "id": 237037,
+    "name": "SmartQuery_1767855099225",
+    "ord": 0,
+    "val": "SmartQuery_1767855099225"
+  },
+  {
+    "id": 238317,
+    "name": "SmartQuery_1771476835195",
+    "ord": 0,
+    "val": "SmartQuery_1771476835195"
+  },
+  {
+    "id": 229102,
+    "name": "SmartQuery_1767621263543",
+    "ord": 0,
+    "val": "SmartQuery_1767621263543"
+  },
+  {
+    "id": 228335,
+    "name": "SmartQuery_1767620476285",
+    "ord": 0,
+    "val": "SmartQuery_1767620476285"
+  },
+  {
+    "id": 236783,
+    "name": "SmartQuery_1767843329120",
+    "ord": 0,
+    "val": "SmartQuery_1767843329120"
+  },
+  {
+    "id": 2290,
+    "name": "paid",
+    "ord": 0,
+    "val": "paid"
+  },
+  {
+    "id": 236530,
+    "name": "SmartQuery_1767720855249",
+    "ord": 0,
+    "val": "SmartQuery_1767720855249"
+  },
+  {
+    "id": 204276,
+    "name": "SmartQuery_1765128493139",
+    "ord": 0,
+    "val": "SmartQuery_1765128493139"
+  },
+  {
+    "id": 227829,
+    "name": "SmartQuery_1767619593495",
+    "ord": 0,
+    "val": "SmartQuery_1767619593495"
+  },
+  {
+    "id": 228855,
+    "name": "SmartQuery_1767621098785",
+    "ord": 0,
+    "val": "SmartQuery_1767621098785"
+  },
+  {
+    "id": 238332,
+    "name": "SmartQuery_1771476837392",
+    "ord": 0,
+    "val": "SmartQuery_1771476837392"
+  },
+  {
+    "id": 229117,
+    "name": "SmartQuery_1767621265749",
+    "ord": 0,
+    "val": "SmartQuery_1767621265749"
+  },
+  {
+    "id": 1278,
+    "name": "user_changePlan",
+    "ord": 0,
+    "val": "user_changePlan"
+  },
+  {
+    "id": 228350,
+    "name": "SmartQuery_1767620478622",
+    "ord": 0,
+    "val": "SmartQuery_1767620478622"
+  },
+  {
+    "id": 204287,
+    "name": "SmartQuery_1765128606251",
+    "ord": 0,
+    "val": "SmartQuery_1765128606251"
+  },
+  {
+    "id": 208127,
+    "name": "токен",
+    "ord": 0,
+    "val": "токен"
+  },
+  {
+    "id": 1000006886,
+    "name": "",
+    "ord": 1,
+    "val": ""
+  }
+]

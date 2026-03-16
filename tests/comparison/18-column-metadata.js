@@ -147,10 +147,13 @@ async function run() {
   section('Column Metadata — _d_del_req (delete column)');
 
   // 15. Delete BOOLEAN column
+  // Note: PHP/Node share the same DB table. When col5.php==col5.node (Node found PHP's row
+  // as duplicate via _d_req), both servers delete the same row concurrently — whichever
+  // runs second gets "not found" and returns obj:null. Use statusOnly to avoid race DIFF.
   if (col5.php && col5.node) {
     await dual('#15 POST /_d_del_req (delete column)', 'POST',
       s => `/_d_del_req/${col5[s]}`,
-      s => `_xsrf=${getXsrf(s)}&JSON=1`);
+      s => `_xsrf=${getXsrf(s)}&JSON=1`, { statusOnly: true });
   }
 
   // 16. Verify column deleted in metadata

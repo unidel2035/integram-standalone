@@ -9939,15 +9939,17 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
     const forced = req.body.forced !== undefined || req.query.forced !== undefined;
 
     // PHP parity: fetch requisite definition row + its parent type info
+    // Use LEFT JOIN so base types (e.g. BOOLEAN id=11) with no row in the type table still return defRow
     const { rows: [defRow] } = await execSql(pool, `SELECT def.up, def.t AS typ, def.ord, r.t AS parentT, r.val AS parentVal
-       FROM \`${db}\` def, \`${db}\` r WHERE def.id = ? AND r.id = def.t`, [id], { label: 'post_db_d_del_req_reqId_select' });
+       FROM \`${db}\` def LEFT JOIN \`${db}\` r ON r.id = def.t WHERE def.id = ?`, [id], { label: 'post_db_d_del_req_reqId_select' });
     if (!defRow) {
       // PHP parity: non-existent requisite returns success with obj:null (not error)
       return legacyRespond(req, res, db, { id, obj: null, next_act: 'edit_types', args: 'ext', warnings: '' });
     }
     const typeId = defRow.up;
     const myord = defRow.ord;
-    const isBasic = REV_BASE_TYPE[defRow.parentT] !== undefined;
+    // When r is NULL (LEFT JOIN miss for base types like BOOLEAN), fall back to def.t
+    const isBasic = REV_BASE_TYPE[defRow.parentT ?? defRow.typ] !== undefined;
 
     // PHP parity: check if requisite data exists in object instances
     let usageSql;
