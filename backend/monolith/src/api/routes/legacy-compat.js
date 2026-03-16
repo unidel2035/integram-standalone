@@ -582,7 +582,10 @@ function legacyRespond(req, res, db, data) {
   const reqNextAct = req.body?.next_act || req.query?.next_act;
   const effectiveNextAct = reqNextAct || next_act || '';
 
-  if (effectiveNextAct === 'nul') return res.send('');
+  // PHP (index.php:9241): for nul next_act, always returns JSON with id/obj/a/args fields
+  // as text/html (PHP global Content-Type). Was: res.send('') — broke any code reading result.id.
+  if (effectiveNextAct === 'nul')
+    return res.type('text/html; charset=UTF-8').send(JSON.stringify({ id, obj, a: next_act, args: args || '' }));
 
   // Build redirect URL: /{db}/{next_act}/{id}[/?args][#obj]
   // PHP: "/$z/$next_act/$id" . (strlen($arg) ? "/?$arg" : "") — note slash before ?
@@ -2948,7 +2951,7 @@ async function legacyAuthMiddleware(req, res, next) {
     // No guest user defined — reject
     // PHP: login($z, "", "InvalidToken", ...) → 302 redirect to /login.html
     if (isApiRequest(req)) {
-      return sendLegacyDie(res, t9n(token ? 'invalid_token' : 'auth_required', locale));
+      return sendLegacyDie(res, t9n(token ? 'invalid_token' : 'auth_required', locale), 401);
     }
     const reason = token ? 'InvalidToken' : 'InvalidToken';
     return res.redirect(`/login.html?db=${encodeURIComponent(db)}&r=${reason}&uri=${encodeURIComponent(req.originalUrl)}`);
@@ -6420,7 +6423,10 @@ router.get('/:db/:page*', async (req, res, next) => {
             disabled: [''],
           },
           '&main.a.&object.&edit_req': {
-            type:                ['text'],
+            // PHP (index.php:4466): base=="DATE" ? "date" : "text"
+            // Was: always 'text' — DATE fields rendered as plain text inputs, not date pickers.
+            // obj.base doesn't exist; use objBaseTypId (= obj.base_type_id || obj.t, computed at line 6042)
+            type:                [String(objBaseTypId) === String(TYPE.DATE) ? 'date' : 'text'],
             typ:                 [String(obj.t)],
             '_parent_.val':      [obj.val || ''],
             '_parent_.disabled': [''],
@@ -7982,16 +7988,39 @@ router.post('/:db/_m_set/:id', legacyAuthMiddleware, upload.any(), legacyXsrfChe
           return sendLegacyDie(res, 'Недопустимый тип файла!');
         }
 
-        const subdir = getSubdir(db, objectId);
+        // PHP (index.php:7974-7986): path is derived from the VALUE ROW ID (req_id),
+        // not the parent object ID. PHP queries for the existing FILE attr row or inserts
+        // a new one, then uses that row's ID for GetSubdir/GetFilename.
+        // Was: getSubdir(db, objectId) — used wrong ID, files unlocatable cross-backend.
+        let reqId;
+        const existingFileRow = await getRequisiteByType(db, objectId, typeIdNum);
+        if (existingFileRow) {
+          reqId = existingFileRow.id;
+          // PHP: Update_Val($req_id, $value["name"]) — update filename in the DB row
+          await execSql(pool, `UPDATE \`${db}\` SET val = ? WHERE id = ?`,
+            [uploadedFile.originalname, reqId], { label: 'm_set_file_update_name' });
+        } else {
+          // PHP: Insert($obj, 1, $t, $value["name"]) — create row, get its ID
+          const attrOrder = await calcOrder(pool, db, objectId, typeIdNum);
+          reqId = await insertRow(db, objectId, attrOrder, typeIdNum, uploadedFile.originalname);
+        }
+
+        const subdir = getSubdir(db, reqId);
         const uploadDir = path.join(legacyPath, 'download', db, subdir);
         fs.mkdirSync(uploadDir, { recursive: true });
         const ext = path.extname(uploadedFile.originalname);
-        const baseName = getFilename(db, objectId);
+        const baseName = getFilename(db, reqId);
         const safeName = `${baseName}${ext}`;
         fs.writeFileSync(path.join(uploadDir, safeName), uploadedFile.buffer);
-        finalValue = safeName;
+        // Update DB row with the final safe filename
+        await execSql(pool, `UPDATE \`${db}\` SET val = ? WHERE id = ?`,
+          [safeName, reqId], { label: 'm_set_file_update_safename' });
         uploadedFilePath = `${db}/download/${subdir}/${safeName}`;
-        logger.info('[Legacy _m_set] File saved', { db, attrTypeId, safeName });
+        lastReqId = String(reqId);
+        logger.info('[Legacy _m_set] File saved', { db, attrTypeId, safeName, reqId });
+        // Row already handled above — skip the normal upsert block at end of loop
+        await checkDuplicatedReqs(pool, db, objectId, typeIdNum);
+        continue;
       }
 
       // File deletion: when value cleared and type is FILE, delete old file
@@ -8816,8 +8845,9 @@ router.get('/:db/_ref_reqs/:refId', legacyAuthMiddleware, async (req, res) => {
       // Main query found no rows: either ID doesn't exist, or par.up != 0
       const { rows: simpleRows } = await execSql(pool, `SELECT r.t, r.up FROM ${db} r WHERE r.id = ?`, [id], { label: 'get_db_ref_reqs_refId_select' });
       if (simpleRows.length === 0) {
-        // PHP returns 200 with empty array for invalid/missing IDs
-        return res.status(200).json([]);
+        // PHP (index.php:9013): die('{"error":"Invalid id"}') for id=0 or missing row
+        // Was: res.json([]) — returned empty array, clients couldn't detect the error.
+        return res.status(200).type('text/html; charset=UTF-8').send('{"error":"Invalid id"}');
       }
 
       // Type definitions (up=0) are not reference requisites — return empty array like PHP
@@ -9939,17 +9969,19 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
     const forced = req.body.forced !== undefined || req.query.forced !== undefined;
 
     // PHP parity: fetch requisite definition row + its parent type info
-    // Use LEFT JOIN so base types (e.g. BOOLEAN id=11) with no row in the type table still return defRow
+    // PHP: implicit INNER JOIN — if def.t has no matching row, entire block skipped → obj:null response
+    // NOTE: was changed to LEFT JOIN in c8e5bf2 to fix a test (BOOLEAN deletion) but that masked a
+    //       real mismatch: PHP returns obj:null, Node returned obj:parentTypeId. Test 18#15 was set to
+    //       statusOnly:true to hide the diff. Reverted to INNER JOIN for true PHP parity.
     const { rows: [defRow] } = await execSql(pool, `SELECT def.up, def.t AS typ, def.ord, r.t AS parentT, r.val AS parentVal
-       FROM \`${db}\` def LEFT JOIN \`${db}\` r ON r.id = def.t WHERE def.id = ?`, [id], { label: 'post_db_d_del_req_reqId_select' });
+       FROM \`${db}\` def, \`${db}\` r WHERE def.id = ? AND r.id = def.t`, [id], { label: 'post_db_d_del_req_reqId_select' });
     if (!defRow) {
-      // PHP parity: non-existent requisite returns success with obj:null (not error)
+      // PHP parity: INNER JOIN found no row → block skipped → obj:null response
       return legacyRespond(req, res, db, { id, obj: null, next_act: 'edit_types', args: 'ext', warnings: '' });
     }
     const typeId = defRow.up;
     const myord = defRow.ord;
-    // When r is NULL (LEFT JOIN miss for base types like BOOLEAN), fall back to def.t
-    const isBasic = REV_BASE_TYPE[defRow.parentT ?? defRow.typ] !== undefined;
+    const isBasic = REV_BASE_TYPE[defRow.parentT] !== undefined;
 
     // PHP parity: check if requisite data exists in object instances
     let usageSql;
@@ -9986,10 +10018,11 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
           await recursiveDelete(pool, db, row.id);
         }
       } else {
-        // PHP parity (issue #542): my_die() returns plain object with status 200
-        return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify({
+        // PHP (index.php:985,my_die): on isApi() wraps error in array: [{"error":"..."}]
+        // Was: plain object {"error":"..."} — broke clients doing result[0].error.
+        return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify([{
           error: `You are going to delete a requisite if there are records of this type (total records: ${usageRow.cnt})!`
-        }));
+        }]));
       }
     }
 
@@ -9999,10 +10032,10 @@ router.post('/:db/_d_del_req/:reqId', legacyAuthMiddleware, legacyXsrfCheck, leg
        WHERE \`${db}\`.t = ${TYPE.ROLE} AND \`${db}\`.up = 1
        AND reqs.up = \`${db}\`.id AND reqs.val = ? LIMIT 1`, [String(id), String(id)], { label: 'post_db_d_del_req_reqId_select' });
     if (repRoleRow) {
-      // PHP parity (issue #542): my_die() returns plain object with status 200
-      return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify({
+      // PHP (index.php:985,my_die): array-wrapped [{"error":"..."}]
+      return res.status(200).type('text/html; charset=UTF-8').send(JSON.stringify([{
         error: `The requisite is used in reports or roles!`
-      }));
+      }]));
     }
 
     // Delete the requisite
@@ -10372,9 +10405,9 @@ router.all('/:db/obj_meta/:id', legacyAuthMiddleware, async (req, res) => {
         reqEntry.ref    = String(row.ref_col);
         reqEntry.ref_id = String(row.ref_id);
       }
-      // PHP normalizes attrs to just "1" (flag indicating attributes exist)
-      // rather than exposing the raw attribute ID value from req.val
-      if (row.attrs) reqEntry.attrs = '1';
+      // PHP (index.php:8860): returns the raw attrs string from DB: ."attrs":"{row.attrs}"
+      // Was: hardcoded '1' — type configuration flags were always reported wrong.
+      if (row.attrs) reqEntry.attrs = String(row.attrs);
       reqs[String(row.ord)] = reqEntry;
     }
 
@@ -10923,9 +10956,11 @@ function createDiskUpload(db) {
     storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
     fileFilter: (req, file, cb) => {
-      // Basic MIME / extension allow-list matching PHP behaviour
-      const allowed = /\.(pdf|doc|docx|xls|xlsx|csv|txt|png|jpg|jpeg|gif|zip|rar|7z|odt|ods)$/i;
-      if (!allowed.test(file.originalname)) {
+      // PHP (index.php:574-577): BlackList() — blocklist of dangerous server-side extensions only.
+      // Was: allowlist — silently rejected .html/.xml/.bki/.dmp/.svg and other legitimate types.
+      const ext = (file.originalname.match(/\.([^.]+)$/) || [])[1] || '';
+      const blocked = /^(php\d?|cgi|pl|fcgi|fpl|phtml|shtml|asp|jsp)$/i;
+      if (blocked.test(ext)) {
         return cb(new Error('Wrong file extension!'));
       }
       cb(null, true);
@@ -14270,10 +14305,11 @@ router.post('/:db/restore', (req, res, next) => {
       if (!dmpEntry) return res.status(400).json([{ error: 'No .dmp file found in ZIP' }]);
       dumpContent = dmpEntry.content.toString('utf8');
     } else if (req.body?.backup_file || req.query?.backup_file) {
-      // PHP: ?backup_file=path reads a ZIP from the filesystem
-      // Restrict to the db's download directory (no path traversal)
+      // PHP (index.php:4183): reads backup_file from templates/custom/{db}/backups/
+      // — the same directory that the backup endpoint writes ZIP files to.
+      // Was: legacyPath/download/{db} — a different directory, restore never found backups.
       const backupFileName = path.basename(req.body.backup_file || req.query.backup_file);
-      const backupDir = path.join(legacyPath, 'download', db);
+      const backupDir = path.join(legacyPath, 'templates', 'custom', db, 'backups');
       const backupFilePath = path.join(backupDir, backupFileName);
       if (!backupFilePath.startsWith(backupDir + path.sep) && backupFilePath !== backupDir) {
         return res.status(400).json([{ error: 'Invalid backup_file path' }]);
@@ -14303,7 +14339,9 @@ router.post('/:db/restore', (req, res, next) => {
     }
 
     // Parse the dump format (PHP lines 4196–4237)
-    const lines = dumpContent.split('\n');
+    // PHP uses fgets() + substr(...,-1) which strips the trailing newline including \r on CRLF files.
+    // Split on \n and strip \r so CRLF dumps don't get trailing \r in every val.
+    const lines = dumpContent.split('\n').map(l => l.endsWith('\r') ? l.slice(0, -1) : l);
     let lastId = 0;
     let lastUp = 0;
     let lastT = 0;
@@ -14316,24 +14354,30 @@ router.post('/:db/restore', (req, res, next) => {
       if (line.charCodeAt(0) === 0xFEFF) line = line.substring(1);
 
       // Parse ID delta
+      // PHP (index.php:4204-4222): '/' means id+1, up is CARRIED OVER from previous row
+      // (up-parse is inside the else{} block, skipped for '/').
+      // Was: up-parse was outside if/else — '/' lines incorrectly read t as up, ord as t.
+      let delimPos = -1;
       if (line.startsWith('/')) {
         lastId++;
         line = line.substring(1);
-      } else if (line.startsWith(';')) {
-        lastId++;
-        line = line.substring(1);
+        // lastUp intentionally not updated — PHP keeps it from the previous row
       } else {
-        const delimPos = line.indexOf(';');
-        if (delimPos > 0) lastId += parseInt(line.substring(0, delimPos), 36);
+        if (line.startsWith(';')) {
+          lastId++;
+          line = line.substring(1);
+        } else {
+          delimPos = line.indexOf(';');
+          if (delimPos > 0) lastId += parseInt(line.substring(0, delimPos), 36);
+          line = line.substring(delimPos + 1);
+        }
+        // Parse up — only for non-'/' lines (matches PHP else{} block structure)
+        delimPos = line.indexOf(';');
+        if (delimPos > 0) lastUp = parseInt(line.substring(0, delimPos), 36);
         line = line.substring(delimPos + 1);
       }
 
-      // Parse up
-      let delimPos = line.indexOf(';');
-      if (delimPos > 0) lastUp = parseInt(line.substring(0, delimPos), 36);
-      line = line.substring(delimPos + 1);
-
-      // Parse t
+      // Parse t (always, for all line types — including '/' lines)
       delimPos = line.indexOf(';');
       if (delimPos > 0) lastT = parseInt(line.substring(0, delimPos), 36);
       line = line.substring(delimPos + 1);
