@@ -1,0 +1,28 @@
+{
+  "baseType": 3,
+  "id": 1000021217,
+  "name": "__ldc_item_1773618894660",
+  "order": 0,
+  "requisites": [
+    {
+      "alias": null,
+      "id": 1000021218,
+      "multi": false,
+      "name": "",
+      "order": 1,
+      "refType": 1000021207,
+      "required": false,
+      "type": 1000021207
+    },
+    {
+      "alias": null,
+      "id": 1000021219,
+      "multi": false,
+      "name": "",
+      "order": 2,
+      "refType": 1000021216,
+      "required": false,
+      "type": 1000021216
+    }
+  ]
+}

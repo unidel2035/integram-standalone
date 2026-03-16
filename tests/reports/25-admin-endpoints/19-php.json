@@ -1,1 +1,5 @@
-Invalid Term id 3
+[
+  {
+    "error": "Ошибка авторизации my"
+  }
+]

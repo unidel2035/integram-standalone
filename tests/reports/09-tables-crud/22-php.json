@@ -1,7 +1,5 @@
-{
-  "id": 1000012673,
-  "obj": null,
-  "next_act": "edit_types",
-  "args": "ext",
-  "warnings": ""
-}
+[
+  {
+    "error": "Ошибка авторизации my"
+  }
+]

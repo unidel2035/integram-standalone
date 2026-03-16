@@ -1,5 +1,5 @@
 [
   {
-    "error": "Couldn't execute query [insertRow_query] Unknown column 'NaN' in 'VALUES' (INSERT INTO `my` (up, ord, t, val) VALUES (?, ?, ?, ?))"
+    "error": "typeId required: /my/object/{id}?JSON"
   }
 ]

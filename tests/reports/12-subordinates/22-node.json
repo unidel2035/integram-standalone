@@ -1,5 +1,5 @@
 [
   {
-    "error": "objectId required: /my/edit_obj/{id}?JSON"
+    "error": "typeId required: /my/object/{id}?JSON"
   }
 ]
