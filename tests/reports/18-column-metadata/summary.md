@@ -1,6 +1,6 @@
 # 18-column-metadata
 
-**19 MATCH / 0 DIFF** out of 19 tests
+**17 MATCH / 2 DIFF** out of 19 tests
 
 | # | Test | Method | PHP | Node | Result |
 |---|------|--------|-----|------|--------|
@@ -19,7 +19,31 @@
 | 13 | #13 POST /_d_attrs (set attrs) | POST | 200 | 200 | MATCH |
 | 14 | #14 POST /_d_attrs (clear attrs) | POST | 200 | 200 | MATCH |
 | 15 | #15 POST /_d_del_req (delete column) | POST | 200 | 200 | MATCH |
-| 16 | #16 GET /metadata (after delete col) | GET | 200 | 200 | MATCH |
+| 16 | #16 GET /metadata (after delete col) | GET | 200 | 200 | DIFF |
 | 17 | #17 POST /_d_del_req (already deleted) | POST | 200 | 200 | MATCH |
 | 18 | #18 GET /edit_types (full state) | GET | 200 | 200 | MATCH |
-| 19 | #19 GET /metadata (final) | GET | 200 | 200 | MATCH |
+| 19 | #19 GET /metadata (final) | GET | 200 | 200 | DIFF |
+
+---
+### DIFF 16: #16 GET /metadata (after delete col)
+
+- **PHP path:** `/metadata/1000031716?JSON=1`
+- **Node path:** `/metadata/1000031717?JSON=1`
+- **PHP status:** 200
+- **Node status:** 200
+
+- val[reqs]: PHP=[{"id":"__ID__","num":1,"orig":"__ID__",... Node=[{"attrs":":ALIAS=Стоимость::ALIAS=Price...
+
+Full responses: [16-php.json](./16-php.json) | [16-node.json](./16-node.json)
+
+---
+### DIFF 19: #19 GET /metadata (final)
+
+- **PHP path:** `/metadata/1000031716?JSON=1`
+- **Node path:** `/metadata/1000031717?JSON=1`
+- **PHP status:** 200
+- **Node status:** 200
+
+- val[reqs]: PHP=[{"id":"__ID__","num":1,"orig":"__ID__",... Node=[{"attrs":":ALIAS=Стоимость::ALIAS=Price...
+
+Full responses: [19-php.json](./19-php.json) | [19-node.json](./19-node.json)

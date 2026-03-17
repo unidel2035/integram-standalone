@@ -1,6 +1,6 @@
 # 16-datatable-patterns — DataTable Component Patterns
 
-24 MATCH / 0 DIFF out of 24 tests
+22 MATCH / 2 DIFF out of 24 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -26,5 +26,23 @@
 | 20 | #20 POST /_m_save (copy row) | 200 | 200 | MATCH |
 | 21 | #21 GET /metadata (DataTable columns) | 200 | 200 | MATCH |
 | 22 | #22 GET /obj_meta (row meta) | 200 | 200 | MATCH |
-| 23 | #23 GET /object (final state) | 200 | 200 | MATCH |
-| 24 | #24 GET /object (final count) | 200 | 200 | MATCH |
+| 23 | #23 GET /object (final state) | 200 | 200 | DIFF: val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT","LEFT","LEFT","LEFT","L... Node={"align":["LEFT","LEFT","LEFT","LEFT","L... |
+| 24 | #24 GET /object (final count) | 200 | 200 | DIFF: val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT","LEFT","LEFT","LEFT","L... Node={"align":["LEFT","LEFT","LEFT","LEFT","L... |
+
+## Diffs Detail
+
+### #23 GET /object (final state)
+
+- val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT","LEFT","LEFT","LEFT","L... Node={"align":["LEFT","LEFT","LEFT","LEFT","L...
+- val[&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs]: PHP={"align":["LEFT","LEFT","RIGHT","LEFT","... Node={"align":["LEFT","LEFT","RIGHT","LEFT","...
+- val[object]: PHP=[{"base":"__ID__","id":"__ID__","up":"1"... Node=[{"base":"__ID__","id":"__ID__","up":"1"...
+- PHP: `{"&main.a":{"_parent_.title":["__dt_tasks_1773722654190"]},"type":{"id":1000031592,"up":1,"val":"__dt_tasks_1773722654190","base":"SHORT"},"base":{"id...`
+- Node: `{"&main.a":{"_parent_.title":["__dt_tasks_1773722654190"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":[""],"filt...`
+
+### #24 GET /object (final count)
+
+- val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT","LEFT","LEFT","LEFT","L... Node={"align":["LEFT","LEFT","LEFT","LEFT","L...
+- val[&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs]: PHP={"align":["LEFT","LEFT","RIGHT","LEFT","... Node={"align":["LEFT","LEFT","RIGHT","LEFT","...
+- val[object]: PHP=[{"base":"__ID__","id":"__ID__","up":"1"... Node=[{"base":"__ID__","id":"__ID__","up":"1"...
+- PHP: `{"&main.a":{"_parent_.title":["__dt_tasks_1773722654190"]},"type":{"id":1000031592,"up":1,"val":"__dt_tasks_1773722654190","base":"SHORT"},"base":{"id...`
+- Node: `{"&main.a":{"_parent_.title":["__dt_tasks_1773722654190"]},"&main.a.&uni_obj":{"base_typ":["3"],"create_granted":["block"],"f_i":[""],"f_u":[""],"filt...`

@@ -1,0 +1,82 @@
+{
+  "obj": {
+    "id": "1000031091",
+    "val": "Alpha",
+    "parent": "1",
+    "typ": "1000031084",
+    "typ_name": "__lst_main_1773721911700",
+    "base_typ": "3"
+  },
+  "&main.a.&object": {
+    "typ": [
+      "1000031084",
+      "1000031084"
+    ],
+    "up": [
+      "1"
+    ],
+    "typ_name": [
+      "__lst_main_1773721911700",
+      "__lst_main_1773721911700"
+    ],
+    "val": [
+      "Alpha",
+      "Alpha"
+    ],
+    "id": [
+      "1000031091"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "type": [
+      "text"
+    ],
+    "typ": [
+      "1000031084"
+    ],
+    "_parent_.val": [
+      "Alpha"
+    ],
+    "_parent_.disabled": [
+      ""
+    ]
+  },
+  "reqs": {
+    "1000031086": {
+      "type": "__dt_tasks_1773635278616",
+      "order": "1",
+      "value": "",
+      "base": "SHORT"
+    }
+  },
+  "&main.a.&object.&object_reqs": {
+    "typ": [
+      "1000031086"
+    ],
+    "typ_name": [
+      "__dt_tasks_1773635278616"
+    ],
+    "enable_save": [
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_array": {
+    "typ": [
+      "1000027673"
+    ],
+    "_parent_.id": [
+      "1000031091"
+    ],
+    "_parent_.arr_num": [
+      "0"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      ""
+    ]
+  }
+}

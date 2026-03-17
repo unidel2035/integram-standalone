@@ -1,12 +1,12 @@
 # 07-refs-multi — References & Multiselect
 
-19 MATCH / 0 DIFF out of 19 tests
+18 MATCH / 1 DIFF out of 19 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
 | 1 | GET /_ref_reqs/:reqId | 200 | 200 | MATCH |
 | 2 | GET /_ref_reqs?q=Opt1 | 200 | 200 | MATCH |
-| 3 | GET /_ref_reqs (bad id) | 200 | 200 | MATCH |
+| 3 | GET /_ref_reqs (bad id) | 200 | 200 | DIFF: type: PHP=array Node=object |
 | 4 | POST /_m_set (ref value) | 200 | 200 | MATCH |
 | 5 | POST /_m_set (clear ref) | 200 | 200 | MATCH |
 | 6 | POST /_d_multi (enable) | 200 | 200 | MATCH |
@@ -23,3 +23,11 @@
 | 17 | GET /object (col-as-table) | 200 | 200 | MATCH |
 | 18 | POST /_d_del_req (remove ref) | 200 | 200 | MATCH |
 | 19 | GET /edit_obj (with refs) | 200 | 200 | MATCH |
+
+## Diffs Detail
+
+### GET /_ref_reqs (bad id)
+
+- type: PHP=array Node=object
+- PHP: `[]`
+- Node: `{"error":"Invalid id"}`

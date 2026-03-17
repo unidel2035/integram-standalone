@@ -1,0 +1,47 @@
+{
+  "obj": {
+    "id": "1000031068",
+    "val": "ParentA",
+    "parent": "1",
+    "typ": "1000031058",
+    "typ_name": "__ref_parent_1773721687139",
+    "base_typ": "3"
+  },
+  "&main.a.&object": {
+    "typ": [
+      "1000031058",
+      "1000031058"
+    ],
+    "up": [
+      "1"
+    ],
+    "typ_name": [
+      "__ref_parent_1773721687139",
+      "__ref_parent_1773721687139"
+    ],
+    "val": [
+      "ParentA",
+      "ParentA"
+    ],
+    "id": [
+      "1000031068"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "type": [
+      "text"
+    ],
+    "typ": [
+      "1000031058"
+    ],
+    "_parent_.val": [
+      "ParentA"
+    ],
+    "_parent_.disabled": [
+      ""
+    ]
+  }
+}

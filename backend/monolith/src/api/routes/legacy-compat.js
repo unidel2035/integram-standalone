@@ -5201,7 +5201,7 @@ router.get('/:db/:page*', async (req, res, next) => {
     return next();
   }
 
-  const { token } = extractToken(req, db);
+  const { token, tokenType } = extractToken(req, db);
 
   // If no token and not auth-related, redirect to login
   // PHP: login($z, "", "InvalidToken") → /login.html?db=...&r=InvalidToken&uri=...
@@ -5239,6 +5239,25 @@ router.get('/:db/:page*', async (req, res, next) => {
 
     try {
       const pool = getPool();
+
+      // Inline grant loading — this handler has no legacyAuthMiddleware so we load
+      // grants directly from the token to support grant-based checks below.
+      let _pageGrants = {};
+      let _pageUsername = '';
+      if (token) {
+        try {
+          const { rows: _pgRows } = await execSql(pool, `SELECT u.val uname, role_def.id roleId
+             FROM \`${db}\` u
+             JOIN \`${db}\` tok ON tok.up=u.id AND tok.t=? AND tok.val=?
+             LEFT JOIN (\`${db}\` r CROSS JOIN \`${db}\` role_def)
+               ON r.up=u.id AND role_def.id=r.t AND role_def.t=${TYPE.ROLE}
+             WHERE u.t=${TYPE.USER} LIMIT 1`, [tokenType, token], { label: 'page_grants_load' });
+          if (_pgRows.length > 0 && _pgRows[0].roleId) {
+            _pageGrants = await getGrants(pool, db, _pgRows[0].roleId, { username: _pgRows[0].uname || '' });
+            _pageUsername = _pgRows[0].uname || '';
+          }
+        } catch (_) { /* non-fatal */ }
+      }
 
       // ── GET/POST /:db/object/:typeId?JSON → {"object":[{id,val,up,base,ord}]}
       // ── GET     /:db/object/:typeId?JSON_DATA → [{i,u,o,r:[vals]}] compact
@@ -5537,7 +5556,7 @@ router.get('/:db/:page*', async (req, res, next) => {
 
         // ── 3. Build req_base / req_base_id / req_type / req_order / req_attrs / arr_type / ref_type ──
         // PHP parity (bug 1.3): skip BARRED reqs — hide them from read-side output
-        const termsGrants = (req.legacyUser && req.legacyUser.grants) || {};
+        const termsGrants = _pageGrants;
         const req_base    = {};
         const req_base_id = {};
         const req_type    = {};
@@ -5873,8 +5892,8 @@ router.get('/:db/:page*', async (req, res, next) => {
         const hasMultiselectcell = Object.keys(multiselectcellData).length > 0;
 
         // PHP parity (bug 2.2): Grant_1level($id)=="WRITE" || Check_Grant($f_u,$id,"WRITE",FALSE)
-        const _objGrants = (req.legacyUser && req.legacyUser.grants) || {};
-        const _objUsername = (req.legacyUser && req.legacyUser.username) || '';
+        const _objGrants = _pageGrants;
+        const _objUsername = _pageUsername;
         const _g1 = await grant1Level(pool, db, _objGrants, typeId, _objUsername);
         const _createGranted = (_g1 === 'WRITE') || await checkGrant(pool, db, _objGrants, fuParamNum, typeId, 'WRITE', _objUsername);
 
@@ -6317,10 +6336,10 @@ router.get('/:db/:page*', async (req, res, next) => {
         const refTypesNeeded = new Set();
 
         // PHP parity (bug 1.3): skip BARRED reqs in edit_obj — PHP L6411-6413
-        const editGrants = (req.legacyUser && req.legacyUser.grants) || {};
+        const editGrants = _pageGrants;
 
         // PHP parity (bug 2.5): Check_Grant($id,0,"WRITE",FALSE) || Check_Val_granted($t,$val,$id)
-        const _editUn = (req.legacyUser && req.legacyUser.username) || '';
+        const _editUn = _pageUsername;
         let parentDisabled;
         if (await checkGrant(pool, db, editGrants, obj.id, 0, 'WRITE', _editUn)) {
           parentDisabled = '';

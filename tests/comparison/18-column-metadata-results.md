@@ -1,6 +1,6 @@
 # 18-column-metadata — Column Metadata Operations
 
-19 MATCH / 0 DIFF out of 19 tests
+17 MATCH / 2 DIFF out of 19 tests
 
 | # | Test | PHP | Node | Result |
 |---|------|-----|------|--------|
@@ -19,7 +19,21 @@
 | 13 | #13 POST /_d_attrs (set attrs) | 200 | 200 | MATCH |
 | 14 | #14 POST /_d_attrs (clear attrs) | 200 | 200 | MATCH |
 | 15 | #15 POST /_d_del_req (delete column) | 200 | 200 | MATCH |
-| 16 | #16 GET /metadata (after delete col) | 200 | 200 | MATCH |
+| 16 | #16 GET /metadata (after delete col) | 200 | 200 | DIFF: val[reqs]: PHP=[{"id":"__ID__","num":1,"orig":"__ID__",... Node=[{"attrs":":ALIAS=Стоимость::ALIAS=Price... |
 | 17 | #17 POST /_d_del_req (already deleted) | 200 | 200 | MATCH |
 | 18 | #18 GET /edit_types (full state) | 200 | 200 | MATCH |
-| 19 | #19 GET /metadata (final) | 200 | 200 | MATCH |
+| 19 | #19 GET /metadata (final) | 200 | 200 | DIFF: val[reqs]: PHP=[{"id":"__ID__","num":1,"orig":"__ID__",... Node=[{"attrs":":ALIAS=Стоимость::ALIAS=Price... |
+
+## Diffs Detail
+
+### #16 GET /metadata (after delete col)
+
+- val[reqs]: PHP=[{"id":"__ID__","num":1,"orig":"__ID__",... Node=[{"attrs":":ALIAS=Стоимость::ALIAS=Price...
+- PHP: `{"id":"1000031716","up":"0","type":"3","val":"__colm_tasks_1773722658906","unique":"0","reqs":[{"num":1,"id":"1000031722","val":"__sys_bt13_1773722657...`
+- Node: `{"id":"1000031717","reqs":[{"attrs":":ALIAS=Стоимость::ALIAS=Price:","id":"1000031723","num":1,"orig":"1000031697","type":"13","val":"__sys_bt13_17737...`
+
+### #19 GET /metadata (final)
+
+- val[reqs]: PHP=[{"id":"__ID__","num":1,"orig":"__ID__",... Node=[{"attrs":":ALIAS=Стоимость::ALIAS=Price...
+- PHP: `{"id":"1000031716","up":"0","type":"3","val":"__colm_tasks_1773722658906","unique":"0","reqs":[{"num":1,"id":"1000031722","val":"__sys_bt13_1773722657...`
+- Node: `{"id":"1000031717","reqs":[{"attrs":":ALIAS=Стоимость::ALIAS=Price:","id":"1000031723","num":1,"orig":"1000031697","type":"13","val":"__sys_bt13_17737...`

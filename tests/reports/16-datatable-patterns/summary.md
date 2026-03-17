@@ -1,6 +1,6 @@
 # 16-datatable-patterns
 
-**24 MATCH / 0 DIFF** out of 24 tests
+**22 MATCH / 2 DIFF** out of 24 tests
 
 | # | Test | Method | PHP | Node | Result |
 |---|------|--------|-----|------|--------|
@@ -26,5 +26,33 @@
 | 20 | #20 POST /_m_save (copy row) | POST | 200 | 200 | MATCH |
 | 21 | #21 GET /metadata (DataTable columns) | GET | 200 | 200 | MATCH |
 | 22 | #22 GET /obj_meta (row meta) | GET | 200 | 200 | MATCH |
-| 23 | #23 GET /object (final state) | GET | 200 | 200 | MATCH |
-| 24 | #24 GET /object (final count) | GET | 200 | 200 | MATCH |
+| 23 | #23 GET /object (final state) | GET | 200 | 200 | DIFF |
+| 24 | #24 GET /object (final count) | GET | 200 | 200 | DIFF |
+
+---
+### DIFF 23: #23 GET /object (final state)
+
+- **PHP path:** `/object/1000031592?JSON=1`
+- **Node path:** `/object/1000031591?JSON=1`
+- **PHP status:** 200
+- **Node status:** 200
+
+- val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT","LEFT","LEFT","LEFT","L... Node={"align":["LEFT","LEFT","LEFT","LEFT","L...
+- val[&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs]: PHP={"align":["LEFT","LEFT","RIGHT","LEFT","... Node={"align":["LEFT","LEFT","RIGHT","LEFT","...
+- val[object]: PHP=[{"base":"__ID__","id":"__ID__","up":"1"... Node=[{"base":"__ID__","id":"__ID__","up":"1"...
+
+Full responses: [23-php.json](./23-php.json) | [23-node.json](./23-node.json)
+
+---
+### DIFF 24: #24 GET /object (final count)
+
+- **PHP path:** `/object/1000031592?LIMIT=0&JSON=1`
+- **Node path:** `/object/1000031591?LIMIT=0&JSON=1`
+- **PHP status:** 200
+- **Node status:** 200
+
+- val[&main.a.&uni_obj.&uni_obj_all]: PHP={"align":["LEFT","LEFT","LEFT","LEFT","L... Node={"align":["LEFT","LEFT","LEFT","LEFT","L...
+- val[&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs]: PHP={"align":["LEFT","LEFT","RIGHT","LEFT","... Node={"align":["LEFT","LEFT","RIGHT","LEFT","...
+- val[object]: PHP=[{"base":"__ID__","id":"__ID__","up":"1"... Node=[{"base":"__ID__","id":"__ID__","up":"1"...
+
+Full responses: [24-php.json](./24-php.json) | [24-node.json](./24-node.json)

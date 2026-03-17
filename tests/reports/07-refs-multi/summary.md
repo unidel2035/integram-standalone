@@ -1,12 +1,12 @@
 # 07-refs-multi
 
-**19 MATCH / 0 DIFF** out of 19 tests
+**18 MATCH / 1 DIFF** out of 19 tests
 
 | # | Test | Method | PHP | Node | Result |
 |---|------|--------|-----|------|--------|
 | 01 | GET /_ref_reqs/:reqId | GET | 200 | 200 | MATCH |
 | 02 | GET /_ref_reqs?q=Opt1 | GET | 200 | 200 | MATCH |
-| 03 | GET /_ref_reqs (bad id) | GET | 200 | 200 | MATCH |
+| 03 | GET /_ref_reqs (bad id) | GET | 200 | 200 | DIFF |
 | 04 | POST /_m_set (ref value) | POST | 200 | 200 | MATCH |
 | 05 | POST /_m_set (clear ref) | POST | 200 | 200 | MATCH |
 | 06 | POST /_d_multi (enable) | POST | 200 | 200 | MATCH |
@@ -23,3 +23,15 @@
 | 17 | GET /object (col-as-table) | GET | 200 | 200 | MATCH |
 | 18 | POST /_d_del_req (remove ref) | POST | 200 | 200 | MATCH |
 | 19 | GET /edit_obj (with refs) | GET | 200 | 200 | MATCH |
+
+---
+### DIFF 03: GET /_ref_reqs (bad id)
+
+- **PHP path:** `/_ref_reqs/999999999`
+- **Node path:** `/_ref_reqs/999999999`
+- **PHP status:** 200
+- **Node status:** 200
+
+- type: PHP=array Node=object
+
+Full responses: [03-php.json](./03-php.json) | [03-node.json](./03-node.json)

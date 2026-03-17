@@ -1,0 +1,82 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__lst_empty_1773721911700"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "none"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000031101"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000031101"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__lst_empty_1773721911700"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000031101"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000031101"
+    ],
+    "_parent_.val": [
+      "__lst_empty_1773721911700"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000031101,
+    "up": 1,
+    "val": "__lst_empty_1773721911700"
+  }
+}

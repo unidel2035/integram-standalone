@@ -1,0 +1,239 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__file_docs_1773722656863"
+    ]
+  },
+  "type": {
+    "id": 1000031699,
+    "up": 1,
+    "val": "__file_docs_1773722656863",
+    "base": "SHORT"
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "&main.a.&uni_obj": {
+    "create_granted": [
+      "block"
+    ],
+    "id": [
+      "1000031699"
+    ],
+    "f_u": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "unique": [
+      ""
+    ],
+    "base_typ": [
+      "3"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "val": [
+      "__file_docs_1773722656863"
+    ],
+    "typ": [
+      "1000031699"
+    ],
+    "f_i": [
+      ""
+    ],
+    "lnx": [
+      "0"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "new_req": [
+      ""
+    ],
+    "_parent_.typ": [
+      "1000031699"
+    ],
+    "_parent_.val": [
+      "__file_docs_1773722656863"
+    ]
+  },
+  "req_base": {
+    "1000031700": "SHORT",
+    "1000031702": "FILE"
+  },
+  "req_base_id": {
+    "1000031700": "3",
+    "1000031702": "10"
+  },
+  "req_attrs": {
+    "1000031700": "",
+    "1000031702": ""
+  },
+  "req_type": {
+    "1000031700": "__dt_prio_1773722654190",
+    "1000031702": "__sys_bt10_1773636931826"
+  },
+  "req_order": [
+    "1000031700",
+    "1000031702"
+  ],
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "ref": [
+      "",
+      ""
+    ],
+    "multi": [
+      "",
+      ""
+    ],
+    "array": [
+      "",
+      ""
+    ],
+    "mandatory": [
+      "",
+      ""
+    ],
+    "grant": [
+      "",
+      ""
+    ],
+    "arr_type": [
+      "",
+      ""
+    ],
+    "ref_type": [
+      "",
+      ""
+    ],
+    "typ": [
+      "1000031700",
+      "1000031702"
+    ],
+    "base_typ": [
+      "3",
+      "10"
+    ],
+    "id": [
+      "1000031699",
+      "1000031699"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "val": [
+      "__dt_prio_1773722654190",
+      "__sys_bt10_1773636931826"
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000031699"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000031700",
+      "1000031702"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "f_typ": [
+      "F_1000031700",
+      "F_1000031702"
+    ],
+    "_parent_.ref": [
+      "1000031700",
+      "1000031702"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "_parent_.dd": [
+      "",
+      ""
+    ]
+  },
+  "object": [
+    {
+      "id": "1000031704",
+      "up": "1",
+      "val": "TestDoc1",
+      "base": "1000031699"
+    },
+    {
+      "id": "1000031706",
+      "up": "1",
+      "val": "TestDoc2",
+      "base": "1000031699"
+    }
+  ],
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "id": [
+      "1000031704",
+      "1000031706"
+    ],
+    "align": [
+      "LEFT",
+      "LEFT"
+    ],
+    "val": [
+      "TestDoc1",
+      "TestDoc2"
+    ]
+  },
+  "reqs": {
+    "1000031704": {
+      "1000031702": "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/708ac44f476.txt\">test_doc.txt</a>"
+    }
+  },
+  "&object_reqs": {
+    "1000031704": [
+      "",
+      "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/708ac44f476.txt\">test_doc.txt</a>"
+    ],
+    "1000031706": [
+      "",
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "base": [
+      "SHORT",
+      "FILE",
+      "SHORT",
+      "FILE"
+    ],
+    "val": [
+      "",
+      "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/708ac44f476.txt\">test_doc.txt</a>",
+      "",
+      ""
+    ]
+  }
+}
