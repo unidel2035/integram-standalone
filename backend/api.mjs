@@ -78,6 +78,7 @@ import billingRoutes    from './src/api/routes/billing.js'
 import { logUsage, incrementUsage, checkTokenQuota, deductTokens } from './src/services/billingService.js'
 import { refreshConfig } from './src/services/fstConfigService.js'
 import { createKAGFstMCPRoutes } from './src/api/routes/kag.js'
+import { createClaudeMemoryRoutes } from './src/api/routes/claude-memory.js'
 
 const app = express()
 const server = createServer(app)
@@ -607,6 +608,9 @@ app.post('/api/doc-blocks/:docId/sync', async (req, res) => {
 
 app.get('/api/debate/sessions', (req, res) => res.json([]))
 app.get('/api/debate/sessions/:id', (req, res) => res.status(404).json({ error: 'Session not found' }))
+
+// ── AnamnesisMemory (Claude Memory — факты, семантика, нарратив) ─────────────
+app.use('/api/claude-memory', createClaudeMemoryRoutes())
 
 // ── KAG Memory (Knowledge Graph) ─────────────────────────────────────────────
 app.use('/api/mcp/kag-fst', createKAGFstMCPRoutes())

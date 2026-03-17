@@ -27,6 +27,7 @@
   "author": "FST NTI",
   "license": "UNLICENSED",
   "dependencies": {
+    "axios": "^1.13.6",
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
@@ -36,6 +37,7 @@
     "node-fetch": "^3.3.2",
     "node-pty": "^1.1.0",
     "node-telegram-bot-api": "^0.66.0",
+    "openai": "^6.31.0",
     "pdf-parse": "^2.4.5",
     "socks-proxy-agent": "^8.0.2",
     "swagger-ui-express": "^5.0.0",
