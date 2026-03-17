@@ -32,18 +32,133 @@
       </div>
     </div>
 
-    <!-- ─── Filters bar ─── -->
+    <!-- ─── View Tabs + Filters bar ─── -->
     <div class="fsp-filter-bar">
-      <Select v-model="filterSubfund" :options="subfundOptions" placeholder="Все субфонды" class="fsp-filter-sel" size="small" />
-      <Select v-model="filterStatus" :options="statusOptions" placeholder="Все статусы" class="fsp-filter-sel" size="small" />
-      <span class="fsp-search-wrap">
-        <i class="pi pi-search" style="font-size:12px;color:var(--p-text-muted-color)" />
-        <InputText v-model="searchQuery" placeholder="Поиск компании..." size="small" class="fsp-search" />
-      </span>
+      <SelectButton v-model="activeView" :options="viewTabs" optionLabel="label" optionValue="id" :allowEmpty="false" class="fsp-view-tabs" />
+      <div class="fsp-filter-right">
+        <Select v-model="filterSubfund" :options="subfundOptions" placeholder="Все субфонды" class="fsp-filter-sel" size="small" />
+        <span class="fsp-search-wrap">
+          <i class="pi pi-search" style="font-size:12px;color:var(--p-text-muted-color)" />
+          <InputText v-model="searchQuery" placeholder="Поиск компании..." size="small" class="fsp-search" />
+        </span>
+      </div>
     </div>
 
-    <!-- ─── Portfolio Grid ─── -->
-    <div class="fsp-body">
+    <!-- ═══ VIEW: Finance Table ═══ -->
+    <div v-if="activeView === 'finance'" class="fsp-view-panel">
+      <div class="fst-section-label" style="margin-bottom:10px">Финансовые показатели портфеля (тыс. ₽)</div>
+      <DataTable :value="financeTableData" size="small" stripedRows scrollable scrollHeight="520px"
+                 sortField="totalInvestment" :sortOrder="-1" class="fsp-datatable">
+        <Column field="name" header="Компания" :sortable="true" frozen style="min-width:180px">
+          <template #body="{ data }">
+            <span class="fsp-dt-name" @click="selectCompanyById(data.id)">{{ data.name }}</span>
+            <div class="fsp-dt-sub">{{ data.subfund }}</div>
+          </template>
+        </Column>
+        <Column field="totalInvestment" header="Инвестиции" :sortable="true" style="min-width:110px">
+          <template #body="{ data }">
+            <span style="font-weight:600;color:var(--fst-blue)">{{ fmtMln(data.totalInvestment) }}</span>
+          </template>
+        </Column>
+        <Column field="revenue" header="Выручка" :sortable="true" style="min-width:110px">
+          <template #body="{ data }">
+            <span :style="{ color: data.revenue > 0 ? 'var(--fst-green)' : 'var(--p-text-muted-color)' }">
+              {{ data.revenue ? fmtMln(data.revenue) : '—' }}
+            </span>
+            <div v-if="data.revenueYear !== '—'" class="fsp-dt-sub">{{ data.revenueYear }}</div>
+          </template>
+        </Column>
+        <Column field="ebitda" header="EBITDA" :sortable="true" style="min-width:100px">
+          <template #body="{ data }">
+            <span :style="{ color: data.ebitda > 0 ? 'var(--fst-green)' : data.ebitda < 0 ? 'var(--fst-red)' : 'var(--p-text-muted-color)' }">
+              {{ data.ebitda ? fmtMln(data.ebitda) : '—' }}
+            </span>
+          </template>
+        </Column>
+        <Column field="npv" header="NPV" :sortable="true" style="min-width:100px">
+          <template #body="{ data }">{{ data.npv ? fmtMln(data.npv) : '—' }}</template>
+        </Column>
+        <Column field="irr" header="IRR %" :sortable="true" style="min-width:80px">
+          <template #body="{ data }">
+            <span v-if="data.irr" :style="{ color: data.irr >= 25 ? 'var(--fst-green)' : 'var(--fst-brand)' }">{{ data.irr }}%</span>
+            <span v-else style="color:var(--p-text-muted-color)">—</span>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
+
+    <!-- ═══ VIEW: Valuations ═══ -->
+    <div v-else-if="activeView === 'valuations'" class="fsp-view-panel">
+      <div class="fst-section-label" style="margin-bottom:10px">Доли фонда и оценки компаний</div>
+      <DataTable :value="valuationsTableData" size="small" stripedRows scrollable scrollHeight="520px"
+                 sortField="fundShare" :sortOrder="-1" class="fsp-datatable">
+        <Column field="name" header="Компания" :sortable="true" frozen style="min-width:180px">
+          <template #body="{ data }">
+            <span class="fsp-dt-name" @click="selectCompanyById(data.id)">{{ data.name }}</span>
+            <div class="fsp-dt-sub">{{ data.subfund }}</div>
+          </template>
+        </Column>
+        <Column field="fundShare" header="Доля %" :sortable="true" style="min-width:80px">
+          <template #body="{ data }">
+            <span v-if="data.fundShare" style="font-weight:700;color:var(--fst-purple)">{{ data.fundShare }}%</span>
+            <span v-else style="color:var(--p-text-muted-color)">—</span>
+          </template>
+        </Column>
+        <Column field="preMoney" header="Pre-money" :sortable="true" style="min-width:110px">
+          <template #body="{ data }">{{ data.preMoney ? fmtMln(data.preMoney) + ' ₽' : '—' }}</template>
+        </Column>
+        <Column field="postMoney" header="Post-money" :sortable="true" style="min-width:110px">
+          <template #body="{ data }">{{ data.postMoney ? fmtMln(data.postMoney) + ' ₽' : '—' }}</template>
+        </Column>
+        <Column field="totalInvestment" header="Инвестиции" :sortable="true" style="min-width:110px">
+          <template #body="{ data }">{{ data.totalInvestment ? fmtMln(data.totalInvestment) + ' ₽' : '—' }}</template>
+        </Column>
+        <Column field="navEstimate" header="NAV (оценка)" :sortable="true" style="min-width:110px">
+          <template #body="{ data }">
+            <span v-if="data.navEstimate" style="font-weight:600;color:var(--fst-green)">{{ fmtMln(data.navEstimate) }} ₽</span>
+            <span v-else style="color:var(--p-text-muted-color)">—</span>
+          </template>
+        </Column>
+        <Column field="trl" header="TRL" :sortable="true" style="min-width:60px">
+          <template #body="{ data }">
+            <span :style="{ color: data.trl >= 7 ? 'var(--fst-green)' : data.trl >= 4 ? 'var(--fst-blue)' : 'var(--fst-brand)' }">{{ data.trl || '—' }}</span>
+          </template>
+        </Column>
+        <Column field="headcount" header="Штат" :sortable="true" style="min-width:70px">
+          <template #body="{ data }">{{ data.headcount || '—' }}</template>
+        </Column>
+        <Column field="salesUnits" header="Продажи шт." :sortable="true" style="min-width:90px">
+          <template #body="{ data }">{{ data.salesUnits || '—' }}</template>
+        </Column>
+      </DataTable>
+    </div>
+
+    <!-- ═══ VIEW: AI Chat ═══ -->
+    <div v-else-if="activeView === 'chat'" class="fsp-view-panel fsp-chat-panel">
+      <div class="fst-section-label" style="margin-bottom:10px">AI Аналитик портфеля</div>
+      <div class="fsp-chat-hint">
+        Задайте вопрос о портфеле — аналитик ответит на основе реальных данных из Integram.
+        Примеры: «Какая компания самая дорогая?», «Где самый высокий IRR?», «Суммарные инвестиции по субфондам»
+      </div>
+      <div class="fsp-chat-messages">
+        <div v-for="(msg, idx) in chatMessages" :key="idx" class="fsp-chat-msg" :class="msg.role">
+          <div class="fsp-chat-msg-role">{{ msg.role === 'user' ? 'Вы' : 'AI Аналитик' }}</div>
+          <div class="fsp-chat-msg-text" v-html="formatChatText(msg.text)"></div>
+        </div>
+        <div v-if="chatLoading" class="fsp-chat-msg assistant">
+          <div class="fsp-chat-msg-role">AI Аналитик</div>
+          <div class="fsp-chat-msg-text" style="color:var(--p-text-muted-color)">Анализирую данные портфеля...</div>
+        </div>
+      </div>
+      <div class="fsp-chat-input-row">
+        <Textarea v-model="chatInput" placeholder="Вопрос о портфеле..." rows="1" autoResize
+                  @keydown.enter.exact.prevent="sendChatMessage" class="fsp-chat-input" />
+        <Button icon="pi pi-send" size="small" @click="sendChatMessage" :loading="chatLoading" :disabled="!chatInput.trim()" />
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: Monitor (default) ═══ -->
+    <div v-else class="fsp-body">
 
       <!-- Left: Company Cards -->
       <div class="fsp-companies">
@@ -80,20 +195,20 @@
             <div class="fsp-card-stage">{{ c.stage }} · {{ c.inn }}</div>
             <div class="fsp-card-metrics">
               <div class="fsp-card-metric">
-                <span class="fsp-m-label">Выручка</span>
-                <span class="fsp-m-val" :style="{ color: 'var(--fst-green)' }">{{ c.revenue }} млн</span>
+                <span class="fsp-m-label">Инвестиции</span>
+                <span class="fsp-m-val" :style="{ color: 'var(--fst-blue)' }">{{ c.invested ? c.invested + 'М' : '—' }}</span>
               </div>
               <div class="fsp-card-metric">
-                <span class="fsp-m-label">Runway</span>
-                <span class="fsp-m-val" :style="{ color: runwayColor(c.runway) }">{{ c.runway }} мес</span>
+                <span class="fsp-m-label">Доля ФСТ</span>
+                <span class="fsp-m-val" :style="{ color: 'var(--fst-purple)' }">{{ c.fstShare ? c.fstShare + '%' : '—' }}</span>
               </div>
               <div class="fsp-card-metric">
                 <span class="fsp-m-label">TRL</span>
-                <span class="fsp-m-val" :style="{ color: 'var(--fst-blue)' }">{{ c.trl }}</span>
+                <span class="fsp-m-val" :style="{ color: 'var(--fst-blue)' }">{{ c.trl || '—' }}</span>
               </div>
               <div class="fsp-card-metric">
-                <span class="fsp-m-label">Сотр.</span>
-                <span class="fsp-m-val">{{ c.headcount }}</span>
+                <span class="fsp-m-label">Выручка</span>
+                <span class="fsp-m-val" :style="{ color: c.revenue > 0 ? 'var(--fst-green)' : 'var(--p-text-muted-color)' }">{{ c.revenue ? c.revenue + 'М' : '—' }}</span>
               </div>
             </div>
             <div class="fsp-health-bar-wrap">
@@ -147,6 +262,62 @@
               <div class="fsp-kpi-nums">
                 <span :style="{ color: kpiColor(kpi) }">{{ kpi.actual }}</span>
                 <span style="color:var(--p-text-muted-color)"> / {{ kpi.target }} {{ kpi.unit }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real Metrics from Integram -->
+        <div class="fsp-detail-panel" v-if="getMetrics(selectedCompany.id)">
+          <div class="fsp-detail-panel-title">
+            <i class="pi pi-chart-bar" style="color:var(--fst-blue)"></i> Метрики (Integram)
+          </div>
+          <div class="fsp-real-metrics">
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).totalInvestment">
+              <span class="fsp-rm-label">Инвестировано</span>
+              <span class="fsp-rm-val" style="color:var(--fst-blue)">{{ fmtMln(getMetrics(selectedCompany.id).totalInvestment) }} ₽</span>
+            </div>
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).fundShare">
+              <span class="fsp-rm-label">Доля фонда</span>
+              <span class="fsp-rm-val" style="color:var(--fst-purple)">{{ getMetrics(selectedCompany.id).fundShare }}%</span>
+            </div>
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).preMoney">
+              <span class="fsp-rm-label">Pre-money</span>
+              <span class="fsp-rm-val">{{ fmtMln(getMetrics(selectedCompany.id).preMoney) }} ₽</span>
+            </div>
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).postMoney">
+              <span class="fsp-rm-label">Post-money</span>
+              <span class="fsp-rm-val">{{ fmtMln(getMetrics(selectedCompany.id).postMoney) }} ₽</span>
+            </div>
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).revenue">
+              <span class="fsp-rm-label">Выручка ({{ getMetrics(selectedCompany.id).revenueYear }})</span>
+              <span class="fsp-rm-val" style="color:var(--fst-green)">{{ fmtMln(getMetrics(selectedCompany.id).revenue) }} ₽</span>
+            </div>
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).irr">
+              <span class="fsp-rm-label">IRR</span>
+              <span class="fsp-rm-val">{{ getMetrics(selectedCompany.id).irr }}%</span>
+            </div>
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).npv">
+              <span class="fsp-rm-label">NPV</span>
+              <span class="fsp-rm-val">{{ fmtMln(getMetrics(selectedCompany.id).npv) }} ₽</span>
+            </div>
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).headcount">
+              <span class="fsp-rm-label">Штат</span>
+              <span class="fsp-rm-val">{{ getMetrics(selectedCompany.id).headcount }} чел.</span>
+            </div>
+            <div class="fsp-rm-row" v-if="getMetrics(selectedCompany.id).salesUnits">
+              <span class="fsp-rm-label">Продажи</span>
+              <span class="fsp-rm-val">{{ getMetrics(selectedCompany.id).salesUnits }} шт.</span>
+            </div>
+            <!-- Revenue dynamics mini-table -->
+            <div v-if="getMetrics(selectedCompany.id).revenueByYear?.length > 1" class="fsp-rm-dynamics">
+              <div class="fsp-rm-dyn-title">Выручка по годам</div>
+              <div class="fsp-rm-dyn-row" v-for="r in getMetrics(selectedCompany.id).revenueByYear" :key="r.year">
+                <span class="fsp-rm-dyn-year">{{ r.year }}</span>
+                <div class="fsp-rm-dyn-bar-wrap">
+                  <div class="fsp-rm-dyn-bar" :style="{ width: revenueBarWidth(r.value, selectedCompany.id) + '%' }"></div>
+                </div>
+                <span class="fsp-rm-dyn-val">{{ fmtMln(r.value) }}</span>
               </div>
             </div>
           </div>
@@ -281,7 +452,7 @@
         <div>Выберите компанию из портфеля</div>
       </div>
 
-    </div>
+    </div> <!-- close fsp-body / monitor view -->
 
     <!-- Page Tutor -->
     <PageTutorButton pageId="fst-portfolio" :getContext="getPageContext" />
@@ -298,8 +469,13 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import SelectButton from 'primevue/selectbutton'
+import Textarea from 'primevue/textarea'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 import { useToast } from 'primevue/usetoast'
 import { getProjects, STATUS_PORTFOLIO } from '@/services/fstApi'
+import { fetchAllCompanyMetrics, summarizeMetrics, fmtMln } from '@/services/portfolioMetricsApi.js'
 import PageTutorButton from '@/components/PageTutorButton.vue'
 import LearnTooltip from '@/components/LearnTooltip.vue'
 import OntologyNextSteps from '@/components/ontology/OntologyNextSteps.vue'
@@ -317,6 +493,143 @@ import { GR_MEASURES } from '@/config/grMeasuresData.js'
 const toast = useToast()
 const eventStore = useEventStore()
 const grEventStore = useGrEventStore()
+
+// ── View tabs ────────────────────────────────────────────────────────────────
+const activeView = ref('monitor')
+const viewTabs = [
+  { label: 'Монитор',     id: 'monitor' },
+  { label: 'Финансы',     id: 'finance' },
+  { label: 'Доли / Оценки', id: 'valuations' },
+  { label: 'AI Аналитик', id: 'chat' },
+]
+
+// ── Metrics data from Integram type 126255 ────────────────────────────────────
+const metricsMap = ref(new Map())     // companyId → summarizeMetrics result
+const metricsLoading = ref(false)
+
+async function loadMetrics(companiesList) {
+  metricsLoading.value = true
+  try {
+    const raw = await fetchAllCompanyMetrics(companiesList)
+    const summarized = new Map()
+    for (const [cid, metrics] of raw) {
+      summarized.set(cid, summarizeMetrics(metrics))
+    }
+    metricsMap.value = summarized
+  } catch (err) {
+    console.warn('[Portfolio] metrics load failed:', err.message)
+  } finally {
+    metricsLoading.value = false
+  }
+}
+
+function getMetrics(companyId) {
+  return metricsMap.value.get(String(companyId)) || null
+}
+
+// ── AI Chat ──────────────────────────────────────────────────────────────────
+const chatMessages = ref([])
+const chatInput = ref('')
+const chatLoading = ref(false)
+
+async function sendChatMessage() {
+  const question = chatInput.value.trim()
+  if (!question || chatLoading.value) return
+  chatMessages.value.push({ role: 'user', text: question })
+  chatInput.value = ''
+  chatLoading.value = true
+
+  // Build context from all companies' metrics
+  const ctx = companies.value.map(c => {
+    const m = getMetrics(c.id)
+    if (!m) return `${c.name}: нет данных`
+    const parts = [`${c.name} (${c.subfund})`]
+    if (m.totalInvestment) parts.push(`инвестировано: ${fmtMln(m.totalInvestment)} ₽`)
+    if (m.fundShare) parts.push(`доля фонда: ${m.fundShare}%`)
+    if (m.revenue) parts.push(`выручка ${m.revenueYear}: ${fmtMln(m.revenue)} ₽`)
+    if (m.preMoney) parts.push(`pre-money: ${fmtMln(m.preMoney)} ₽`)
+    if (m.postMoney) parts.push(`post-money: ${fmtMln(m.postMoney)} ₽`)
+    if (m.trl) parts.push(`TRL: ${m.trl}`)
+    if (m.headcount) parts.push(`штат: ${m.headcount}`)
+    if (m.irr) parts.push(`IRR: ${m.irr}%`)
+    if (m.npv) parts.push(`NPV: ${fmtMln(m.npv)} ₽`)
+    if (m.salesUnits) parts.push(`продажи: ${m.salesUnits} шт.`)
+    if (m.ebitda) parts.push(`EBITDA ${m.ebitdaYear}: ${fmtMln(m.ebitda)} ₽`)
+    // Revenue dynamics
+    if (m.revenueByYear?.length > 1) {
+      parts.push('выручка по годам: ' + m.revenueByYear.map(r => `${r.year}=${fmtMln(r.value)}`).join(', '))
+    }
+    return parts.join('; ')
+  }).join('\n')
+
+  const totalInv = companies.value.reduce((s, c) => s + (getMetrics(c.id)?.totalInvestment || 0), 0)
+  const systemPrompt = `Ты — AI-аналитик венчурного фонда ФСТ НТИ. Отвечай по существу, опираясь на реальные данные портфеля.
+Все суммы в тыс. руб. если не указано иное. Фонд инвестировал суммарно ${fmtMln(totalInv)} ₽ в ${companies.value.length} компаний.
+
+Данные портфеля:
+${ctx}
+
+Отвечай кратко, структурированно, с цифрами. Если данных нет — скажи прямо.`
+
+  try {
+    const resp = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'deepseek/deepseek-chat',
+        prompt: question,
+        systemPrompt,
+        application: 'FstPortfolio-Chat'
+      })
+    })
+    const data = await resp.json()
+    chatMessages.value.push({ role: 'assistant', text: data.response || 'Нет ответа' })
+  } catch (err) {
+    chatMessages.value.push({ role: 'assistant', text: 'Ошибка: ' + err.message })
+  } finally {
+    chatLoading.value = false
+  }
+}
+
+// ── Finance table computed ───────────────────────────────────────────────────
+const financeTableData = computed(() => {
+  return filteredCompanies.value.map(c => {
+    const m = getMetrics(c.id)
+    return {
+      id: c.id,
+      name: c.name,
+      subfund: c.subfund,
+      revenue: m?.revenue || 0,
+      revenueYear: m?.revenueYear || '—',
+      ebitda: m?.ebitda || 0,
+      totalInvestment: m?.totalInvestment || 0,
+      npv: m?.npv || 0,
+      irr: m?.irr || 0,
+      cashflow: m?.byKey?.cashflow?.[0]?.value || 0,
+    }
+  })
+})
+
+// ── Valuations table computed ────────────────────────────────────────────────
+const valuationsTableData = computed(() => {
+  return filteredCompanies.value.map(c => {
+    const m = getMetrics(c.id)
+    return {
+      id: c.id,
+      name: c.name,
+      subfund: c.subfund,
+      fundShare: m?.fundShare || 0,
+      preMoney: m?.preMoney || 0,
+      postMoney: m?.postMoney || 0,
+      totalInvestment: m?.totalInvestment || 0,
+      trl: m?.trl || c.trl || 0,
+      headcount: m?.headcount || 0,
+      salesUnits: m?.salesUnits || 0,
+      // NAV estimate = postMoney × fundShare / 100
+      navEstimate: m?.postMoney && m?.fundShare ? Math.round(m.postMoney * m.fundShare / 100) : 0,
+    }
+  })
+})
 
 // ── Динамический health score из онтологии событий (issue #186) ───────────────
 // Возвращает карту { companyId → score } реактивно через eventStore.timelines
@@ -456,7 +769,7 @@ async function loadPortfolioFromDb() {
     }
     const stageById   = { '1102': 'Pre-seed', '1103': 'Посевная', '1104': 'Раунд A', '1105': 'Раунд B', '1106': 'Раунд C' }
 
-    companies.value = projectRows.map(row => ({
+    const companyList = projectRows.map(row => ({
       id:        row.id,
       name:      row.name,
       inn:       row.inn || '',
@@ -478,8 +791,35 @@ async function loadPortfolioFromDb() {
       sensors:   [],
       events:    [],
     }))
+    companies.value = companyList
     lastUpdate.value = new Date().toLocaleTimeString('ru-RU')
-    toast.add({ severity: 'success', summary: 'Данные загружены из fst', life: 2000 })
+
+    // Load real metrics from Integram type 126255 (subordinate to each company)
+    await loadMetrics(companyList)
+
+    // Enrich company objects with real metric data
+    for (const c of companies.value) {
+      const m = getMetrics(c.id)
+      if (!m) continue
+      if (m.revenue) c.revenue = Math.round(m.revenue / 1000)   // тыс→млн
+      if (m.totalInvestment) c.invested = Math.round(m.totalInvestment / 1000)
+      if (m.fundShare) c.fstShare = m.fundShare
+      if (m.trl) c.trl = m.trl
+      if (m.headcount) c.headcount = m.headcount
+      if (m.postMoney && m.fundShare) c.nav = Math.round(m.postMoney * m.fundShare / 100 / 1000)
+      // Build KPIs from real data
+      const kpis = []
+      if (m.trl) kpis.push({ name: 'TRL', actual: m.trl, target: Math.min(9, m.trl + 1), unit: 'уровень' })
+      if (m.fundShare) kpis.push({ name: 'Доля фонда', actual: m.fundShare, target: 100, unit: '%' })
+      if (m.irr) kpis.push({ name: 'IRR', actual: m.irr, target: 30, unit: '%' })
+      if (m.revenue) kpis.push({ name: 'Выручка', actual: Math.round(m.revenue / 1000), target: Math.round(m.revenue / 1000 * 1.5), unit: 'млн ₽' })
+      if (kpis.length) c.kpis = kpis
+      // Risk level from metrics
+      if (m.totalInvestment > 0 && m.revenue === 0 && m.trl < 7) c.riskLevel = 'yellow'
+      if (m.totalInvestment > 200000 && m.revenue === 0) c.riskLevel = 'red'
+    }
+
+    toast.add({ severity: 'success', summary: `Загружено ${companyList.length} компаний + метрики`, life: 2000 })
   } catch (err) {
     console.warn('fstApi.getPortfolio failed, using mock data:', err.message)
   } finally {
@@ -554,11 +894,33 @@ const avgHealth = computed(() => {
   if (!companies.value.length) return 0
   return Math.round(companies.value.reduce((s, c) => s + (liveHealthScores.value[c.id] || c.health || 50), 0) / companies.value.length)
 })
+const totalRealInvested = computed(() => {
+  let sum = 0
+  for (const c of companies.value) {
+    const m = getMetrics(c.id)
+    if (m?.totalInvestment) sum += m.totalInvestment
+  }
+  return sum // тыс. руб.
+})
+const avgFundShare = computed(() => {
+  const shares = companies.value.map(c => getMetrics(c.id)?.fundShare).filter(Boolean)
+  return shares.length ? Math.round(shares.reduce((s, v) => s + v, 0) / shares.length) : 0
+})
+const totalNAV = computed(() => {
+  let sum = 0
+  for (const c of companies.value) {
+    const m = getMetrics(c.id)
+    if (m?.postMoney && m?.fundShare) sum += m.postMoney * m.fundShare / 100
+  }
+  return sum // тыс. руб.
+})
 const portfolioMetrics = computed(() => [
-  { icon: 'pi pi-building',            val: activeCount.value,              label: 'Активных компаний', color: 'var(--fst-green)'  },
-  { icon: 'pi pi-exclamation-triangle', val: alertCount.value,              label: 'Предупреждений',    color: alertCount.value > 0 ? 'var(--fst-brand)' : 'var(--p-text-muted-color)' },
-  { icon: 'pi pi-chart-bar',           val: totalInvested.value + ' млн',  label: 'Инвестировано',     color: 'var(--fst-blue)'   },
-  { icon: 'pi pi-heart',               val: avgHealth.value + '%',          label: 'Ср. health',        color: 'var(--fst-purple)' },
+  { icon: 'pi pi-building',            val: activeCount.value,                           label: 'Компаний',        },
+  { icon: 'pi pi-wallet',              val: fmtMln(totalRealInvested.value) + ' ₽',     label: 'Инвестировано',   },
+  { icon: 'pi pi-chart-line',          val: fmtMln(totalNAV.value) + ' ₽',              label: 'NAV (оценка)',    },
+  { icon: 'pi pi-percentage',          val: avgFundShare.value + '%',                    label: 'Ср. доля',       },
+  { icon: 'pi pi-heart',               val: avgHealth.value + '%',                       label: 'Ср. health',     },
+  { icon: 'pi pi-exclamation-triangle', val: alertCount.value,                            label: 'Предупреждений', },
 ])
 const criticalAlerts = computed(() => companies.value
   .filter(c => c.riskLevel === 'red')
@@ -619,8 +981,28 @@ function eventColor(type) {
 
 async function selectCompany(c) {
   selectedCompany.value = c
+  activeView.value = 'monitor'
   aiReport.value = null
   await ensureCompanyTimeline(c)
+}
+
+function selectCompanyById(id) {
+  const c = companies.value.find(x => x.id === id)
+  if (c) selectCompany(c)
+}
+
+function formatChatText(text) {
+  if (!text) return ''
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+    .replace(/\n/g, '<br>')
+}
+
+function revenueBarWidth(value, companyId) {
+  const m = getMetrics(companyId)
+  if (!m?.revenueByYear?.length) return 0
+  const max = Math.max(...m.revenueByYear.map(r => r.value))
+  return max > 0 ? Math.round(value / max * 100) : 0
 }
 
 async function refreshAll() {
@@ -1065,4 +1447,133 @@ async function generateAiReport() {
 .fsp-gr-applied { color: var(--fst-brand); font-weight: 700; }
 .fsp-gr-next { color: var(--p-primary-color); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fsp-gr-empty { color: var(--p-text-muted-color); font-style: italic; }
+
+/* ─── View tabs ─── */
+.fsp-view-tabs { flex-shrink: 0; }
+.fsp-view-tabs :deep(.p-button) { font-size: 11px !important; padding: 5px 10px !important; }
+.fsp-filter-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+/* ─── View panels ─── */
+.fsp-view-panel {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--p-surface-card);
+  min-height: 300px;
+}
+
+/* ─── DataTable tweaks ─── */
+.fsp-datatable { font-size: 12px; }
+.fsp-dt-name {
+  font-weight: 600;
+  color: var(--p-primary-color);
+  cursor: pointer;
+}
+.fsp-dt-name:hover { text-decoration: underline; }
+.fsp-dt-sub { font-size: 10px; color: var(--p-text-muted-color); }
+
+/* ─── AI Chat panel ─── */
+.fsp-chat-panel { display: flex; flex-direction: column; }
+.fsp-chat-hint {
+  font-size: 11px;
+  color: var(--p-text-muted-color);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.fsp-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: var(--p-surface-ground);
+  border-radius: 8px;
+  border: 1px solid var(--p-content-border-color);
+  min-height: 120px;
+}
+.fsp-chat-msg {
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 85%;
+}
+.fsp-chat-msg.user {
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
+  align-self: flex-end;
+}
+.fsp-chat-msg.assistant {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  align-self: flex-start;
+}
+.fsp-chat-msg-role {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--p-text-muted-color);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.fsp-chat-msg-text {
+  font-size: 12px;
+  color: var(--p-text-color);
+  line-height: 1.6;
+}
+.fsp-chat-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.fsp-chat-input { flex: 1; font-size: 12px; }
+
+/* ─── Real Metrics panel ─── */
+.fsp-real-metrics { display: flex; flex-direction: column; gap: 4px; }
+.fsp-rm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+.fsp-rm-row:last-child { border-bottom: none; }
+.fsp-rm-label { font-size: 11px; color: var(--p-text-muted-color); }
+.fsp-rm-val { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
+
+/* Revenue dynamics mini-chart */
+.fsp-rm-dynamics {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--p-content-border-color);
+}
+.fsp-rm-dyn-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--p-text-muted-color);
+  margin-bottom: 6px;
+}
+.fsp-rm-dyn-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+.fsp-rm-dyn-year { font-size: 10px; color: var(--p-text-muted-color); width: 32px; flex-shrink: 0; }
+.fsp-rm-dyn-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: var(--p-content-border-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.fsp-rm-dyn-bar {
+  height: 100%;
+  background: var(--fst-green);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.fsp-rm-dyn-val { font-size: 10px; font-weight: 600; color: var(--fst-green); width: 48px; text-align: right; }
 </style>
