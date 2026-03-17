@@ -93,7 +93,7 @@ class AnalystAgent {
         systemPrompt: `Ты — финансовый аналитик фонда ФСТ НТИ. Анализируй данные, считай, делай выводы. Отвечай кратко.\n\nКонтекст:\n${JSON.stringify(input.context || {})}`,
         application: 'FundOrchestrator-Analyst',
       }),
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(30000),
     })
     const data = await resp.json()
     return { success: true, answer: data.response || 'Нет ответа' }
@@ -243,7 +243,7 @@ ${agentDescriptions}
           systemPrompt: 'Ты — планировщик агентной системы фонда ФСТ НТИ. Отвечай строго JSON.',
           application: 'FundOrchestrator-Planner',
         }),
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(20000),
       })
 
       const data = await resp.json()
@@ -402,7 +402,7 @@ ${resultsSummary}
           systemPrompt: 'Ты — AI-аналитик фонда ФСТ НТИ. Синтезируй данные от нескольких агентов в один связный ответ. По-русски, кратко.',
           application: 'FundOrchestrator-Synthesizer',
         }),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(30000),
       })
       const data = await resp.json()
       return data.response || this._basicSummary(results)
