@@ -658,7 +658,7 @@ app.get('/api/debate/sessions/:id', (req, res) => res.status(404).json({ error: 
 app.use('/api/claude-memory', createClaudeMemoryRoutes())
 
 // ── Multi-Agent Orchestrator ─────────────────────────────────────────────────
-const fundOrchestrator = createFundOrchestrator({ port: PORT })
+const fundOrchestrator = createFundOrchestrator({ port: parseInt(process.env.FST_API_PORT || '8082') })
 
 app.post('/api/agents/chat', async (req, res) => {
   const { message, conversationId } = req.body
