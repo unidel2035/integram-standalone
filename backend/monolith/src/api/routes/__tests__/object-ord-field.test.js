@@ -37,7 +37,7 @@ describe('Object ord field — Issue #418', () => {
   it('does NOT include ord when F_U is absent or 1', () => {
     // The condition guards ord behind fuParam > 1 — verify the guard exists
     // If ord were unconditionally set, the condition would be missing
-    const objectMapBlock = SRC.match(/response\['object'\]\s*=\s*objRows\.map\(r\s*=>\s*\{([\s\S]*?)\}\);/);
+    const objectMapBlock = SRC.match(/response\['object'\]\s*=\s*(?:await\s+Promise\.all\()?\s*objRows\.map\((?:async\s+)?\(?r\)?\s*=>\s*\{([\s\S]*?)\}\)/);
     expect(objectMapBlock).not.toBeNull();
     const block = objectMapBlock[1];
     // ord must appear inside an if-block, not as a bare assignment
