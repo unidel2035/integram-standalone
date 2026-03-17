@@ -143,6 +143,144 @@ for (const d of droneOntology) {
 }
 console.log(`[Seed] ${droneOntology.length} ontology concepts created`)
 
+// ── 5. Integram database schema (financial metrics) ──────────────
+const dbSchema = [
+  {
+    name: 'Проектная компания ФСТ (type 1155)',
+    type: 'DB_Table',
+    obs: [
+      'Integram тип 1155 в базе fst (ai2o.ru/fst)',
+      'Содержит все портфельные компании фонда',
+      'Поле "Метрика компании" (req 126263) — ссылка на тип 126255',
+      'Поле "Субфонд" — категория компании',
+      'Запрос V2: GET /fst/types/1155/objects',
+    ],
+  },
+  {
+    name: 'Метрика компании (type 126255)',
+    type: 'DB_Table',
+    obs: [
+      'Integram тип 126255 в базе fst',
+      'Хранит финансовые метрики (выручка, EBITDA, прибыль и т.д.) по годам',
+      'Поле "Год" (req 126257) — число (2023, 2024, ...)',
+      'Поле "Значение тыс.руб." (req 126259) — числовое значение метрики',
+      'Поле "Источник" (req 126262) — источник данных',
+      'Поле "Статья" (req 126269) — ссылка на тип 125295 (вид метрики)',
+      'Запрос V2: GET /fst/types/126255/objects',
+    ],
+  },
+  {
+    name: 'Статья финансовой метрики (type 125295)',
+    type: 'DB_Table',
+    obs: [
+      'Integram тип 125295 в базе fst — справочник видов финметрик',
+      '25 записей: Выручка(126200), Себестоимость(126201), Валовая прибыль(126203), ...',
+      'EBITDA(126221), Чистая прибыль(126227), Cash Flow(126235), IRR %(136218)',
+      'Дебиторская задолженность(126215), Кредиторская задолженность(126217)',
+      'Категории: revenue, costs, result, cashflow, assets, valuation',
+    ],
+  },
+  // Individual financial metrics for semantic matching
+  {
+    name: 'Выручка',
+    type: 'FinMetric',
+    obs: [
+      'ID в Integram: 126200, тип 125295 "Статья"',
+      'Категория: revenue (доходы)',
+      'Для получения: запросить "Метрика компании" (type 126255) где Статья=126200',
+      'Значение в поле "Значение тыс.руб." (req 126259), год в "Год" (req 126257)',
+      'Синонимы: revenue, доход, оборот, продажи, sales',
+    ],
+  },
+  {
+    name: 'EBITDA',
+    type: 'FinMetric',
+    obs: [
+      'ID в Integram: 126221, тип 125295 "Статья"',
+      'Категория: result (результат)',
+      'Прибыль до вычета процентов, налогов, износа и амортизации',
+      'Для получения: запросить "Метрика компании" (type 126255) где Статья=126221',
+    ],
+  },
+  {
+    name: 'Чистая прибыль',
+    type: 'FinMetric',
+    obs: [
+      'ID в Integram: 126227, тип 125295 "Статья"',
+      'Категория: result (результат)',
+      'Синонимы: net profit, чистый доход, прибыль после налогов',
+      'Для получения: запросить "Метрика компании" (type 126255) где Статья=126227',
+    ],
+  },
+  {
+    name: 'Cash Flow (денежный поток)',
+    type: 'FinMetric',
+    obs: [
+      'ID в Integram: 126235, тип 125295 "Статья"',
+      'Категория: cashflow',
+      'Синонимы: CF, ДП, поток денежных средств, cash flow',
+      'Для получения: запросить "Метрика компании" (type 126255) где Статья=126235',
+    ],
+  },
+  {
+    name: 'IRR (внутренняя норма доходности)',
+    type: 'FinMetric',
+    obs: [
+      'ID в Integram: 136218, тип 125295 "Статья"',
+      'Категория: valuation (оценка)',
+      'Internal Rate of Return — целевая 25-30% для ФСТ',
+      'Для получения: запросить "Метрика компании" (type 126255) где Статья=136218',
+    ],
+  },
+  {
+    name: 'Себестоимость',
+    type: 'FinMetric',
+    obs: [
+      'ID в Integram: 126201, тип 125295 "Статья"',
+      'Категория: costs (затраты)',
+      'Синонимы: COGS, cost of goods sold, стоимость производства',
+      'Для получения: запросить "Метрика компании" (type 126255) где Статья=126201',
+    ],
+  },
+  {
+    name: 'Валовая прибыль',
+    type: 'FinMetric',
+    obs: [
+      'ID в Integram: 126203, тип 125295 "Статья"',
+      'Категория: result',
+      'Выручка минус Себестоимость',
+      'Синонимы: gross profit, маржа',
+      'Для получения: запросить "Метрика компании" (type 126255) где Статья=126203',
+    ],
+  },
+  {
+    name: 'Операционные расходы (OPEX)',
+    type: 'FinMetric',
+    obs: [
+      'ID в Integram: 126207, тип 125295 "Статья"',
+      'Категория: costs (затраты)',
+      'Синонимы: operating expenses, операционные затраты',
+      'Для получения: запросить "Метрика компании" (type 126255) где Статья=126207',
+    ],
+  },
+]
+
+for (const d of dbSchema) {
+  const id = `schema_${d.name.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_').slice(0, 60)}`
+  storage.addEntity({
+    id,
+    name: d.name,
+    type: d.type,
+    observations: d.obs,
+    properties: {},
+    source: 'db_schema',
+  })
+}
+// Relations: FinMetric → DB_Table
+storage.addRelation({ id: 'rel_finmetric_table', type: 'stored_in', from_id: 'schema_Выручка', to_id: 'schema_Метрика_компании__type_126255_', properties: {} })
+storage.addRelation({ id: 'rel_company_metrics', type: 'has_metrics', from_id: 'schema_Проектная_компания_ФСТ__type_1155_', to_id: 'schema_Метрика_компании__type_126255_', properties: {} })
+console.log(`[Seed] ${dbSchema.length} DB schema entities created`)
+
 // Final stats
 const finalStats = storage.getStats()
 console.log(`\n[Seed] DONE: ${finalStats.totalEntities} entities, ${finalStats.totalRelations} relations`)

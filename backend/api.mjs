@@ -374,10 +374,11 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
     console.error('[Billing] token quota check error:', err.message)
   }
 
-  // ── Fund Memory Enrichment (KAG SQLite → JSON fallback) ────────
+  // ── Fund Anamnesis Memory (3 слоя: KAG + ClaudeMemory + JSON fallback) ──
   if (prompt && systemPrompt) {
-    let memoryBlock = ''
-    // Try KAG FTS5 first
+    const memoryParts = []
+
+    // Layer 1: KAG FTS5 — онтология, схема БД, портфель
     try {
       const kagResp = await fetch(`http://localhost:${PORT}/api/mcp/kag-fst/execute`, {
         method: 'POST',
@@ -391,23 +392,48 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
         if (text) {
           const parsed = JSON.parse(text)
           if (parsed.results?.length > 0) {
-            memoryBlock = parsed.results.map(e =>
+            const kagBlock = parsed.results.map(e =>
               `[${e.type}] ${e.name}: ${(e.observations || []).slice(0, 5).join('; ')}`
             ).join('\n')
-            console.log(`[KAG] Enriched with ${parsed.results.length} entities`)
+            memoryParts.push(`── ОНТОЛОГИЯ (KAG) ──\n${kagBlock}`)
+            console.log(`[Anamnesis] KAG: ${parsed.results.length} entities`)
           }
         }
       }
     } catch (kagErr) {
-      console.warn('[KAG] search failed, using JSON fallback:', kagErr.message)
+      console.warn('[Anamnesis] KAG search failed:', kagErr.message)
     }
-    // Fallback to static JSON KB
-    if (!memoryBlock) {
-      memoryBlock = searchFundKB(prompt)
-      if (memoryBlock) console.log(`[FundKB] JSON fallback (${memoryBlock.split('\n').length} lines)`)
+
+    // Layer 2: ClaudeMemoryService — анамнестическая память (семантика + текст + Integram V2)
+    try {
+      const memResp = await fetch(`http://localhost:${PORT}/api/claude-memory/search?q=${encodeURIComponent(prompt)}&limit=8`, {
+        signal: AbortSignal.timeout(3000)
+      })
+      if (memResp.ok) {
+        const memData = await memResp.json()
+        if (memData.data?.length > 0) {
+          const memBlock = memData.data.map(m =>
+            `[${m.type || '?'}] ${m.name || ''}: ${(m.content || m.text || '').slice(0, 200)}`
+          ).join('\n')
+          memoryParts.push(`── ПАМЯТЬ СЕССИЙ ──\n${memBlock}`)
+          console.log(`[Anamnesis] Memory: ${memData.data.length} records`)
+        }
+      }
+    } catch (memErr) {
+      console.warn('[Anamnesis] Memory search failed:', memErr.message)
     }
-    if (memoryBlock) {
-      systemPrompt += `\n\n--- ПАМЯТЬ ФОНДА ---\n${memoryBlock}\n--- КОНЕЦ ПАМЯТИ ---`
+
+    // Layer 3: JSON fallback — статический справочник портфеля
+    if (memoryParts.length === 0) {
+      const jsonBlock = searchFundKB(prompt)
+      if (jsonBlock) {
+        memoryParts.push(`── СПРАВОЧНИК ──\n${jsonBlock}`)
+        console.log(`[Anamnesis] JSON fallback (${jsonBlock.split('\n').length} lines)`)
+      }
+    }
+
+    if (memoryParts.length > 0) {
+      systemPrompt += `\n\n--- АНАМНЕСТИЧЕСКАЯ ПАМЯТЬ ФОНДА ---\n${memoryParts.join('\n\n')}\n--- КОНЕЦ ПАМЯТИ ---`
     }
   }
 
