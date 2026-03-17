@@ -119,8 +119,7 @@ export class FundOrchestrator {
     this.agents = new Map()
     this._registerBuiltinAgents()
 
-    // Lifecycle
-    this.lifecycle = new ExecutionLifecycle()
+    // ThinkingEmitter is reusable, lifecycle created per-execution
     this.thinking = new ThinkingEmitter()
   }
 
@@ -154,10 +153,11 @@ export class FundOrchestrator {
     })
 
     const onThinking = options.onThinking || (() => {})
+    const lifecycle = new ExecutionLifecycle()
 
     try {
       // Phase 1: Plan
-      this.lifecycle.transition(LIFECYCLE_STATES.PLANNING)
+      lifecycle.transition(LIFECYCLE_STATES.PLANNING)
       onThinking({ type: THINKING_TYPES.PLANNING, content: 'Анализирую запрос и выбираю агентов...' })
 
       const plan = await this._planExecution(query, ctx)
@@ -165,18 +165,18 @@ export class FundOrchestrator {
       logger.info(`[FundOrch] Plan: ${plan.steps.map(s => s.agent).join(' → ')}`)
 
       // Phase 2: Execute
-      this.lifecycle.transition(LIFECYCLE_STATES.EXECUTING)
+      lifecycle.transition(LIFECYCLE_STATES.EXECUTING)
       onThinking({ type: THINKING_TYPES.ANALYZING, content: `Выполняю ${plan.steps.length} шагов...` })
 
       const results = await this._executePlan(plan, ctx, onThinking)
 
       // Phase 3: Synthesize
-      this.lifecycle.transition(LIFECYCLE_STATES.SYNTHESIZING)
+      lifecycle.transition(LIFECYCLE_STATES.SYNTHESIZING)
       onThinking({ type: THINKING_TYPES.SYNTHESIZING, content: 'Формирую ответ...' })
 
       const answer = await this._synthesize(query, results, ctx)
 
-      this.lifecycle.transition(LIFECYCLE_STATES.COMPLETED)
+      lifecycle.transition(LIFECYCLE_STATES.COMPLETED)
       ctx.endTime = Date.now()
 
       return {
@@ -190,7 +190,7 @@ export class FundOrchestrator {
       }
     } catch (error) {
       logger.error(`[FundOrch] Error: ${error.message}`)
-      this.lifecycle.transition(LIFECYCLE_STATES.COMPLETED)
+      lifecycle.transition(LIFECYCLE_STATES.COMPLETED)
       return {
         success: false,
         query,
