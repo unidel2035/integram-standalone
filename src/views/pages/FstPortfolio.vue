@@ -978,11 +978,10 @@ function mapRow(row, scope) {
 async function loadPortfolioFromDb() {
   portfolioLoading.value = true
   try {
-    // Load portfolio and review companies in parallel
-    const [portfolioRows, reviewRows] = await Promise.all([
-      getProjects({ statusId: STATUS_PORTFOLIO }),
-      getProjects({ statusId: STATUS_REVIEW }),
-    ])
+    // Load all projects ONCE, then filter client-side (avoids duplicate Integram requests)
+    const allRows = await getProjects()
+    const portfolioRows = allRows.filter(p => String(p.statusId) === String(STATUS_PORTFOLIO))
+    const reviewRows = allRows.filter(p => String(p.statusId) === String(STATUS_REVIEW))
 
     const combined = [
       ...portfolioRows.map(r => mapRow(r, 'portfolio')),

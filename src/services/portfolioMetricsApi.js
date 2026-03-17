@@ -98,16 +98,20 @@ export async function fetchCompanyMetrics(companyId) {
  */
 export async function fetchAllCompanyMetrics(companies) {
   const results = new Map()
-  const promises = companies.map(async (c) => {
-    try {
-      const metrics = await fetchCompanyMetrics(c.id)
-      results.set(String(c.id), metrics)
-    } catch (err) {
-      console.warn(`[portfolioMetrics] Failed to load metrics for ${c.id}:`, err.message)
-      results.set(String(c.id), [])
-    }
-  })
-  await Promise.all(promises)
+  // Batch requests to avoid overwhelming Integram (max 5 concurrent)
+  const BATCH_SIZE = 5
+  for (let i = 0; i < companies.length; i += BATCH_SIZE) {
+    const batch = companies.slice(i, i + BATCH_SIZE)
+    await Promise.all(batch.map(async (c) => {
+      try {
+        const metrics = await fetchCompanyMetrics(c.id)
+        results.set(String(c.id), metrics)
+      } catch (err) {
+        console.warn(`[portfolioMetrics] Failed to load metrics for ${c.id}:`, err.message)
+        results.set(String(c.id), [])
+      }
+    }))
+  }
   return results
 }
 
