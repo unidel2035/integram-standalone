@@ -77,6 +77,7 @@ import docParserRoutes  from './src/api/routes/docParser.js'
 import billingRoutes    from './src/api/routes/billing.js'
 import { logUsage, incrementUsage, checkTokenQuota, deductTokens } from './src/services/billingService.js'
 import { refreshConfig } from './src/services/fstConfigService.js'
+import { createKAGFstMCPRoutes } from './src/api/routes/kag.js'
 
 const app = express()
 const server = createServer(app)
@@ -372,13 +373,40 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
     console.error('[Billing] token quota check error:', err.message)
   }
 
-  // ── Fund Knowledge Base Enrichment ─────────────────────────────
-  // Ищем релевантные портфельные компании по запросу пользователя
+  // ── Fund Memory Enrichment (KAG SQLite → JSON fallback) ────────
   if (prompt && systemPrompt) {
-    const kbResult = searchFundKB(prompt)
-    if (kbResult) {
-      systemPrompt += `\n\n--- ПАМЯТЬ ФОНДА ---\n${kbResult}\n--- КОНЕЦ ПАМЯТИ ---`
-      console.log(`[FundKB] Enriched prompt (${kbResult.split('\n').length} lines)`)
+    let memoryBlock = ''
+    // Try KAG FTS5 first
+    try {
+      const kagResp = await fetch(`http://localhost:${PORT}/api/mcp/kag-fst/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toolName: 'kag_search', arguments: { query: prompt, limit: 10 } }),
+        signal: AbortSignal.timeout(2000)
+      })
+      if (kagResp.ok) {
+        const kagData = await kagResp.json()
+        const text = kagData.result?.content?.[0]?.text
+        if (text) {
+          const parsed = JSON.parse(text)
+          if (parsed.results?.length > 0) {
+            memoryBlock = parsed.results.map(e =>
+              `[${e.type}] ${e.name}: ${(e.observations || []).slice(0, 5).join('; ')}`
+            ).join('\n')
+            console.log(`[KAG] Enriched with ${parsed.results.length} entities`)
+          }
+        }
+      }
+    } catch (kagErr) {
+      console.warn('[KAG] search failed, using JSON fallback:', kagErr.message)
+    }
+    // Fallback to static JSON KB
+    if (!memoryBlock) {
+      memoryBlock = searchFundKB(prompt)
+      if (memoryBlock) console.log(`[FundKB] JSON fallback (${memoryBlock.split('\n').length} lines)`)
+    }
+    if (memoryBlock) {
+      systemPrompt += `\n\n--- ПАМЯТЬ ФОНДА ---\n${memoryBlock}\n--- КОНЕЦ ПАМЯТИ ---`
     }
   }
 
@@ -580,7 +608,21 @@ app.post('/api/doc-blocks/:docId/sync', async (req, res) => {
 app.get('/api/debate/sessions', (req, res) => res.json([]))
 app.get('/api/debate/sessions/:id', (req, res) => res.status(404).json({ error: 'Session not found' }))
 
-app.post('/api/kag/search', (req, res) => res.json({ results: [], total: 0 }))
+// ── KAG Memory (Knowledge Graph) ─────────────────────────────────────────────
+app.use('/api/mcp/kag-fst', createKAGFstMCPRoutes())
+// Legacy aliases
+app.post('/api/kag/search', async (req, res) => {
+  try {
+    const kagResp = await fetch(`http://localhost:${PORT}/api/mcp/kag-fst/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toolName: 'kag_search', arguments: { query: req.body.query, limit: req.body.limit || 10 } })
+    })
+    const data = await kagResp.json()
+    const parsed = data.result?.content?.[0]?.text ? JSON.parse(data.result.content[0].text) : { results: [] }
+    res.json(parsed)
+  } catch (err) { res.json({ results: [], total: 0, error: err.message }) }
+})
 app.post('/api/kag/web-search', (req, res) => res.json({ results: [], total: 0 }))
 
 const PORT = parseInt(process.env.FST_API_PORT || '8082')
