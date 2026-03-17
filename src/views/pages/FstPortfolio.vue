@@ -169,13 +169,13 @@
 
       <!-- Row 4: Event ontology overview -->
       <div class="fsp-dash-card" style="grid-column: 1/-1">
-        <div class="fsp-dc-title"><i class="pi pi-sitemap"></i> Событийная онтология — портфельные блоки</div>
+        <div class="fsp-dc-title"><i class="pi pi-sitemap"></i> Жизненный цикл — типы событий</div>
         <div class="fsp-ontology-grid">
           <div v-for="block in ontologyBlocks" :key="block.phase" class="fsp-onto-block">
             <div class="fsp-onto-phase" :style="{ borderColor: block.color }">{{ block.phase }}</div>
             <div class="fsp-onto-events">
               <div v-for="ev in block.events" :key="ev.id" class="fsp-onto-event"
-                :title="`${ev.label}\nСубъект: ${ev.subject}\nОбъект: ${ev.object}`">
+                :title="`${ev.label}\nКто: ${ev.subject}\nЧто: ${ev.object}`">
                 <i :class="ev.icon" :style="{ color: ev.color, fontSize: '11px' }"></i>
                 <span>{{ ev.label }}</span>
                 <span v-if="ev.count" class="fsp-onto-count">{{ ev.count }}</span>
