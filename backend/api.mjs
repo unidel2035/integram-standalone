@@ -378,12 +378,12 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
   if (prompt && systemPrompt) {
     const memoryParts = []
 
-    // Layer 1: KAG FTS5 — онтология, схема БД, портфель
+    // Layer 1: KAG FTS5 — онтология, схема БД, финметрики (limit 20)
     try {
       const kagResp = await fetch(`http://localhost:${PORT}/api/mcp/kag-fst/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toolName: 'kag_search', arguments: { query: prompt, limit: 10 } }),
+        body: JSON.stringify({ toolName: 'kag_search', arguments: { query: prompt, limit: 20 } }),
         signal: AbortSignal.timeout(2000)
       })
       if (kagResp.ok) {
@@ -392,11 +392,22 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
         if (text) {
           const parsed = JSON.parse(text)
           if (parsed.results?.length > 0) {
-            const kagBlock = parsed.results.map(e =>
-              `[${e.type}] ${e.name}: ${(e.observations || []).slice(0, 5).join('; ')}`
-            ).join('\n')
-            memoryParts.push(`── ОНТОЛОГИЯ (KAG) ──\n${kagBlock}`)
-            console.log(`[Anamnesis] KAG: ${parsed.results.length} entities`)
+            // Разделяем: компании отдельно (они пойдут в Layer 3), остальное — KAG
+            const kagOnly = parsed.results.filter(e => e.type !== 'PortfolioCompany')
+            const kagCompanies = parsed.results.filter(e => e.type === 'PortfolioCompany')
+            if (kagOnly.length > 0) {
+              const kagBlock = kagOnly.map(e =>
+                `[${e.type}] ${e.name}: ${(e.observations || []).slice(0, 5).join('; ')}`
+              ).join('\n')
+              memoryParts.push(`── ОНТОЛОГИЯ И СХЕМА БД ──\n${kagBlock}`)
+            }
+            if (kagCompanies.length > 0) {
+              const compBlock = kagCompanies.map(e =>
+                `${e.name}: ${(e.observations || []).slice(0, 4).join('; ')}`
+              ).join('\n')
+              memoryParts.push(`── КОМПАНИИ (KAG) ──\n${compBlock}`)
+            }
+            console.log(`[Anamnesis] KAG: ${kagOnly.length} ontology + ${kagCompanies.length} companies`)
           }
         }
       }
@@ -423,13 +434,11 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
       console.warn('[Anamnesis] Memory search failed:', memErr.message)
     }
 
-    // Layer 3: JSON fallback — статический справочник портфеля
-    if (memoryParts.length === 0) {
-      const jsonBlock = searchFundKB(prompt)
-      if (jsonBlock) {
-        memoryParts.push(`── СПРАВОЧНИК ──\n${jsonBlock}`)
-        console.log(`[Anamnesis] JSON fallback (${jsonBlock.split('\n').length} lines)`)
-      }
+    // Layer 3: JSON KB — ВСЕГДА добавляем справочник портфеля (полные данные о компаниях)
+    const jsonBlock = searchFundKB(prompt)
+    if (jsonBlock) {
+      memoryParts.push(`── ПОРТФЕЛЬ ФОНДА (справочник) ──\n${jsonBlock}`)
+      console.log(`[Anamnesis] JSON KB: ${jsonBlock.split('\n').length} lines`)
     }
 
     if (memoryParts.length > 0) {
