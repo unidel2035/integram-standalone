@@ -24,6 +24,7 @@ import {
   formatSearchResults,
   getAgentSystemPrompt
 } from '@/services/chatAgentService'
+import { getEnrichedProjects } from '@/services/fstExtendedApi.js'
 import {
   createWorkspace,
   getUserWorkspaces,
@@ -865,27 +866,16 @@ export function useChatLogic() {
   const SYSTEM_PROMPT = `Ты - ИИ-ассистент платформы ФСТ НТИ (Фонд Суверенных Технологий). ВСЕГДА отвечай ТОЛЬКО на русском языке. Отвечаешь кратко и по существу.
 
 О ПЛАТФОРМЕ ФСТ НТИ:
-ФСТ НТИ — венчурный фонд, финансирующий технологические проекты в сфере БПЛА (БАС), робототехники и малой энергетики. Платформа управляет инвестиционным процессом: от воронки сделок до портфельного мониторинга.
+ФСТ НТИ — венчурный фонд, финансирующий технологические проекты по 12 субфондам: БАС, РОБО, МЭ, Фотоника, ФармаМед, Новые материалы, SpaceNet, Энерджинет, Агротех, Технет, MediaNet, AI/Tech. Платформа управляет инвестиционным процессом: от воронки сделок до портфельного мониторинга.
 
-ДАННЫЕ ФОНДА В БАЗЕ (api.ai2o.ru/fst, РЕАЛЬНЫЕ):
-- Таблица 1155 «Проекты ФСТ v2»: 6 проектов
-  1. АО «МикроСхема» — БПЛА-комплектующие, БАС, статус: В процессе DD
-  2. ООО «РоботАгро» — агро-дроны, БАС, статус: Одобрен ИК
-  3. ПАО «ДронМед» — медицинская доставка, БАС, статус: Портфельная
-  4. ООО «СтелсКоптер» — военная разведка, БАС, статус: Отказ
-  5. АО «ЭнергоМини» — МЭ, малая энергетика, статус: В работе
-  6. ООО «РобоТех» — промышленные роботы, Робот, статус: Due Diligence
-- Таблица 1082 «Субфонды»: 3 субфонда (БАС, РОБО, МЭ)
-- Таблица 1160 «Решения ИК»: решения инвестиционного комитета
-- Таблица 1164 «Сделки»: сделки по портфельным компаниям
-- Таблица 1169 «Портфельные компании»: 3 компании (МикроСхема, РоботАгро, ДронМед)
+{{FST_PROJECTS_DATA}}
 
 ПРАВИЛА ОТВЕТОВ НА ВОПРОСЫ О ФОНДЕ:
 ⚡ ОТВЕЧАЙ НЕМЕДЛЕННО из данных выше — НЕ вызывай kb_search, search, или любые другие инструменты для вопросов о проектах ФСТ. Данные уже есть в контексте.
-- «сколько проектов» → сразу: В базе ФСТ 6 проектов (таблица ниже)
-- «какие проекты» / «список» → перечисли все 6 с описанием
-- «портфель» / «портфельные» → 3 компании: МикроСхема, РоботАгро, ДронМед
-- «субфонды» → БАС, РОБО, МЭ
+- «сколько проектов» → отвечай из списка выше
+- «какие проекты» / «список» → перечисли все проекты с описанием
+- «портфель» / «портфельные» → перечисли компании со статусом «Портфельная» или «В работе»
+- «субфонды» → перечисли из данных выше (БАС, РОБО, МЭ, Фотоника, ФармаМед, Новые материалы, SpaceNet, Энерджинет, Агротех, Технет, MediaNet, AI/Tech)
 - Вопросы о конкретном проекте → отвечай из данных выше немедленно
 - Только если вопрос выходит за пределы этих данных — тогда используй инструменты
 
@@ -933,6 +923,32 @@ DronDoc — платформа-конструктор приложений с И
 - Агентные задачи ("парси X", "собери данные о X", "найди все Y", "заполни таблицу", "исследуй рынок") → НЕМЕДЛЕННО вызови launch_agent с подробным описанием задачи
 - НЕ говори "я буду искать" или "позволь мне найти" — просто ВЫЗОВИ инструмент и верни результат
 - После выполнения инструментов: давай СОДЕРЖАТЕЛЬНЫЙ ответ на основе полученных данных. НИКОГДА не отвечай в формате "название_инструмента: выполнено" — это не ответ, это мусор. Если запрос неясен — уточни у пользователя.`
+
+  // ==================== Dynamic project data for system prompt ====================
+  const fstProjectsContext = ref('')
+
+  // Load real projects from Integram type 1155 (non-blocking)
+  getEnrichedProjects().then(projects => {
+    if (!projects?.length) return
+    const statusMap = { '81238': 'Портфель', '1115': 'Новый', '1117': 'На рассмотрении ИК', '1119': 'Одобрен', '1123': 'На доработке', '1125': 'В работе', '1127': 'Закрыт', '122353': 'Тест' }
+    // Exclude test projects
+    const realProjects = projects.filter(p => String(p.statusId) !== '122353')
+    const lines = realProjects.map((p, i) =>
+      `  ${i + 1}. ${p.company} — ${p.description?.slice(0, 120) || p.market || '?'}, субфонд: ${p.subFund || '?'}, стадия: ${p.stage || '?'}, статус: ${statusMap[String(p.statusId)] || '?'}, TRL ${p.trl || '?'}`
+    )
+    const portfolioCompanies = realProjects.filter(p => String(p.statusId) === '81238')
+    const subfundNames = [...new Set(realProjects.map(p => p.subFund).filter(Boolean))]
+    fstProjectsContext.value = `ДАННЫЕ ФОНДА В БАЗЕ (api.ai2o.ru/fst, РЕАЛЬНЫЕ, загружены из Integram type 1155):
+- Таблица 1155 «Проекты ФСТ v2»: ${realProjects.length} проектов
+${lines.join('\n')}
+- Таблица 1082 «Субфонды»: ${subfundNames.length} субфондов (${subfundNames.join(', ')})
+- Таблица 1160 «Решения ИК»: решения инвестиционного комитета
+- Таблица 1164 «Сделки»: сделки по портфельным компаниям
+- Портфельные компании (статус «Портфель»): ${portfolioCompanies.length} компаний (${portfolioCompanies.map(p => p.company).join(', ')})`
+    console.log(`[Chat] Loaded ${realProjects.length} real projects for system prompt (${portfolioCompanies.length} portfolio)`)
+  }).catch(err => {
+    console.warn('[Chat] Failed to load projects for prompt:', err.message)
+  })
 
   // ==================== Issue #6507: Document context for AI chat ====================
   const editorDocumentContext = ref(null)
@@ -1203,9 +1219,15 @@ DronDoc — платформа-конструктор приложений с И
     const customAgentName = localStorage.getItem('customAgentName')
 
     // If custom agent is loaded, use its system prompt as base
+    let basePrompt = SYSTEM_PROMPT
+    // Inject real project data if loaded, otherwise use fallback
+    const projectsData = fstProjectsContext.value || `ДАННЫЕ ФОНДА В БАЗЕ (api.ai2o.ru/fst):
+- Данные проектов загружаются... Используй инструменты для поиска актуальной информации о проектах ФСТ.`
+    basePrompt = basePrompt.replace('{{FST_PROJECTS_DATA}}', projectsData)
+
     let combined = customAgentPrompt
-      ? `Ты - AI-агент "${customAgentName}".\n\n${customAgentPrompt}\n\n---\n\nДополнительные возможности DronDoc:\n${SYSTEM_PROMPT}`
-      : SYSTEM_PROMPT
+      ? `Ты - AI-агент "${customAgentName}".\n\n${customAgentPrompt}\n\n---\n\nДополнительные возможности DronDoc:\n${basePrompt}`
+      : basePrompt
 
     // Add information about enabled agents/tools
     const enabledAgents = []
