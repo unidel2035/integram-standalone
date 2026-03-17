@@ -114,8 +114,8 @@ describe('formatValView (PHP Format_Val_View parity, #411)', () => {
       expect(formatValView(TYPE.NUMBER, '12345')).toBe('12345');
     });
 
-    it('strips decimal part', () => {
-      expect(formatValView(TYPE.NUMBER, '12345.67')).toBe('12345');
+    it('rounds decimal part (PHP: number_format rounds, not truncates)', () => {
+      expect(formatValView(TYPE.NUMBER, '12345.67')).toBe('12346');
     });
 
     it('returns 0 for zero', () => {

@@ -20,42 +20,29 @@ const sourceFile = path.resolve(__dirname, '../legacy-compat.js');
 const source = readFileSync(sourceFile, 'utf-8');
 
 describe('Issue #409 — wrong credentials response format', () => {
-  // Extract all lines that respond after "User not found" or "Password mismatch"
-  // These are the two code paths for wrong credentials in the POST /:db/auth handler.
+  // The two code paths for wrong credentials use sendLegacyDie() which
+  // returns HTTP 200 with JSON array [{error: "..."}] for API requests,
+  // matching PHP's my_die() behaviour.
 
-  it('wrong credentials response uses status(200), not status(401)', () => {
+  it('wrong credentials response uses sendLegacyDie (HTTP 200 + JSON array)', () => {
     // Find all lines with "Wrong credentials" in the response
     const wrongCredLines = source.split('\n').filter(line =>
-      line.includes('Wrong credentials') && line.includes('res.status')
+      line.includes('Wrong credentials') && (line.includes('sendLegacyDie') || line.includes('res.status'))
     );
 
     expect(wrongCredLines.length).toBeGreaterThanOrEqual(2); // user-not-found + password-mismatch paths
 
     for (const line of wrongCredLines) {
-      // Must use status(200)
-      expect(line).toContain('status(200)');
+      // Must use sendLegacyDie (which defaults to status 200 and wraps in JSON array)
+      expect(line).toContain('sendLegacyDie');
       // Must NOT use status(401)
       expect(line).not.toContain('status(401)');
     }
   });
 
-  it('wrong credentials response is JSON array with error key', () => {
-    const wrongCredLines = source.split('\n').filter(line =>
-      line.includes('Wrong credentials') && line.includes('res.status')
-    );
-
-    for (const line of wrongCredLines) {
-      // Must use .json() not .send()
-      expect(line).toContain('.json(');
-      expect(line).not.toMatch(/\.send\(/);
-      // Must wrap in array: .json([{ error: ... }])
-      expect(line).toMatch(/\.json\(\[\{/);
-    }
-  });
-
   it('wrong credentials message includes username and database placeholders', () => {
     const wrongCredLines = source.split('\n').filter(line =>
-      line.includes('Wrong credentials') && line.includes('res.status')
+      line.includes('Wrong credentials') && (line.includes('sendLegacyDie') || line.includes('res.status'))
     );
 
     for (const line of wrongCredLines) {
