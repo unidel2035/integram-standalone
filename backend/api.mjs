@@ -25,30 +25,39 @@ function searchFundKB(query) {
   const words = q.split(/\s+/).filter(w => w.length > 2)
   if (words.length === 0) return ''
 
-  // Score each company by keyword matches
-  const scored = FUND_KB.portfolio.map(c => {
-    const haystack = [c.name, c.subfund, c.description, c.sector, ...(c.tags || [])].filter(Boolean).join(' ').toLowerCase()
-    let score = 0
-    for (const w of words) {
-      if (haystack.includes(w)) score++
-    }
-    return { ...c, score }
-  }).filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 8)
+  const fundKeywords = ['фонд', 'фст', 'нти', 'субфонд', 'портфел', 'инвест', 'компани', 'проект']
+  const isFundQuery = words.some(w => fundKeywords.some(k => w.includes(k)))
+  const isListAll = isFundQuery && words.some(w => ['все', 'всех', 'перечисл', 'список', 'сколько', 'какие', 'портфел'].some(k => w.includes(k)))
 
-  if (scored.length === 0) return ''
-
-  // Also check if query is about the fund itself
-  const fundHaystack = [FUND_KB.fund.name, FUND_KB.fund.type, ...FUND_KB.fund.subfunds.map(s => s.name + ' ' + s.fullName)].join(' ').toLowerCase()
+  // Fund info block
   let fundBlock = ''
-  if (words.some(w => fundHaystack.includes(w) || ['фонд', 'фст', 'нти', 'субфонд', 'портфел', 'инвест'].some(k => w.includes(k)))) {
+  if (isFundQuery) {
     fundBlock = `Фонд: ${FUND_KB.fund.name}, размер ${FUND_KB.fund.size}, ${FUND_KB.fund.subfunds.length} субфондов: ${FUND_KB.fund.subfunds.map(s => s.name).join(', ')}. Стадии: ${FUND_KB.fund.stages}. Критерии: ${FUND_KB.fund.criteria}.\n`
   }
 
-  const companiesBlock = scored.map(c =>
+  let companies
+  if (isListAll) {
+    // Return ALL portfolio companies when asking about the full portfolio
+    companies = FUND_KB.portfolio
+  } else {
+    // Score each company by keyword matches
+    companies = FUND_KB.portfolio.map(c => {
+      const haystack = [c.name, c.subfund, c.description, c.sector, ...(c.tags || [])].filter(Boolean).join(' ').toLowerCase()
+      let score = 0
+      for (const w of words) {
+        if (haystack.includes(w)) score++
+      }
+      return { ...c, score }
+    }).filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 10)
+  }
+
+  if (companies.length === 0 && !fundBlock) return ''
+
+  const companiesBlock = companies.map(c =>
     `[${c.subfund || '?'}] ${c.name}: ${c.description}${c.trl ? ` TRL ${c.trl}` : ''}${c.founded ? `, осн. ${c.founded}` : ''}`
   ).join('\n')
 
-  return fundBlock + companiesBlock
+  return (fundBlock + companiesBlock) || ''
 }
 import { execSync } from 'child_process'
 import * as nodePty from 'node-pty'
