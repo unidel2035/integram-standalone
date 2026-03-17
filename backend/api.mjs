@@ -61,9 +61,9 @@ wssClaude.on('connection', (ws, req) => {
 
   // New session
   const clientId = `client_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
-  const claudePath = process.env.CLAUDE_BINARY || '/home/hive/.local/bin/claude'
+  const claudePath = process.env.CLAUDE_BINARY || '/usr/bin/claude'
   const claudeArgs = claudePath.endsWith('claude') ? (mode === 'continue' ? ['--continue'] : []) : []
-  const projectDir = '/home/hive/fund'
+  const projectDir = process.env.PROJECT_DIR || '/root/fst-app'
 
   // Create isolated git worktree for each new session (not continue)
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
@@ -91,6 +91,10 @@ wssClaude.on('connection', (ws, req) => {
     delete childEnv.CLAUDE_CODE_IDE_NAME
     delete childEnv.CLAUDE_CODE_IDE_VERSION
     delete childEnv.CLAUDE_CODE_SESSION_ID
+    // Route Claude Code through HTTP proxy to bypass geo-restrictions
+    const proxyUrl = process.env.CLAUDE_PROXY || 'http://127.0.0.1:8888'
+    childEnv.HTTPS_PROXY = proxyUrl
+    childEnv.HTTP_PROXY = proxyUrl
 
     pty = nodePty.spawn(claudePath, claudeArgs, {
       name: 'xterm-256color',
@@ -292,7 +296,8 @@ async function callProvider(provider, prompt, systemPrompt) {
 }
 
 app.post('/api/ai-tokens/chat', async (req, res) => {
-  const { modelId, prompt, systemPrompt, application } = req.body
+  const { modelId, prompt, application } = req.body
+  let { systemPrompt } = req.body
   const userId = req.body.userId || 'anonymous'
   const provider = resolveProvider(modelId)
   if (!provider.key) return res.status(503).json({ error: `Нет API-ключа для ${modelId}` })
@@ -309,7 +314,38 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
     }
   } catch (err) {
     console.error('[Billing] token quota check error:', err.message)
-    // Не блокируем вызов при ошибке проверки
+  }
+
+  // ── KAG-FST Memory Enrichment ─────────────────────────────────
+  // Ищем в KAG-FST (портфельные компании, онтология фонда) по запросу пользователя
+  if (prompt && systemPrompt) {
+    try {
+      const kagFstUrl = 'http://localhost:8083/api/mcp/kag-fst/execute'
+      const kagResp = await fetch(kagFstUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toolName: 'kag_search', arguments: { query: prompt, limit: 10 } }),
+        signal: AbortSignal.timeout(3000)
+      }).catch(() => null)
+
+      if (kagResp?.ok) {
+        const kagData = await kagResp.json().catch(() => null)
+        const text = kagData?.content?.[0]?.text
+        if (text) {
+          const parsed = JSON.parse(text)
+          if (parsed.results?.length > 0) {
+            const memoryBlock = parsed.results.map(e =>
+              `[${e.type}] ${e.name}: ${(e.observations || []).slice(0, 5).join('; ')}`
+            ).join('\n')
+            systemPrompt += `\n\n--- ПАМЯТЬ ФОНДА (KAG) ---\n${memoryBlock}\n--- КОНЕЦ ПАМЯТИ ---`
+            console.log(`[KAG-FST] Enriched prompt with ${parsed.results.length} entities`)
+          }
+        }
+      }
+    } catch (kagErr) {
+      // Non-blocking — не влияет на ответ
+      console.warn('[KAG-FST] enrichment error:', kagErr.message)
+    }
   }
 
   try {
