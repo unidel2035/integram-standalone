@@ -128,7 +128,13 @@ ${contextStr}${ontologySection}
 
 Отвечай кратко и по делу. Используй контекст страницы для точных ответов.`
 
-      // Call AI endpoint
+      // Build conversation history (last 10 user/assistant messages, excluding welcome)
+      const history = messages.value
+        .filter(m => (m.role === 'user' || m.role === 'assistant') && !m.isError && m.content)
+        .slice(-10)
+        .map(m => ({ role: m.role, content: m.content }))
+
+      // Call AI endpoint with streaming
       const response = await fetch('/api/ai-tokens/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -136,6 +142,7 @@ ${contextStr}${ontologySection}
           modelId: 'deepseek/deepseek-chat',
           prompt: message.trim(),
           systemPrompt: enhancedSystemPrompt,
+          messages: history,
           application: `PageTutor-${pageId}`
         })
       })
@@ -145,15 +152,23 @@ ${contextStr}${ontologySection}
       }
 
       const data = await response.json()
+      const fullText = data.response || 'Извините, не удалось получить ответ.'
 
+      // Typewriter effect: add message with empty content, then fill character by character
       const aiMessage = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: data.response || 'Извините, не удалось получить ответ.',
+        content: '',
         timestamp: new Date()
       }
-
       messages.value.push(aiMessage)
+
+      const chunkSize = 3
+      for (let i = 0; i < fullText.length; i += chunkSize) {
+        aiMessage.content = fullText.slice(0, i + chunkSize)
+        await new Promise(r => setTimeout(r, 12))
+      }
+      aiMessage.content = fullText
 
       // Save to session
       saveSession()

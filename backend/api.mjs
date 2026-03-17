@@ -331,11 +331,15 @@ const POLZA_FALLBACK = {
   'gpt-4o':                     'openai/gpt-4o',
 }
 
-async function callProvider(provider, prompt, systemPrompt) {
+async function callProvider(provider, prompt, systemPrompt, chatHistory = []) {
   const isAnthropic = provider.anthropic
+  // Build messages array: system + history + current prompt
+  const userMessages = chatHistory.length > 0
+    ? [...chatHistory, { role: 'user', content: prompt }]
+    : [{ role: 'user', content: prompt }]
   const body = isAnthropic
-    ? JSON.stringify({ model: provider.model, max_tokens: 4096, system: systemPrompt || '', messages: [{ role: 'user', content: prompt }] })
-    : JSON.stringify({ model: provider.model, messages: [...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []), { role: 'user', content: prompt }], max_tokens: 4096 })
+    ? JSON.stringify({ model: provider.model, max_tokens: 4096, system: systemPrompt || '', messages: userMessages })
+    : JSON.stringify({ model: provider.model, messages: [...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []), ...userMessages], max_tokens: 4096 })
   const headers = isAnthropic
     ? { 'Content-Type': 'application/json', 'x-api-key': provider.key, 'anthropic-version': '2023-06-01' }
     : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.key}` }
@@ -354,8 +358,9 @@ async function callProvider(provider, prompt, systemPrompt) {
 }
 
 app.post('/api/ai-tokens/chat', async (req, res) => {
-  const { modelId, prompt, application } = req.body
+  const { modelId, prompt, application, messages: chatMessages } = req.body
   let { systemPrompt } = req.body
+  // chatMessages: optional array of { role: 'user'|'assistant', content: string } for conversation history
   const userId = req.body.userId || 'anonymous'
   const provider = resolveProvider(modelId)
   if (!provider.key) return res.status(503).json({ error: `Нет API-ключа для ${modelId}` })
@@ -447,14 +452,18 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
   }
 
   try {
-    let result = await callProvider(provider, prompt, systemPrompt)
+    // Build conversation history (last 10 messages max to fit context)
+    const history = Array.isArray(chatMessages)
+      ? chatMessages.filter(m => m.role && m.content).slice(-10)
+      : []
+    let result = await callProvider(provider, prompt, systemPrompt, history)
 
     // Fallback на Polza при ошибке баланса (если это не уже Polza)
     if (!result.ok && result.isBalance && !modelId?.startsWith('polza/') && process.env.POLZA_API_KEY) {
       const polzaModel = POLZA_FALLBACK[provider.model] || 'deepseek/deepseek-chat'
       console.warn(`[AI] ${modelId} — нет баланса, fallback → polza/${polzaModel}`)
       const polzaProvider = { url: POLZA_URL, key: process.env.POLZA_API_KEY, model: polzaModel }
-      result = await callProvider(polzaProvider, prompt, systemPrompt)
+      result = await callProvider(polzaProvider, prompt, systemPrompt, history)
     }
 
     if (!result.ok) {
