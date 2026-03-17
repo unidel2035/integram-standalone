@@ -448,7 +448,12 @@ async function loadPortfolioFromDb() {
     // Загружаем реальные компании напрямую из type 1155 со статусом "Портфель"
     const projectRows = await getProjects({ statusId: STATUS_PORTFOLIO })
 
-    const subfundById = { '1096': 'БАС', '1098': 'РОБО', '1100': 'МЭ', '7283': 'AI/Tech' }
+    const subfundById = {
+      '1096': 'БАС', '1098': 'РОБО', '1100': 'МЭ', '7283': 'AI/Tech',
+      '124370': 'Фотоника', '124372': 'ФармаМед', '124374': 'Новые материалы',
+      '124376': 'SpaceNet', '124378': 'Энерджинет', '124380': 'Агротех',
+      '124382': 'Технет', '124384': 'MediaNet'
+    }
     const stageById   = { '1102': 'Pre-seed', '1103': 'Посевная', '1104': 'Раунд A', '1105': 'Раунд B', '1106': 'Раунд C' }
 
     companies.value = projectRows.map(row => ({
@@ -496,7 +501,7 @@ onUnmounted(() => clearInterval(liveTimer))
 const filterSubfund = ref(null)
 const filterStatus = ref(null)
 const searchQuery = ref('')
-const subfundOptions = [null, 'БАС', 'РОБО', 'МЭ']
+const subfundOptions = [null, 'БАС', 'РОБО', 'МЭ', 'AI/Tech', 'Фотоника', 'ФармаМед', 'Новые материалы', 'SpaceNet', 'Энерджинет', 'Агротех', 'Технет', 'MediaNet']
 const statusOptions = [null, 'Зелёный', 'Жёлтый', 'Красный']
 
 // ─── Portfolio data ───────────────────────────────────────────────────────────

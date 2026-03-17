@@ -97,6 +97,114 @@ export const SUBFUNDS_METADATA = {
     deployedRatio: 0.22,
     description: 'Микро- и радиоэлектроника',
     marketFocus: ['neuronet', 'energynet']
+  },
+  7283: { // AI/Tech
+    id: 7283,
+    key: 'aitech',
+    name: 'Субфонд AI/Tech',
+    shortName: 'AI/Tech',
+    color: '#ab47bc',
+    icon: 'pi pi-sparkles',
+    budget: 1_000_000_000,
+    deployedRatio: 0.10,
+    description: 'Искусственный интеллект и технологии',
+    marketFocus: ['neuronet']
+  },
+  124370: { // Фотоника
+    id: 124370,
+    key: 'photonics',
+    name: 'Субфонд Фотоника',
+    shortName: 'Фотоника',
+    color: '#ec407a',
+    icon: 'pi pi-bolt',
+    budget: 800_000_000,
+    deployedRatio: 0.15,
+    description: 'Фотоника и оптоэлектроника',
+    marketFocus: ['neuronet']
+  },
+  124372: { // ФармаМед
+    id: 124372,
+    key: 'pharmamed',
+    name: 'Субфонд ФармаМед',
+    shortName: 'ФармаМед',
+    color: '#26a69a',
+    icon: 'pi pi-heart',
+    budget: 1_200_000_000,
+    deployedRatio: 0.20,
+    description: 'Фармацевтика и медицинские технологии',
+    marketFocus: ['healthnet']
+  },
+  124374: { // Новые материалы
+    id: 124374,
+    key: 'newmat',
+    name: 'Субфонд Новые материалы',
+    shortName: 'Новые материалы',
+    color: '#78909c',
+    icon: 'pi pi-box',
+    budget: 900_000_000,
+    deployedRatio: 0.18,
+    description: 'Новые материалы и нанотехнологии',
+    marketFocus: ['technet']
+  },
+  124376: { // SpaceNet
+    id: 124376,
+    key: 'spacenet',
+    name: 'Субфонд SpaceNet',
+    shortName: 'SpaceNet',
+    color: '#5c6bc0',
+    icon: 'pi pi-globe',
+    budget: 700_000_000,
+    deployedRatio: 0.12,
+    description: 'Космические технологии и геоданные',
+    marketFocus: ['aeronet']
+  },
+  124378: { // Энерджинет
+    id: 124378,
+    key: 'energynet',
+    name: 'Субфонд Энерджинет',
+    shortName: 'Энерджинет',
+    color: '#ffb300',
+    icon: 'pi pi-sun',
+    budget: 1_100_000_000,
+    deployedRatio: 0.16,
+    description: 'Энергетические технологии',
+    marketFocus: ['energynet']
+  },
+  124380: { // Агротех
+    id: 124380,
+    key: 'agrotech',
+    name: 'Субфонд Агротех',
+    shortName: 'Агротех',
+    color: '#66bb6a',
+    icon: 'pi pi-leaf',
+    budget: 600_000_000,
+    deployedRatio: 0.14,
+    description: 'Агропромышленные технологии',
+    marketFocus: ['foodnet']
+  },
+  124382: { // Технет
+    id: 124382,
+    key: 'technet',
+    name: 'Субфонд Технет',
+    shortName: 'Технет',
+    color: '#8d6e63',
+    icon: 'pi pi-wrench',
+    budget: 800_000_000,
+    deployedRatio: 0.19,
+    description: 'Передовые производственные технологии',
+    marketFocus: ['technet']
+  },
+  124384: { // MediaNet
+    id: 124384,
+    key: 'medianet',
+    name: 'Субфонд MediaNet',
+    shortName: 'MediaNet',
+    color: '#ef5350',
+    icon: 'pi pi-video',
+    budget: 500_000_000,
+    deployedRatio: 0.11,
+    description: 'Медиа и креативные технологии',
+    marketFocus: ['medianet']
   }
 }
 
@@ -108,21 +216,52 @@ export const SUBFUNDS_METADATA = {
 function parseExtendedData(descriptionHtml) {
   if (!descriptionHtml) return { description: '', extended: {} }
 
+  const cleanDesc = () => descriptionHtml
+    .replace(/<!--FST_EXTENDED_DATA:[\s\S]*?-->/, '')
+    .replace(/<!--FST_FULL_APPLICATION:[\s\S]*?-->/, '')
+    .trim()
+
   try {
-    // Check if description contains JSON marker
+    // Try FST_EXTENDED_DATA first (legacy format)
     if (descriptionHtml.includes('<!--FST_EXTENDED_DATA:')) {
       const match = descriptionHtml.match(/<!--FST_EXTENDED_DATA:(.*?)-->/)
       if (match) {
         const extended = JSON.parse(match[1])
-        const description = descriptionHtml.replace(/<!--FST_EXTENDED_DATA:.*?-->/, '').replace(/<!--FST_FULL_APPLICATION:.*?-->/, '').trim()
-        return { description, extended }
+        return { description: cleanDesc(), extended }
+      }
+    }
+
+    // Try FST_FULL_APPLICATION (new format from Yandex Disk parsing)
+    if (descriptionHtml.includes('<!--FST_FULL_APPLICATION:')) {
+      const match = descriptionHtml.match(/<!--FST_FULL_APPLICATION:([\s\S]*?)-->/)
+      if (match) {
+        const fa = JSON.parse(match[1])
+        // Map FST_FULL_APPLICATION fields to extended format
+        const extended = {
+          title: fa.title || fa.companyName || '',
+          market: fa.market || fa.sector || '',
+          employees: fa.employees || fa.teamSize || 0,
+          founded: fa.foundedYear || fa.year || 0,
+          patents: fa.patents || 0,
+          marketSize: fa.marketSize || (fa.marketSizeMln ? fa.marketSizeMln * 1_000_000 : 0),
+          strengths: fa.strengths || fa.keyFacts || [],
+          risks: fa.risks || [],
+          documents: fa.documents || [],
+          trl: fa.trl || 0,
+          mrl: fa.mrl || 0,
+          sovereigntyScore: fa.sovereigntyScore || 0,
+          projectedIRR: fa.projectedIRR || 0,
+          teamStrength: fa.teamStrength || 0,
+          localizationRatio: fa.localizationRatio || 0,
+        }
+        return { description: cleanDesc(), extended }
       }
     }
   } catch (e) {
     console.warn('[fstExtendedApi] Failed to parse extended data:', e)
   }
 
-  return { description: descriptionHtml.replace(/<!--FST_FULL_APPLICATION:.*?-->/, '').trim(), extended: {} }
+  return { description: cleanDesc(), extended: {} }
 }
 
 /**
@@ -246,8 +385,10 @@ export async function getStats() {
   // Calculate AUM (Assets Under Management)
   const aum = subfunds.reduce((sum, sf) => sum + (sf.budget * sf.deployedRatio), 0)
 
-  // Count portfolio companies (projects with status "В работе" = 1125)
-  const portfolioCount = projects.filter(p => p.statusId === 1125).length
+  // Count portfolio companies (status "Портфель" = 81238)
+  const portfolioCount = projects.filter(p =>
+    String(p.statusId) === '81238' || String(p.statusId) === '1125'
+  ).length
 
   // Subfund count
   const subfundCount = subfunds.length
@@ -327,12 +468,8 @@ export async function createEnrichedProject(data) {
 // ── Helper Converters ─────────────────────────────────────────────
 
 function getSubfundKey(subfundId) {
-  const mapping = {
-    1096: 'bas',
-    1098: 'robot',
-    1100: 'me'
-  }
-  return mapping[subfundId] || 'bas'
+  const meta = SUBFUNDS_METADATA[subfundId]
+  return meta ? meta.key : 'bas'
 }
 
 function getStageKey(stageId) {
@@ -347,12 +484,10 @@ function getStageKey(stageId) {
 }
 
 function getSubfundId(subfundKey) {
-  const mapping = {
-    'bas': 1096,
-    'robot': 1098,
-    'me': 1100
+  for (const [id, meta] of Object.entries(SUBFUNDS_METADATA)) {
+    if (meta.key === subfundKey) return Number(id)
   }
-  return mapping[subfundKey] || 1096
+  return 1096
 }
 
 function getStageId(stageKey) {
@@ -374,7 +509,9 @@ function getStatusId(statusKey) {
     'Одобрен': 1119,
     'На доработке': 1123,
     'В работе': 1125,
-    'Закрыт': 1127
+    'Закрыт': 1127,
+    'Портфель': 81238,
+    'Тест': 122353
   }
   return mapping[statusKey] || 1115
 }
