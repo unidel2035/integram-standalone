@@ -3,6 +3,53 @@ import { bayesianUpdate, dcf, irr, kelly, brierScore, monteCarloVaR, sharpeRatio
 import express from 'express'
 import { createServer } from 'http'
 import { WebSocketServer } from 'ws'
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// ── Fund Knowledge Base (loaded once at startup) ────────────────
+let FUND_KB = null
+try {
+  FUND_KB = JSON.parse(readFileSync(join(__dirname, 'data', 'fund-knowledge.json'), 'utf-8'))
+  console.log(`[FundKB] Loaded: ${FUND_KB.portfolio.length} portfolio companies, ${FUND_KB.fund.subfunds.length} subfunds`)
+} catch (err) {
+  console.warn('[FundKB] Failed to load fund-knowledge.json:', err.message)
+}
+
+function searchFundKB(query) {
+  if (!FUND_KB || !query) return ''
+  const q = query.toLowerCase()
+  const words = q.split(/\s+/).filter(w => w.length > 2)
+  if (words.length === 0) return ''
+
+  // Score each company by keyword matches
+  const scored = FUND_KB.portfolio.map(c => {
+    const haystack = [c.name, c.subfund, c.description, c.sector, ...(c.tags || [])].filter(Boolean).join(' ').toLowerCase()
+    let score = 0
+    for (const w of words) {
+      if (haystack.includes(w)) score++
+    }
+    return { ...c, score }
+  }).filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 8)
+
+  if (scored.length === 0) return ''
+
+  // Also check if query is about the fund itself
+  const fundHaystack = [FUND_KB.fund.name, FUND_KB.fund.type, ...FUND_KB.fund.subfunds.map(s => s.name + ' ' + s.fullName)].join(' ').toLowerCase()
+  let fundBlock = ''
+  if (words.some(w => fundHaystack.includes(w) || ['фонд', 'фст', 'нти', 'субфонд', 'портфел', 'инвест'].some(k => w.includes(k)))) {
+    fundBlock = `Фонд: ${FUND_KB.fund.name}, размер ${FUND_KB.fund.size}, ${FUND_KB.fund.subfunds.length} субфондов: ${FUND_KB.fund.subfunds.map(s => s.name).join(', ')}. Стадии: ${FUND_KB.fund.stages}. Критерии: ${FUND_KB.fund.criteria}.\n`
+  }
+
+  const companiesBlock = scored.map(c =>
+    `[${c.subfund || '?'}] ${c.name}: ${c.description}${c.trl ? ` TRL ${c.trl}` : ''}${c.founded ? `, осн. ${c.founded}` : ''}`
+  ).join('\n')
+
+  return fundBlock + companiesBlock
+}
 import { execSync } from 'child_process'
 import * as nodePty from 'node-pty'
 import platformRoutes    from './src/api/routes/platform.js'
@@ -316,35 +363,13 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
     console.error('[Billing] token quota check error:', err.message)
   }
 
-  // ── KAG-FST Memory Enrichment ─────────────────────────────────
-  // Ищем в KAG-FST (портфельные компании, онтология фонда) по запросу пользователя
+  // ── Fund Knowledge Base Enrichment ─────────────────────────────
+  // Ищем релевантные портфельные компании по запросу пользователя
   if (prompt && systemPrompt) {
-    try {
-      const kagFstUrl = 'http://localhost:8083/api/mcp/kag-fst/execute'
-      const kagResp = await fetch(kagFstUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toolName: 'kag_search', arguments: { query: prompt, limit: 10 } }),
-        signal: AbortSignal.timeout(3000)
-      }).catch(() => null)
-
-      if (kagResp?.ok) {
-        const kagData = await kagResp.json().catch(() => null)
-        const text = kagData?.content?.[0]?.text
-        if (text) {
-          const parsed = JSON.parse(text)
-          if (parsed.results?.length > 0) {
-            const memoryBlock = parsed.results.map(e =>
-              `[${e.type}] ${e.name}: ${(e.observations || []).slice(0, 5).join('; ')}`
-            ).join('\n')
-            systemPrompt += `\n\n--- ПАМЯТЬ ФОНДА (KAG) ---\n${memoryBlock}\n--- КОНЕЦ ПАМЯТИ ---`
-            console.log(`[KAG-FST] Enriched prompt with ${parsed.results.length} entities`)
-          }
-        }
-      }
-    } catch (kagErr) {
-      // Non-blocking — не влияет на ответ
-      console.warn('[KAG-FST] enrichment error:', kagErr.message)
+    const kbResult = searchFundKB(prompt)
+    if (kbResult) {
+      systemPrompt += `\n\n--- ПАМЯТЬ ФОНДА ---\n${kbResult}\n--- КОНЕЦ ПАМЯТИ ---`
+      console.log(`[FundKB] Enriched prompt (${kbResult.split('\n').length} lines)`)
     }
   }
 
