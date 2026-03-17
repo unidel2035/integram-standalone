@@ -79,6 +79,7 @@ import { logUsage, incrementUsage, checkTokenQuota, deductTokens } from './src/s
 import { refreshConfig } from './src/services/fstConfigService.js'
 import { createKAGFstMCPRoutes } from './src/api/routes/kag.js'
 import { createClaudeMemoryRoutes } from './src/api/routes/claude-memory.js'
+import { createFundOrchestrator } from './src/agents/orchestration/FundOrchestrator.js'
 
 const app = express()
 const server = createServer(app)
@@ -655,6 +656,32 @@ app.get('/api/debate/sessions/:id', (req, res) => res.status(404).json({ error: 
 
 // ── AnamnesisMemory (Claude Memory — факты, семантика, нарратив) ─────────────
 app.use('/api/claude-memory', createClaudeMemoryRoutes())
+
+// ── Multi-Agent Orchestrator ─────────────────────────────────────────────────
+const fundOrchestrator = createFundOrchestrator({ port: PORT })
+
+app.post('/api/agents/chat', async (req, res) => {
+  const { message, conversationId } = req.body
+  if (!message) return res.status(400).json({ error: 'message required' })
+
+  try {
+    const result = await fundOrchestrator.execute(message)
+    res.json({
+      response: result.answer,
+      agents: result.agents,
+      steps: result.steps?.length || 0,
+      executionTime: result.executionTime,
+      success: result.success,
+    })
+  } catch (error) {
+    console.error('[Agents] chat error:', error.message)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/agents/list', (req, res) => {
+  res.json({ agents: fundOrchestrator.getAgents() })
+})
 
 // ── KAG Memory (Knowledge Graph) ─────────────────────────────────────────────
 app.use('/api/mcp/kag-fst', createKAGFstMCPRoutes())
