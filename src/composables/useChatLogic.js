@@ -3287,6 +3287,17 @@ AI-помощник по продажам активирован! Полный �
         console.log('[sendAiMessage] System prompt includes document context:', !!editorDocumentContext.value)
 
         // Use unified chat API with streaming
+        // Build message with file context if attachments have extracted text
+        let enrichedMessage = userMessage
+        if (attachments.length > 0) {
+          const fileContexts = attachments
+            .filter(a => a.extractedText)
+            .map(a => `\n\n--- Содержимое файла "${a.name}" ---\n${a.extractedText.slice(0, 30000)}\n--- Конец файла ---`)
+          if (fileContexts.length > 0) {
+            enrichedMessage = userMessage + fileContexts.join('')
+          }
+        }
+
         _abortController = new AbortController()
         const response = await fetch(`${CHAT_API_URL}`, {
           method: 'POST',
@@ -3295,7 +3306,7 @@ AI-помощник по продажам активирован! Полный �
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            message: userMessage,
+            message: enrichedMessage,
             userId: currentUserId.value,
             model: selectedModel.value,
             provider: selectedProvider.value,
@@ -4162,12 +4173,50 @@ AI-помощник по продажам активирован! Полный �
 
     try {
       for (const file of files) {
+        const ext = file.name.split('.').pop().toLowerCase()
+        const parseable = ['pptx', 'ppt', 'pdf', 'txt', 'md', 'csv', 'json', 'xml', 'html'].includes(ext)
+
+        let extractedText = ''
+
+        if (parseable) {
+          // Upload to backend for text extraction
+          uploadProgress.value = 30
+          try {
+            const base64Data = await new Promise((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result.split(',')[1])
+              reader.onerror = reject
+              reader.readAsDataURL(file)
+            })
+
+            uploadProgress.value = 60
+            const res = await fetch('/api/chat/upload', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                base64Data,
+                filename: file.name,
+                mimeType: file.type
+              })
+            })
+
+            if (res.ok) {
+              const data = await res.json()
+              extractedText = data.text || ''
+              console.log(`[FileUpload] Extracted ${extractedText.length} chars from ${file.name}`)
+            }
+          } catch (err) {
+            console.warn('[FileUpload] Server extraction failed, using local only:', err.message)
+          }
+        }
+
         const attachment = {
           name: file.name,
           size: file.size,
           type: file.type,
           source: 'file',
-          url: URL.createObjectURL(file)
+          url: URL.createObjectURL(file),
+          extractedText: extractedText || undefined
         }
         currentAttachments.value.push(attachment)
       }

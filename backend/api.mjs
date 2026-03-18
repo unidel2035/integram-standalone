@@ -1,4 +1,7 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import { fileURLToPath as _toPath } from 'url'
+import { dirname as _dir, join as _join } from 'path'
+dotenv.config({ path: _join(_dir(_toPath(import.meta.url)), '.env') })
 import { bayesianUpdate, dcf, irr, kelly, brierScore, monteCarloVaR, sharpeRatio, blackScholes, nashEquilibrium, shapleyValue, unitEconomics, portfolioRisk } from './calc.mjs'
 import express from 'express'
 import { createServer } from 'http'
@@ -210,7 +213,7 @@ function handleClaudeInput(ws, pty, raw) {
   } catch {}
 }
 
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 
 // CORS
 app.use((req, res, next) => {

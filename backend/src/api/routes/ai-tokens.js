@@ -391,6 +391,85 @@ router.post('/chat', async (req, res) => {
   }
 })
 
+// ── POST /api/chat/upload — загрузка файла, извлечение текста ─────────────────
+// Body: { base64Data, filename, mimeType }
+// Response: { text, filename, size, integramUrl? }
+router.post('/chat/upload', async (req, res) => {
+  const { base64Data, filename, mimeType } = req.body
+  if (!base64Data) return res.status(400).json({ error: 'base64Data is required' })
+
+  const { writeFileSync, mkdirSync, existsSync, unlinkSync } = await import('fs')
+  const { join } = await import('path')
+  const { fileURLToPath } = await import('url')
+  const { dirname } = await import('path')
+
+  const tmpDir = join(dirname(fileURLToPath(import.meta.url)), '../../../.tmp-uploads')
+  if (!existsSync(tmpDir)) mkdirSync(tmpDir, { recursive: true })
+
+  const ext = (filename || 'file').split('.').pop().toLowerCase()
+  const tmpPath = join(tmpDir, `upload_${Date.now()}.${ext}`)
+
+  try {
+    // Save file from base64
+    const buffer = Buffer.from(base64Data, 'base64')
+    writeFileSync(tmpPath, buffer)
+    console.log(`[chat/upload] Saved ${filename} (${buffer.length} bytes) to ${tmpPath}`)
+
+    let extractedText = ''
+
+    if (ext === 'pptx' || ext === 'ppt') {
+      // Extract text from PPTX
+      try {
+        const { default: unzipper } = await import('unzipper')
+        const zip = await unzipper.Open.file(tmpPath)
+        const slideFiles = zip.files
+          .filter(f => f.path.match(/ppt\/slides\/slide\d+\.xml$/))
+          .sort((a, b) => {
+            const na = Number(a.path.match(/slide(\d+)/)[1])
+            const nb = Number(b.path.match(/slide(\d+)/)[1])
+            return na - nb
+          })
+        for (const entry of slideFiles) {
+          const content = await entry.buffer()
+          const xml = content.toString('utf8')
+          const matches = xml.match(/<a:t>([^<]+)<\/a:t>/g) || []
+          const slideNum = Number(entry.path.match(/slide(\d+)/)[1])
+          const slideText = matches.map(m => m.replace(/<[^>]+>/g, '')).join(' ')
+          extractedText += `[Слайд ${slideNum}] ${slideText}\n\n`
+        }
+      } catch (e) {
+        console.error('[chat/upload] PPTX parse error:', e.message)
+      }
+    } else if (ext === 'pdf') {
+      // Extract text from PDF
+      try {
+        const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js')
+        const data = await pdfParse(buffer)
+        extractedText = data.text || ''
+      } catch (e) {
+        console.error('[chat/upload] PDF parse error:', e.message)
+      }
+    } else if (['txt', 'md', 'csv', 'json', 'xml', 'html'].includes(ext)) {
+      extractedText = buffer.toString('utf8')
+    }
+
+    // Cleanup temp file
+    try { unlinkSync(tmpPath) } catch (_) {}
+
+    res.json({
+      success: true,
+      filename,
+      size: buffer.length,
+      text: extractedText.slice(0, 50000), // limit to 50k chars
+      textLength: extractedText.length
+    })
+  } catch (err) {
+    console.error('[chat/upload] Error:', err)
+    try { unlinkSync(tmpPath) } catch (_) {}
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Health check для AI провайдеров
 router.get('/ai-tokens/providers', (req, res) => {
   const status = {}

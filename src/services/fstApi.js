@@ -169,6 +169,7 @@ export function estimateIRR(app) {
 // ── Projects ──────────────────────────────────────────────────────────────
 
 export const TYPE_PROJECTS = 1155
+export const TYPE_PROJECT_ENTITY = 197955  // Таблица «Проект» — shortName + иконка
 export const STATUS_PORTFOLIO = 81238  // Статус "Портфель" — реальные компании фонда из Яндекс.Диска
 
 /**
@@ -231,6 +232,7 @@ export async function getProjects({ statusId } = {}) {
       patents:          Number(r['6169'] || 0),
       foundedYear:      Number(r['6171'] || 0),
       mediaRef:         Number(r['53253'] || 0),   // Медиа (arr_id 53253) — прикреплённый питч-дек
+      projectRef:       refId(r, '197957'),         // Ссылка на сущность «Проект» (shortName + icon)
     }
   })
 
@@ -241,6 +243,31 @@ export async function getProjects({ statusId } = {}) {
 
 export async function getProject(id) {
   return api(`object/${id}?JSON_KV`)
+}
+
+/**
+ * Загружает справочник «Проект» (197955) — shortName + icon для компаний.
+ * Возвращает Map<projectId, { shortName, icon, description }>
+ */
+export async function getProjectEntities() {
+  try {
+    const data = await api(`object/${TYPE_PROJECT_ENTITY}?JSON_KV&l=100`)
+    const objects = data.object || []
+    const reqs = data.reqs || {}
+    const map = new Map()
+    for (const obj of objects) {
+      const r = reqs[obj.id] || {}
+      map.set(String(obj.id), {
+        shortName: obj.val,
+        icon: r['197958'] || '',
+        description: r['197959'] || '',
+      })
+    }
+    return map
+  } catch (err) {
+    console.warn('[fstApi] getProjectEntities failed:', err.message)
+    return new Map()
+  }
 }
 
 // ── Digital Twin Model ─────────────────────────────────────────────────────

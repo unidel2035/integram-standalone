@@ -378,13 +378,29 @@ class IntegramChatSessionService {
         this.currentTokenId // parentId - привязка к токену
       )
 
-      console.log('[IntegramChatSession] createObject response:', JSON.stringify(result))
+      console.log('[IntegramChatSession] createObject response:', JSON.stringify(result), 'type:', typeof result, 'isArray:', Array.isArray(result))
 
-      // API может вернуть id, obj, или Array [{id, ...}]
-      const data = Array.isArray(result) ? result[0] : result
-      const objectId = data?.id || data?.obj
+      // API может вернуть:
+      // - { id, obj, val } — стандартный ответ
+      // - [{ id, obj, val }] — массив с одним объектом
+      // - ["119416"] или [119416] — массив с ID как строка/число
+      // - "119416" — ID как строка
+      let objectId = null
+      if (Array.isArray(result)) {
+        const first = result[0]
+        if (typeof first === 'object' && first !== null) {
+          objectId = first.id || first.obj
+        } else if (first) {
+          // Array of IDs: [119416] or ["119416"]
+          objectId = Number(first) || first
+        }
+      } else if (typeof result === 'object' && result !== null) {
+        objectId = result.id || result.obj
+      } else if (result) {
+        objectId = Number(result) || result
+      }
 
-      if (result && objectId) {
+      if (objectId) {
         // Кэшируем связь sessionId -> integramObjectId
         this.sessionsCache.set(sessionId, objectId)
         // Persist cache to localStorage
