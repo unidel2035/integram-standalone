@@ -26,7 +26,8 @@ const server = createServer(async (req, res) => {
   let data
   try { data = JSON.parse(body) } catch { res.writeHead(400); res.end('Bad JSON'); return }
 
-  const { message, systemPrompt, conversationHistory = [] } = data
+  const { message, systemPrompt, conversationHistory, history, model: requestModel } = data
+  const chatHistory = conversationHistory || history || []
   if (!message) { res.writeHead(400); res.end('message is required'); return }
 
   // SSE headers
@@ -38,8 +39,8 @@ const server = createServer(async (req, res) => {
 
   // Build prompt with history
   let fullPrompt = message
-  if (conversationHistory.length > 0) {
-    const historyText = conversationHistory.slice(-8)
+  if (chatHistory.length > 0) {
+    const historyText = chatHistory.slice(-8)
       .map(m => `${m.role === 'user' ? 'Пользователь' : 'Ассистент'}: ${m.content}`)
       .join('\n\n')
     fullPrompt = `${historyText}\n\nПользователь: ${message}`
@@ -48,7 +49,7 @@ const server = createServer(async (req, res) => {
   const args = [
     '-p', fullPrompt,
     '--output-format', 'stream-json', '--verbose',
-    '--model', 'opus',
+    '--model', requestModel || 'opus',
     '--mcp-config', '/home/hive/fund/backend/claude-chat-mcp.json',
     '--strict-mcp-config',
     '--dangerously-skip-permissions',
@@ -60,7 +61,7 @@ const server = createServer(async (req, res) => {
   // Use script -q to allocate a pseudo-TTY — Claude CLI may buffer stdout without one
   const cmd = [CLAUDE_BIN, ...args].map(a => `'${a.replace(/'/g, "'\\''")}'`).join(' ')
   const claude = spawn('script', ['-qc', cmd, '/dev/null'], {
-    cwd: '/home/hive/fund',
+    cwd: '/tmp',
     env: { ...process.env, HOME: '/home/new', TERM: 'dumb' },
     timeout: 180000,
   })

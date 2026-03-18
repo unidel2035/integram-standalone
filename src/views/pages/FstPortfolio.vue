@@ -83,7 +83,7 @@
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <div v-if="activeView === 'dashboard'" class="fsp-dash">
 
-      <!-- ═══ AI Navigator (иконка + hover-чипы) ═══ -->
+      <!-- ═══ AI Navigator (иконка + hover-чипы + утренний брифинг) ═══ -->
       <div class="fsp-ai-nav" :class="{ 'fsp-ai-nav--loading': aiLoading, 'fsp-ai-nav--has-blocks': aiBlocks.length }">
         <button class="fsp-ai-nav-trigger" :disabled="aiLoading">
           <i class="pi pi-sparkles" v-if="!aiLoading"></i>
@@ -91,10 +91,22 @@
         </button>
         <Transition name="fsp-nav-chips">
           <div class="fsp-ai-nav-chips" v-show="!aiLoading">
+            <button class="fsp-ai-chip fsp-ai-chip--brief" @click="runMorningBrief()">
+              <i class="pi pi-sun"></i>
+              <span>Брифинг</span>
+            </button>
             <button v-for="q in aiQuickQueries" :key="q.id" class="fsp-ai-chip"
               @click="aiQuery = q.prompt; runAiDashboard()">
               <i :class="q.icon"></i>
               <span>{{ q.label }}</span>
+            </button>
+            <button class="fsp-ai-chip fsp-ai-chip--swarm" @click="runAgentSwarm()" :disabled="swarmRunning">
+              <i class="pi pi-users"></i>
+              <span>Свод агентов</span>
+            </button>
+            <button class="fsp-ai-chip fsp-ai-chip--pred" @click="refreshPredictions()" :disabled="predictionsLoading">
+              <i class="pi pi-bolt"></i>
+              <span>Прогнозы</span>
             </button>
             <button v-if="aiBlocks.length" class="fsp-ai-chip fsp-ai-chip--clear"
               @click="destroyAiCharts(); aiBlocks = []; aiQuery = ''">
@@ -103,6 +115,18 @@
           </div>
         </Transition>
       </div>
+
+      <!-- ═══ Утренний брифинг — баннер (появляется после генерации) ═══ -->
+      <Transition name="fsp-brief-anim">
+        <div v-if="morningBrief" class="fsp-morning-brief">
+          <div class="fsp-brief-header">
+            <i class="pi pi-sun"></i>
+            <span>Утренний брифинг</span>
+            <button class="fsp-brief-close" @click="morningBrief = ''"><i class="pi pi-times"></i></button>
+          </div>
+          <div class="fsp-brief-text" v-html="formatChatText(morningBrief)"></div>
+        </div>
+      </Transition>
 
       <!-- ╔══════════════════════════════════════════════════════════════════╗ -->
       <!-- ║  ATTENTION CANVAS — единый грид слотов (Cowan's 4±1)           ║ -->
@@ -367,6 +391,70 @@
           </div>
         </div>
 
+        <!-- ── Portfolio Score + NAV Timeline — агрегированные виджеты ── -->
+        <div class="fsp-score-row">
+          <!-- Portfolio Score Gauge -->
+          <div class="fsp-score-gauge" v-tooltip.bottom="'Portfolio Score — агрегированный показатель здоровья портфеля (0-100)'">
+            <svg viewBox="0 0 80 48" class="fsp-score-svg">
+              <path d="M 8 44 A 32 32 0 0 1 72 44" fill="none" stroke="var(--p-content-border-color)" stroke-width="5" stroke-linecap="round"/>
+              <path d="M 8 44 A 32 32 0 0 1 72 44" fill="none" :stroke="portfolioScoreColor" stroke-width="5" stroke-linecap="round"
+                :stroke-dasharray="`${portfolioScore * 1.005} 100.5`" class="fsp-score-arc"/>
+            </svg>
+            <div class="fsp-score-val" :style="{ color: portfolioScoreColor }">{{ portfolioScore }}</div>
+            <div class="fsp-score-label">Portfolio Score</div>
+          </div>
+          <!-- NAV Timeline -->
+          <div class="fsp-nav-timeline" v-tooltip.bottom="'NAV — прогноз стоимости фонда на 12 месяцев'">
+            <div class="fsp-nav-header">
+              <span class="fsp-nav-title">NAV Прогноз</span>
+              <span class="fsp-nav-val">{{ fmtMln(navTimeline[navTimeline.length - 1] || 0) }} ₽</span>
+            </div>
+            <svg viewBox="0 0 200 28" class="fsp-nav-svg" v-html="navTimelineSvg"></svg>
+            <div class="fsp-nav-labels"><span>сейчас</span><span>+12 мес</span></div>
+          </div>
+          <!-- Correlation Matrix -->
+          <div class="fsp-corr-matrix" v-if="correlationMatrix.length">
+            <div class="fsp-corr-title">Корреляция субфондов</div>
+            <div class="fsp-corr-head">
+              <span></span><span>Health</span><span>TRL</span><span>MOIC</span>
+            </div>
+            <div v-for="row in correlationMatrix" :key="row.name" class="fsp-corr-row">
+              <span class="fsp-corr-name" :style="{ color: row.color }">{{ row.name }}</span>
+              <span class="fsp-corr-cell" :style="{ background: `color-mix(in srgb, ${row.risk >= 60 ? 'var(--fst-green)' : row.risk >= 40 ? 'var(--fst-brand)' : 'var(--fst-red)'} ${Math.min(40, row.risk / 2.5)}%, transparent)` }">{{ row.risk }}%</span>
+              <span class="fsp-corr-cell" :style="{ background: `color-mix(in srgb, var(--fst-blue) ${Math.min(40, row.trl * 4)}%, transparent)` }">{{ row.trl }}</span>
+              <span class="fsp-corr-cell" :style="{ background: `color-mix(in srgb, var(--fst-purple) ${Math.min(40, row.moic * 15)}%, transparent)` }">{{ row.moic }}x</span>
+            </div>
+          </div>
+          <!-- Technology Coverage Radar -->
+          <div class="fsp-tech-radar" v-tooltip.bottom="'Покрытие технологической таксономии НТИ'">
+            <div class="fsp-corr-title">Покрытие НТИ</div>
+            <svg viewBox="0 0 200 180" class="fsp-radar-svg">
+              <polygon v-for="ring in [0.25, 0.5, 0.75, 1.0]" :key="ring"
+                :points="radarAxes.map((a, i) => radarPoint(i, ring)).join(' ')"
+                fill="none" stroke="var(--p-content-border-color)" stroke-width="0.5" opacity="0.4" />
+              <line v-for="(a, i) in radarAxes" :key="'ax'+i"
+                x1="100" y1="85" :x2="radarPoint(i, 1).split(',')[0]" :y2="radarPoint(i, 1).split(',')[1]"
+                stroke="var(--p-content-border-color)" stroke-width="0.3" />
+              <polygon :points="radarAxes.map((a, i) => radarPoint(i, a.target / 10)).join(' ')"
+                fill="none" stroke="var(--fst-brand)" stroke-width="1" stroke-dasharray="3,3" opacity="0.5" />
+              <polygon :points="radarAxes.map((a, i) => radarPoint(i, a.score / 10)).join(' ')"
+                fill="color-mix(in srgb, var(--fst-purple) 15%, transparent)"
+                stroke="var(--fst-purple)" stroke-width="1.5" />
+              <circle v-for="(a, i) in radarAxes" :key="'dot'+i"
+                :cx="radarPoint(i, a.score / 10).split(',')[0]"
+                :cy="radarPoint(i, a.score / 10).split(',')[1]"
+                r="3" :fill="a.score >= a.target ? 'var(--fst-green)' : 'var(--fst-red)'" />
+              <text v-for="(a, i) in radarAxes" :key="'lbl'+i"
+                :x="radarLabelPos(i).x" :y="radarLabelPos(i).y"
+                text-anchor="middle" class="fsp-radar-label">{{ a.short }}</text>
+            </svg>
+            <div class="fsp-radar-legend">
+              <span style="color:var(--fst-purple)">&#9644; Факт</span>
+              <span style="color:var(--fst-brand)">- - Цель</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Верхний ряд: KPI-метрики с дельтами (Kahneman S1) и спарклайнами (Tufte) -->
         <div class="fsp-ig-kpis">
           <div class="fsp-ig-kpi" v-tooltip.bottom="'TVPI (Total Value to Paid-In) — отношение стоимости портфеля к вложенным средствам. >1x = фонд в плюсе'">
@@ -409,6 +497,172 @@
           </div>
         </div>
 
+        <!-- ═══ Predictive Signal Stream ═══ -->
+        <div class="fsp-pred-stream" v-if="predictiveSignals.length">
+          <div class="fsp-pred-header">
+            <i class="pi pi-sparkles" style="color:var(--fst-purple)"></i>
+            <span class="fsp-ig-section-title" style="margin:0">Предиктивная разведка</span>
+          </div>
+          <div class="fsp-pred-cards">
+            <div v-for="sig in predictiveSignals" :key="sig.id"
+              class="fsp-pred-card" :class="['fsp-pred--' + sig.severity, { expanded: expandedPrediction === sig.id }]"
+              @click="expandedPrediction = expandedPrediction === sig.id ? null : sig.id">
+              <div class="fsp-pred-top">
+                <Icon :icon="sig.icon" class="fsp-pred-icon" :style="{ color: sig.color }" />
+                <span class="fsp-pred-text">{{ sig.text }}</span>
+                <Tag :value="sig.horizon" :severity="sig.severity === 'critical' ? 'danger' : sig.severity === 'warning' ? 'warn' : 'info'" style="font-size:9px" />
+              </div>
+              <Transition name="fsp-brief-anim">
+                <div v-if="expandedPrediction === sig.id" class="fsp-pred-detail">
+                  <div class="fsp-pred-chain">
+                    <div v-for="(step, i) in sig.chain" :key="i" class="fsp-pred-chain-step">
+                      <div class="fsp-pred-chain-dot" :style="{ background: step.color }"></div>
+                      <div class="fsp-pred-chain-line" v-if="i < sig.chain.length - 1"></div>
+                      <div class="fsp-pred-chain-body">
+                        <span class="fsp-pred-chain-label">{{ step.label }}</span>
+                        <span class="fsp-pred-chain-entity">{{ step.entity }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="sig.kagConcepts?.length" class="fsp-pred-concepts">
+                    <span v-for="c in sig.kagConcepts" :key="c" class="fsp-pred-concept-tag">{{ c }}</span>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Agent Swarm Live Analysis ═══ -->
+        <Transition name="fsp-block-anim">
+          <div v-if="swarmActive" class="fsp-swarm">
+            <div class="fsp-swarm-header">
+              <i class="pi pi-users" style="color:var(--fst-purple)"></i>
+              <span>Agent Swarm</span>
+              <span class="fsp-swarm-timer">{{ swarmElapsed }}с</span>
+              <button v-if="swarmRunning" class="fsp-brief-close" @click="cancelSwarm()"><i class="pi pi-times"></i></button>
+              <button v-if="!swarmRunning && swarmSynthesis" class="fsp-brief-close" @click="swarmActive = false"><i class="pi pi-times"></i></button>
+            </div>
+            <div class="fsp-swarm-grid">
+              <div v-for="agent in swarmAgents" :key="agent.id"
+                class="fsp-swarm-tile" :class="[agent.status]"
+                :style="{ '--agent-color': agent.color }">
+                <div class="fsp-swarm-tile-head">
+                  <i :class="agent.icon" :style="{ color: 'var(--agent-color)' }"></i>
+                  <span>{{ agent.name }}</span>
+                  <span class="fsp-swarm-dot" :class="agent.status"></span>
+                </div>
+                <div class="fsp-swarm-steps">
+                  <div v-for="step in agent.steps" :key="step.id" class="fsp-swarm-step">
+                    <i :class="step.done ? 'pi pi-check' : 'pi pi-spin pi-spinner'" style="font-size:9px"
+                      :style="{ color: step.done ? 'var(--fst-green)' : 'var(--agent-color)' }"></i>
+                    <span>{{ step.label }}</span>
+                  </div>
+                </div>
+                <Transition name="fsp-brief-anim">
+                  <div v-if="agent.result" class="fsp-swarm-result">
+                    <div class="fsp-swarm-stance" :class="(agent.result.stance || '').toLowerCase()">
+                      {{ agent.result.stance || 'АНАЛИЗ' }}
+                    </div>
+                    <div class="fsp-swarm-text">{{ (agent.result.text || '').slice(0, 180) }}</div>
+                    <div class="fsp-swarm-conf">
+                      <div class="fsp-swarm-conf-bar"><div class="fsp-swarm-conf-fill" :style="{ width: ((agent.result.confidence || 0) * 100) + '%', background: 'var(--agent-color)' }"></div></div>
+                      <span>{{ Math.round((agent.result.confidence || 0) * 100) }}%</span>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
+            </div>
+            <Transition name="fsp-brief-anim">
+              <div v-if="swarmSynthesis" class="fsp-swarm-synthesis">
+                <i class="pi pi-check-circle" style="color:var(--fst-green)"></i>
+                <div class="fsp-swarm-synth-text" v-html="formatChatText(swarmSynthesis)"></div>
+              </div>
+            </Transition>
+          </div>
+        </Transition>
+
+        <!-- ═══ Constellation + Tech Domain Stats — row ═══ -->
+        <div v-if="constellationData.companies.length" class="fsp-const-row">
+          <!-- Constellation Map (compact, hover to zoom) -->
+          <div class="fsp-constellation" @mouseenter="constZoomed = true" @mouseleave="constZoomed = false">
+            <div class="fsp-constellation-header">
+              <i class="pi pi-share-alt" style="color:var(--fst-cyan)"></i>
+              <span class="fsp-ig-section-title" style="margin:0">Техкарта портфеля</span>
+              <i class="pi pi-expand" style="font-size:9px;color:var(--p-text-muted-color);margin-left:auto;opacity:0.5"></i>
+            </div>
+            <svg viewBox="50 20 500 260" class="fsp-constellation-svg">
+              <line v-for="e in constellationData.edges" :key="e.id"
+                :x1="e.x1" :y1="e.y1" :x2="e.x2" :y2="e.y2"
+                class="fsp-const-edge"
+                :class="{ highlighted: hoveredConstNode && (e.from === hoveredConstNode || e.to === hoveredConstNode) }" />
+              <g v-for="n in constellationData.concepts" :key="n.id"
+                :transform="`translate(${n.x},${n.y})`" class="fsp-const-concept"
+                @mouseenter="hoveredConstNode = n.id" @mouseleave="hoveredConstNode = null">
+                <rect width="8" height="8" rx="1" transform="rotate(45) translate(-4,-4)" fill="var(--fst-cyan)" opacity="0.8" />
+                <text dy="14" text-anchor="middle" class="fsp-const-label">{{ n.label }}</text>
+              </g>
+              <g v-for="n in constellationData.companies" :key="n.id"
+                :transform="`translate(${n.x},${n.y})`" class="fsp-const-company"
+                :class="{ orphan: n.edgeCount === 0, hovered: hoveredConstNode === n.id }"
+                @mouseenter="hoveredConstNode = n.id" @mouseleave="hoveredConstNode = null"
+                @click="onCompanyDashClick(n.company)">
+                <circle :r="n.radius" :fill="n.color" class="fsp-const-circle" />
+                <text :dy="n.radius + 10" text-anchor="middle" class="fsp-const-name">{{ n.shortName }}</text>
+              </g>
+            </svg>
+            <div class="fsp-constellation-legend">
+              <span><i class="pi pi-circle-fill" style="color:var(--fst-cyan);font-size:6px"></i> Технология</span>
+              <span><i class="pi pi-circle-fill" style="color:var(--fst-green);font-size:6px"></i> Компания</span>
+            </div>
+          </div>
+
+          <!-- Tech Domain Stats — right side -->
+          <div class="fsp-domain-stats">
+            <div class="fsp-ig-section-title">Технологические домены</div>
+            <div class="fsp-domain-list">
+              <div v-for="ax in radarAxes" :key="ax.id" class="fsp-domain-row">
+                <span class="fsp-domain-name">{{ ax.id }}</span>
+                <div class="fsp-domain-bar-wrap">
+                  <div class="fsp-domain-bar" :style="{ width: (ax.score / 10 * 100) + '%', background: ax.score >= ax.target ? 'var(--fst-green)' : 'var(--fst-brand)' }"></div>
+                  <div class="fsp-domain-target" :style="{ left: (ax.target / 10 * 100) + '%' }"></div>
+                </div>
+                <span class="fsp-domain-val">{{ ax.score }}/10</span>
+                <span class="fsp-domain-count">{{ ax.count }} комп.</span>
+              </div>
+            </div>
+            <div class="fsp-domain-footer">
+              <span style="color:var(--p-text-muted-color);font-size:8px"><i class="pi pi-minus" style="font-size:6px;color:var(--fst-brand)"></i> Цель НТИ 2030</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zoom overlay for constellation -->
+        <Transition name="fsp-brief-anim">
+          <div v-if="constZoomed" class="fsp-const-zoom" @mouseenter="constZoomed = true" @mouseleave="constZoomed = false">
+            <svg viewBox="50 20 500 260" class="fsp-const-zoom-svg">
+              <line v-for="e in constellationData.edges" :key="e.id"
+                :x1="e.x1" :y1="e.y1" :x2="e.x2" :y2="e.y2"
+                class="fsp-const-edge"
+                :class="{ highlighted: hoveredConstNode && (e.from === hoveredConstNode || e.to === hoveredConstNode) }" />
+              <g v-for="n in constellationData.concepts" :key="n.id"
+                :transform="`translate(${n.x},${n.y})`" class="fsp-const-concept"
+                @mouseenter="hoveredConstNode = n.id" @mouseleave="hoveredConstNode = null">
+                <rect width="8" height="8" rx="1" transform="rotate(45) translate(-4,-4)" fill="var(--fst-cyan)" opacity="0.8" />
+                <text dy="14" text-anchor="middle" class="fsp-const-label">{{ n.label }}</text>
+              </g>
+              <g v-for="n in constellationData.companies" :key="n.id"
+                :transform="`translate(${n.x},${n.y})`" class="fsp-const-company"
+                :class="{ orphan: n.edgeCount === 0, hovered: hoveredConstNode === n.id }"
+                @mouseenter="hoveredConstNode = n.id" @mouseleave="hoveredConstNode = null"
+                @click="onCompanyDashClick(n.company)">
+                <circle :r="n.radius" :fill="n.color" class="fsp-const-circle" />
+                <text :dy="n.radius + 10" text-anchor="middle" class="fsp-const-name">{{ n.shortName }}</text>
+              </g>
+            </svg>
+          </div>
+        </Transition>
+
         <!-- Тело: 3 колонки -->
         <div class="fsp-ig-body">
           <!-- Колонка 1: Тепловая карта + Health-бар -->
@@ -422,6 +676,8 @@
                 <Icon :icon="companyIcon(c)" class="fsp-heat-icon" />
                 <div class="fsp-heat-name">{{ companyDisplayName(c) }}</div>
                 <div class="fsp-heat-val">{{ companyHealth(c) }}%</div>
+                <!-- Pulse sparkline on hover -->
+                <svg class="fsp-heat-pulse" viewBox="0 0 40 12" v-html="companyPulseSvg(c)"></svg>
               </div>
             </div>
             <!-- Health распределение -->
@@ -2345,6 +2601,26 @@ function randomTimeAgo(seed) {
   return `${Math.floor(days / 7)}нед назад`
 }
 
+// ── Company Pulse: pseudo-random 8-point sparkline seeded by company data ────
+function companyPulseSvg(company) {
+  const h = companyHealth(company)
+  const seed = company.id || 0
+  const pts = []
+  for (let i = 0; i < 8; i++) {
+    // Deterministic pseudo-random based on company id + index
+    const noise = ((seed * 2654435761 + i * 1597334677) >>> 0) % 100
+    const val = h + (noise / 100 - 0.5) * 30
+    pts.push(Math.max(5, Math.min(95, val)))
+  }
+  const coords = pts.map((v, i) => {
+    const x = (i / 7) * 40
+    const y = 12 - (v / 100) * 10 - 1
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  })
+  const color = h >= 70 ? 'var(--fst-green)' : h >= 40 ? 'var(--fst-brand)' : 'var(--fst-red)'
+  return `<polyline points="${coords.join(' ')}" fill="none" stroke="${color}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>`
+}
+
 // ── SDT: Калиброванные алерты (три уровня: info/warning/critical) ───────────
 const calibratedAlerts = computed(() => {
   const alerts = []
@@ -2498,6 +2774,393 @@ const valuationsTableData = computed(() => {
     }
   })
 })
+
+// ── Morning Brief ────────────────────────────────────────────────────────────
+const morningBrief = ref('')
+
+async function runMorningBrief() {
+  if (aiLoading.value) return
+  aiLoading.value = true
+  try {
+    const pc = portfolioCompanies.value
+    const greenPct = Math.round(pc.filter(c => c.riskLevel === 'green').length / pc.length * 100)
+    const criticals = pc.filter(c => companyHealth(c) < 40).map(c => companyDisplayName(c))
+    const topMoic = [...pc].sort((a, b) => {
+      const ma = getMetrics(a.id)?.moic || 0
+      const mb = getMetrics(b.id)?.moic || 0
+      return mb - ma
+    }).slice(0, 3).map(c => companyDisplayName(c))
+
+    const ctx = `Портфель: ${pc.length} компаний, ${greenPct}% в норме.
+Критические (<40% health): ${criticals.length ? criticals.join(', ') : 'нет'}.
+Лидеры по MOIC: ${topMoic.join(', ')}.
+Общие инвестиции: ${fmtMln(totalRealInvested.value)} ₽.`
+
+    const resp = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'deepseek/deepseek-chat',
+        prompt: 'Напиши утренний брифинг для директора венчурного фонда ФСТ НТИ. Ровно 3 предложения: (1) что изменилось, (2) главный риск, (3) главное действие на сегодня. Без markdown, без списков, только сплошной текст.',
+        systemPrompt: `Ты — AI-аналитик венчурного фонда. Вот текущее состояние портфеля:\n${ctx}`,
+        application: 'FstPortfolio-MorningBrief'
+      })
+    })
+    const data = await resp.json()
+    morningBrief.value = data.response || 'Не удалось сгенерировать брифинг'
+  } catch (e) {
+    morningBrief.value = 'Ошибка генерации брифинга: ' + e.message
+  } finally {
+    aiLoading.value = false
+  }
+}
+
+// ── Portfolio Score — агрегированный показатель здоровья 0-100 ────────────────
+const portfolioScore = computed(() => {
+  const pc = portfolioCompanies.value
+  if (!pc.length) return 0
+  const healths = pc.map(c => companyHealth(c))
+  const avg = healths.reduce((s, v) => s + v, 0) / healths.length
+  // Penalty for variance (portfolio stability bonus)
+  const variance = healths.reduce((s, v) => s + (v - avg) ** 2, 0) / healths.length
+  const stabilityBonus = Math.max(0, 10 - Math.sqrt(variance) / 3)
+  return Math.min(100, Math.round(avg * 0.8 + stabilityBonus + pc.length * 0.3))
+})
+
+const portfolioScoreColor = computed(() => {
+  const s = portfolioScore.value
+  if (s >= 70) return 'var(--fst-green)'
+  if (s >= 45) return 'var(--fst-brand)'
+  return 'var(--fst-red)'
+})
+
+// ── Correlation matrix: risk × TRL × MOIC by subfund ────────────────────────
+const correlationMatrix = computed(() => {
+  const sfs = subfundBreakdown.value
+  if (!sfs.length) return []
+  return sfs.slice(0, 4).map(sf => {
+    const companies = portfolioCompanies.value.filter(c => c.subfund === sf.name)
+    if (!companies.length) return { name: sf.name, risk: 0, trl: 0, moic: 0, color: sf.color }
+    const avgHealth = Math.round(companies.reduce((s, c) => s + companyHealth(c), 0) / companies.length)
+    const avgTrl = +(companies.reduce((s, c) => s + (c.trl || 0), 0) / companies.length).toFixed(1)
+    const avgMoic = +(companies.reduce((s, c) => s + (getMetrics(c.id)?.moic || 0), 0) / companies.length).toFixed(1)
+    return { name: sf.name, risk: avgHealth, trl: avgTrl, moic: avgMoic, color: sf.color }
+  })
+})
+
+// ── NAV timeline: 12-month simulated fund value ──────────────────────────────
+const navTimeline = computed(() => {
+  const pc = portfolioCompanies.value
+  const totalInv = totalRealInvested.value || 100e6
+  const points = []
+  for (let i = 0; i < 12; i++) {
+    // Simple growth simulation seeded by portfolio data
+    const growth = 1 + (portfolioScore.value / 1000) * (1 + Math.sin(i * 0.8) * 0.3)
+    const val = totalInv * Math.pow(growth, i / 12)
+    points.push(val)
+  }
+  return points
+})
+
+const navTimelineSvg = computed(() => {
+  const pts = navTimeline.value
+  if (pts.length < 2) return ''
+  const min = Math.min(...pts)
+  const max = Math.max(...pts)
+  const range = max - min || 1
+  const w = 200
+  const h = 28
+  const coords = pts.map((v, i) => {
+    const x = (i / (pts.length - 1)) * w
+    const y = h - ((v - min) / range) * (h - 4) - 2
+    return `${x},${y}`
+  })
+  return `<polyline points="${coords.join(' ')}" fill="none" stroke="var(--fst-purple)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`
+})
+
+// ── Technology Coverage Radar (Feature 3) ────────────────────────────────────
+const TECH_DOMAINS = [
+  { id: 'БАС', short: 'БАС', target: 8 },
+  { id: 'Робо', short: 'РОБО', target: 7 },
+  { id: 'МЭ', short: 'МЭ', target: 6 },
+  { id: 'AI/Tech', short: 'AI', target: 9 },
+  { id: 'Фотоника', short: 'Фот', target: 5 },
+  { id: 'SpaceNet', short: 'Космос', target: 6 },
+  { id: 'Энерджинет', short: 'Энерг', target: 7 },
+  { id: 'Биотех', short: 'Био', target: 5 },
+]
+
+const radarAxes = computed(() => {
+  return TECH_DOMAINS.map(d => {
+    // Match by subfund name containing domain id (fuzzy)
+    const companies = portfolioCompanies.value.filter(c => {
+      const sf = (c.subfund || '').toLowerCase()
+      return sf.includes(d.id.toLowerCase()) || sf.includes(d.short.toLowerCase())
+    })
+    const count = companies.length
+    const avgTrl = companies.length
+      ? companies.reduce((s, c) => s + (c.trl || 0), 0) / companies.length
+      : 0
+    const totalInv = companies.reduce((s, c) => s + (c.invested || 0), 0)
+    const score = Math.min(10, Math.round(count * 1.5 + avgTrl * 0.5 + Math.min(3, totalInv / 50e6)))
+    return { ...d, score, count, avgTrl: avgTrl.toFixed(1) }
+  })
+})
+
+function radarPoint(i, fraction) {
+  const total = radarAxes.value.length
+  const angle = (i / total) * Math.PI * 2 - Math.PI / 2
+  const r = 70 * Math.max(0, Math.min(1, fraction))
+  return `${(100 + r * Math.cos(angle)).toFixed(1)},${(85 + r * Math.sin(angle)).toFixed(1)}`
+}
+
+function radarLabelPos(i) {
+  const total = radarAxes.value.length
+  const angle = (i / total) * Math.PI * 2 - Math.PI / 2
+  const r = 88
+  return { x: (100 + r * Math.cos(angle)).toFixed(1), y: (88 + r * Math.sin(angle)).toFixed(1) }
+}
+
+// ── Agent Swarm (Feature 2) ──────────────────────────────────────────────────
+const swarmActive = ref(false)
+const swarmRunning = ref(false)
+const swarmElapsed = ref(0)
+const swarmSynthesis = ref('')
+let swarmTimerInterval = null
+const swarmAgents = ref([
+  { id: 'tech', name: 'Технический', icon: 'pi pi-cog', color: 'var(--fst-blue)', status: 'idle', steps: [], result: null },
+  { id: 'finance', name: 'Финансовый', icon: 'pi pi-wallet', color: 'var(--fst-green)', status: 'idle', steps: [], result: null },
+  { id: 'risk', name: 'Риск-менеджер', icon: 'pi pi-exclamation-triangle', color: 'var(--fst-red)', status: 'idle', steps: [], result: null },
+  { id: 'portfolio', name: 'Стратег', icon: 'pi pi-compass', color: 'var(--fst-purple)', status: 'idle', steps: [], result: null },
+])
+
+async function runAgentSwarm() {
+  swarmActive.value = true
+  swarmRunning.value = true
+  swarmElapsed.value = 0
+  swarmSynthesis.value = ''
+  for (const a of swarmAgents.value) { a.status = 'running'; a.steps = []; a.result = null }
+  swarmTimerInterval = setInterval(() => swarmElapsed.value++, 1000)
+
+  const ctx = portfolioCompanies.value.slice(0, 15).map(c => {
+    const m = getMetrics(c.id)
+    return `${companyDisplayName(c)} (${c.subfund}, TRL:${c.trl}, health:${companyHealth(c)}%, risk:${c.riskLevel}${m?.totalInvestment ? ', inv:' + fmtMln(m.totalInvestment) : ''})`
+  }).join('\n')
+
+  const agentPrompts = {
+    tech: 'Проанализируй технологическую зрелость портфеля: средний TRL, распределение по стадиям, техриски и потенциал.',
+    finance: 'Проанализируй финансовое здоровье портфеля: runway, MOIC, NAV, burn rate. Кто требует внимания.',
+    risk: 'Проанализируй рисковую карту: концентрация, корреляции, наибольшие угрозы портфеля.',
+    portfolio: 'Проанализируй стратегию портфеля: покрытие субфондов, синергии, соответствие НТИ 2030.',
+  }
+
+  const promises = swarmAgents.value.map(async (agent) => {
+    const steps = ['Загрузка данных', 'Анализ метрик', 'Оценка', 'Вывод']
+    steps.forEach((s, i) => agent.steps.push({ id: i, label: s, done: false }))
+
+    try {
+      const stepTimer = setInterval(() => {
+        const pending = agent.steps.find(s => !s.done)
+        if (pending && agent.status === 'running') pending.done = true
+      }, 2200)
+
+      const resp = await fetch('/api/ai-tokens/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modelId: 'deepseek/deepseek-chat',
+          prompt: agentPrompts[agent.id],
+          systemPrompt: `Ты ${agent.name} аналитик фонда ФСТ НТИ. Данные:\n${ctx}\n\nОтветь ТОЛЬКО JSON: {"text":"анализ 2-3 предложения","confidence":0.0-1.0,"stance":"POSITIVE|CAUTION|CRITICAL","keyMetric":"ключевое число"}`,
+          application: `FstPortfolio-Swarm-${agent.id}`,
+        }),
+      })
+      clearInterval(stepTimer)
+      agent.steps.forEach(s => s.done = true)
+
+      const data = await resp.json()
+      const raw = (data.response || '').trim()
+      try {
+        agent.result = JSON.parse(raw.replace(/^```json?\s*/i, '').replace(/```\s*$/, ''))
+      } catch {
+        agent.result = { text: raw.slice(0, 200), confidence: 0.6, stance: 'CAUTION' }
+      }
+      agent.status = 'done'
+    } catch (e) {
+      agent.status = 'error'
+      agent.result = { text: `Ошибка: ${e.message}`, confidence: 0, stance: 'ERROR' }
+    }
+  })
+
+  await Promise.allSettled(promises)
+  clearInterval(swarmTimerInterval)
+  swarmRunning.value = false
+
+  // Synthesis via Sonnet
+  const agentResults = swarmAgents.value.filter(a => a.result).map(a => `${a.name}: ${a.result.text}`).join('\n')
+  try {
+    const synthResp = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'anthropic/claude-sonnet-4-20250514',
+        prompt: `Синтезируй выводы 4 аналитиков в 3 предложения для директора:\n${agentResults}`,
+        systemPrompt: 'Ты председатель инвесткомитета ФСТ НТИ. Дай сжатый вердикт.',
+        application: 'FstPortfolio-SwarmSynthesis',
+      }),
+    })
+    const synthData = await synthResp.json()
+    swarmSynthesis.value = synthData.response || ''
+  } catch {}
+}
+
+function cancelSwarm() {
+  swarmRunning.value = false
+  clearInterval(swarmTimerInterval)
+  swarmAgents.value.forEach(a => { if (a.status === 'running') a.status = 'idle' })
+}
+
+// ── Predictive Signal Stream (Feature 4) ─────────────────────────────────────
+const predictiveSignals = ref([])
+const predictionsLoading = ref(false)
+const expandedPrediction = ref(null)
+
+async function refreshPredictions() {
+  predictionsLoading.value = true
+  try {
+    const pc = portfolioCompanies.value
+    const criticals = pc.filter(c => companyHealth(c) < 40).map(c => companyDisplayName(c))
+    const lowRunway = runwayData.value.filter(r => r.months < 8).map(r => `${r.name}: ${r.months}мес`)
+
+    const ctx = JSON.stringify({
+      criticals,
+      lowRunway,
+      portfolioScore: portfolioScore.value,
+      avgTRL: avgPortfolioTRL.value,
+      totalCompanies: pc.length,
+      subfunds: subfundBreakdown.value.map(s => `${s.name}: ${s.count}`),
+    })
+
+    const resp = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'deepseek/deepseek-chat',
+        prompt: `На основе данных портфеля сгенерируй 4 предиктивных сигнала. ТОЛЬКО JSON-массив:
+[{"text":"прогноз 1 предложение","severity":"info|warning|critical","horizon":"1-3 мес","companyName":"если есть","kagConcepts":["концепт1"]}]`,
+        systemPrompt: `Ты предиктивный AI-аналитик фонда ФСТ НТИ. Данные:\n${ctx}`,
+        application: 'FstPortfolio-Predictions',
+      }),
+    })
+    const data = await resp.json()
+    const raw = (data.response || '').replace(/^```json?\s*/i, '').replace(/```\s*$/, '')
+    const signals = JSON.parse(raw)
+
+    predictiveSignals.value = signals.map((s, i) => ({
+      id: `pred_${i}_${Date.now()}`,
+      ...s,
+      icon: s.severity === 'critical' ? 'lucide:alert-triangle' : s.severity === 'warning' ? 'lucide:shield-alert' : 'lucide:trending-up',
+      color: s.severity === 'critical' ? 'var(--fst-red)' : s.severity === 'warning' ? 'var(--fst-brand)' : 'var(--fst-blue)',
+      companyId: s.companyName ? allCompanies.value.find(c => companyDisplayName(c) === s.companyName)?.id : null,
+      chain: buildCausalChain(s),
+    }))
+  } catch (e) {
+    predictiveSignals.value = []
+  } finally {
+    predictionsLoading.value = false
+  }
+}
+
+function buildCausalChain(signal) {
+  const chain = []
+  if (signal.kagConcepts?.length) chain.push({ label: 'Онтология KAG', entity: signal.kagConcepts[0], color: 'var(--fst-cyan)' })
+  if (signal.companyName) chain.push({ label: 'Компания', entity: signal.companyName, color: 'var(--fst-green)' })
+  chain.push({ label: 'Паттерн', entity: signal.severity === 'critical' ? 'Негативный тренд' : 'Нарастающий сигнал', color: 'var(--fst-brand)' })
+  chain.push({ label: 'Прогноз', entity: signal.horizon, color: 'var(--fst-purple)' })
+  return chain
+}
+
+// ── Technology Constellation Map (Feature 1) ─────────────────────────────────
+const constellationData = ref({ nodes: [], edges: [], companies: [], concepts: [] })
+const constellationLoading = ref(false)
+const hoveredConstNode = ref(null)
+const constZoomed = ref(false)
+
+function buildConstellation() {
+  const companies = portfolioCompanies.value.slice(0, 20)
+  if (!companies.length) return
+
+  const companyNodes = []
+  const conceptMap = new Map()
+  const edges = []
+  const cx = 300, cy = 140, R = 95
+
+  companies.forEach((c, i) => {
+    const angle = (i / companies.length) * Math.PI * 2 - Math.PI / 2
+    const x = cx + R * Math.cos(angle)
+    const y = cy + R * Math.sin(angle)
+    const h = companyHealth(c)
+    companyNodes.push({
+      id: `c_${c.id}`, company: c,
+      shortName: companyDisplayName(c),
+      x, y,
+      radius: Math.max(7, Math.min(15, (c.invested || 10e6) / 15e6 * 4 + 7)),
+      color: h >= 70 ? 'var(--fst-green)' : h >= 40 ? 'var(--fst-brand)' : 'var(--fst-red)',
+      edgeCount: 0,
+    })
+  })
+
+  // Build technology concepts from subfunds + synthetic ontology domains
+  const techConcepts = [
+    { name: 'БПЛА', keywords: ['бас', 'бпла', 'дрон', 'аэро', 'небо'] },
+    { name: 'AI/ML', keywords: ['ai', 'ml', 'automl', 'brain', 'нейро'] },
+    { name: 'Фотоника', keywords: ['лазер', 'фотон', 'кварц', 'оптик'] },
+    { name: 'Микроэлектроника', keywords: ['чип', 'кремний', 'плк', 'электро'] },
+    { name: 'Робототехника', keywords: ['робо', 'redfab', '3d', 'аддитив', 'fab'] },
+    { name: 'Биотех', keywords: ['био', 'эпи', 'фарм', 'вирус', 'novatic'] },
+    { name: 'Космос', keywords: ['space', 'qspace', 'спутник', 'орбит'] },
+    { name: 'Связь', keywords: ['радио', 'связь', 'phone', 'инно'] },
+  ]
+
+  techConcepts.forEach((tc, ti) => {
+    const related = companyNodes.filter(cn => {
+      const name = cn.shortName.toLowerCase()
+      const sf = (cn.company.subfund || '').toLowerCase()
+      return tc.keywords.some(k => name.includes(k) || sf.includes(k))
+    })
+    if (!related.length) return
+
+    const avgX = related.reduce((s, c) => s + c.x, 0) / related.length
+    const avgY = related.reduce((s, c) => s + c.y, 0) / related.length
+    const jx = ((ti * 7919) % 60) - 30
+    const jy = ((ti * 6271) % 40) - 20
+    const concept = {
+      id: `t_${ti}`, label: tc.name,
+      x: (avgX + cx) / 2 + jx,
+      y: (avgY + cy) / 2 + jy,
+    }
+    conceptMap.set(concept.id, concept)
+
+    for (const cn of related) {
+      cn.edgeCount++
+      edges.push({
+        id: `e_${cn.id}_${concept.id}`,
+        from: cn.id, to: concept.id,
+        x1: cn.x, y1: cn.y, x2: concept.x, y2: concept.y,
+        color: 'var(--fst-cyan)', weight: 0.4,
+      })
+    }
+  })
+
+  constellationData.value = {
+    nodes: [...companyNodes, ...conceptMap.values()],
+    edges,
+    companies: companyNodes,
+    concepts: [...conceptMap.values()],
+  }
+}
+
+// Build constellation when companies load
+watch(portfolioCompanies, () => { if (portfolioCompanies.value.length) buildConstellation() }, { immediate: true })
 
 // ── AI Chat ──────────────────────────────────────────────────────────────────
 // ── AI Dashboard Blocks — динамические блоки по запросу ─────────────────────
@@ -5144,4 +5807,324 @@ function initDashboardCharts() {
 .fsp-ig-kpi:hover { transform: translateY(-1px); box-shadow: 0 2px 8px color-mix(in srgb, var(--p-text-color) 8%, transparent); }
 .fsp-heat-cell { transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .fsp-heat-cell:hover { transform: translateY(-2px); box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 12%, transparent); }
+
+/* ═══ Morning Briefing Banner ═══ */
+.fsp-morning-brief {
+  background: color-mix(in srgb, var(--fst-brand) 6%, var(--p-surface-card));
+  border: 1px solid color-mix(in srgb, var(--fst-brand) 20%, var(--p-content-border-color));
+  border-radius: 10px; padding: 12px 16px; margin-bottom: 10px;
+}
+.fsp-brief-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--fst-brand);
+}
+.fsp-brief-header i { font-size: 14px; }
+.fsp-brief-close {
+  margin-left: auto; background: none; border: none; cursor: pointer; color: var(--p-text-muted-color);
+  font-size: 12px; padding: 2px; opacity: 0.5; transition: opacity 0.2s;
+}
+.fsp-brief-close:hover { opacity: 1; }
+.fsp-brief-text { font-size: 12px; line-height: 1.6; color: var(--p-text-color); }
+.fsp-brief-anim-enter-active { transition: all 0.4s ease; }
+.fsp-brief-anim-leave-active { transition: all 0.3s ease; }
+.fsp-brief-anim-enter-from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+.fsp-brief-anim-leave-to { opacity: 0; max-height: 0; overflow: hidden; }
+
+/* ═══ Portfolio Score + NAV Timeline + Correlation Row ═══ */
+.fsp-score-row {
+  display: flex; gap: 10px; margin-bottom: 10px; align-items: stretch;
+}
+.fsp-score-gauge {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 10px 16px; text-align: center; min-width: 120px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative;
+}
+.fsp-score-svg { width: 80px; height: 48px; }
+.fsp-score-arc { transition: stroke-dasharray 1s ease; }
+.fsp-score-val {
+  font-size: 22px; font-weight: 800; line-height: 1; margin-top: -6px;
+  font-variant-numeric: tabular-nums;
+}
+.fsp-score-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--p-text-muted-color); margin-top: 4px;
+}
+
+.fsp-nav-timeline {
+  flex: 1; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 10px 14px;
+}
+.fsp-nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.fsp-nav-title {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--p-text-muted-color);
+}
+.fsp-nav-val { font-size: 13px; font-weight: 700; color: var(--fst-purple); }
+.fsp-nav-svg { width: 100%; height: 28px; }
+.fsp-nav-labels {
+  display: flex; justify-content: space-between; font-size: 8px; color: var(--p-text-muted-color);
+  margin-top: 2px;
+}
+
+.fsp-corr-matrix {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 10px 12px; min-width: 180px;
+}
+.fsp-corr-title {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--p-text-muted-color); margin-bottom: 6px;
+}
+.fsp-corr-head {
+  display: grid; grid-template-columns: 1fr repeat(3, 42px); gap: 3px;
+  font-size: 8px; font-weight: 700; color: var(--p-text-muted-color);
+  text-align: center; margin-bottom: 3px;
+}
+.fsp-corr-head span:first-child { text-align: left; }
+.fsp-corr-row {
+  display: grid; grid-template-columns: 1fr repeat(3, 42px); gap: 3px;
+  font-size: 10px; margin-bottom: 2px;
+}
+.fsp-corr-name {
+  font-weight: 600; font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fsp-corr-cell {
+  text-align: center; border-radius: 4px; padding: 2px 0; font-weight: 600;
+  font-size: 9px; color: var(--p-text-color); font-variant-numeric: tabular-nums;
+}
+
+/* ═══ Company Pulse Sparkline on Heatmap Hover ═══ */
+.fsp-heat-pulse {
+  position: absolute; bottom: 2px; left: 4px; right: 4px;
+  height: 12px; opacity: 0; transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.fsp-heat-cell { position: relative; }
+.fsp-heat-cell:hover .fsp-heat-pulse { opacity: 1; }
+
+/* ═══ Briefing chip highlight ═══ */
+.fsp-ai-chip--brief i { color: var(--fst-brand); }
+.fsp-ai-chip--brief:hover {
+  background: color-mix(in srgb, var(--fst-brand) 12%, transparent);
+  border-color: var(--fst-brand);
+  color: var(--fst-brand);
+}
+
+/* ═══ Technology Coverage Radar ═══ */
+.fsp-tech-radar {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 10px 12px; min-width: 200px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.fsp-radar-svg { width: 180px; height: 160px; }
+.fsp-radar-label { font-size: 8px; fill: var(--p-text-muted-color); font-weight: 600; }
+.fsp-radar-legend {
+  display: flex; gap: 10px; font-size: 8px; color: var(--p-text-muted-color); margin-top: 4px;
+}
+
+/* ═══ Agent Swarm Live Analysis ═══ */
+.fsp-swarm {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
+}
+.fsp-swarm-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  font-size: 12px; font-weight: 700; color: var(--p-text-color);
+}
+.fsp-swarm-timer {
+  margin-left: auto; font-size: 10px; font-weight: 600;
+  color: var(--fst-purple); font-variant-numeric: tabular-nums;
+}
+.fsp-swarm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.fsp-swarm-tile {
+  background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color);
+  border-left: 3px solid var(--agent-color); border-radius: 8px; padding: 10px;
+  transition: all 0.3s ease; min-height: 120px;
+}
+.fsp-swarm-tile.done { border-left-color: var(--fst-green); }
+.fsp-swarm-tile.error { border-left-color: var(--fst-red); }
+.fsp-swarm-tile-head {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; margin-bottom: 8px;
+}
+.fsp-swarm-dot {
+  width: 6px; height: 6px; border-radius: 50%; margin-left: auto; flex-shrink: 0;
+  background: var(--p-text-muted-color);
+}
+.fsp-swarm-dot.running { background: var(--fst-brand); animation: swarm-pulse 1.2s ease-in-out infinite; }
+.fsp-swarm-dot.done { background: var(--fst-green); }
+.fsp-swarm-dot.error { background: var(--fst-red); }
+@keyframes swarm-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+.fsp-swarm-steps { display: flex; flex-direction: column; gap: 3px; }
+.fsp-swarm-step {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 9px; color: var(--p-text-muted-color);
+}
+.fsp-swarm-result { margin-top: 8px; }
+.fsp-swarm-stance {
+  display: inline-block; font-size: 8px; font-weight: 800; letter-spacing: 0.08em;
+  padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;
+}
+.fsp-swarm-stance.positive { background: color-mix(in srgb, var(--fst-green) 15%, transparent); color: var(--fst-green); }
+.fsp-swarm-stance.caution { background: color-mix(in srgb, var(--fst-brand) 15%, transparent); color: var(--fst-brand); }
+.fsp-swarm-stance.critical { background: color-mix(in srgb, var(--fst-red) 15%, transparent); color: var(--fst-red); }
+.fsp-swarm-text { font-size: 10px; line-height: 1.4; color: var(--p-text-color); margin-bottom: 6px; }
+.fsp-swarm-conf { display: flex; align-items: center; gap: 6px; }
+.fsp-swarm-conf-bar {
+  flex: 1; height: 3px; background: color-mix(in srgb, var(--p-text-muted-color) 15%, transparent);
+  border-radius: 2px; overflow: hidden;
+}
+.fsp-swarm-conf-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+.fsp-swarm-conf span { font-size: 9px; font-weight: 700; color: var(--p-text-muted-color); }
+.fsp-swarm-synthesis {
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  background: color-mix(in srgb, var(--fst-green) 5%, var(--p-surface-ground));
+  border: 1px solid color-mix(in srgb, var(--fst-green) 20%, var(--p-content-border-color));
+}
+.fsp-swarm-synth-text { font-size: 11px; line-height: 1.5; color: var(--p-text-color); }
+
+/* ═══ Predictive Signal Stream ═══ */
+.fsp-pred-stream {
+  background: color-mix(in srgb, var(--fst-purple) 3%, var(--p-surface-card));
+  border: 1px solid var(--p-content-border-color); border-radius: 10px;
+  padding: 10px 14px; margin-bottom: 8px;
+}
+.fsp-pred-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.fsp-pred-cards { display: flex; gap: 6px; overflow-x: auto; }
+.fsp-pred-card {
+  flex: 1; min-width: 180px; padding: 8px 10px; border-radius: 8px;
+  border-left: 2px solid transparent; cursor: pointer;
+  transition: all 0.3s ease; background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+}
+.fsp-pred-card:hover { background: color-mix(in srgb, var(--fst-purple) 5%, var(--p-surface-card)); }
+.fsp-pred--critical { border-left-color: var(--fst-red); }
+.fsp-pred--warning { border-left-color: var(--fst-brand); }
+.fsp-pred--info { border-left-color: var(--fst-blue); }
+.fsp-pred-top { display: flex; align-items: center; gap: 6px; }
+.fsp-pred-icon { font-size: 12px; flex-shrink: 0; }
+.fsp-pred-text { flex: 1; font-size: 10px; line-height: 1.4; color: var(--p-text-color); }
+.fsp-pred-detail { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--p-content-border-color); }
+.fsp-pred-chain { display: flex; flex-direction: column; gap: 2px; }
+.fsp-pred-chain-step { display: flex; align-items: center; gap: 6px; position: relative; padding-left: 12px; }
+.fsp-pred-chain-dot {
+  position: absolute; left: 0; width: 6px; height: 6px; border-radius: 50%;
+}
+.fsp-pred-chain-line {
+  position: absolute; left: 2.5px; top: 10px; width: 1px; height: 12px;
+  background: var(--p-content-border-color);
+}
+.fsp-pred-chain-label { font-size: 8px; color: var(--p-text-muted-color); font-weight: 600; }
+.fsp-pred-chain-entity { font-size: 9px; color: var(--p-text-color); font-weight: 600; }
+.fsp-pred-concepts { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.fsp-pred-concept-tag {
+  font-size: 8px; padding: 2px 6px; border-radius: 8px;
+  background: color-mix(in srgb, var(--fst-cyan) 12%, transparent);
+  color: var(--fst-cyan); font-weight: 600;
+}
+
+/* ═══ Technology Constellation Map ═══ */
+.fsp-const-row {
+  display: flex; gap: 10px; margin-bottom: 8px; align-items: stretch;
+}
+.fsp-constellation {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 10px 12px;
+  flex: 1; min-width: 0; cursor: pointer; position: relative;
+  transition: border-color 0.3s ease;
+}
+.fsp-constellation:hover { border-color: var(--fst-cyan); }
+.fsp-constellation-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.fsp-constellation-svg { width: 100%; height: 160px; }
+
+/* Domain Stats — right panel */
+.fsp-domain-stats {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 10px 14px;
+  flex: 1; min-width: 0;
+}
+.fsp-domain-list { display: flex; flex-direction: column; gap: 5px; }
+.fsp-domain-row {
+  display: flex; align-items: center; gap: 6px; font-size: 10px;
+}
+.fsp-domain-name {
+  width: 70px; font-weight: 600; color: var(--p-text-color);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+}
+.fsp-domain-bar-wrap {
+  flex: 1; height: 6px; background: color-mix(in srgb, var(--p-text-muted-color) 12%, transparent);
+  border-radius: 3px; position: relative; overflow: visible;
+}
+.fsp-domain-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.fsp-domain-target {
+  position: absolute; top: -2px; width: 2px; height: 10px;
+  background: var(--fst-brand); border-radius: 1px; opacity: 0.7;
+}
+.fsp-domain-val {
+  font-weight: 700; font-variant-numeric: tabular-nums; width: 32px; text-align: right;
+  color: var(--p-text-color); flex-shrink: 0;
+}
+.fsp-domain-count {
+  font-size: 9px; color: var(--p-text-muted-color); width: 45px; text-align: right; flex-shrink: 0;
+}
+.fsp-domain-footer { margin-top: 6px; }
+
+/* Zoom overlay on hover */
+.fsp-const-zoom {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 1000; width: 680px; max-width: 90vw; height: 420px;
+  background: var(--p-surface-card); border: 1px solid var(--fst-cyan);
+  border-radius: 14px; padding: 16px;
+  box-shadow: 0 20px 60px color-mix(in srgb, var(--fst-cyan) 15%, rgba(0,0,0,0.5));
+  backdrop-filter: blur(8px);
+}
+.fsp-const-zoom-svg { width: 100%; height: 100%; }
+.fsp-const-edge {
+  stroke: var(--fst-cyan); stroke-width: 0.8; opacity: 0.2;
+  transition: opacity 0.3s, stroke-width 0.3s;
+}
+.fsp-const-edge.highlighted { opacity: 0.8; stroke-width: 2; }
+.fsp-const-concept { cursor: default; }
+.fsp-const-label { font-size: 7px; fill: var(--fst-cyan); font-weight: 600; }
+.fsp-const-company { cursor: pointer; transition: transform 0.2s; }
+.fsp-const-company:hover { transform: scale(1.15); }
+.fsp-const-circle {
+  opacity: 0.85; stroke: var(--p-surface-card); stroke-width: 1.5;
+  transition: opacity 0.3s, r 0.3s;
+}
+.fsp-const-company.hovered .fsp-const-circle { opacity: 1; }
+.fsp-const-company.orphan .fsp-const-circle { animation: orphan-pulse 2s ease-in-out infinite; }
+@keyframes orphan-pulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.35; } }
+.fsp-const-name { font-size: 7px; fill: var(--p-text-color); font-weight: 600; }
+.fsp-constellation-legend {
+  display: flex; gap: 12px; font-size: 9px; color: var(--p-text-muted-color);
+  align-items: center; margin-top: 4px;
+}
+
+/* ═══ Swarm & Pred chip highlights ═══ */
+.fsp-ai-chip--swarm i { color: var(--fst-cyan); }
+.fsp-ai-chip--swarm:hover {
+  background: color-mix(in srgb, var(--fst-cyan) 12%, transparent);
+  border-color: var(--fst-cyan); color: var(--fst-cyan);
+}
+.fsp-ai-chip--pred i { color: var(--fst-blue); }
+.fsp-ai-chip--pred:hover {
+  background: color-mix(in srgb, var(--fst-blue) 12%, transparent);
+  border-color: var(--fst-blue); color: var(--fst-blue);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fsp-score-row { flex-direction: column; }
+  .fsp-corr-matrix, .fsp-tech-radar { min-width: unset; }
+  .fsp-swarm-grid { grid-template-columns: repeat(2, 1fr); }
+  .fsp-pred-cards { flex-direction: column; }
+  .fsp-constellation-svg { height: 200px; }
+}
 </style>
