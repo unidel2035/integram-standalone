@@ -974,6 +974,11 @@ function parseBlock(blocks, blockPath, reportData, globalVars, depth = 0, option
       output += rendered;
     }
   } else {
+    // PHP parity (index.php:7155-7156): if block content has uppercase data placeholders
+    // but no data rows were provided, return "" — suppress the block entirely.
+    if (/\{[A-ZА-ЯЁ0-9_ -]+\}/u.test(block.CONTENT)) {
+      return '';
+    }
     // Structural / layout blocks with no data — render once
     const rendered = _renderIteration(
       block, blocks, blockPath, {}, globalVars, childPaths,
@@ -1363,13 +1368,14 @@ function checkDbNameReserved(name) {
   return MYSQL_RESERVED.has(name.toUpperCase());
 }
 
-// PHP parity: htmlspecialchars() with ENT_COMPAT (default) — escapes &, <, >, " but NOT '
+// PHP parity: htmlspecialchars() — PHP 8.1+ defaults to ENT_QUOTES|ENT_SUBSTITUTE
 function htmlEsc(str) {
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // ── BKI delimiter helpers (PHP index.php lines 1619-1634) ──────────────
@@ -2074,8 +2080,10 @@ function formatVal(typeId, val, tzone = 0) {
         if (dtIso) {
           val = dtIso[5] + '.' + dtIso[3] + '.' + dtIso[1] + val.substring(10);
         }
-        // PHP 8 parity: "$val > 10000" — non-numeric string compared to int
-        // uses string comparison: "15.06.2025..." > "10000" → true
+        // PHP 8 parity: "$val > 10000" — PHP 8 converts int to string for non-numeric strings.
+        // is_numeric("15.01.2025") = false → string comparison: "15.01.2025" > "10000" = true
+        // is_numeric("1736935200") = true → numeric comparison: 1736935200 > 10000 = true
+        // is_numeric("15.01") = true → numeric comparison: 15.01 > 10000 = false
         const dtNum = Number(val);
         const dtGt = isNaN(dtNum) ? (val > String(10000)) : (dtNum > 10000);
         if (dtGt) {
@@ -2095,6 +2103,17 @@ function formatVal(typeId, val, tzone = 0) {
         if (!isNaN(dtParsed)) {
           const dtTs2 = Math.floor(dtParsed / 1000);
           if (dtTs2 >= 10000) return dtTs2 - tzone;
+        }
+        // PHP parity (index.php:1389-1390): when strtotime($val) < 10000,
+        // try Format_Val(DATE, $val) which interprets bare numbers like "31" as
+        // day-of-current-month → YYYYMMDD, then strtotime that result.
+        const dateFormatted = formatVal(TYPE.DATE, val, 0);
+        if (dateFormatted !== val) {
+          const dtParsed2 = Date.parse(String(dateFormatted).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3'));
+          if (!isNaN(dtParsed2)) {
+            const dtTs3 = Math.floor(dtParsed2 / 1000);
+            if (dtTs3 >= 10000) return dtTs3 - tzone;
+          }
         }
       }
       break;
@@ -6195,6 +6214,7 @@ router.get('/:db/:page*', async (req, res, next) => {
         const reqsMetaOrder = [];      // ordered req ids
         for (const rd of reqMeta) {
           const k = String(rd.req_id);
+          const alreadySeen = reqsMeta.has(k);
           reqsMeta.set(k, {
             base_typ: rd.base_typ,
             type_val: rd.type_val || k,
@@ -6202,7 +6222,7 @@ router.get('/:db/:page*', async (req, res, next) => {
             ord:      rd.ord,
             restr:    rd.restr != null ? String(rd.restr) : '',
           });
-          reqsMetaOrder.push(k);
+          if (!alreadySeen) reqsMetaOrder.push(k);
           if (rd.ref_id != null)       refTypsMap[k] = String(rd.ref_id);
           else if (rd.arr_id != null)  arrTypsMap[k] = String(rd.arr_id);
         }
@@ -7683,9 +7703,10 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, (req, res, next) => {
       // Get value from request if provided, otherwise use original
       // Also check req.query: dubRecUniqNum sends &t{tid}=newValue in URL query string
       const allSaveParams = { ...req.query, ...req.body };
+      // PHP line 8037: only checks t{typeId}, never falls back to val param for copy
       const newVal = allSaveParams[`t${original.typ}`] !== undefined
         ? allSaveParams[`t${original.typ}`]
-        : (allSaveParams.val !== undefined ? allSaveParams.val : original.val);
+        : original.val;
 
       // Calculate order for new object
       let newOrd = 1;
@@ -7790,6 +7811,15 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, (req, res, next) => {
     const booleanTypeIds = new Set();
     const processedTypeIds = new Set();
 
+    // Inject file fields into body so extractAttributes picks them up (like _m_set does)
+    if (req.files && req.files.length > 0) {
+      for (const f of req.files) {
+        if (/^t\d+$/.test(f.fieldname) && req.body[f.fieldname] === undefined) {
+          req.body[f.fieldname] = '';
+        }
+      }
+    }
+
     // Update requisites (t{id}=value format); merge query+body so t{id}=val works in URL too
     // (smartq.js sends &t{tid}=(timestamp) in URL query for DATETIME unique value on copy)
     const attributes = extractAttributes({ ...req.query, ...req.body });
@@ -7845,14 +7875,10 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, (req, res, next) => {
             logger.warn('[Legacy _m_save] Blacklisted file rejected', { db, filename: uploadedFile.originalname });
             return sendLegacyDie(res, 'Недопустимый тип файла!');
           }
-          const subdir = getSubdir(db, objectId);
-          const uploadDir = path.join(legacyPath, 'download', db, subdir);
-          fs.mkdirSync(uploadDir, { recursive: true });
-          const ext = path.extname(uploadedFile.originalname);
-          const baseName = getFilename(db, objectId);
-          const safeName = `${baseName}${ext}`;
-          fs.writeFileSync(path.join(uploadDir, safeName), uploadedFile.buffer);
-          finalValue = safeName;
+          // PHP parity: store ORIGINAL filename in DB, save physical file as safe hash name
+          // PHP (index.php:8194): Update_Val($req_id, $value["name"])
+          finalValue = uploadedFile.originalname;
+          // Physical file saved later after upsert (need req_id for subdir/filename)
         }
 
         // Apply resolveBuiltIn then formatVal before storage
@@ -7949,13 +7975,27 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, (req, res, next) => {
       }
 
       const existing = await getRequisiteByType(db, objectId, typeIdNum);
+      let reqIdForFile = null;
       if (existing) {
         // Update existing requisite
         await updateRowValue(db, existing.id, finalValue);
+        reqIdForFile = existing.id;
       } else {
         // Create new requisite
         const attrOrder = await calcOrder(pool, db, objectId, typeIdNum);
-        await insertRow(db, objectId, attrOrder, typeIdNum, finalValue);
+        reqIdForFile = await insertRow(db, objectId, attrOrder, typeIdNum, finalValue);
+      }
+
+      // PHP parity: save physical file AFTER DB upsert using req_id for path
+      const uploadedFilePost = fileByField[`t${attrTypeId}`];
+      if (uploadedFilePost && reqIdForFile) {
+        const subdir = getSubdir(db, reqIdForFile);
+        const uploadDir = path.join(legacyPath, 'download', db, subdir);
+        fs.mkdirSync(uploadDir, { recursive: true });
+        const ext = path.extname(uploadedFilePost.originalname);
+        const baseName = getFilename(db, reqIdForFile);
+        const safeName = `${baseName}${ext}`;
+        fs.writeFileSync(path.join(uploadDir, safeName), uploadedFilePost.buffer);
       }
 
       // Check for duplicates after each attribute update
@@ -8330,6 +8370,12 @@ router.post('/:db/_m_set/:id', legacyAuthMiddleware, upload.any(), legacyXsrfChe
           await recursiveDelete(pool, db, existing.id);
           lastReqId = '';
         } else {
+          // PHP parity (index.php:7949): Format_Val is called AGAIN before Update_Val.
+          // This double-call matters for DATETIME: first call converts "31.12.2025..." → 31,
+          // second call converts 31 → strtotime(Format_Val(DATE,31)) → proper timestamp.
+          if (meta) {
+            finalValue = String(formatVal(meta.base_type, finalValue, tzone));
+          }
           await updateRowValue(db, existing.id, finalValue);
           lastReqId = String(existing.id);
         }
@@ -9081,9 +9127,12 @@ router.get('/:db/_ref_reqs/:refId', legacyAuthMiddleware, async (req, res) => {
       // Main query found no rows: either ID doesn't exist, or par.up != 0
       const { rows: simpleRows } = await execSql(pool, `SELECT r.t, r.up FROM ${db} r WHERE r.id = ?`, [id], { label: 'get_db_ref_reqs_refId_select' });
       if (simpleRows.length === 0) {
-        // PHP (index.php:9013): die('{"error":"Invalid id"}') for id=0 or missing row
-        // Was: res.json([]) — returned empty array, clients couldn't detect the error.
-        return res.status(200).type('text/html; charset=UTF-8').send('{"error":"Invalid id"}');
+        // PHP (index.php:9013): die('{"error":"Invalid id"}') only for id=0
+        // For non-zero non-existent IDs, PHP falls through to empty result: []
+        if (id === 0) {
+          return res.status(200).type('text/html; charset=UTF-8').send('{"error":"Invalid id"}');
+        }
+        return res.json([]);
       }
 
       // Type definitions (up=0) are not reference requisites — return empty array like PHP
@@ -10085,30 +10134,24 @@ router.post('/:db/_d_attrs/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
       return res.status(404).json([{ error: 'Requisite not found' }]);
     }
 
-    // Parse existing modifiers
-    const modifiers = parseModifiers(obj.val);
-
-    // Update modifiers from request (keep existing if not provided)
-    // PHP compat: PHP uses isset($_REQUEST["set_null"]) — presence alone enables NOT_NULL
-    const newAlias = req.body.alias !== undefined ? (req.body.alias || null) : modifiers.alias;
-    const hasSetNull = req.body.set_null !== undefined;
-    const hasRequired = req.body.required !== undefined;
-    const newRequired = hasSetNull ? true
-      : hasRequired ? (req.body.required === '1' || req.body.required === true)
-      : modifiers.required;
-    const newMulti = req.body.multi !== undefined
-      ? (req.body.multi === '1' || req.body.multi === true)
-      : modifiers.multi;
-
-    // Update name if provided
-    const newName = req.body.name || req.body.val || modifiers.name;
-
-    // Rebuild value
-    const newVal = buildModifiers(newName, newAlias, newRequired, newMulti);
+    // PHP parity (index.php:8697-8708): _d_attrs does a FULL REPLACE, not read-modify-write.
+    // PHP starts from $val = $_REQUEST["val"] (empty string if not sent), then prepends
+    // modifiers ONLY if their param is present in the request (isset semantics).
+    let newVal = req.body.val || req.body.name || '';
+    // PHP order: ALIAS first, then !NULL, then MULTI (prepended, so reverse order in code)
+    if (req.body.alias !== undefined && req.body.alias) {
+      newVal = ':ALIAS=' + req.body.alias + ':' + newVal;
+    }
+    if (req.body.set_null !== undefined) {
+      newVal = ':!NULL:' + newVal;
+    }
+    if (req.body.multi !== undefined) {
+      newVal = ':MULTI:' + newVal;
+    }
 
     await execSql(pool, `UPDATE ${db} SET val = ? WHERE id = ?`, [newVal, id], { label: 'post_db_d_attrs_reqId_update' });
 
-    logger.info('[Legacy _d_attrs] Modifiers updated', { db, id, alias: newAlias, required: newRequired, multi: newMulti });
+    logger.info('[Legacy _d_attrs] Modifiers updated', { db, id, newVal });
 
     // PHP api_dump(): {id:reqId, obj:parentTypeId, next_act:"edit_types", args:"ext"}
     // PHP returns parent type ID (from req.body.up or obj.up) for frontend refresh
