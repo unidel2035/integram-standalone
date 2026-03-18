@@ -700,7 +700,7 @@
       <div class="fst-section-title">
         <i class="pi pi-share-alt"></i> Граф портфеля ФСТ НТИ
       </div>
-      <div v-if="PROJECTS_POOL.length > 0" class="gift-graph-wrap">
+      <div v-if="PROJECTS_POOL && PROJECTS_POOL.length > 0" class="gift-graph-wrap">
         <svg :viewBox="`0 0 ${graphWidth} ${graphHeight}`" class="gift-graph-svg">
           <!-- Связи субфонд → проект -->
           <line v-for="e in graphEdges" :key="e.id"
@@ -1254,7 +1254,7 @@ const graphProjectNodes = computed(() => {
   return PROJECTS_POOL.map((p, i) => {
     const sf = sfMap.get(p.subFund || p.subfund || p.market || 'Другое') || { x: graphWidth / 2, y: graphHeight / 2, color: 'var(--p-text-muted-color)' }
     const angle = (2 * Math.PI * i) / Math.max(PROJECTS_POOL.length, 1) + 0.5
-    const dist = 50 + Math.random() * 30
+    const dist = 50 + ((i * 17 + 7) % 30)
     const name = (p.title || p.name || '').replace(/^ООО\s*/i, '').slice(0, 14)
     return {
       id: `p_${p.id}`, projectId: p.id, label: name,
