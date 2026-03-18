@@ -6888,6 +6888,9 @@ router.get('/:db/:page*', async (req, res, next) => {
     'smartq': 'templates/smartq.html',
   };
 
+  // Pages that need full main.html wrapper + partial injection (not just sendFile)
+  const FULL_RENDER_PAGES = new Set(['sql', 'quiz', 'bi', 'upload', 'info']);
+
   const templatePath = pageMap[page];
   if (templatePath) {
     // Node.js-native templates take precedence over legacy integram-server templates
@@ -6897,6 +6900,28 @@ router.get('/:db/:page*', async (req, res, next) => {
     }
     const legacyTemplatePath = path.join(legacyPath, templatePath);
     if (fs.existsSync(legacyTemplatePath)) {
+      // For partial templates: inject into full main.html with proper variable substitution
+      if (FULL_RENDER_PAGES.has(page)) {
+        const locale = getLocale(req, db);
+        // pageId = the sub-path after /:db/:page (e.g. the report ID for /sql/:id)
+        const pageId = (req.params[0] || '').replace(/^\//, '').split('/')[0] || '';
+        try {
+          let mainHtml = await renderMainPage(db, token, locale);
+          if (mainHtml) {
+            let partial = fs.readFileSync(legacyTemplatePath, 'utf8');
+            // Substitute page-specific variables in the partial
+            partial = partial
+              .replace(/\{_global_\.id\}/g, pageId || '0')
+              .replace(/\{_global_\.z\}/g, db)
+              .replace(/\{_global_\.action\}/g, page);
+            // Inject partial into the content div
+            mainHtml = mainHtml.replace('<div class="content">', '<div class="content">' + partial);
+            return res.type('html').send(mainHtml);
+          }
+        } catch (e) {
+          logger.warn(`[Legacy page] Failed full render for ${page}`, { error: e.message });
+        }
+      }
       return res.sendFile(legacyTemplatePath);
     }
   }
@@ -9979,7 +10004,7 @@ router.post('/:db/_d_alias/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
     // Get current value
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(200).json([{ error: 'Requisite not found' }]);
+      return sendLegacyDie(res, 'Requisite not found');
     }
 
     // PHP parity (lines 8604-8607): hierarchy check — parent (obj.t) must be metadata root (up=0)
@@ -10029,7 +10054,7 @@ router.post('/:db/_d_null/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacy
     // Get current value
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(200).json([{ error: 'Requisite not found' }]);
+      return sendLegacyDie(res, 'Requisite not found');
     }
 
     // Metadata verification: only allow toggling nullable on metadata-level requisites (parent.up === 0)
@@ -10084,7 +10109,7 @@ router.post('/:db/_d_multi/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
     // Get current value
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(200).json([{ error: 'Requisite not found' }]);
+      return sendLegacyDie(res, 'Requisite not found');
     }
 
     // Metadata verification: only allow toggling multi on metadata-level requisites (parent.up === 0)
@@ -10139,7 +10164,7 @@ router.post('/:db/_d_attrs/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
     // Get current value
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(200).json([{ error: 'Requisite not found' }]);
+      return sendLegacyDie(res, 'Requisite not found');
     }
 
     // PHP parity (index.php:8697-8708): _d_attrs does a FULL REPLACE, not read-modify-write.
@@ -10192,7 +10217,7 @@ router.post('/:db/_d_up/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacyDd
     // Get current object
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(200).json([{ error: 'Requisite not found' }]);
+      return sendLegacyDie(res, 'Requisite not found');
     }
 
     // Find the previous sibling (same parent, lower order)
