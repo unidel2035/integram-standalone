@@ -1107,6 +1107,7 @@ import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from
 import { useRouter } from 'vue-router'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import { useProjectStore } from '@/stores/projectStore.js'
+import { useChatContextStore } from '@/stores/chatContextStore.js'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
@@ -1133,6 +1134,7 @@ const toast = useToast()
 const eventStore = useEventStore()
 const router = useRouter()
 const projStore = useProjectStore()
+const chatCtx = useChatContextStore()
 
 // Status IDs from Integram
 const STATUS_REVIEW = '1117'   // На рассмотрении ИК
@@ -3179,8 +3181,86 @@ onMounted(() => {
   }, 3000)
   loadPortfolioFromDb()
   startMetricsCycle()
+  updateChatContext()
 })
-onUnmounted(() => { clearInterval(liveTimer); destroyCharts(); if (demoInterval) clearInterval(demoInterval); if (demoClockInterval) clearInterval(demoClockInterval); stopMetricsCycle() })
+onUnmounted(() => {
+  clearInterval(liveTimer); destroyCharts()
+  if (demoInterval) clearInterval(demoInterval)
+  if (demoClockInterval) clearInterval(demoClockInterval)
+  stopMetricsCycle()
+  chatCtx.clearPageContext()
+})
+
+// ── Chat Context: event-driven sidebar awareness ─────────────────────────────
+function buildPortfolioChatChips() {
+  const base = [
+    { label: 'Риски', icon: 'pi pi-exclamation-triangle', id: 'risk', prompt: 'Покажи полный анализ рисков портфеля: какие компании в красной зоне, почему, что делать' },
+    { label: 'Лидеры', icon: 'pi pi-star', id: 'top', prompt: 'Покажи рейтинг топ-5 компаний по MOIC, выручке и потенциалу роста' },
+    { label: 'Runway', icon: 'pi pi-clock', id: 'runway', prompt: 'Анализ runway и burn rate: у каких компаний заканчиваются средства' },
+  ]
+  if (activeView.value === 'monitor' && selectedCompany.value) {
+    const c = selectedCompany.value
+    base.unshift(
+      { label: `Про ${c.name}`, icon: 'pi pi-building', id: 'about', prompt: `Расскажи всё что знаешь про компанию "${c.name}": технология, команда, риски, метрики. Используй данные Integram и KAG.` },
+      { label: 'SWOT', icon: 'pi pi-th-large', id: 'swot', prompt: `Проведи SWOT-анализ компании "${c.name}" на основе данных портфеля.` },
+      { label: 'Рекомендация', icon: 'pi pi-check-circle', id: 'rec', prompt: `Дай рекомендацию по компании "${c.name}": держать, увеличить инвестиции, выходить? Обоснуй.` },
+    )
+  }
+  if (activeView.value === 'analytics') {
+    base.push(
+      { label: 'Сравнение', icon: 'pi pi-arrows-h', id: 'compare', prompt: 'Сравни все портфельные компании по ключевым метрикам: инвестиции, выручка, TRL, IRR' },
+      { label: 'Субфонды', icon: 'pi pi-chart-pie', id: 'subfunds', prompt: 'Анализ по субфондам: распределение инвестиций, средний TRL, ROI по каждому субфонду' },
+    )
+  }
+  return base
+}
+
+function buildPortfolioSummary() {
+  const companies = allCompanies.value
+  if (!companies.length) return ''
+  const portfolio = companies.filter(c => c.status === 'portfolio')
+  const review = companies.filter(c => c.status === 'review')
+  const lines = [
+    `Портфель: ${portfolio.length} компаний, на рассмотрении: ${review.length}`,
+  ]
+  const red = portfolio.filter(c => c.riskLevel === 'red')
+  if (red.length) lines.push(`Красная зона: ${red.map(c => c.name).join(', ')}`)
+  const totalInv = portfolio.reduce((s, c) => s + (c.invested || 0), 0)
+  if (totalInv) lines.push(`Общий объём инвестиций: ${fmtMln(totalInv * 1000)} ₽`)
+  return lines.join('\n')
+}
+
+function updateChatContext() {
+  chatCtx.setPageContext({
+    page: 'portfolio',
+    tab: activeView.value,
+    subTab: activeView.value === 'monitor' ? companyViewMode.value
+          : activeView.value === 'analytics' ? analyticsSubTab.value : '',
+    selectedEntity: selectedCompany.value ? {
+      id: selectedCompany.value.id,
+      name: selectedCompany.value.name,
+      type: 'company',
+      data: {
+        invested: selectedCompany.value.invested,
+        trl: selectedCompany.value.trl,
+        revenue: selectedCompany.value.revenue,
+        subfund: selectedCompany.value.subfund,
+        riskLevel: selectedCompany.value.riskLevel,
+        employees: selectedCompany.value.employees,
+        description: companyDescription(selectedCompany.value),
+      }
+    } : null,
+    pageChips: buildPortfolioChatChips(),
+    pageSummary: buildPortfolioSummary(),
+    responseMode: activeView.value === 'dashboard' ? 'blocks' : 'text',
+  })
+}
+
+watch(activeView, updateChatContext)
+watch(companyViewMode, updateChatContext)
+watch(analyticsSubTab, updateChatContext)
+watch(selectedCompany, updateChatContext)
+watch(allCompanies, updateChatContext)
 
 // Init event timelines when data loads
 watch(allCompanies, (list) => {

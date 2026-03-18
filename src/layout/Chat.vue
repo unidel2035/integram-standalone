@@ -295,6 +295,23 @@
               </button>
             </div>
 
+            <!-- Page context chips (from chatContextStore) -->
+            <div v-if="chatContextStore.chips.length > 0 && !isBlockEditorPage && !isOntologyPage && !aiLoading" class="contextual-actions page-context-actions">
+              <div v-if="chatContextStore.contextLabel" class="actions-hint">
+                <i class="pi pi-map-marker"></i>
+                <span>{{ chatContextStore.contextLabel }}</span>
+              </div>
+              <button
+                v-for="chip in chatContextStore.chips"
+                :key="chip.id"
+                class="action-chip"
+                @click="sendPageContextAction(chip)"
+                :title="chip.prompt"
+              >
+                <i v-if="chip.icon" :class="chip.icon"></i>
+                <span>{{ chip.label }}</span>
+              </button>
+            </div>
 
             <!-- Web search toggle row -->
             <div class="web-search-row">
@@ -510,7 +527,7 @@
             </Popover>
 
             <div class="input-container">
-              <InputText ref="aiMessageInputRef" v-model="aiMessage" :placeholder="isEditorPage && editorDocumentContext ? 'Спросите про документ...' : isOntologyPage ? 'Спросите про онтологию, сценарии, миссии...' : 'Задайте вопрос ИИ...'" @keyup.enter="handleSendAiMessage"
+              <InputText ref="aiMessageInputRef" v-model="aiMessage" :placeholder="isEditorPage && editorDocumentContext ? 'Спросите про документ...' : isOntologyPage ? 'Спросите про онтологию, сценарии, миссии...' : chatContextStore.placeholder || 'Задайте вопрос ИИ...'" @keyup.enter="handleSendAiMessage"
                 class="input-field" :disabled="aiLoading" data-testid="message-input" aria-label="Поле ввода сообщения" />
 
             </div>
@@ -1377,6 +1394,7 @@ import { Icon } from '@iconify/vue'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { logger } from '@/utils/logger'
+import { useChatContextStore } from '@/stores/chatContextStore.js'
 
 // ========== Import ALL shared logic from composable ==========
 const {
@@ -1529,6 +1547,15 @@ copyToClipboard,
   // Lifecycle
   init
 } = useChatLogic()
+
+// ========== Page Context Store ==========
+const chatContextStore = useChatContextStore()
+
+/** Send a page-context chip action as a chat message */
+function sendPageContextAction(chip) {
+  aiMessage.value = chip.prompt
+  sendAiMessage()
+}
 
 // ========== UI-Specific State & Methods (Chat.vue only) ==========
 // These are NOT in composable because they're specific to sidebar UI

@@ -40,6 +40,7 @@ import { fsspService } from '@/services/fsspService'
 import { parseHHRequest, processHHRequest as processHHRequestService } from '@/services/hhAgentService'
 import agentTriggerService, { AGENT_TYPES } from '@/services/agentTriggerService'
 import { useAuthStore } from '@/stores/authStore'
+import { useChatContextStore } from '@/stores/chatContextStore'
 import { useGeneralChat } from '@/composables/useGeneralChat'
 import { executeQuery } from '@/services/orchestratorService'
 
@@ -1608,6 +1609,14 @@ ${lines.join('\n')}
       combined += '\n- /filter - помочь отфильтровать данные'
       combined += '\n--- КОНЕЦ КОНТЕКСТА ТАБЛИЦЫ ---'
     }
+
+    // Page context from chatContextStore (event-driven)
+    try {
+      const ctxStore = useChatContextStore()
+      if (ctxStore.systemPromptExtra) {
+        combined += '\n\n' + ctxStore.systemPromptExtra
+      }
+    } catch { /* store not yet available */ }
 
     // Debug logging
     console.log('[getCombinedSystemPrompt] toolsConfig:', { ...toolsConfig })
@@ -3299,7 +3308,9 @@ AI-помощник по продажам активирован! Полный �
         }
 
         _abortController = new AbortController()
-        const response = await fetch(`${CHAT_API_URL}`, {
+        // Claude subscription provider uses a separate endpoint
+        const chatUrl = selectedProvider.value === 'claude-sub' ? `${CHAT_API_URL}/claude-sub` : CHAT_API_URL
+        const response = await fetch(chatUrl, {
           method: 'POST',
           signal: _abortController.signal,
           headers: {
