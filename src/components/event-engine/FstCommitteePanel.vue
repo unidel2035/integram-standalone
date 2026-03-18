@@ -697,7 +697,7 @@
     <div v-if="activeTab === 'gift-fund'" class="fst-tab-content">
 
       <!-- ═══ ГРАФ ОНТОЛОГИИ ДАРА ═══ -->
-      <GitHubGiftGraph />
+      <GitHubGiftGraph :fstProjects="PROJECTS_POOL" />
 
       <!-- Карточки проектов ФСТ -->
       <div class="fst-section-title" style="margin-top:12px">

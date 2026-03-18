@@ -362,7 +362,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
-// FstPageLayout removed — graph is now full-size
+
+const props = defineProps({
+  fstProjects: { type: Array, default: () => [] }
+})
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import ProgressBar from 'primevue/progressbar'
@@ -539,6 +542,43 @@ const HEALTH_COLORS = { good: '#22c55e', warn: '#f59e0b', bad: '#ef4444', unknow
 
 // Multiple projects for the portfolio graph
 const demoProjects = ref([])
+
+function convertFstProjects(fstList) {
+  return fstList.map(p => {
+    const name = (p.title || p.name || '').replace(/^ООО\s*/i, '').slice(0, 25)
+    const trl = p.trl || 5
+    const emp = p.employees || 10
+    const sov = p.sovereigntyScore || 5
+    const loc = p.localizationRatio || 0.5
+    const pat = p.patents || 0
+    const busFactor = Math.max(Math.round(emp / 5), 1)
+    const sovScore = Math.round(loc * 100)
+    const topShare = emp > 20 ? 15 : emp > 5 ? 35 : 60
+    const reviewCov = trl >= 7 ? 80 : trl >= 5 ? 55 : 30
+    const burnout = emp < 5 ? 'critical' : emp < 15 ? 'high' : 'low'
+    const verdict = sovScore >= 70 ? 'СУВЕРЕННО' : sovScore >= 45 ? 'УСЛОВНО' : 'ВЫСОКИЕ РИСКИ'
+
+    return {
+      owner: p.subFund || p.subfund || 'ФСТ', repo: name,
+      scanDate: new Date().toISOString(), scanDurationMs: 1000,
+      summary: {
+        sovereigntyScore: sovScore, verdict,
+        keyRisks: sovScore < 50 ? ['Низкая локализация'] : [],
+        strengths: [trl >= 7 ? `TRL ${trl}` : '', pat > 0 ? `${pat} патентов` : '', sov >= 7 ? 'Высокая суверенность' : ''].filter(Boolean),
+      },
+      drones: {
+        community: { stars: emp * 50, forks: emp * 10, contributors: emp, totalCommits: emp * 500, busFactor, busFactorRisk: busFactor >= 5 ? 'low' : busFactor >= 2 ? 'medium' : 'high', top1Percent: String(topShare), license: loc > 0.7 ? 'MIT' : 'proprietary', language: 'Mixed' },
+        geography: { geoDistribution: { russia: Math.round(loc * 100), usa: Math.round((1 - loc) * 50), eu: Math.round((1 - loc) * 30), china: 5, unknown: 5 }, russianPresence: true, russianContributors: Math.round(emp * loc), sanctionSourcePercent: Math.round((1 - loc) * 100), sovereigntySignal: loc > 0.7 ? 'positive' : loc > 0.4 ? 'medium_dependency' : 'high_dependency' },
+        corporate: { dominantCorporation: 'none', dominantPercent: 0, corporateRisk: 'low' },
+        securityRisks: { securityScore: Math.round(50 + trl * 5), reviewCoverage: reviewCov, top1ContributorPercent: topShare, risks: reviewCov < 50 ? ['Низкое покрытие ревью'] : [] },
+        sustainability: { mainMaintainer: 'founder', mainMaintainerPercent: topShare, burnoutLevel: burnout, recommendation: burnout === 'low' ? 'Устойчив.' : 'Риск выгорания.' },
+        license: { type: loc > 0.7 ? 'permissive' : 'proprietary', forking: loc > 0.7 ? 'free' : 'restricted' },
+        activity: { trend: trl >= 6 ? 'growing' : 'stable', recentAvg: emp * 5, previousAvg: emp * 4 },
+        capitalization: { sloc: emp * 10000, personMonths: emp * 12, costRussia: `${(emp * 2).toFixed(0)} млн руб`, projectAge: `${2026 - (p.founded || 2020)} лет` },
+      }
+    }
+  })
+}
 
 function getDemoProjects() {
   const linux = getDemoData()
@@ -831,14 +871,18 @@ function switchLayout(name) {
 // Auto-load demo data on mount
 onMounted(() => {
   result.value = getDemoData()
-  demoProjects.value = getDemoProjects()
+  demoProjects.value = props.fstProjects?.length ? convertFstProjects(props.fstProjects) : getDemoProjects()
   nextTick(() => initCyGraph())
 })
 
-// Rebuild graph when result changes
-watch(result, () => {
-  nextTick(() => initCyGraph())
-})
+// Rebuild graph when result or fstProjects change
+watch(result, () => { nextTick(() => initCyGraph()) })
+watch(() => props.fstProjects, (newProjects) => {
+  if (newProjects?.length) {
+    demoProjects.value = convertFstProjects(newProjects)
+    nextTick(() => initCyGraph())
+  }
+}, { deep: true })
 
 onBeforeUnmount(() => {
   if (cy) { cy.destroy(); cy = null }
