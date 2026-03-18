@@ -1235,7 +1235,7 @@ const subfundColors = {
 
 const graphSubfundNodes = computed(() => {
   const sfs = new Map()
-  for (const p of PROJECTS_POOL) {
+  for (const p of PROJECTS_POOL.value) {
     const sf = p.subFund || p.subfund || p.market || 'Другое'
     if (!sfs.has(sf)) sfs.set(sf, [])
     sfs.get(sf).push(p)
@@ -1251,9 +1251,9 @@ const graphSubfundNodes = computed(() => {
 const graphProjectNodes = computed(() => {
   const sfMap = new Map()
   graphSubfundNodes.value.forEach(sf => sfMap.set(sf.id, sf))
-  return PROJECTS_POOL.map((p, i) => {
+  return PROJECTS_POOL.value.map((p, i) => {
     const sf = sfMap.get(p.subFund || p.subfund || p.market || 'Другое') || { x: graphWidth / 2, y: graphHeight / 2, color: 'var(--p-text-muted-color)' }
-    const angle = (2 * Math.PI * i) / Math.max(PROJECTS_POOL.length, 1) + 0.5
+    const angle = (2 * Math.PI * i) / Math.max(PROJECTS_POOL.value.length, 1) + 0.5
     const dist = 50 + ((i * 17 + 7) % 30)
     const name = (p.title || p.name || '').replace(/^ООО\s*/i, '').slice(0, 14)
     return {
@@ -1269,7 +1269,7 @@ const graphProjectNodes = computed(() => {
 const graphEdges = computed(() => {
   const sfMap = new Map()
   graphSubfundNodes.value.forEach(sf => sfMap.set(sf.id, sf))
-  return PROJECTS_POOL.map((p, i) => {
+  return PROJECTS_POOL.value.map((p, i) => {
     const sf = sfMap.get(p.subFund || p.subfund || p.market || 'Другое')
     const pn = graphProjectNodes.value[i]
     if (!sf || !pn) return null
@@ -1291,7 +1291,7 @@ const giftAnalysis = reactive({
 const giftResult = ref(null)
 
 function fillGiftFromProject() {
-  const p = PROJECTS_POOL.find(p => p.id === giftSelectedProjectId.value)
+  const p = PROJECTS_POOL.value.find(p => p.id === giftSelectedProjectId.value)
   if (!p) return
   giftAnalysis.projectName = p.title || p.name || ''
   // Estimate fields from project data
@@ -1489,7 +1489,7 @@ const speedOptions = [
 ]
 
 const projectOptions = computed(() =>
-  PROJECTS_POOL.map(p => ({
+  PROJECTS_POOL.value.map(p => ({
     label: `${p.title || p.name} (${((p.requestedAmount || 0) / 1e6).toFixed(0)} млн)`,
     value: p.id,
   }))
@@ -1521,7 +1521,7 @@ function handleEvent() {
 }
 
 function startSession() {
-  const project = PROJECTS_POOL.find(p => p.id === selectedProjectId.value)
+  const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
   if (!project) return
   const sess = createSession(project, { speed: selectedSpeed.value })
   session.value = sess
