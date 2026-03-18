@@ -5,7 +5,7 @@
  *        with various column types (ref, number, bool, datetime),
  *        metadata after column add/remove
  */
-import { PHP, NODE, DB, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, getXsrf, cookie } from './lib.js';
+import { PHP, NODE, DB, DB_PHP, DB_NODE, http, dual, setup, preCleanup, section, summary, generateMD, writeReports, createType, addColumn, addRefColumn, createObj, getXsrf, cookie, cookieNode, results } from './lib.js';
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -62,9 +62,45 @@ async function run() {
   await dual('#2 GET /metadata (JSON_KV)', 'GET',
     s => `/metadata/${mainType[s]}?JSON_KV=1`, null, { keysOnly: true });
 
-  // 3. metadata without type ID (all types)
-  await dual('#3 GET /metadata (no typeId)', 'GET',
-    '/metadata?JSON=1', null, { keysOnly: true });
+  // 3. metadata without type ID — verify structure matches for our type in both responses
+  {
+    const [phpRes, nodeRes] = await Promise.all([
+      http(PHP, 'GET', `/${DB_PHP}/metadata?JSON=1`, null, cookie()),
+      http(NODE, 'GET', `/${DB_NODE}/metadata?JSON=1`, null, cookieNode()),
+    ]);
+    const phpArr = phpRes.json;
+    const nodeArr = nodeRes.json;
+    const diffs = [];
+    let phpEntry = null;
+    let nodeEntry = null;
+    if (!Array.isArray(phpArr)) {
+      diffs.push('PHP response is not array');
+    } else if (!Array.isArray(nodeArr)) {
+      diffs.push('Node response is not array');
+    } else {
+      // IDs come as strings in this endpoint
+      phpEntry = phpArr.find(t => String(t.id) === String(mainType.php));
+      nodeEntry = nodeArr.find(t => String(t.id) === String(mainType.node));
+      if (!phpEntry) diffs.push(`mainType ${mainType.php} not found in PHP response`);
+      if (!nodeEntry) diffs.push(`mainType ${mainType.node} not found in Node response`);
+      if (phpEntry && nodeEntry) {
+        const pk = Object.keys(phpEntry).sort().join(',');
+        const nk = Object.keys(nodeEntry).sort().join(',');
+        if (pk !== nk) diffs.push(`keys: PHP=[${pk}] Node=[${nk}]`);
+      }
+    }
+    const match = diffs.length === 0;
+    const icon = match ? '\x1b[32mMATCH\x1b[0m' : '\x1b[31mDIFF\x1b[0m';
+    console.log(`  ${icon}  #3 GET /metadata (no typeId)${diffs.length ? '\n         ' + diffs.join('\n         ') : ''}`);
+    results.push({
+      name: '#3 GET /metadata (no typeId)', match, diffs,
+      phpStatus: phpRes.status, nodeStatus: nodeRes.status,
+      phpBody: phpRes.body, nodeBody: nodeRes.body,
+      phpJson: phpEntry, nodeJson: nodeEntry,
+      phpPath: `/${DB_PHP}/metadata?JSON=1`, nodePath: `/${DB_NODE}/metadata?JSON=1`,
+      method: 'GET',
+    });
+  }
 
   // ── obj_meta — various column types ──────────────────────────────────
   section('obj_meta — Column types');

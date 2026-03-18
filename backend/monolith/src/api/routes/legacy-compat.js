@@ -3029,6 +3029,12 @@ function legacyXsrfCheck(req, res, next) {
     return next();
   }
 
+  // PHP parity: legacy alias endpoints (_terms, _references, _patchterm, _modifiers, _attributes)
+  // do not check XSRF in PHP — they are pre-XSRF legacy routes.
+  if (req.legacySkipXsrf) {
+    return next();
+  }
+
   // PHP parity (index.php:7443): admin backdoor XSRF is always accepted
   // if($GLOBALS["GLOBAL_VARS"]["xsrf"] == ADMINHASH) return true;
   const ADMIN_HASH = process.env.INTEGRAM_ADMIN_HASH || '';
@@ -7704,8 +7710,10 @@ router.post('/:db/_m_save/:id', legacyAuthMiddleware, (req, res, next) => {
       // Also check req.query: dubRecUniqNum sends &t{tid}=newValue in URL query string
       const allSaveParams = { ...req.query, ...req.body };
       // PHP line 8037: only checks t{typeId}, never falls back to val param for copy
-      const newVal = allSaveParams[`t${original.typ}`] !== undefined
-        ? allSaveParams[`t${original.typ}`]
+      // PHP uses strlen($val) which is falsy for "" — match that behavior
+      const reqVal = allSaveParams[`t${original.typ}`];
+      const newVal = reqVal !== undefined && reqVal !== ''
+        ? reqVal
         : original.val;
 
       // Calculate order for new object
@@ -10137,7 +10145,7 @@ router.post('/:db/_d_attrs/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
     // PHP parity (index.php:8697-8708): _d_attrs does a FULL REPLACE, not read-modify-write.
     // PHP starts from $val = $_REQUEST["val"] (empty string if not sent), then prepends
     // modifiers ONLY if their param is present in the request (isset semantics).
-    let newVal = req.body.val || req.body.name || '';
+    let newVal = req.body.val ?? req.body.name ?? '';
     // PHP order: ALIAS first, then !NULL, then MULTI (prepended, so reverse order in code)
     if (req.body.alias !== undefined && req.body.alias) {
       newVal = ':ALIAS=' + req.body.alias + ':' + newVal;
@@ -15032,18 +15040,21 @@ router.post('/:db/_attributes/:typeId', (req, res, next) => {
 
 router.post('/:db/_terms/:parentTypeId?', (req, res, next) => {
   req.url = req.url.replace('/_terms', '/_d_new');
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_references/:parentTypeId', (req, res, next) => {
   req.url = req.url.replace('/_references/', '/_d_ref/');
   req.params.parentTypeId = req.params.parentTypeId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_patchterm/:typeId', (req, res, next) => {
   req.url = req.url.replace('/_patchterm/', '/_d_save/');
   req.params.typeId = req.params.typeId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
