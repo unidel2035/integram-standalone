@@ -868,22 +868,34 @@ function switchLayout(name) {
   setTimeout(doFit, 500)
 }
 
-// Auto-load data on mount — retry if fstProjects not ready yet
+// Auto-load data on mount
 onMounted(() => {
   result.value = getDemoData()
   if (props.fstProjects?.length) {
     demoProjects.value = convertFstProjects(props.fstProjects)
   } else {
     demoProjects.value = getDemoProjects()
-    // Retry after projects load (they come async from Integram)
-    setTimeout(() => {
-      if (props.fstProjects?.length) {
-        demoProjects.value = convertFstProjects(props.fstProjects)
-        nextTick(() => initCyGraph())
-      }
-    }, 2000)
   }
-  nextTick(() => initCyGraph())
+
+  // Cytoscape needs a visible container — use ResizeObserver to detect when tab becomes visible
+  const tryInit = () => {
+    if (cyContainer.value && cyContainer.value.offsetHeight > 0) {
+      if (props.fstProjects?.length) demoProjects.value = convertFstProjects(props.fstProjects)
+      initCyGraph()
+      return true
+    }
+    return false
+  }
+
+  nextTick(() => {
+    if (tryInit()) return
+    // Container not visible yet (tab not active) — poll until visible
+    const interval = setInterval(() => {
+      if (tryInit()) clearInterval(interval)
+    }, 500)
+    // Stop polling after 30s
+    setTimeout(() => clearInterval(interval), 30000)
+  })
 })
 
 // Rebuild graph when result or fstProjects change
