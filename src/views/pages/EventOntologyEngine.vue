@@ -269,7 +269,7 @@ onUnmounted(() => {
 .event-engine {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 9rem);
+  min-height: calc(100vh - 9rem);
   background: var(--p-surface-ground);
 }
 
