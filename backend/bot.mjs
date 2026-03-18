@@ -611,7 +611,9 @@ bot.on('callback_query', async (q) => {
   const d = q.data, chatId = q.message.chat.id, userId = q.from.id
   if (d === 'portfolio') return sendPortfolio(chatId)
   if (d === 'settings')  return bot.sendMessage(chatId, '🔔 Настройки уведомлений — в разработке.')
-  if (d === 'cancel') return bot.sendMessage(chatId, '❌ Отменено.')
+  if (d === 'cancel') { pendingParseFiles.delete(chatId); return bot.sendMessage(chatId, '❌ Отменено.') }
+  if (d === 'parse_file') return handleParseFile(chatId, userId, 'parse')
+  if (d === 'save_file_only') return handleParseFile(chatId, userId, 'save')
   if (d.startsWith('solve_') && isAllowed(userId)) {
     const issueUrl = d.slice(6)
     const requester = q.from.username ? `@${q.from.username}` : q.from.first_name
@@ -881,6 +883,184 @@ except Exception as e:
     bot.sendMessage(chatId, `❌ Ошибка: ${err.message}`)
   }
 })
+
+// ─── Обработка документов: PPTX/PDF → парсинг компаний ──────────────────────
+const PARSEABLE_EXTENSIONS = ['.pptx', '.ppt', '.pdf', '.xlsx']
+const pendingParseFiles = new Map() // chatId → { fileId, fileName, fileSize }
+
+bot.on('document', async (msg) => {
+  const doc = msg.document
+  if (!doc) return
+
+  const fileName = doc.file_name || 'unknown'
+  const ext = path.extname(fileName).toLowerCase()
+  const chatId = msg.chat.id
+
+  if (!PARSEABLE_EXTENSIONS.includes(ext)) return
+
+  const sizeMb = (doc.file_size / 1024 / 1024).toFixed(1)
+  pendingParseFiles.set(chatId, {
+    fileId: doc.file_id,
+    fileName,
+    fileSize: doc.file_size,
+    from: msg.from?.username || msg.from?.first_name || 'unknown'
+  })
+
+  await bot.sendMessage(chatId,
+    `📄 *Получен файл:* \`${fileName}\` (${sizeMb} МБ)\n\n` +
+    `Тип: ${ext.toUpperCase().slice(1)}\n` +
+    `Могу распарсить и загрузить компании/метрики в базу ФСТ.`,
+    {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '🔍 Парсить → Integram', callback_data: 'parse_file' },
+            { text: '📥 Только сохранить', callback_data: 'save_file_only' },
+          ],
+          [{ text: '❌ Отмена', callback_data: 'cancel' }]
+        ]
+      }
+    }
+  )
+})
+
+// Callback для парсинга файла
+async function handleParseFile(chatId, userId, parseMode) {
+  const fileInfo = pendingParseFiles.get(chatId)
+  if (!fileInfo) return bot.sendMessage(chatId, '❌ Файл не найден. Отправьте файл заново.')
+  pendingParseFiles.delete(chatId)
+
+  await bot.sendChatAction(chatId, 'typing')
+  await bot.sendMessage(chatId, `⏳ Скачиваю \`${fileInfo.fileName}\`...`, { parse_mode: 'Markdown' })
+
+  try {
+    // Download file from Telegram
+    const file = await bot.getFile(fileInfo.fileId)
+    const fileUrl = `https://api.telegram.org/file/bot${TOKEN}/${file.file_path}`
+    const res = await fetch(fileUrl)
+    if (!res.ok) throw new Error(`Download failed: ${res.status}`)
+    const buffer = Buffer.from(await res.arrayBuffer())
+
+    // Save to temp
+    const tmpDir = path.join(os.tmpdir(), 'fst-bot-files')
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
+    const tmpPath = path.join(tmpDir, `${Date.now()}_${fileInfo.fileName}`)
+    fs.writeFileSync(tmpPath, buffer)
+
+    await bot.sendMessage(chatId, `✅ Скачано (${(buffer.length / 1024 / 1024).toFixed(1)} МБ).\n⏳ Запускаю парсинг...`)
+
+    if (parseMode === 'parse') {
+      // Run parse-fst-pptx.mjs
+      const child = spawn('node', ['backend/parse-fst-pptx.mjs', '--file', tmpPath], {
+        cwd: path.resolve(__dirname, '..'),
+        env: { ...process.env, PATH: process.env.PATH },
+        timeout: 300000
+      })
+
+      let stdout = '', stderr = ''
+      child.stdout.on('data', d => { stdout += d.toString() })
+      child.stderr.on('data', d => { stderr += d.toString() })
+
+      child.on('close', async (code) => {
+        // Cleanup
+        try { fs.unlinkSync(tmpPath) } catch {}
+
+        if (code === 0) {
+          // Extract summary from output
+          const created = (stdout.match(/Created: (\d+)/)?.[1]) || '?'
+          const updated = (stdout.match(/Updated: (\d+)/)?.[1]) || '?'
+          const metrics = (stdout.match(/Metrics: (\d+)/)?.[1]) || '?'
+
+          await bot.sendMessage(chatId,
+            `✅ *Парсинг завершён!*\n\n` +
+            `📦 Компаний создано: ${created}\n` +
+            `🔄 Обновлено: ${updated}\n` +
+            `📊 Метрик: ${metrics}\n\n` +
+            `Файл: \`${fileInfo.fileName}\`\nОтправитель: ${fileInfo.from}`,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: { inline_keyboard: [[
+                { text: '📊 Открыть портфель', url: 'https://ai2fund.ru/fst-portfolio' }
+              ]] }
+            }
+          )
+        } else {
+          const errMsg = stderr.slice(-500) || stdout.slice(-500) || 'Unknown error'
+          await bot.sendMessage(chatId, `❌ Ошибка парсинга (exit ${code}):\n\`\`\`\n${errMsg.slice(0, 1000)}\n\`\`\``, { parse_mode: 'Markdown' })
+        }
+      })
+    } else {
+      // save_file_only: upload to Integram storage
+      // Create object in type 53253 (Медиа) as top-level
+      const formParams = new URLSearchParams({
+        _xsrf: '',
+        [`t1069`]: fileInfo.fileName,
+        [`t1236`]: `Загружено ботом от ${fileInfo.from} ${new Date().toLocaleDateString('ru-RU')}`,
+        up: '1',
+      })
+
+      // Auth to Integram
+      const authRes = await fetch(`${INTEGRAM_URL}/${INTEGRAM_DB}/auth?JSON_KV`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `login=${encodeURIComponent(process.env.INTEGRAM_SYSTEM_USERNAME)}&pwd=${encodeURIComponent(process.env.INTEGRAM_SYSTEM_PASSWORD)}`
+      })
+      const authData = await authRes.json()
+      if (!authData.token) throw new Error('Integram auth failed')
+
+      const xsrfRes = await fetch(`${INTEGRAM_URL}/${INTEGRAM_DB}/xsrf?JSON_KV`, {
+        headers: { 'X-Authorization': authData.token }
+      })
+      const xsrfData = await xsrfRes.json()
+
+      // Create object in type 1069 (Документы)
+      formParams.set('_xsrf', xsrfData._xsrf || '')
+      const createRes = await fetch(`${INTEGRAM_URL}/${INTEGRAM_DB}/_m_new/1069?full=1&JSON_KV`, {
+        method: 'POST',
+        headers: {
+          'X-Authorization': authData.token,
+          Cookie: `${INTEGRAM_DB}=${authData.token}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formParams,
+      })
+      const createData = await createRes.json()
+      const objId = createData.id || createData.obj
+
+      if (objId) {
+        // Upload file
+        const boundary = '----BotBoundary' + Date.now()
+        const parts = []
+        parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="_xsrf"\r\n\r\n${xsrfData._xsrf || ''}`)
+        parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="t1234"; filename="${fileInfo.fileName}"\r\nContent-Type: application/octet-stream\r\n\r\n`)
+        const header = Buffer.from(parts.join('\r\n') + '\r\n')
+        const footer = Buffer.from(`\r\n--${boundary}--\r\n`)
+        const body = Buffer.concat([header, buffer, footer])
+
+        await fetch(`${INTEGRAM_URL}/${INTEGRAM_DB}/_m_save/${objId}?JSON_KV`, {
+          method: 'POST',
+          headers: {
+            'X-Authorization': authData.token,
+            Cookie: `${INTEGRAM_DB}=${authData.token}`,
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+          },
+          body,
+        })
+
+        await bot.sendMessage(chatId,
+          `✅ Файл сохранён в Integram\n\n📄 \`${fileInfo.fileName}\`\n🆔 Объект #${objId}`,
+          { parse_mode: 'Markdown' }
+        )
+      }
+
+      try { fs.unlinkSync(tmpPath) } catch {}
+    }
+  } catch (err) {
+    console.error('[FST Bot] Parse file error:', err)
+    await bot.sendMessage(chatId, `❌ Ошибка: ${err.message}`)
+  }
+}
 
 bot.on('polling_error', (err) => {
   console.error('[FST Bot] polling_error:', err.code, err.message)

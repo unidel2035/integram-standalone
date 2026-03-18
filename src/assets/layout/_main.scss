@@ -4,8 +4,19 @@
     min-height: 100vh;
     justify-content: space-between;
     padding: var(--fst-container-pad-top) var(--fst-container-pad-x) 0 var(--fst-container-pad-x);
-    transition: margin-left var(--layout-section-transition-duration);
+    transition: margin-left var(--layout-section-transition-duration), margin-right 0.3s ease;
     pointer-events: none; /* Allow drag-and-drop to pass through */
+}
+
+/* When chat is open — scrollbar inside main content, not behind chat panel */
+.layout-main-container.chat-open {
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+body:has(.layout-main-container.chat-open) {
+    overflow: hidden;
 }
 
 .layout-main-container > * {

@@ -19,6 +19,10 @@
                 title="Развернуть чат" data-testid="expand-chat-button" data-action="expand-chat" aria-label="Развернуть чат">
           <template #icon><Icon icon="mdi:arrow-expand-all" width="18" height="18" /></template>
         </Button>
+        <Button @click="closeChat" class="p-button-text p-button-secondary close-chat-btn"
+                v-tooltip.left="'Закрыть чат'" data-testid="close-chat-button" aria-label="Закрыть чат">
+          <template #icon><Icon icon="mdi:close" width="18" height="18" /></template>
+        </Button>
       </div>
 
       <Tabs :value="String(activeTabIndex)" lazy @update:value="v => activeTabIndex = Number(v)">
@@ -70,8 +74,10 @@
             >
               <template #default="{ item: msg, index, active }">
                 <DynamicScrollerItem :item="msg" :active="active" :data-index="index">
-              <div class="message"
-                :class="{ 'user-message': msg.isUser }" data-testid="message-item" :data-message-id="index">
+              <div class="message" data-testid="message-item" :data-message-id="index">
+                <div class="msg-avatar" :class="msg.isUser ? 'msg-avatar-user' : 'msg-avatar-ai'">
+                  <i :class="msg.isUser ? 'pi pi-user' : 'pi pi-sparkles'"></i>
+                </div>
                 <div class="message-content" v-if="!isSystemMessage(msg)"
                   :class="{ 'message-selected': isSelected(index) }"
                   @click="toggleMessageSelection(index, msg)">
@@ -178,11 +184,6 @@
                   </div>
 
                   <div class="message-actions" @click.stop>
-                    <div class="message-time">{{ msg.time }}</div>
-                    <span v-if="!msg.isUser && msg.outputTokens" class="msg-tokens"
-                      :title="`Вход: ${msg.inputTokens}т. Выход: ${msg.outputTokens}т.`">
-                      {{ msg.outputTokens }}т.
-                    </span>
                     <!-- SGR validation status badge -->
                     <SGRStatusBadge
                       v-if="!msg.isUser && msg.sgrStatus"
@@ -190,6 +191,9 @@
                       :fixes="msg.sgrFixes"
                     />
                     <div class="action-buttons">
+                      <span class="message-time">{{ msg.time }}</span>
+                      <span v-if="!msg.isUser && msg.modelLabel" class="msg-model-label">{{ msg.modelLabel }}</span>
+                      <span v-if="!msg.isUser && msg.outputTokens" class="msg-tokens">{{ msg.outputTokens }}т.</span>
                       <Button v-if="!msg.isUser && isEditorPage" icon="pi pi-arrow-left" title="Перенести в редактор"
                         class="transfer-button p-button-text p-button-sm" @click="transferToEditor(msg.text)"
                         data-testid="transfer-to-editor-button" aria-label="Перенести в редактор" />
@@ -263,110 +267,19 @@
               @cancel="cancelAiRequest"
             />
 
-            <!-- Contextual action chips (block editor AI) -->
+            <!-- Contextual action chips — only for editor/ontology pages, hidden on FST pages (SuperChat handles context) -->
             <div v-if="isBlockEditorPage && editorDocumentContext && !aiLoading" class="contextual-actions">
-              <button
-                v-for="action in blockEditorContextualActions"
-                :key="action.label"
-                class="action-chip"
-                @click="sendEditorAction(action)"
-                :title="action.label"
-              >
+              <button v-for="action in blockEditorContextualActions" :key="action.label"
+                class="action-chip" @click="sendEditorAction(action)" :title="action.label">
                 <i :class="action.icon"></i>
                 <span>{{ action.label }}</span>
               </button>
             </div>
-
-            <!-- Contextual action chips (ontology pages) -->
-            <div v-if="isOntologyPage && !aiLoading" class="contextual-actions ontology-actions">
-              <div class="actions-hint">
-                <i class="pi pi-compass"></i>
-                <span>Онтология БПЛА</span>
-              </div>
-              <button
-                v-for="action in ontologyContextualActions"
-                :key="action.label"
-                class="action-chip"
-                @click="sendOntologyAction(action)"
-                :title="action.label"
-              >
+            <div v-if="isOntologyPage && !aiLoading" class="contextual-actions">
+              <button v-for="action in ontologyContextualActions" :key="action.label"
+                class="action-chip" @click="sendOntologyAction(action)" :title="action.label">
                 <i :class="action.icon"></i>
                 <span>{{ action.label }}</span>
-              </button>
-            </div>
-
-            <!-- Page context chips (from chatContextStore) -->
-            <div v-if="chatContextStore.chips.length > 0 && !isBlockEditorPage && !isOntologyPage && !aiLoading" class="contextual-actions page-context-actions">
-              <div v-if="chatContextStore.contextLabel" class="actions-hint">
-                <i class="pi pi-map-marker"></i>
-                <span>{{ chatContextStore.contextLabel }}</span>
-              </div>
-              <button
-                v-for="chip in chatContextStore.chips"
-                :key="chip.id"
-                class="action-chip"
-                @click="sendPageContextAction(chip)"
-                :title="chip.prompt"
-              >
-                <i v-if="chip.icon" :class="chip.icon"></i>
-                <span>{{ chip.label }}</span>
-              </button>
-            </div>
-
-            <!-- Web search toggle row -->
-            <div class="web-search-row">
-              <button
-                class="web-search-toggle"
-                :class="{ active: toolsConfig.webSearch }"
-                @click="toggleWebSearch"
-                title="Поиск в интернете через Tavily"
-              >
-                <i class="pi pi-globe"></i>
-                <span>{{ toolsConfig.webSearch ? 'Поиск вкл' : 'Веб-поиск' }}</span>
-              </button>
-
-              <!-- Editor tools button — shown only on block editor page -->
-              <button
-                v-if="isBlockEditorPage && editorDocumentContext"
-                class="web-search-toggle editor-tools-toggle"
-                @click="editorToolsPanel.toggle($event)"
-                title="Инструменты редактора"
-              >
-                <i class="pi pi-bolt"></i>
-                <span>Инструменты</span>
-              </button>
-
-              <!-- Issue #7104: FinModel quick prompts dropdown — shown on block-editor page -->
-              <button
-                v-if="isBlockEditorPage"
-                class="web-search-toggle finmodel-toggle"
-                :class="{ active: finmodelContext?.activeModelId }"
-                @click="finmodelPanel.toggle($event)"
-                title="Финмодель & Экосистема"
-              >
-                <i class="pi pi-sparkles"></i>
-                <span>{{ finmodelContext?.activeModelId ? 'Финмодель ✓' : 'Финмодель' }}</span>
-              </button>
-
-<!-- Issue #7211: Ontology quick prompts dropdown — shown on ontology pages -->
-              <button
-                v-if="isOntologyPage"
-                class="web-search-toggle ontology-toggle"
-                @click="ontologyPanel.toggle($event)"
-                title="Онтологии БПЛА"
-              >
-                <i class="pi pi-sitemap"></i>
-                <span>Онтологии</span>
-              </button>
-
-              <!-- Issue #7217: KAG knowledge base quick prompts dropdown — always shown -->
-              <button
-                class="web-search-toggle kag-toggle"
-                @click="kagPanel.toggle($event)"
-                title="База знаний DronDoc (KAG)"
-              >
-                <i class="pi pi-database"></i>
-                <span>База знаний</span>
               </button>
             </div>
 
@@ -526,68 +439,72 @@
               </div>
             </Popover>
 
-            <div class="input-container">
-              <InputText ref="aiMessageInputRef" v-model="aiMessage" :placeholder="isEditorPage && editorDocumentContext ? 'Спросите про документ...' : isOntologyPage ? 'Спросите про онтологию, сценарии, миссии...' : chatContextStore.placeholder || 'Задайте вопрос ИИ...'" @keyup.enter="handleSendAiMessage"
-                class="input-field" :disabled="aiLoading" data-testid="message-input" aria-label="Поле ввода сообщения" />
-
+            <div class="chat-input-box">
+              <Textarea ref="aiMessageInputRef" v-model="aiMessage"
+                :placeholder="chatContextStore.placeholder || 'Спросите что угодно...'"
+                @keydown.enter.exact="handleSendAiMessage($event)"
+                class="chat-input-field" :disabled="aiLoading" autoResize :rows="1"
+                data-testid="message-input" aria-label="Поле ввода сообщения" />
+              <div class="chat-input-bottom">
+                <button class="chat-icon-btn" @click="chatToolsMenu.toggle($event)" title="Прикрепить">
+                  <i class="pi pi-plus"></i>
+                </button>
+                <Popover ref="chatToolsMenu" class="chat-tools-popover">
+                  <div class="chat-tools-panel">
+                    <button class="tool-item" @click="triggerFileUpload(); chatToolsMenu.hide()">
+                      <i class="pi pi-upload"></i> Загрузить файл
+                    </button>
+                    <button class="tool-item" @click="showDataSelector = true; chatToolsMenu.hide()">
+                      <i class="pi pi-database"></i> Таблицы / отчёты
+                    </button>
+                    <button class="tool-item" @click="kagPanel.toggle($event); chatToolsMenu.hide()">
+                      <i class="pi pi-book"></i> База знаний
+                    </button>
+                    <button class="tool-item" @click="startVoiceInput(); chatToolsMenu.hide()">
+                      <i class="pi pi-wave-pulse"></i> Голосовой ввод
+                    </button>
+                    <button v-if="isAdmin" class="tool-item" @click="toggleChatOptions(); chatToolsMenu.hide()">
+                      <i class="pi pi-sliders-h"></i> Модель / агент
+                    </button>
+                  </div>
+                </Popover>
+                <div class="chat-input-chips" v-if="!aiLoading">
+                  <button v-for="chip in quickChips" :key="chip.id" class="chat-chip"
+                    @click="sendPageContextAction(chip)">{{ chip.label }}</button>
+                </div>
+                <button class="chat-icon-btn chat-voice-btn" :class="{ 'is-recording': isRecording }"
+                  @click="startVoiceInput" title="Голосовой ввод">
+                  <i class="pi pi-wave-pulse"></i>
+                </button>
+              </div>
             </div>
-            <div class="input-actions">
-              <!-- Voice input — primary visible button -->
-              <Button icon="pi pi-microphone" @click="toggleVoiceInput"
-                      :class="['p-button-text', 'voice-btn', { 'recording': isRecording }]"
-                      title="Голосовой ввод" data-testid="voice-input-button" aria-label="Голосовой ввод" />
 
-              <!-- Options button — agent / model / settings popover (admin only) -->
-              <Button v-if="isAdmin" icon="pi pi-sliders-h" @click.stop.prevent="toggleChatOptions"
-                      class="p-button-text chat-options-btn"
-                      title="Агент и настройки" aria-label="Агент и настройки" />
+            <!-- Hidden elements needed by existing logic -->
+            <div style="display:none">
               <Popover v-if="isAdmin" ref="chatOptionsMenu" class="chat-options-popover">
                 <div class="chat-options-panel">
-                  <AgentSelector
-                    v-model="selectedAgent"
-                    @change="handleAgentChange"
-                    class="agent-selector-compact"
-                  />
-                  <Button
-                    @click.stop.prevent="toggleModelPanel"
-                    class="p-button-text model-selector-btn-bottom"
-                    v-tooltip.top="currentModelDisplayName || 'Выбрать модель'"
-                  >
+                  <AgentSelector v-model="selectedAgent" @change="handleAgentChange" class="agent-selector-compact" />
+                  <Button @click.stop.prevent="toggleModelPanel" class="p-button-text model-selector-btn-bottom"
+                    v-tooltip.top="currentModelDisplayName || 'Выбрать модель'">
                     <Icon icon="mdi:brain" width="18" height="18" />
                   </Button>
                   <Button icon="pi pi-cog" @click="showSettings = true; chatOptionsMenu.hide()"
-                          class="p-button-text settings-btn-sidebar"
-                          title="Настройки модели" aria-label="Настройки модели" />
+                    class="p-button-text settings-btn-sidebar" title="Настройки" />
                 </div>
               </Popover>
-
-              <!-- ModelSelectorPopover in DOM (triggered from inside options popover, admin only) -->
-              <ModelSelectorPopover
-                v-if="isAdmin"
-                ref="modelPanel"
-                v-model="selectedModel"
-                :access-token="userAccessToken"
-                @model-change="handleModelChange"
-                @settings-change="handleSettingsChange"
-                @show-agents="showAgentsList = true"
-                @show-settings="showSettings = true"
-              />
-
+              <ModelSelectorPopover v-if="isAdmin" ref="modelPanel" v-model="selectedModel"
+                :access-token="userAccessToken" @model-change="handleModelChange"
+                @settings-change="handleSettingsChange" @show-agents="showAgentsList = true"
+                @show-settings="showSettings = true" />
               <input type="file" ref="fileInput" style="display: none" @change="handleFileUpload"
-                     accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.json,.csv,image/*" multiple data-testid="file-input" />
-
-              <span style="margin-left: auto; display: flex; gap: 0.25rem;">
-                              <Button icon="pi pi-paperclip" @click="attachmentMenu.toggle($event)" class="p-button-text attachment-btn" title="Прикрепить файл"
-                              data-testid="attach-file-button" aria-label="Прикрепить файл" />
+                accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.json,.csv,image/*" multiple data-testid="file-input" />
               <Popover ref="attachmentMenu">
                 <div class="attachment-menu">
-                  <Button label="С устройства" icon="pi pi-upload" @click="triggerFileUpload(); attachmentMenu.hide()" class="p-button-text w-full justify-start"
-                          data-testid="upload-from-device-button" />
-                  <Button label="Таблицы/отчёты" icon="pi pi-database" @click="showDataSelector = true; attachmentMenu.hide()" class="p-button-text w-full justify-start"
-                          data-testid="attach-data-button" />
+                  <Button label="С устройства" icon="pi pi-upload" @click="triggerFileUpload(); attachmentMenu.hide()" class="p-button-text w-full justify-start" />
+                  <Button label="Таблицы/отчёты" icon="pi pi-database" @click="showDataSelector = true; attachmentMenu.hide()" class="p-button-text w-full justify-start" />
                 </div>
-              </Popover><Button icon="pi pi-send" @click="handleSendAiMessage" severity="help" :disabled="aiLoading || (isBlockEditorPage && !editorDocumentContext?.documentId)" class="send-btn" title="Отправить сообщение"
-                                data-testid="send-message-button" aria-label="Отправить сообщение"/></span></div>
+              </Popover>
+            </div>
             <div v-if="uploadProgress > 0" class="upload-progress">
               <ProgressBar :value="uploadProgress" :showValue="false" />
               <span>Загрузка: {{ uploadProgress }}%</span>
@@ -603,6 +520,14 @@
                   <Button icon="pi pi-times" class="p-button-text p-button-sm p-button-danger remove-btn"
                     @click="removeCurrentAttachment(index)" />
                 </div>
+              </div>
+            </div>
+            <div v-if="parseableFile" class="parse-offer">
+              <span class="parse-offer-text">📄 Распознан файл данных. Парсить компании и метрики?</span>
+              <div class="parse-offer-actions">
+                <Button label="Парсить → Integram" icon="pi pi-database" size="small" severity="success" @click="parseFileToIntegram" />
+                <Button label="Сохранить в документы" icon="pi pi-save" size="small" severity="secondary" @click="saveFileToIntegram" />
+                <Button label="Только как контекст" icon="pi pi-times" size="small" severity="secondary" text @click="dismissParseOffer" />
               </div>
             </div>
           </div>
@@ -916,7 +841,7 @@
           </Popover>
 
           <div class="modal-input-container">
-            <Button icon="pi pi-microphone" @click="toggleVoiceInput"
+            <Button icon="pi pi-wave-pulse" @click="startVoiceInput"
                     :class="['p-button-text', 'voice-btn', { 'recording': isRecording }]"
                     title="Голосовой ввод" />
             <Button v-if="isAdmin" icon="pi pi-sliders-h" @click.stop.prevent="toggleChatOptions"
@@ -1395,6 +1320,7 @@ import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { logger } from '@/utils/logger'
 import { useChatContextStore } from '@/stores/chatContextStore.js'
+import { processQuery as superChatProcess, MODEL_EVENTS } from '@/services/superChatEngine.js'
 
 // ========== Import ALL shared logic from composable ==========
 const {
@@ -1408,6 +1334,7 @@ const {
   aiError,
   assistantMessage,
   currentAttachments,
+  parseableFile,
   selectedModel,
   selectedProvider,
   userAccessToken,
@@ -1502,6 +1429,9 @@ copyToClipboard,
   triggerFileUpload,
   handleFileUpload,
   removeCurrentAttachment,
+  dismissParseOffer,
+  parseFileToIntegram,
+  saveFileToIntegram,
   downloadAttachment,
   showImagePreview,
 
@@ -1551,9 +1481,92 @@ copyToClipboard,
 // ========== Page Context Store ==========
 const chatContextStore = useChatContextStore()
 
+// ========== SuperChat Engine State ==========
+const superChatActive = ref(false)
+const superChatStatus = ref('')
+const superChatEvents = ref([]) // { event, label, status: 'running'|'done', result? }
+
+/** Route message through SuperChat engine (event-driven AI brain) */
+async function handleSuperChat(query) {
+  superChatActive.value = true
+  superChatStatus.value = ''
+  superChatEvents.value = []
+  aiLoading.value = true
+
+  // Add user message
+  aiChat.messages.push({ text: query, isUser: true })
+  scrollToBottom(aiMessagesContainer)
+
+  // Add placeholder assistant message for streaming status
+  const assistantMsg = { text: '', isUser: false, superChatEvents: [] }
+  aiChat.messages.push(assistantMsg)
+
+  try {
+    const result = await superChatProcess(query, {
+      onStatus(status) {
+        superChatStatus.value = status || ''
+        if (status) {
+          assistantMsg.text = status
+          scrollToBottom(aiMessagesContainer)
+        }
+      },
+      onEvent(ev) {
+        if (ev.type === 'start') {
+          superChatEvents.value.push({ event: ev.event, label: ev.label, status: 'running' })
+          assistantMsg.superChatEvents = [...superChatEvents.value]
+        } else if (ev.type === 'end') {
+          const idx = superChatEvents.value.findIndex(e => e.event === ev.event)
+          if (idx >= 0) {
+            superChatEvents.value[idx].status = 'done'
+            superChatEvents.value[idx].result = ev.result
+            assistantMsg.superChatEvents = [...superChatEvents.value]
+          }
+        }
+        scrollToBottom(aiMessagesContainer)
+      }
+    })
+
+    // Set final text + model info
+    assistantMsg.text = result.text
+    assistantMsg.superChatEvents = [...superChatEvents.value]
+    if (result.model) assistantMsg.modelLabel = result.model
+
+    // Handle navigation side effect
+    if (result.navigation?.path) {
+      assistantMsg.navigatedTo = result.navigation.path
+      try {
+        router.push(result.navigation.path)
+      } catch (e) {
+        console.warn('[SuperChat] Navigation failed:', e)
+      }
+    }
+
+    // Handle blocks rendered
+    if (result.blocksRendered) {
+      assistantMsg.blocksRendered = true
+    }
+
+    scrollToBottom(aiMessagesContainer)
+  } catch (err) {
+    console.error('[SuperChat] Error:', err)
+    assistantMsg.text = `Ошибка SuperChat: ${err.message}`
+  } finally {
+    superChatActive.value = false
+    superChatStatus.value = ''
+    aiLoading.value = false
+    superChatEvents.value = []
+  }
+}
+
 /** Send a page-context chip action as a chat message */
-function sendPageContextAction(chip) {
-  aiMessage.value = chip.prompt
+async function sendPageContextAction(chip) {
+  const query = chip.prompt
+  // Route through SuperChat for full event-driven processing
+  if (chatContextStore.page) {
+    await handleSuperChat(query)
+    return
+  }
+  aiMessage.value = query
   sendAiMessage()
 }
 
@@ -1584,6 +1597,21 @@ const ontologyPanelModal = ref(null)
 // Issue #7217: KAG knowledge base quick prompts popover ref
 const kagPanel = ref(null)
 const kagPanelModal = ref(null)
+const chatToolsMenu = ref(null)
+
+// Quick chips shown inside input box (like Claude web)
+const quickChips = computed(() => {
+  // Use page chips if available (first 3)
+  if (chatContextStore.chips.length > 0) {
+    return chatContextStore.chips.slice(0, 3)
+  }
+  // Default chips
+  return [
+    { id: 'help', label: 'Что умеет ФСТ?', prompt: 'Расскажи что умеет платформа ФСТ НТИ и какие модули доступны' },
+    { id: 'portfolio', label: 'Портфель', prompt: 'Покажи обзор портфеля фонда: компании, инвестиции, риски' },
+    { id: 'search', label: 'Найди компанию', prompt: 'Помоги найти информацию о компании в портфеле' },
+  ]
+})
 
 // Insert a template prompt into the chat input (for parametric editor tools)
 function insertToolTemplate(template) {
@@ -1671,6 +1699,122 @@ function handleSettingsChange(settings) {
   }
   logger.debug('[Chat.vue] Settings synced from ModelSelector:', settings)
 }
+
+// ── Voice input via Web Speech API ──────────────────────────────
+let speechRecognition = null
+
+let voiceRetried = false
+
+async function startVoiceInput() {
+  // Stop if already recording
+  if (isRecording.value && speechRecognition) {
+    speechRecognition.stop()
+    return
+  }
+
+  // Try Web Speech API (Chrome, Yandex Browser, Edge)
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (SpeechRecognition) {
+    return startSpeechRecognition(SpeechRecognition)
+  }
+
+  // Fallback: record audio → send to backend for transcription
+  return startMediaRecorderFallback()
+}
+
+function startSpeechRecognition(SpeechRecognition) {
+  speechRecognition = new SpeechRecognition()
+  speechRecognition.lang = 'ru-RU'
+  speechRecognition.interimResults = true
+  speechRecognition.continuous = false
+  isRecording.value = true
+
+  speechRecognition.onresult = (event) => {
+    let transcript = ''
+    for (let i = 0; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript
+    }
+    aiMessage.value = transcript
+  }
+
+  speechRecognition.onend = () => {
+    isRecording.value = false
+    voiceRetried = false
+    if (aiMessage.value.trim()) handleSendAiMessage()
+  }
+
+  speechRecognition.onerror = async (event) => {
+    isRecording.value = false
+    // If permission denied, try getUserMedia to trigger prompt, then retry once
+    if (event.error === 'not-allowed' && !voiceRetried) {
+      voiceRetried = true
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        stream.getTracks().forEach(t => t.stop())
+        // Permission granted now — retry
+        startSpeechRecognition(window.SpeechRecognition || window.webkitSpeechRecognition)
+      } catch {
+        voiceRetried = false
+        // getUserMedia also failed — try MediaRecorder fallback
+        startMediaRecorderFallback()
+      }
+    } else if (event.error === 'not-allowed') {
+      voiceRetried = false
+      startMediaRecorderFallback()
+    }
+  }
+
+  speechRecognition.start()
+}
+
+let mediaRecorder = null
+let audioChunks = []
+
+async function startMediaRecorderFallback() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+    audioChunks = []
+    isRecording.value = true
+
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data) }
+
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop())
+      isRecording.value = false
+      if (!audioChunks.length) return
+
+      const blob = new Blob(audioChunks, { type: 'audio/webm' })
+      // Send to backend Whisper endpoint for transcription
+      const formData = new FormData()
+      formData.append('audio', blob, 'voice.webm')
+      try {
+        const resp = await fetch('/api/ai-tokens/transcribe', { method: 'POST', body: formData })
+        const data = await resp.json()
+        if (data.text) {
+          aiMessage.value = data.text
+          handleSendAiMessage()
+        }
+      } catch {
+        // Transcription endpoint not available — inform user
+      }
+    }
+
+    mediaRecorder.start()
+    // Auto-stop after 15 seconds
+    setTimeout(() => { if (mediaRecorder?.state === 'recording') mediaRecorder.stop() }, 15000)
+  } catch {
+    isRecording.value = false
+  }
+}
+
+// Override stop for MediaRecorder case
+const origStartVoice = startVoiceInput
+watch(isRecording, (val) => {
+  if (!val && mediaRecorder?.state === 'recording') {
+    mediaRecorder.stop()
+  }
+})
 
 // Save current chat with custom name (wrapper for ChatHistoryDialog)
 function saveCurrentChatWithName(name) {
@@ -1831,7 +1975,19 @@ const sendOntologyAction = (action) => {
 }
 
 // Wrapper functions with focus return
-const handleSendAiMessage = () => {
+const handleSendAiMessage = async (event) => {
+  if (event?.preventDefault) event.preventDefault()  // prevent newline in Textarea
+  const query = aiMessage.value.trim()
+  if (!query) return
+
+  // Route through SuperChat when on an FST page with context
+  if (chatContextStore.page && !isBlockEditorPage.value && !isOntologyPage.value) {
+    aiMessage.value = ''
+    await handleSuperChat(query)
+    if (isModalVisible.value) { focusInput(modalAiInputRef) } else { focusInput(aiMessageInputRef) }
+    return
+  }
+
   sendAiMessage()
   // Focus returns to input after message is sent
   if (isModalVisible.value) {
@@ -1955,7 +2111,9 @@ watch(showDocPicker, (val) => {
 })
 
 // Resize functionality (Chat.vue specific - sidebar width)
-const chatWidth = ref(parseInt(localStorage.getItem('chatWidth')) || 320)
+// Golden ratio: chat = 38.2% of available width (excluding sidebar ~280px)
+const goldenChatWidth = () => Math.round((window.innerWidth - 64) * 0.382)
+const chatWidth = ref(parseInt(localStorage.getItem('chatWidth')) || goldenChatWidth())
 const isResizing = ref(false)
 
 const startResize = (e) => {
@@ -1968,7 +2126,7 @@ const startResize = (e) => {
 const handleResize = (e) => {
   if (!isResizing.value) return
   const newWidth = window.innerWidth - e.clientX
-  if (newWidth >= 280 && newWidth <= 800) {
+  if (newWidth >= 280 && newWidth <= Math.round(window.innerWidth * 0.5)) {
     chatWidth.value = newWidth
   }
 }
@@ -2493,29 +2651,27 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 0.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 0.2rem;
 
   .action-buttons, .modal-action-buttons {
     display: flex;
-    gap: 0.25rem;
-    transition: opacity 0.2s ease;
+    gap: 0.15rem;
+    opacity: 0;
+    transition: opacity 0.15s ease;
 
     :deep(.p-button) {
-      width: 1.75rem;
-      height: 1.75rem;
+      width: 1.25rem;
+      height: 1.25rem;
       padding: 0;
-      border-radius: 6px;
+      border-radius: 4px;
+      color: var(--p-text-muted-color);
       transition: all 0.15s ease;
 
-      &:hover {
-        transform: scale(1.1);
-        background: var(--surface-hover) !important;
-      }
+      .p-button-icon { font-size: 0.7rem; }
 
-      &:focus-visible {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
+      &:hover {
+        color: var(--p-text-color);
+        background: var(--p-surface-hover) !important;
       }
     }
   }
@@ -2606,21 +2762,16 @@ onUnmounted(() => {
   transform: translateY(4px);
 }
 
-// Action buttons: always visible
-.message-actions .action-buttons,
-.modal-message-actions .modal-action-buttons {
+// Action buttons: visible only on hover
+.message-content:hover .message-actions .action-buttons,
+.modal-message-content:hover .modal-message-actions .modal-action-buttons {
   opacity: 1;
 }
 
-// User message actions — inherit bubble text color (both sidebar & modal)
-.user-message .message-content .message-actions,
+// Modal user message actions
 .modal-user-message .modal-message-content .modal-message-actions {
   border-top-color: rgba(0, 0, 0, 0.08);
-
-  .message-time, .modal-message-time {
-    color: inherit;
-    opacity: 0.6;
-  }
+  .modal-message-time { color: inherit; opacity: 0.6; }
 }
 
 // Editor tools badge
@@ -2636,53 +2787,27 @@ onUnmounted(() => {
   color: var(--blue-400);
 }
 
-// Contextual action chips
+// Contextual action chips (editor/ontology only)
 .contextual-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
-  padding: 0.3rem 0.5rem 0.1rem;
+  padding: 0.3rem 0.75rem;
   .action-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
     padding: 0.2rem 0.55rem;
-    background: var(--surface-hover);
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
     font-size: 0.72rem;
     cursor: pointer;
-    transition: all 0.2s;
-    color: var(--text-color);
+    transition: all 0.15s;
+    color: var(--p-text-muted-color);
     &:hover {
-      background: var(--primary-color);
-      color: white;
-      border-color: var(--primary-color);
-    }
-  }
-  &.ontology-actions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.4rem;
-    padding: 0.5rem 0.75rem;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.08) 100%);
-    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
-    .actions-hint {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--p-primary-600, #4f46e5);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      .app-dark & { color: var(--p-primary-300, #a5b4fc); }
-    }
-    .action-chip {
-      border-color: rgba(99, 102, 241, 0.25);
-      &:hover {
-        background: var(--p-primary-500, #6366f1);
-      }
+      background: var(--p-content-hover-background, var(--surface-hover));
+      color: var(--p-text-color);
     }
   }
 }
@@ -2748,34 +2873,8 @@ onUnmounted(() => {
 }
 
 // Web search toggle row
-.web-search-row {
-  padding: 0.2rem 0.5rem;
-  .web-search-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.2rem 0.6rem;
-    font-size: 0.72rem;
-    background: transparent;
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    cursor: pointer;
-    color: var(--text-color-secondary);
-    transition: all 0.2s;
-    &:hover { border-color: var(--primary-color); color: var(--primary-color); }
-    &.active {
-      background: rgba(59, 130, 246, 0.15);
-      border-color: var(--blue-400);
-      color: var(--blue-400);
-    }
-  }
-}
-
-// Editor tools toggle button (same style as web-search-toggle but bolt color)
-.editor-tools-toggle {
-  margin-left: 0.3rem;
-  &:hover { border-color: var(--yellow-400) !important; color: var(--yellow-400) !important; }
-}
+// Legacy web-search-row — kept minimal for editor/ontology if needed
+.web-search-row { padding: 0.2rem 0.5rem; display: none; }
 
 // ТЗ quick button — green, only on /block-editor
 .tz-quick-btn {
@@ -2930,6 +3029,12 @@ onUnmounted(() => {
   z-index: 10;
   display: flex;
   gap: 0.25rem;
+
+  .close-chat-btn {
+    margin-left: 0.25rem;
+    opacity: 0.6;
+    &:hover { opacity: 1; }
+  }
 }
 
 .chat-container {
@@ -2967,6 +3072,16 @@ onUnmounted(() => {
   opacity: 0.9;
 }
 
+/* Model label in message footer (SuperChat tier indicator) */
+.msg-model-label {
+  font-size: 0.6rem;
+  color: var(--fst-purple);
+  opacity: 0.6;
+  margin-left: 4px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
 /* Token count in message footer */
 .msg-tokens {
   font-size: 0.65rem;
@@ -2979,27 +3094,7 @@ onUnmounted(() => {
   opacity: 0.7;
 }
 
-.input-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 0.875rem 0.875rem;
-  flex-wrap: wrap;
-
-  :deep(.p-button) {
-    transition: all 0.2s ease;
-    border-radius: 10px;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
-}
+// .input-actions removed — tools now in + popover
 
 .model-selector-btn-bottom {
   color: var(--primary-color) !important;
@@ -3117,111 +3212,230 @@ onUnmounted(() => {
   }
 
   .message {
-    gap: 0.75rem;
+    gap: 0.6rem;
     align-items: flex-start;
-    padding: 0 0.5rem 0.75rem;
+    padding: 0.4rem 0.75rem;
     display: flex;
     animation: slideIn 0.3s ease;
 
-    &.user-message {
-      align-self: flex-end;
-      flex-direction: row-reverse;
+    .msg-avatar {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      i { font-size: 11px; }
+    }
+    .msg-avatar-user {
+      background: color-mix(in srgb, var(--fst-blue) 15%, transparent);
+      color: var(--fst-blue);
+    }
+    .msg-avatar-ai {
+      background: color-mix(in srgb, var(--fst-purple) 15%, transparent);
+      color: var(--fst-purple);
     }
 
     .message-content {
-      background: var(--surface-ground);
-      padding: 0.875rem 1rem;
-      border-radius: 16px;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
       position: relative;
-      max-width: 95%;
-      transition: background 0.2s ease;
-      
+      flex: 1;
+      min-width: 0;
+      font-size: 0.82rem;
+      line-height: 1.5;
+
       .attachment-info {
         .attachment-item {
           display: flex;
           align-items: center;
           gap: 0.5rem;
           padding: 0.5rem;
-          background: var(--surface-100);
+          background: var(--p-surface-ground);
           border-radius: 4px;
           margin-bottom: 0.5rem;
           font-size: 0.875rem;
-          
-          &:last-child {
-            margin-bottom: 0;
-          }
-          
-          .pi-file, .pi-database { 
-            color: var(--primary-color); 
-          }
-          
-          .file-size, .api-id {
-            font-size: 0.75rem;
-            opacity: 0.7;
-          }
+
+          &:last-child { margin-bottom: 0; }
+          .pi-file, .pi-database { color: var(--p-primary-color); }
+          .file-size, .api-id { font-size: 0.75rem; opacity: 0.7; }
         }
       }
-      
+
       .message-text {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
         white-space: pre-wrap;
         word-break: break-word;
       }
 
       .message-time {
-        font-size: 0.8rem;
-        opacity: 0.65;
-        font-weight: 500;
-        letter-spacing: 0.01em;
+        font-size: 0.7rem;
+        opacity: 0.4;
+        font-weight: 400;
       }
-      
+
       .transfer-button {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
+      }
+
+      .message-actions {
+        padding-top: 0;
+        border-top: none;
       }
     }
-    
-    &.user-message .message-content {
-      background: var(--p-primary-100, var(--primary-100, #dbeafe));
-      color: var(--p-primary-900, var(--primary-900, #1e3a5f));
 
-      .message-time { opacity: 0.6; }
+    .app-dark & {
+      .msg-avatar-user { background: color-mix(in srgb, var(--fst-blue) 20%, transparent); }
+      .msg-avatar-ai { background: color-mix(in srgb, var(--fst-purple) 20%, transparent); }
+      .message-content .attachment-info .attachment-item { background: var(--p-surface-card); }
+    }
+  }
 
-      .app-dark & {
-        background: var(--p-primary-900, var(--primary-900, #1e2a4a));
-        color: var(--p-primary-100, var(--primary-100, #e0e7ff));
-      }
+  .app-dark & {
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      &:hover { background: rgba(255, 255, 255, 0.25); }
     }
   }
 }
 
-.input-container {
+// Claude-style input box
+.chat-input-box {
   display: flex;
-  gap: 0.75rem;
-  padding: 0.875rem;
-  background: var(--surface-card);
+  flex-direction: column;
+  margin: 0 8px 8px;
+  border: 1px solid var(--p-content-border-color);
   border-radius: 16px;
-  margin-top: auto;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
-  align-items: center;
+  background: var(--p-surface-card);
   position: sticky;
   bottom: 0;
   z-index: 10;
-  border-top: 1px solid var(--surface-border);
+  transition: border-color 0.2s;
+  &:focus-within {
+    border-color: var(--p-primary-color);
+  }
 
-  .input-field {
+  .chat-input-field {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 12px 14px 4px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    resize: none;
+    min-height: 40px;
+    max-height: 140px;
+    &:focus { outline: none; box-shadow: none !important; }
+  }
+
+  .chat-input-bottom {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px 8px;
+  }
+
+  .chat-icon-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--p-text-muted-color);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    i { font-size: 14px; }
+    &:hover { background: var(--p-content-hover-background, var(--surface-hover)); color: var(--p-text-color); }
+  }
+
+  .chat-input-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
     flex: 1;
     min-width: 0;
-    width: 100%;
-    height: 40px;
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
+  }
 
-    &:focus {
-      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+  .chat-chip {
+    padding: 3px 10px;
+    border: 1px solid var(--p-content-border-color);
+    border-radius: 20px;
+    background: transparent;
+    font-size: 0.72rem;
+    color: var(--p-text-muted-color);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    &:hover {
+      border-color: var(--p-text-muted-color);
+      color: var(--p-text-color);
     }
+  }
+
+  .chat-voice-btn {
+    margin-left: auto;
+    &.is-recording {
+      color: var(--fst-red);
+      animation: pulse-recording 1.5s infinite;
+    }
+  }
+}
+
+// Chat tools popover (+ button menu)
+.chat-tools-popover {
+  .chat-tools-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 180px;
+    padding: 4px;
+
+    .tool-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      color: var(--p-text-color);
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      white-space: nowrap;
+      &:hover { background: var(--p-content-hover-background, var(--surface-hover)); }
+      i { font-size: 14px; opacity: 0.7; width: 16px; text-align: center; }
+    }
+  }
+}
+
+.parse-offer {
+  padding: 0.5rem 0.875rem 0.75rem;
+  background: color-mix(in srgb, var(--fst-green) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fst-green) 25%, transparent);
+  border-radius: 10px;
+  margin: 0 0.875rem 0.5rem;
+
+  .parse-offer-text {
+    font-size: 0.82rem;
+    color: var(--p-text-color);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .parse-offer-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
   }
 }
 
@@ -3809,26 +4023,7 @@ onUnmounted(() => {
   :deep(.p-dialog) { width: 80vw !important; }
   .modal-message { max-width: 90%; }
 
-  .message-content {
-    max-width: 90%;
-    padding: 0.75rem 0.875rem;
-  }
-
-  .input-container {
-    padding: 0.75rem;
-    gap: 0.5rem;
-
-    .input-field {
-      height: 38px;
-      padding: 0.625rem 0.875rem;
-      font-size: 0.9rem;
-    }
-  }
-
-  .input-actions {
-    padding: 0 0.75rem 0.75rem;
-    gap: 0.375rem;
-  }
+  .chat-input-box { margin: 0 6px 6px; }
 }
 
 @media screen and (max-width: 640px) {
@@ -3847,40 +4042,10 @@ onUnmounted(() => {
   }
 
   .message {
-    padding: 0.125rem 0.25rem 0.5rem;
-
-    &.user-message {
-      align-self: flex-end;
-    }
-
-    .message-content {
-      max-width: 95%;
-      padding: 0.625rem 0.875rem;
-      border-radius: 14px;
-    }
+    padding: 0.2rem 0.4rem;
   }
 
-  .input-container {
-    padding: 0.625rem;
-    gap: 0.5rem;
-    border-radius: 14px;
-
-    .input-field {
-      height: 36px;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.875rem;
-    }
-  }
-
-  .input-actions {
-    padding: 0 0.625rem 0.625rem;
-    gap: 0.25rem;
-
-    :deep(.p-button) {
-      min-width: auto;
-      padding: 0.5rem;
-    }
-  }
+  .chat-input-box { margin: 0 4px 4px; }
 
   .current-attachments {
     padding: 0 0.625rem 0.625rem;

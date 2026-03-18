@@ -706,6 +706,7 @@ export function useChatLogic() {
   const aiError = ref(null)
   const assistantMessage = ref(null)
   const currentAttachments = ref([])
+  const parseableFile = ref(null) // { name, base64Data, index } — pending parseable file offer
   // Fallback retry state (tier fallback is now handled by backend chatWithFallback)
   const _fallbackRetry = ref(null) // null | { userMessage, attachments }
   // AbortController for cancelling in-flight AI requests
@@ -866,6 +867,12 @@ export function useChatLogic() {
   const CHAT_API_URL = '/api/chat' // Single entry point, routes to all providers via coordinator
   const SYSTEM_PROMPT = `Ты - ИИ-ассистент платформы ФСТ НТИ (Фонд Суверенных Технологий). ВСЕГДА отвечай ТОЛЬКО на русском языке. Отвечаешь кратко и по существу.
 
+ФОРМАТИРОВАНИЕ:
+- НЕ используй эмодзи (❌ ✅ 📊 🔍 ⚠️ и т.д.) — вместо них используй маркдаун: **жирный**, *курсив*, \`код\`
+- НЕ добавляй пустые строки между пунктами списка
+- Списки делай компактными — без лишних отступов
+- Ответ должен быть плотным, без воды и пустых строк
+
 О ПЛАТФОРМЕ ФСТ НТИ:
 ФСТ НТИ — венчурный фонд, финансирующий технологические проекты по 12 субфондам: БАС, РОБО, МЭ, Фотоника, ФармаМед, Новые материалы, SpaceNet, Энерджинет, Агротех, Технет, MediaNet, AI/Tech. Платформа управляет инвестиционным процессом: от воронки сделок до портфельного мониторинга.
 
@@ -912,6 +919,17 @@ DronDoc — платформа-конструктор приложений с И
 Когда спрашивают "что ты умеешь" — перечисли РЕАЛЬНЫЕ возможности. Когда спрашивают про данные — честно разделяй реальные и синтетические.
 
 Анализируешь JSON в которых таблицы в формате: headers (id,value,type,isMain) определяют колонки, rows (id,values) содержат ячейки с headerId для связи данных.
+
+ОБРАБОТКА ПРИКРЕПЛЁННЫХ ФАЙЛОВ:
+Когда пользователь прикрепляет файл (PPTX, PDF) — его содержимое приходит в сообщении после "--- Содержимое файла ---".
+- Если файл содержит данные о компаниях, проектах, метриках (выручка, TRL, EBITDA, IRR, инвестиции) → АВТОМАТИЧЕСКИ:
+  1. Извлеки из текста компании и их метрики
+  2. Сформируй структурированную таблицу: Название | Стадия | Субфонд | Сумма ФСТ | TRL | Выручка | IRR
+  3. Предложи: "Найдено N компаний. Создать записи в Integram? (type 1155 — компании, type 126255 — метрики)"
+  4. Если пользователь подтвердит — используй MCP инструменты integram_v2_create_object / integram_v2_set_reference для создания
+- Если файл — презентация фонда → извлеки ключевые показатели (NAV, портфель, KPI)
+- Если файл — финансовая модель → проанализируй и покажи сводку
+- НЕ СПРАШИВАЙ "что парсить?" — ОПРЕДЕЛИ автоматически по содержимому файла
 
 ПРАВИЛА ИСПОЛЬЗОВАНИЯ ИНСТРУМЕНТОВ:
 - Вопросы о БПЛА, дронах, их характеристиках, китайских/российских/зарубежных БПЛА → НЕМЕДЛЕННО вызови ontology_search_concepts для поиска в онтологии (902 концепта)
@@ -3660,8 +3678,23 @@ AI-помощник по продажам активирован! Полный �
           }
           // Extract suggested action buttons from response text
           const { text: cleanedResponse, suggestedActions } = extractActionsFromText(filterToolNoise(data.response))
-          assistantMessage.value.text = cleanedResponse
           if (suggestedActions) assistantMessage.value.suggestedActions = suggestedActions
+
+          // Typewriter effect for non-streaming responses
+          if (cleanedResponse.length > 0) {
+            const chars = cleanedResponse
+            const chunkSize = Math.max(2, Math.ceil(chars.length / 80)) // ~80 steps
+            let pos = 0
+            const typewrite = () => {
+              if (pos < chars.length && assistantMessage.value) {
+                pos = Math.min(pos + chunkSize, chars.length)
+                assistantMessage.value.text = chars.slice(0, pos)
+                scrollToBottom(aiMessagesContainer)
+                requestAnimationFrame(typewrite)
+              }
+            }
+            typewrite()
+          }
 
           // SGR validation status from backend
           if (data.sgr) {
@@ -4227,9 +4260,28 @@ AI-помощник по продажам активирован! Полный �
           type: file.type,
           source: 'file',
           url: URL.createObjectURL(file),
-          extractedText: extractedText || undefined
+          extractedText: extractedText || undefined,
+          base64Data: undefined // stored temporarily for parse action
         }
         currentAttachments.value.push(attachment)
+
+        // Offer parsing for PPTX/PDF files
+        const parseExts = ['pptx', 'ppt', 'pdf']
+        if (parseExts.includes(ext) && extractedText) {
+          // Store base64 for potential parse action
+          const base64 = await new Promise((resolve, reject) => {
+            const r = new FileReader()
+            r.onload = () => resolve(r.result.split(',')[1])
+            r.onerror = reject
+            r.readAsDataURL(file)
+          }).catch(() => null)
+
+          attachment.base64Data = base64
+          parseableFile.value = {
+            name: file.name,
+            index: currentAttachments.value.length - 1,
+          }
+        }
       }
       uploadProgress.value = 100
     } catch (error) {
@@ -4243,7 +4295,114 @@ AI-помощник по продажам активирован! Полный �
   }
 
   const removeCurrentAttachment = (index) => {
+    if (parseableFile.value?.index === index) parseableFile.value = null
     currentAttachments.value.splice(index, 1)
+  }
+
+  const dismissParseOffer = () => {
+    parseableFile.value = null
+  }
+
+  const parseFileToIntegram = async () => {
+    if (!parseableFile.value) return
+    const attachment = currentAttachments.value[parseableFile.value.index]
+    if (!attachment) { parseableFile.value = null; return }
+
+    const fileName = attachment.name
+    parseableFile.value = null
+
+    // Add system message about parsing
+    aiChat.messages.push({
+      text: `⏳ Парсинг файла **${fileName}** → создание компаний и метрик в Integram...`,
+      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      isUser: false,
+      isSystemNotice: true
+    })
+    scrollToBottom(aiMessagesContainer)
+
+    try {
+      const res = await fetch('/api/chat/parse-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base64Data: attachment.base64Data,
+          filename: fileName,
+        })
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        aiChat.messages.push({
+          text: `✅ **Парсинг завершён!**\n\n📦 Компаний создано: ${data.created || 0}\n🔄 Обновлено: ${data.updated || 0}\n📊 Метрик: ${data.metrics || 0}\n\nФайл: \`${fileName}\``,
+          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          isUser: false
+        })
+      } else {
+        aiChat.messages.push({
+          text: `❌ Ошибка парсинга: ${data.error || 'unknown'}`,
+          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          isUser: false
+        })
+      }
+    } catch (err) {
+      aiChat.messages.push({
+        text: `❌ Ошибка: ${err.message}`,
+        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        isUser: false
+      })
+    }
+    // Clean up base64 to free memory
+    attachment.base64Data = undefined
+    scrollToBottom(aiMessagesContainer)
+  }
+
+  const saveFileToIntegram = async () => {
+    if (!parseableFile.value) return
+    const attachment = currentAttachments.value[parseableFile.value.index]
+    if (!attachment) { parseableFile.value = null; return }
+
+    const fileName = attachment.name
+    parseableFile.value = null
+
+    aiChat.messages.push({
+      text: `⏳ Сохранение **${fileName}** в Integram...`,
+      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      isUser: false,
+      isSystemNotice: true
+    })
+
+    try {
+      const res = await fetch('/api/chat/save-to-integram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base64Data: attachment.base64Data,
+          filename: fileName,
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        aiChat.messages.push({
+          text: `✅ Файл сохранён в Integram\n\n📄 \`${fileName}\`\n🆔 Объект #${data.objectId}`,
+          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          isUser: false
+        })
+      } else {
+        aiChat.messages.push({
+          text: `❌ Ошибка сохранения: ${data.error || 'unknown'}`,
+          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          isUser: false
+        })
+      }
+    } catch (err) {
+      aiChat.messages.push({
+        text: `❌ Ошибка: ${err.message}`,
+        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        isUser: false
+      })
+    }
+    attachment.base64Data = undefined
+    scrollToBottom(aiMessagesContainer)
   }
 
   const downloadAttachment = (attachment) => {
@@ -4592,6 +4751,7 @@ AI-помощник по продажам активирован! Полный �
     aiError,
     assistantMessage,
     currentAttachments,
+    parseableFile,
     currentSessionId,
     isApiAvailable,
     loadingHistory,
@@ -4684,6 +4844,9 @@ AI-помощник по продажам активирован! Полный �
     triggerFileUpload,
     handleFileUpload,
     removeCurrentAttachment,
+    dismissParseOffer,
+    parseFileToIntegram,
+    saveFileToIntegram,
     downloadAttachment,
     loadDataItems,
     attachDataSource,

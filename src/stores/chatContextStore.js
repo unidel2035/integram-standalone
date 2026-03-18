@@ -39,6 +39,14 @@ export const useChatContextStore = defineStore('chatContext', () => {
   // Response mode
   const responseMode = ref('text')  // 'text' | 'blocks' | 'agent'
 
+  // ── Page ↔ Chat bridge (bidirectional) ──────────────
+  // Sidebar writes query here → page picks it up and executes (e.g. dashboard blocks)
+  const pendingQuery = ref('')
+  // Page writes result here → sidebar shows it
+  const pendingResult = ref(null)  // { type: 'blocks'|'text', data, error? }
+  // Page registers its handler
+  const pageHandler = ref(null)    // (query) => Promise<result>
+
   // ── Actions ─────────────────────────────────────────
 
   /**
@@ -66,6 +74,9 @@ export const useChatContextStore = defineStore('chatContext', () => {
     pageChips.value = []
     pageSystemPrompt.value = ''
     responseMode.value = 'text'
+    pendingQuery.value = ''
+    pendingResult.value = null
+    pageHandler.value = null
   }
 
   /** Update just the selected entity */
@@ -87,6 +98,35 @@ export const useChatContextStore = defineStore('chatContext', () => {
   /** Update page summary */
   function setSummary(summary) {
     pageSummary.value = summary
+  }
+
+  /** Register page-specific handler (e.g. dashboard block generator) */
+  function registerHandler(handler) {
+    pageHandler.value = handler
+  }
+
+  /**
+   * Send query from sidebar → page handler.
+   * Returns result or null if no handler.
+   */
+  async function executeOnPage(query) {
+    if (!pageHandler.value) return null
+    pendingQuery.value = query
+    try {
+      const result = await pageHandler.value(query)
+      pendingResult.value = result
+      return result
+    } catch (err) {
+      pendingResult.value = { type: 'error', error: err.message }
+      return pendingResult.value
+    } finally {
+      pendingQuery.value = ''
+    }
+  }
+
+  /** Check if page has a handler registered */
+  function hasPageHandler() {
+    return !!pageHandler.value
   }
 
   // ── Computed for Chat.vue ───────────────────────────
@@ -178,8 +218,10 @@ export const useChatContextStore = defineStore('chatContext', () => {
   return {
     // State
     page, tab, subTab, selectedEntity, pageSummary, pageChips, pageSystemPrompt, responseMode,
+    pendingQuery, pendingResult, pageHandler,
     // Actions
     setPageContext, clearPageContext, setSelectedEntity, setTab, setChips, setSummary,
+    registerHandler, executeOnPage, hasPageHandler,
     // Computed (for Chat.vue)
     placeholder, chips, systemPromptExtra, contextLabel,
   }

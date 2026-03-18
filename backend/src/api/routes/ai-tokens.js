@@ -10,6 +10,7 @@
  */
 
 import { Router } from 'express'
+import { INTEGRAM_TOOLS, executeTool as executeIntegraTool } from '../../services/integram-v2-tools.js'
 
 const router = Router()
 
@@ -216,6 +217,227 @@ router.post('/ai-tokens/chat', async (req, res) => {
   }
 })
 
+// ── Anthropic tool-calling loop ───────────────────────────────────────────────
+
+async function callAnthropicWithTools(modelId, messages, systemPrompt, res) {
+  const model = modelId.replace('anthropic/', '') || 'claude-sonnet-4-20250514'
+  const MAX_ITERATIONS = 8
+
+  // Clone messages for the conversation loop
+  const conversationMessages = [...messages]
+
+  for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+    const body = {
+      model,
+      max_tokens: 4096,
+      messages: conversationMessages,
+      tools: INTEGRAM_TOOLS,
+    }
+    if (systemPrompt) body.system = systemPrompt
+
+    const upstream = await fetch(PROVIDERS.anthropic.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': PROVIDERS.anthropic.key(),
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!upstream.ok) {
+      const err = await upstream.text()
+      throw new Error(`Anthropic ${upstream.status}: ${err}`)
+    }
+
+    const data = await upstream.json()
+
+    // Extract text and tool_use blocks from response
+    let textContent = ''
+    const toolUseBlocks = []
+
+    for (const block of (data.content || [])) {
+      if (block.type === 'text') {
+        textContent += block.text
+      } else if (block.type === 'tool_use') {
+        toolUseBlocks.push(block)
+      }
+    }
+
+    // Stream any text content
+    if (textContent) {
+      res.write(`data: ${JSON.stringify({ type: 'content', content: textContent })}\n\n`)
+    }
+
+    // If no tool calls — we're done
+    if (data.stop_reason !== 'tool_use' || toolUseBlocks.length === 0) {
+      break
+    }
+
+    // Execute tool calls and stream progress
+    const toolResults = []
+    for (const toolBlock of toolUseBlocks) {
+      // Notify frontend: tool call starting
+      res.write(`data: ${JSON.stringify({
+        type: 'agent:action:start',
+        tool: toolBlock.name,
+        input: toolBlock.input,
+      })}\n\n`)
+
+      let result
+      try {
+        result = await executeIntegraTool(toolBlock.name, toolBlock.input)
+      } catch (err) {
+        result = { error: err.message }
+      }
+
+      // Truncate large results to avoid context overflow
+      let resultStr = JSON.stringify(result)
+      if (resultStr.length > 15000) {
+        // Keep first 15000 chars and add truncation notice
+        resultStr = resultStr.slice(0, 15000) + '... [truncated]'
+      }
+
+      // Notify frontend: tool call completed
+      res.write(`data: ${JSON.stringify({
+        type: 'agent:action:end',
+        tool: toolBlock.name,
+        result: resultStr,
+      })}\n\n`)
+
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: toolBlock.id,
+        content: resultStr,
+      })
+    }
+
+    // Add assistant response + tool results to conversation for next iteration
+    conversationMessages.push({ role: 'assistant', content: data.content })
+    conversationMessages.push({ role: 'user', content: toolResults })
+  }
+
+  res.write('data: [DONE]\n\n')
+  res.end()
+}
+
+// ── OpenAI-compatible tool-calling loop (DeepSeek, OpenAI, Polza) ─────────────
+
+// Convert Anthropic tool format → OpenAI function-calling format
+const OPENAI_TOOLS = INTEGRAM_TOOLS.map(t => ({
+  type: 'function',
+  function: {
+    name: t.name,
+    description: t.description,
+    parameters: t.input_schema,
+  }
+}))
+
+async function callOpenAICompatibleWithTools(provider, modelId, messages, systemPrompt, res) {
+  const cfg = PROVIDERS[provider]
+  const model = provider === 'deepseek'
+    ? (modelId.replace('deepseek/', '') || 'deepseek-chat')
+    : provider === 'polza'
+      ? (modelId.replace(/^polza\//, '') || 'qwen/qwen-turbo')
+      : (modelId.replace('openai/', '') || 'gpt-4o')
+
+  const MAX_ITERATIONS = 8
+
+  // Build conversation with system prompt
+  const conversationMessages = []
+  if (systemPrompt) conversationMessages.push({ role: 'system', content: systemPrompt })
+  conversationMessages.push(...messages)
+
+  for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+    const body = {
+      model,
+      messages: conversationMessages,
+      tools: OPENAI_TOOLS,
+      max_tokens: 4096,
+    }
+
+    const upstream = await fetch(cfg.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cfg.key()}`,
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!upstream.ok) {
+      const err = await upstream.text()
+      throw new Error(`${provider} ${upstream.status}: ${err}`)
+    }
+
+    const data = await upstream.json()
+    const choice = data.choices?.[0]
+    const msg = choice?.message
+
+    if (!msg) break
+
+    // Stream text content
+    if (msg.content) {
+      res.write(`data: ${JSON.stringify({ type: 'content', content: msg.content })}\n\n`)
+    }
+
+    // No tool calls — done
+    if (choice.finish_reason !== 'tool_calls' || !msg.tool_calls?.length) {
+      break
+    }
+
+    // Add assistant message with tool calls to conversation
+    conversationMessages.push(msg)
+
+    // Execute each tool call
+    for (const tc of msg.tool_calls) {
+      const toolName = tc.function.name
+      let toolArgs
+      try {
+        toolArgs = JSON.parse(tc.function.arguments)
+      } catch {
+        toolArgs = {}
+      }
+
+      // Notify frontend: tool call starting
+      res.write(`data: ${JSON.stringify({
+        type: 'agent:action:start',
+        tool: toolName,
+        input: toolArgs,
+      })}\n\n`)
+
+      let result
+      try {
+        result = await executeIntegraTool(toolName, toolArgs)
+      } catch (err) {
+        result = { error: err.message }
+      }
+
+      let resultStr = JSON.stringify(result)
+      if (resultStr.length > 15000) {
+        resultStr = resultStr.slice(0, 15000) + '... [truncated]'
+      }
+
+      // Notify frontend: tool call completed
+      res.write(`data: ${JSON.stringify({
+        type: 'agent:action:end',
+        tool: toolName,
+        result: resultStr,
+      })}\n\n`)
+
+      // Add tool result to conversation
+      conversationMessages.push({
+        role: 'tool',
+        tool_call_id: tc.id,
+        content: resultStr,
+      })
+    }
+  }
+
+  res.write('data: [DONE]\n\n')
+  res.end()
+}
+
 // ── Streaming helpers ─────────────────────────────────────────────────────────
 
 async function callAnthropicStream(modelId, prompt, systemPrompt, res) {
@@ -308,15 +530,18 @@ async function callOpenAICompatibleStream(provider, modelId, prompt, systemPromp
   res.end()
 }
 
-// ── /api/chat — алиас для useChatLogic (платформенный Chat) ─────────────────
-// Принимает { message, model, provider, systemPrompt, conversationHistory, stream? }
-// stream=true → SSE (text/event-stream), каждый chunk: data: {"token":"..."}
+// ── /api/chat — платформенный Chat с поддержкой tool calling ────────────────
+// Принимает { message, model, provider, systemPrompt, conversationHistory, stream?,
+//             enableToolCalling?, toolCallingConfig? }
+// stream=true → SSE (text/event-stream)
 // stream=false/omit → JSON { success: true, response: string }
 router.post('/chat', async (req, res) => {
   const {
     message, model, provider: providerHint,
     systemPrompt, conversationHistory = [],
     stream = false,
+    enableToolCalling = false,
+    toolCallingConfig = null,
   } = req.body
 
   if (!message) {
@@ -324,7 +549,6 @@ router.post('/chat', async (req, res) => {
   }
 
   const modelId = model || 'deepseek/deepseek-chat'
-  // if providerHint is unknown (e.g. "polza"), fall back to auto-detect
   const provider = (providerHint && PROVIDERS[providerHint]) ? providerHint : detectProvider(modelId)
   const apiKey = PROVIDERS[provider]?.key()
 
@@ -335,7 +559,26 @@ router.post('/chat', async (req, res) => {
     })
   }
 
-  // Для истории диалога добавляем её в prompt (простой конкатенат)
+  // enableTools: true приходит всегда из фронтенда.
+  // Автоматически включаем integram tools для Anthropic/DeepSeek если enableTools: true
+  const enableTools = req.body.enableTools || false
+  const toolCapableProvider = provider === 'anthropic' || provider === 'deepseek' || provider === 'openai' || provider === 'polza'
+  const useTools = toolCapableProvider && (
+    (enableToolCalling && toolCallingConfig?.enableIntegramTools) || enableTools
+  )
+
+  console.log(`[AI /chat] ${provider} / ${modelId} stream=${stream} tools=${useTools}`)
+
+  // ── Build messages array for Anthropic (proper format) ─────────────────
+  const messages = []
+  if (conversationHistory.length > 0) {
+    for (const m of conversationHistory.slice(-8)) {
+      messages.push({ role: m.role, content: m.content })
+    }
+  }
+  messages.push({ role: 'user', content: message })
+
+  // Legacy prompt for non-Anthropic providers
   let prompt = message
   if (conversationHistory.length > 0) {
     const historyText = conversationHistory
@@ -345,9 +588,28 @@ router.post('/chat', async (req, res) => {
     prompt = `${historyText}\nUser: ${message}`
   }
 
-  console.log(`[AI /chat] ${provider} / ${modelId} stream=${stream}`)
+  // ── Tool-calling mode (Anthropic only, always streaming) ───────────────
+  if (useTools) {
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders()
 
-  // ── Streaming mode ────────────────────────────────────────────────────────
+    try {
+      if (provider === 'anthropic') {
+        await callAnthropicWithTools(modelId, messages, systemPrompt, res)
+      } else {
+        await callOpenAICompatibleWithTools(provider, modelId, messages, systemPrompt, res)
+      }
+    } catch (err) {
+      console.error(`[AI /chat tools] Error:`, err.message)
+      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`)
+      res.end()
+    }
+    return
+  }
+
+  // ── Streaming mode (no tools) ─────────────────────────────────────────
   if (stream) {
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
@@ -357,7 +619,6 @@ router.post('/chat', async (req, res) => {
       if (provider === 'anthropic') {
         await callAnthropicStream(modelId, prompt, systemPrompt, res)
       } else if (provider === 'yandex') {
-        // Yandex не поддерживает streaming — отдаём одним куском
         const result = await callYandex(prompt, systemPrompt)
         res.write(`data: ${JSON.stringify({ token: result.response })}\n\n`)
         res.write('data: [DONE]\n\n')
@@ -467,6 +728,138 @@ router.post('/chat/upload', async (req, res) => {
     console.error('[chat/upload] Error:', err)
     try { unlinkSync(tmpPath) } catch (_) {}
     res.status(500).json({ error: err.message })
+  }
+})
+
+// ── POST /api/chat/parse-file — парсинг PPTX/PDF → компании и метрики в Integram ──
+router.post('/chat/parse-file', async (req, res) => {
+  const { base64Data, filename } = req.body
+  if (!base64Data) return res.status(400).json({ error: 'base64Data is required' })
+
+  const { writeFileSync, mkdirSync, existsSync, unlinkSync } = await import('fs')
+  const { join, dirname } = await import('path')
+  const { fileURLToPath } = await import('url')
+  const { spawn } = await import('child_process')
+
+  const __dir = dirname(fileURLToPath(import.meta.url))
+  const tmpDir = join(__dir, '../../../.tmp-uploads')
+  if (!existsSync(tmpDir)) mkdirSync(tmpDir, { recursive: true })
+
+  const tmpPath = join(tmpDir, `parse_${Date.now()}_${filename || 'file.pptx'}`)
+
+  try {
+    writeFileSync(tmpPath, Buffer.from(base64Data, 'base64'))
+    console.log(`[chat/parse-file] Saved ${filename} to ${tmpPath}`)
+
+    // Run parse-fst-pptx.mjs
+    const scriptPath = join(__dir, '../../../parse-fst-pptx.mjs')
+    const child = spawn('node', [scriptPath, '--file', tmpPath], {
+      cwd: join(__dir, '../../..'),
+      env: { ...process.env },
+      timeout: 300000
+    })
+
+    let stdout = '', stderr = ''
+    child.stdout.on('data', d => { stdout += d.toString() })
+    child.stderr.on('data', d => { stderr += d.toString() })
+
+    child.on('close', (code) => {
+      try { unlinkSync(tmpPath) } catch {}
+      if (code === 0) {
+        const created = stdout.match(/Created: (\d+)/)?.[1] || '0'
+        const updated = stdout.match(/Updated: (\d+)/)?.[1] || '0'
+        const metrics = stdout.match(/Metrics: (\d+)/)?.[1] || '0'
+        res.json({ success: true, created: Number(created), updated: Number(updated), metrics: Number(metrics) })
+      } else {
+        res.json({ success: false, error: (stderr || stdout).slice(-500) })
+      }
+    })
+
+    child.on('error', (err) => {
+      try { unlinkSync(tmpPath) } catch {}
+      res.json({ success: false, error: err.message })
+    })
+  } catch (err) {
+    try { unlinkSync(tmpPath) } catch {}
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── POST /api/chat/save-to-integram — сохранить файл в Integram Документы (type 1069) ──
+router.post('/chat/save-to-integram', async (req, res) => {
+  const { base64Data, filename } = req.body
+  if (!base64Data) return res.status(400).json({ error: 'base64Data is required' })
+
+  const { writeFileSync, mkdirSync, existsSync, unlinkSync } = await import('fs')
+  const { join, dirname } = await import('path')
+  const { fileURLToPath } = await import('url')
+
+  try {
+    const INTEGRAM_URL = process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru'
+    const DB = 'fst'
+
+    // Auth
+    const authRes = await fetch(`${INTEGRAM_URL}/${DB}/auth?JSON_KV`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        login: process.env.INTEGRAM_SYSTEM_USERNAME,
+        pwd: process.env.INTEGRAM_SYSTEM_PASSWORD
+      })
+    })
+    const authData = await authRes.json()
+    if (!authData.token) throw new Error('Integram auth failed')
+
+    const xsrfRes = await fetch(`${INTEGRAM_URL}/${DB}/xsrf?JSON_KV`, {
+      headers: { 'X-Authorization': authData.token }
+    })
+    const xd = await xsrfRes.json()
+    const xsrf = xd._xsrf || ''
+
+    // Create object in type 1069 (Документы)
+    const createParams = new URLSearchParams({
+      _xsrf: xsrf,
+      t1069: filename || 'file',
+      t1236: `Загружено из чата ${new Date().toLocaleDateString('ru-RU')}`,
+      up: '1',
+    })
+    const createRes = await fetch(`${INTEGRAM_URL}/${DB}/_m_new/1069?full=1&JSON_KV`, {
+      method: 'POST',
+      headers: {
+        'X-Authorization': authData.token,
+        Cookie: `${DB}=${authData.token}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: createParams,
+    })
+    const createData = await createRes.json()
+    const objId = createData.id || createData.obj
+    if (!objId) throw new Error('Failed to create document object')
+
+    // Upload file via multipart _m_save
+    const buffer = Buffer.from(base64Data, 'base64')
+    const boundary = '----ChatBoundary' + Date.now()
+    const parts = []
+    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="_xsrf"\r\n\r\n${xsrf}`)
+    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="t1234"; filename="${filename}"\r\nContent-Type: application/octet-stream\r\n\r\n`)
+    const header = Buffer.from(parts.join('\r\n') + '\r\n')
+    const footer = Buffer.from(`\r\n--${boundary}--\r\n`)
+    const body = Buffer.concat([header, buffer, footer])
+
+    await fetch(`${INTEGRAM_URL}/${DB}/_m_save/${objId}?JSON_KV`, {
+      method: 'POST',
+      headers: {
+        'X-Authorization': authData.token,
+        Cookie: `${DB}=${authData.token}`,
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+      },
+      body,
+    })
+
+    res.json({ success: true, objectId: objId })
+  } catch (err) {
+    console.error('[chat/save-to-integram] Error:', err)
+    res.status(500).json({ success: false, error: err.message })
   }
 })
 

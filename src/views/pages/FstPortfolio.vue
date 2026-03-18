@@ -108,38 +108,8 @@
       <!-- ║  AI-блоки замещают инфограф, а не добавляются сверху            ║ -->
       <!-- ╚══════════════════════════════════════════════════════════════════╝ -->
 
-      <!-- Когда есть AI-блоки: компактный KPI-ряд + AI-блоки -->
+      <!-- AI-блоки — показываем над базовой инфографикой (стерео-картина) -->
       <template v-if="aiBlocks.length && dashMode === 'live'">
-        <!-- Компактный KPI-ряд (Focus+Context: контекст сохраняется) -->
-        <div class="fsp-ctx-strip">
-          <div class="fsp-ctx-kpi" v-tooltip.bottom="'TVPI — стоимость к вложениям'">
-            <Icon icon="lucide:trending-up" class="fsp-ctx-icon" />
-            <span class="fsp-ctx-val" :style="{ color: fundTVPI >= 1 ? 'var(--fst-green)' : 'var(--fst-red)' }">{{ fundTVPI }}x</span>
-            <span class="fsp-ctx-label">TVPI</span>
-          </div>
-          <div class="fsp-ctx-kpi" v-tooltip.bottom="'Средний MOIC портфеля'">
-            <Icon icon="lucide:bar-chart-3" class="fsp-ctx-icon" />
-            <span class="fsp-ctx-val" :style="{ color: avgMOIC >= 1.5 ? 'var(--fst-green)' : 'var(--fst-brand)' }">{{ avgMOIC }}x</span>
-            <span class="fsp-ctx-label">MOIC</span>
-          </div>
-          <div class="fsp-ctx-kpi" v-tooltip.bottom="'Средний TRL портфеля'">
-            <Icon icon="lucide:flask-conical" class="fsp-ctx-icon" />
-            <span class="fsp-ctx-val" style="color:var(--fst-blue)">{{ avgPortfolioTRL }}</span>
-            <span class="fsp-ctx-label">TRL</span>
-          </div>
-          <div class="fsp-ctx-kpi" v-tooltip.bottom="'Компаний в портфеле'">
-            <Icon icon="lucide:building-2" class="fsp-ctx-icon" />
-            <span class="fsp-ctx-val">{{ portfolioCompanies.length }}</span>
-            <span class="fsp-ctx-label">Компании</span>
-          </div>
-          <!-- Health светофор — preattentive pop-out -->
-          <div class="fsp-ctx-health">
-            <span class="fsp-ctx-dot" style="background:var(--fst-green)"></span><span>{{ healthDistribution.green }}</span>
-            <span class="fsp-ctx-dot" style="background:var(--fst-brand)"></span><span>{{ healthDistribution.yellow }}</span>
-            <span class="fsp-ctx-dot" style="background:var(--fst-red)"></span><span>{{ healthDistribution.red }}</span>
-          </div>
-        </div>
-
         <!-- AI-блоки — ограничены 6 слотами (Cowan's Law) -->
         <TransitionGroup name="fsp-block-anim" tag="div" class="fsp-ai-blocks">
           <div v-for="block in aiBlocks.slice(0, 6)" :key="block.id"
@@ -384,7 +354,7 @@
       </Dialog>
 
       <!-- ═══ ИНФОГРАФИКА — плотный live-дашборд на одном экране ═══ -->
-      <div v-if="allCompanies.length && dashMode === 'live' && !aiBlocks.length" class="fsp-infograph">
+      <div v-if="allCompanies.length && dashMode === 'live'" class="fsp-infograph">
 
         <!-- ── Endsley L3: Проекция — прогнозная полоска ── -->
         <div v-if="projections.length" class="fsp-projections">
@@ -1096,8 +1066,7 @@
 
     </div>
 
-    <!-- Page Tutor -->
-    <PageTutorButton pageId="fst-portfolio" :getContext="getPageContext" />
+    <!-- Page Tutor moved to sidebar chat chips -->
 
   </FstPageLayout>
 </template>
@@ -3182,6 +3151,8 @@ onMounted(() => {
   loadPortfolioFromDb()
   startMetricsCycle()
   updateChatContext()
+  // Register page handler — sidebar chat can trigger dashboard blocks or company analysis
+  chatCtx.registerHandler(handleSidebarQuery)
 })
 onUnmounted(() => {
   clearInterval(liveTimer); destroyCharts()
@@ -3212,17 +3183,33 @@ function buildPortfolioChatChips() {
       { label: 'Субфонды', icon: 'pi pi-chart-pie', id: 'subfunds', prompt: 'Анализ по субфондам: распределение инвестиций, средний TRL, ROI по каждому субфонду' },
     )
   }
+  // Чип «Помощь» — заменяет PageTutorButton
+  base.push({ label: 'Помощь', icon: 'pi pi-question-circle', id: 'help',
+    prompt: 'Объясни как пользоваться этой страницей: что означает светофор метрик, как интерпретировать burn rate и runway, когда нужно вмешаться в компанию, как генерировать QBR отчёт.' })
   return base
 }
 
 function buildPortfolioSummary() {
   const companies = allCompanies.value
   if (!companies.length) return ''
-  const portfolio = companies.filter(c => c.status === 'portfolio')
-  const review = companies.filter(c => c.status === 'review')
+  const portfolio = companies.filter(c => c._scope === 'portfolio')
+  const review = companies.filter(c => c._scope === 'review')
   const lines = [
     `Портфель: ${portfolio.length} компаний, на рассмотрении: ${review.length}`,
   ]
+  // List all portfolio companies with key metrics
+  if (portfolio.length) {
+    lines.push('Компании портфеля:')
+    for (const c of portfolio) {
+      const parts = [c.name]
+      if (c.subfund) parts.push(`субфонд: ${c.subfund}`)
+      if (c.invested) parts.push(`инвестиции: ${c.invested} млн`)
+      if (c.trl) parts.push(`TRL: ${c.trl}`)
+      if (c.riskLevel) parts.push(`риск: ${c.riskLevel}`)
+      if (c.revenue) parts.push(`выручка: ${c.revenue} млн`)
+      lines.push(`- ${parts.join(', ')}`)
+    }
+  }
   const red = portfolio.filter(c => c.riskLevel === 'red')
   if (red.length) lines.push(`Красная зона: ${red.map(c => c.name).join(', ')}`)
   const totalInv = portfolio.reduce((s, c) => s + (c.invested || 0), 0)
@@ -3261,6 +3248,27 @@ watch(companyViewMode, updateChatContext)
 watch(analyticsSubTab, updateChatContext)
 watch(selectedCompany, updateChatContext)
 watch(allCompanies, updateChatContext)
+
+/**
+ * Handle queries from sidebar chat.
+ * On dashboard → runs AI block generator and returns blocks.
+ * On other tabs → returns text analysis via standard AI call.
+ */
+async function handleSidebarQuery(query) {
+  if (activeView.value === 'dashboard') {
+    // Dashboard mode: generate blocks and render them on the page
+    aiQuery.value = query
+    await runAiDashboard()
+    // Return blocks summary for sidebar display
+    const blocksSummary = aiBlocks.value.map(b => {
+      if (b.type === 'insight' || b.type === 'alert' || b.type === 'recommendation') return b.body || b.title
+      return `[${b.type}] ${b.title}`
+    }).join('\n')
+    return { type: 'blocks', data: blocksSummary, blockCount: aiBlocks.value.length }
+  }
+  // Other tabs: return null = let sidebar use its standard AI chat
+  return null
+}
 
 // Init event timelines when data loads
 watch(allCompanies, (list) => {

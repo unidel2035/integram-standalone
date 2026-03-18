@@ -501,6 +501,196 @@ app.post('/api/ai-tokens/chat', async (req, res) => {
   }
 })
 
+// ── /api/chat — платформенный Chat с Integram tool calling ──────
+
+import { INTEGRAM_TOOLS, executeTool as executeIntegraTool } from './src/services/integram-v2-tools.js'
+
+// OpenAI function-calling format
+const OPENAI_TOOLS = INTEGRAM_TOOLS.map(t => ({
+  type: 'function',
+  function: { name: t.name, description: t.description, parameters: t.input_schema }
+}))
+
+app.post('/api/chat', async (req, res) => {
+  const {
+    message, model: modelId, provider: providerHint,
+    systemPrompt, conversationHistory = [],
+    stream = false, enableTools = false,
+  } = req.body
+
+  if (!message) return res.status(400).json({ success: false, error: 'message is required' })
+
+  // Use provider hint if available, else resolve from modelId
+  const provider = providerHint === 'polza'
+    ? { url: POLZA_URL, key: process.env.POLZA_API_KEY, model: modelId?.replace(/^polza\//, '') || 'qwen/qwen-turbo' }
+    : resolveProvider(modelId)
+  if (!provider.key) return res.status(503).json({ success: false, error: `No API key for ${modelId}` })
+
+  // Build messages
+  const messages = []
+  if (conversationHistory.length > 0) {
+    for (const m of conversationHistory.slice(-8)) {
+      messages.push({ role: m.role, content: m.content })
+    }
+  }
+  messages.push({ role: 'user', content: message })
+
+  const isAnthropic = provider.anthropic
+  const useTools = enableTools && !isAnthropic // Anthropic tool calling needs separate handling
+  const useToolsAnthropic = enableTools && isAnthropic
+
+  console.log(`[AI /chat] model=${provider.model} tools=${enableTools} anthropic=${isAnthropic}`)
+
+  // ── Tool-calling mode (SSE) ────────────────────────────────────
+  if (useTools || useToolsAnthropic) {
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders()
+
+    try {
+      const MAX_ITER = 8
+      if (useToolsAnthropic) {
+        // Anthropic tool calling loop
+        const convMsgs = [...messages]
+        for (let i = 0; i < MAX_ITER; i++) {
+          const body = {
+            model: provider.model, max_tokens: 4096, messages: convMsgs,
+            tools: INTEGRAM_TOOLS,
+          }
+          if (systemPrompt) body.system = systemPrompt
+          const upstream = await fetch(provider.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': provider.key, 'anthropic-version': '2023-06-01' },
+            body: JSON.stringify(body),
+          })
+          if (!upstream.ok) throw new Error(`Anthropic ${upstream.status}: ${await upstream.text()}`)
+          const data = await upstream.json()
+          let text = ''
+          const toolBlocks = []
+          for (const b of (data.content || [])) {
+            if (b.type === 'text') text += b.text
+            else if (b.type === 'tool_use') toolBlocks.push(b)
+          }
+          if (text) res.write(`data: ${JSON.stringify({ type: 'content', content: text })}\n\n`)
+          if (data.stop_reason !== 'tool_use' || !toolBlocks.length) break
+          const toolResults = []
+          for (const tb of toolBlocks) {
+            res.write(`data: ${JSON.stringify({ type: 'agent:action:start', tool: tb.name, input: tb.input })}\n\n`)
+            let result
+            try { result = await executeIntegraTool(tb.name, tb.input) } catch (e) { result = { error: e.message } }
+            let rs = JSON.stringify(result); if (rs.length > 15000) rs = rs.slice(0, 15000) + '...[truncated]'
+            res.write(`data: ${JSON.stringify({ type: 'agent:action:end', tool: tb.name, result: rs })}\n\n`)
+            toolResults.push({ type: 'tool_result', tool_use_id: tb.id, content: rs })
+          }
+          convMsgs.push({ role: 'assistant', content: data.content })
+          convMsgs.push({ role: 'user', content: toolResults })
+        }
+      } else {
+        // OpenAI-compatible tool calling loop (DeepSeek, Polza/Qwen)
+        const convMsgs = []
+        if (systemPrompt) convMsgs.push({ role: 'system', content: systemPrompt })
+        convMsgs.push(...messages)
+        for (let i = 0; i < MAX_ITER; i++) {
+          const body = { model: provider.model, messages: convMsgs, tools: OPENAI_TOOLS, max_tokens: 4096 }
+          const upstream = await fetch(provider.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${provider.key}` },
+            body: JSON.stringify(body),
+          })
+          if (!upstream.ok) throw new Error(`${provider.model} ${upstream.status}: ${await upstream.text()}`)
+          const data = await upstream.json()
+          const choice = data.choices?.[0]
+          const msg = choice?.message
+          if (!msg) break
+          if (msg.content) res.write(`data: ${JSON.stringify({ type: 'content', content: msg.content })}\n\n`)
+          if (choice.finish_reason !== 'tool_calls' || !msg.tool_calls?.length) break
+          convMsgs.push(msg)
+          for (const tc of msg.tool_calls) {
+            let toolArgs; try { toolArgs = JSON.parse(tc.function.arguments) } catch { toolArgs = {} }
+            res.write(`data: ${JSON.stringify({ type: 'agent:action:start', tool: tc.function.name, input: toolArgs })}\n\n`)
+            let result
+            try { result = await executeIntegraTool(tc.function.name, toolArgs) } catch (e) { result = { error: e.message } }
+            let rs = JSON.stringify(result); if (rs.length > 15000) rs = rs.slice(0, 15000) + '...[truncated]'
+            res.write(`data: ${JSON.stringify({ type: 'agent:action:end', tool: tc.function.name, result: rs })}\n\n`)
+            convMsgs.push({ role: 'tool', tool_call_id: tc.id, content: rs })
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[AI /chat tools] Error:', err.message)
+      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`)
+    }
+    res.write('data: [DONE]\n\n')
+    res.end()
+    return
+  }
+
+  // ── Streaming mode (no tools) ─────────────────────────────────
+  if (stream) {
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders()
+    try {
+      const result = await callProvider(provider, message, systemPrompt, conversationHistory.slice(-8))
+      if (!result.ok) throw new Error(result.raw)
+      res.write(`data: ${JSON.stringify({ type: 'content', content: result.text })}\n\n`)
+    } catch (err) {
+      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`)
+    }
+    res.write('data: [DONE]\n\n')
+    res.end()
+    return
+  }
+
+  // ── Non-streaming (no tools) ──────────────────────────────────
+  try {
+    const result = await callProvider(provider, message, systemPrompt, conversationHistory.slice(-8))
+    if (!result.ok) return res.status(502).json({ success: false, error: result.raw })
+    res.json({ success: true, response: result.text, model: result.model })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+// ── /api/chat/claude-sub — Claude через подписку (проксирует на claude-sub-proxy:8085)
+app.post('/api/chat/claude-sub', async (req, res) => {
+  const { message } = req.body
+  if (!message) return res.status(400).json({ error: 'message is required' })
+
+  console.log(`[AI /chat/claude-sub] proxying to :8085 (${message.slice(0, 60)}...)`)
+
+  try {
+    const upstream = await fetch('http://127.0.0.1:8085/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+    })
+
+    if (!upstream.ok) {
+      return res.status(upstream.status).json({ error: await upstream.text() })
+    }
+
+    // Pipe SSE stream through
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders()
+
+    for await (const chunk of upstream.body) {
+      res.write(Buffer.from(chunk))
+    }
+    res.end()
+  } catch (err) {
+    console.error('[claude-sub proxy] error:', err.message)
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.write(`data: ${JSON.stringify({ error: 'Claude subscription proxy not running. Start: node claude-sub-proxy.mjs' })}\n\n`)
+    res.write('data: [DONE]\n\n')
+    res.end()
+  }
+})
+
 // ── Integram auth proxy ──────────────────────────────────────────
 app.post('/api/integram-auth/authenticate', async (req, res) => {
   const { login, password, database } = req.body

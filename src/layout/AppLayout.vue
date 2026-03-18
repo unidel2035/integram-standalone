@@ -41,7 +41,9 @@ useKeyboardShortcuts()
 
 const outsideClickListener = ref(null)
 const isChatActive = ref(false)
-const chatWidth = ref(parseInt(localStorage.getItem('chatWidth')) || 320)
+// Golden ratio: chat = 38.2% of available width (excluding sidebar ~280px)
+const goldenChatWidth = () => Math.round((window.innerWidth - 64) * 0.382)
+const chatWidth = ref(parseInt(localStorage.getItem('chatWidth')) || goldenChatWidth())
 const showReleaseNotes = ref(false)
 const showRoleModal = ref(false)
 
@@ -56,27 +58,13 @@ const isMobileDevice = () => {
 }
 
 onMounted(() => {
-  // Сбрасываем collapsed-состояние сайдбара — убираем "каждый второй клик"
-  // layoutState.sidebarCollapsed = false сделает сайдбар полностью раскрытым
-  if (layoutState.sidebarCollapsed) {
-    layoutState.sidebarCollapsed = false
-    localStorage.setItem('sidebarCollapsed', 'false')
-  }
-  // Убираем staticMenuDesktopInactive чтобы меню было видно при входе
+  // Sidebar collapsed by default — saves screen space for chat
+  layoutState.sidebarCollapsed = true
   layoutState.staticMenuDesktopInactive = false
-  // Раскрываем все группы меню — убираем необходимость двойного клика
-  localStorage.removeItem('sidebar_collapsed_groups')
 
-  const chatState = window.localStorage.getItem('chat')
-
-  // Если состояние чата не сохранено, используем дефолтное значение
-  // На мобильных устройствах чат свёрнут по умолчанию, на десктопе - открыт
-  if (chatState === null) {
-    isChatActive.value = !isMobileDevice()
-    window.localStorage.setItem('chat', JSON.stringify(isChatActive.value))
-  } else {
-    isChatActive.value = JSON.parse(chatState)
-  }
+  // Чат свёрнут по умолчанию — пользователь откроет сам
+  isChatActive.value = false
+  window.localStorage.setItem('chat', 'false')
 
   // Store handler reference for proper cleanup
   storageHandler.value = (e) => {
@@ -90,7 +78,7 @@ onMounted(() => {
   window.addEventListener('storage', storageHandler.value)
 
   chatWidthInterval.value = setInterval(() => {
-    const storedWidth = parseInt(localStorage.getItem('chatWidth')) || 320
+    const storedWidth = parseInt(localStorage.getItem('chatWidth')) || goldenChatWidth()
     if (storedWidth !== chatWidth.value) {
       chatWidth.value = storedWidth
     }
@@ -186,6 +174,10 @@ const updateChatState = (newState) => {
   window.localStorage.setItem('chat', JSON.stringify(newState))
 }
 
+const openChat = () => {
+  updateChatState(true)
+}
+
 const chatMargin = computed(() => {
   // Chat is now flush to the right edge (no padding), so margin = chat width only
   const marginInRem = chatWidth.value / 16
@@ -206,7 +198,7 @@ const chatMargin = computed(() => {
         </template>
       </Suspense>
     </Transition>
-    <div class="layout-main-container" :style="isChatActive && layoutConfig.menuMode === 'static' && route.path !== '/fst-expert' ? { marginRight: chatMargin } : {}">
+    <div class="layout-main-container" :class="{ 'chat-open': isChatActive && route.path !== '/fst-expert' }" :style="isChatActive && layoutConfig.menuMode === 'static' && route.path !== '/fst-expert' ? { marginRight: chatMargin } : {}">
       <div class="layout-main">
         <router-view v-slot="{ Component, route: matchedRoute }">
             <component :is="Component" :key="matchedRoute.fullPath" />
@@ -215,6 +207,16 @@ const chatMargin = computed(() => {
       <app-footer />
     </div>
     <div class="layout-mask animate-fadein" @click="layoutState.staticMenuMobileActive = false; layoutState.overlayMenuActive = false"></div>
+
+    <!-- FAB: Chat toggle button -->
+    <button
+      v-if="!isChatActive && route.path !== '/fst-expert'"
+      class="chat-fab"
+      @click="openChat"
+      v-tooltip.left="'AI-чат'"
+    >
+      <i class="pi pi-sparkles" />
+    </button>
   </div>
 
   <Toast />
@@ -430,6 +432,40 @@ const chatMargin = computed(() => {
 @keyframes lock-dot-pulse {
   0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
   40% { opacity: 1; transform: scale(1); }
+}
+
+/* Chat FAB button — bottom-right corner */
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--p-primary-color);
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--p-primary-color) 40%, transparent);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--p-primary-color) 55%, transparent);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .pi {
+    font-size: 1.4rem;
+  }
 }
 
 </style>

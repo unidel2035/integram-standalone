@@ -3,9 +3,9 @@
  * Change the default model HERE — all components will pick it up.
  */
 
-// Default: Qwen Turbo via Polza (fastest: ~1.5s response)
-export const DEFAULT_AI_MODEL = 'qwen/qwen-turbo'
-export const DEFAULT_AI_PROVIDER = 'polza'
+// Default: Claude Opus 4.6 via Max subscription (free, with MCP tools)
+export const DEFAULT_AI_MODEL = 'claude-sub/claude-opus-4-6'
+export const DEFAULT_AI_PROVIDER = 'claude-sub'
 
 // Reasoning model for complex tasks
 export const REASONING_AI_MODEL = 'polza/anthropic/claude-sonnet-4.6'

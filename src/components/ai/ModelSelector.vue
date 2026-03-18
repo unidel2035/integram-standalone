@@ -309,6 +309,7 @@ const inputId = computed(() => `model-selector-${Math.random().toString(36).subs
 const allProviders = computed(() => {
   // Mandatory providers that must always be shown
   const mandatoryProviders = {
+    'claude-sub': { value: 'claude-sub', label: 'Claude (подписка)', modelCount: 1 },
     'polza': { value: 'polza', label: 'Polza.ai', modelCount: 0 },
     'kodacode': { value: 'kodacode', label: 'Kodacode', modelCount: 0 },
     'deepseek': { value: 'deepseek', label: 'DeepSeek', modelCount: 0 },
@@ -337,7 +338,7 @@ const allProviders = computed(() => {
   })
 
   // Sort: mandatory first, then alphabetically
-  const mandatory = ['polza', 'kodacode', 'deepseek', 'anthropic', 'openai']
+  const mandatory = ['claude-sub', 'polza', 'kodacode', 'deepseek', 'anthropic', 'openai']
   const providers = Object.values(mandatoryProviders)
 
   return providers.sort((a, b) => {
@@ -414,6 +415,22 @@ async function loadModels() {
         is_visible: true,
         is_active: true
       }))
+
+      // Add Claude Subscription model (uses local claude CLI, free via Max subscription)
+      allModels.value.unshift({
+        id: 'claude-sub/claude-opus-4-6',
+        model_id: 'claude-opus-4-6',
+        display_name: 'Claude Opus 4.6 (подписка)',
+        provider_name: 'claude-sub',
+        provider_display_name: 'Claude (подписка)',
+        context_window: 200000,
+        max_output_tokens: 64000,
+        cost_per_1k_input: '0.00',
+        cost_per_1k_output: '0.00',
+        description: 'Claude Opus 4.6 через Max подписку — бесплатно, с MCP tools',
+        is_visible: true,
+        is_active: true
+      })
 
       logger.debug('[ModelSelector] Models loaded:', allModels.value.length)
 

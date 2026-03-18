@@ -36,11 +36,16 @@ const parsedMarkdown = computed(() => {
     return ''
   }
 
-  // Collapse 3+ consecutive blank lines to 2 (prevents excessive whitespace from models)
-  contentStr = contentStr.replace(/\n{3,}/g, '\n\n').trim()
+  // Collapse all double blank lines to single
+  contentStr = contentStr.replace(/\n{2,}/g, '\n').trim()
 
   try {
-    return marked(contentStr)
+    let html = marked(contentStr)
+    // Strip emoji from rendered HTML (replace with nothing)
+    html = html.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1FA00}-\u{1FA9F}\u{200D}]+/gu, '')
+    // Remove resulting empty tags
+    html = html.replace(/<(p|span|li)>\s*<\/\1>/g, '')
+    return html
   } catch (error) {
     console.error('MarkdownRender: marked() parsing error', error)
     // Fallback to escaped HTML if marked fails
@@ -55,87 +60,87 @@ const parsedMarkdown = computed(() => {
 :deep(.markdown-content) {
   width: 100%;
   overflow: hidden;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 :deep(.markdown-content p) {
-  margin: 0.25em 0;
+  margin: 0;
 }
 
 :deep(.markdown-content p + p) {
-  margin-top: 0.5em;
+  margin-top: 0.2em;
 }
 
 :deep(.markdown-content ul),
 :deep(.markdown-content ol) {
-  margin: 0.3em 0;
-  padding-left: 1.4em;
+  margin: 0.1em 0;
+  padding-left: 1.1em;
 }
 
 :deep(.markdown-content li) {
-  margin: 0.1em 0;
+  margin: 0;
 }
 
 :deep(.markdown-content h1),
 :deep(.markdown-content h2),
 :deep(.markdown-content h3) {
-  margin: 0.6em 0 0.3em;
+  margin: 0.25em 0 0.1em;
+  font-size: 1em;
+  font-weight: 600;
 }
+
+:deep(.markdown-content h1) { font-size: 1.05em; }
 
 :deep(.markdown-content blockquote) {
-  margin: 0.4em 0;
+  margin: 0.3em 0;
+  padding-left: 0.8em;
+  border-left: 3px solid var(--p-content-border-color);
+  opacity: 0.85;
 }
 
-/* Жесткое ограничение для блоков кода */
+/* Блоки кода */
 :deep(.markdown-content pre) {
-  background: #f5f5f5;
-  padding: 1rem;
-  border-radius: 4px;
+  background: var(--p-surface-ground);
+  border: 1px solid var(--p-content-border-color);
+  padding: 0.6em 0.8em;
+  border-radius: 6px;
   max-width: 100%;
   overflow-x: auto;
-  margin: 0.5rem 0;
-
-  /* Критически важные свойства */
-  width: fit-content;
-  min-width: 100%;
+  margin: 0.3em 0;
+  font-size: 0.85em;
   box-sizing: border-box;
 }
 
-/* Стили для inline кода */
+/* Inline код */
 :deep(.markdown-content code:not(pre code)) {
-  font-family: monospace;
-  background: #f0f0f0;
-  padding: 0.2em 0.4em;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  background: var(--p-surface-ground);
+  padding: 0.1em 0.35em;
   border-radius: 3px;
+  font-size: 0.88em;
 }
 
-:deep(pre) {
-  padding: 10px;
-  background-color: #444;
-  color: #fff;
-}
-
-/* Стили для блоков кода */
+/* Код внутри pre */
 :deep(.markdown-content pre code) {
   display: block;
   white-space: pre;
   overflow-x: auto;
-  line-height: 1.5;
-  font-family: 'Courier New', Courier, monospace;
-
-  /* Важно для правильного отображения */
+  line-height: 1.4;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  color: var(--p-text-color);
+  background: transparent;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Стили для скроллбара (опционально) */
 :deep(.markdown-content pre)::-webkit-scrollbar {
-  height: 6px;
+  height: 4px;
 }
 
 :deep(.markdown-content pre)::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
+  background: var(--p-text-muted-color);
+  border-radius: 2px;
+  opacity: 0.3;
 }
-
-/* ... остальные стили языков ... */
 </style>
