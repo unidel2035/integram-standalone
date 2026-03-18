@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>File manager</title>
+    <style>
+        a{ cursor: pointer; }
+    </style>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/jquery-3.5.1.slim.min.js"></script>
+</head>
+<body style="font-family:Verdana,Tahoma,sans-serif;line-height:normal;padding:2px;font-size: .9rem; max-width: 800px;">
+<div class="" style="margin:6px;">
+<div class="t9n">
+    <a href="/my"><img class="icon8" src="/i/home.png"/></a>
+    &nbsp; 
+    <div style="display: inline; margin-top: 7px"><a href="/my"><t9n>[RU]Вернуться в&nbsp;основное меню[EN]Back to main menu</t9n></a>
+    </div>
+</div>
+<br />
+<p>
+    <t9n>[RU]Это техническая страница. Здесь вы можете восстановить поврежденные файлы шаблона, если ваши страницы перестали из-за них работать.<br />
+            Оригинальные файлы можно скачать <a target="git" href="https://github.com/ideav/integram-front/tree/main/templates">здесь</a> и загрузить в папку <a href="/my/dir_admin/?templates=1">templates</a>.
+        [EN]This is a maintenance page. Here you may fix the corrupted templates in case your application is not working because of them.<br />
+            The original files can be downloaded <a target="git" href="https://github.com/ideav/integram-front/tree/main/templates">here</a> and uploaded to the <a href="/my/dir_admin/?templates=1">templates</a> folder.
+    </t9n> 
+</p>
+<script language="javascript">
+    var db='my';
+    function copyLink(link){
+        document.getElementById('copy_path').style='display:block';
+        document.getElementById('copy_path').value=link;
+        document.getElementById('copy_path').select();
+        document.execCommand('copy');
+        document.getElementById('copy_path').style='display:none';
+    }
+    function sel_all(){
+     if( !document.view_dir.cheks ) return;
+     if( !document.view_dir.cheks.length )
+    	document.view_dir.cheks.checked = document.view_dir.cheks.checked ? false : true;
+     else
+    	for(var i=0;i<document.view_dir.cheks.length;i++)
+    		document.view_dir.cheks[i].checked = document.view_dir.cheks[i].checked ? false : true;
+    }
+</script>
+
+
+<form enctype="multipart/form-data" action="/my/dir_admin" method="POST" name="view_dir">
+    <input type="hidden" name="_xsrf" value="af0bf5b019029675d6ae65">
+    <input name="download" type="hidden" value="1">
+    <input name="add_path" type="hidden" value="">
+    <p><t9n>[RU]Директория на сервере[EN]Current folder</t9n>: <b>download</b>. &nbsp; <t9n>[RU]Перейти к директории[EN]Go to</t9n> <a href="/my/dir_admin/?templates=1">templates</a>.</p>
+    <p><a style="border-bottom: 1px dotted;" onclick="document.getElementById('css').style.display='block';"><t9n>[RU]Путь к пользовательским стилям, шрифтам и js[EN]The path to your files, fonts, and scripts</t9n></a></p>
+    <div id="css" class="alert alert-info mb-0" role="alert" style="display:none;">
+        <t9n>[RU]Для использования собственных стилей загрузите их в директорию <a href="/my/dir_admin/?download=1">download</a> (здесь можно создавать папки и подпапки для стилей, js, шрифтов и прочего), а для доступа к ним из своего html используйте такой путь:
+                [EN]Upload the content you are going to use into this folder: <a href="/my/dir_admin/?download=1">download</a> (you may create folders and sub-folders here with CSS, JS, etc., then use this path to fetch those:</t9n> 
+            <b> download/{_global_.z}/</b><br />
+            <t9n>[RU]Вы также можете скопировать путь к файлу по ссылке &nbsp;<span class="glyphicon glyphicon-copy"></span>&nbsp; возле файла.
+                [EN]You may copy the file link using the &nbsp;<span class="glyphicon glyphicon-copy"></span>&nbsp; icon near the required file.</t9n>
+    </div>
+    <p><a style="border-bottom: 1px dotted;" onclick="document.getElementById('backup').style.display='block';"><t9n>[RU]Архивирование базы[EN]Backup this database</t9n></a></p>
+    <div id="backup" class="alert alert-info mb-0" role="alert" style="display:none;">
+        <t9n>[RU]Вы можете архивировать вашу базу данных в компактный архив, чтобы потом восстановить его при необходимости. Для получения архива <a href="/my/backup">нажмите здесь</a>.
+                [EN]You can archive your database into a compact archive so that you can restore it later if necessary. To get the archive <a href="/my/backup">click here</a>.</t9n> 
+            <t9n>[RU]Файл будет также доступен в папке backups внутри <a href="/my/dir_admin/?templates=1">templates</a>.
+                [EN]The file will also be available in the backups folder inside templates <a href="/my/dir_admin/?templates=1">templates</a>.</t9n>
+    </div>
+    <table class="table table-striped table-sm table-bordered w-auto">
+      <tr>
+        <td class="t9n"><a href="javascript:sel_all()" title="<t9n>[RU]Инвертировать выделение[EN]Toggle the selection</t9n>"><b><font size="3">*</font></b></a></td>
+        <td colspan="4" >&nbsp;<a href="/my/dir_admin/?download=1"> .. </a>
+    /<a href="/my/dir_admin/?download=1&add_path=/"></a>
+    	</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000018b45edec9"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000018b45edec9"><b>1000018b45edec9</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000019eee3a34c"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000019eee3a34c"><b>1000019eee3a34c</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000020cc1a1c96"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000020cc1a1c96"><b>1000020cc1a1c96</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000022b24f68b0"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000022b24f68b0"><b>1000022b24f68b0</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000023a547817b"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000023a547817b"><b>1000023a547817b</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="10000254cd5a051"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/10000254cd5a051"><b>10000254cd5a051</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="100002609d5e8de"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/100002609d5e8de"><b>100002609d5e8de</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000027899c10f6"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000027899c10f6"><b>1000027899c10f6</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="100002830e23599"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/100002830e23599"><b>100002830e23599</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000030cbe523f5"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000030cbe523f5"><b>1000030cbe523f5</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000031b7f472a6"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000031b7f472a6"><b>1000031b7f472a6</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="10000330060fccb"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/10000330060fccb"><b>10000330060fccb</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="10000346dffda34"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/10000346dffda34"><b>10000346dffda34</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000035b548b630"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000035b548b630"><b>1000035b548b630</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000037a98589f1"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000037a98589f1"><b>1000037a98589f1</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000038cf05de0a"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000038cf05de0a"><b>1000038cf05de0a</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000039f982d399"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000039f982d399"><b>1000039f982d399</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="10000415c35780d"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/10000415c35780d"><b>10000415c35780d</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000042a94b7ba8"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000042a94b7ba8"><b>1000042a94b7ba8</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="100004386e3d8dc"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/100004386e3d8dc"><b>100004386e3d8dc</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="10000440860828e"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/10000440860828e"><b>10000440860828e</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000045ec1534da"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000045ec1534da"><b>1000045ec1534da</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="100004686241239"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/100004686241239"><b>100004686241239</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="1000047761f514e"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/1000047761f514e"><b>1000047761f514e</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="10000480ab7bf05"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/10000480ab7bf05"><b>10000480ab7bf05</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="10000493b44b3fd"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/10000493b44b3fd"><b>10000493b44b3fd</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+      <tr>
+        <td><input type="checkbox"  id="cheks" name="del[]" value="testdir_1773838344718"></td>
+        <td colspan="2"><a href="/my/dir_admin/?download=1&add_path=/testdir_1773838344718"><b>testdir_1773838344718</b></a></td>
+        <td align="right">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+    
+    
+    <tr>
+    <td colspan="5" class="t9n"><input class="btn btn-sm btn-outline-secondary" type="submit" name="delete" value="<t9n>[RU]Удалить выбранные[EN]Delete the selected</t9n>" ></td>
+    </tr>
+    </table>
+    <p><t9n>[RU]Файлов: 0, каталогов: 27[EN]Files: 0, folders: 27</t9n></p>
+</form>
+<input id="copy_path" type="text" value="" style="display:none;">
+<form action="/my/dir_admin/?download=1" method="POST" style="max-width:400px">
+    <input name="add_path" type="hidden" value="">
+    <input type="hidden" name="_xsrf" value="af0bf5b019029675d6ae65">
+    <div class="input-group t9n">
+       <input name="dir_name" class="form-control form-control-sm" type="text" placeholder="<t9n>[RU]Новый каталог[EN]New folder name</t9n>">
+       <span class="input-group-btn">
+            <input class="btn btn-sm btn-outline-secondary" type="submit" name="mkdir" value="<t9n>[RU]Создать[EN]Create</t9n>" >
+       </span>
+    </div>
+</form>
+<br />
+<form action="/my/dir_admin/?download=1" method="POST" style="max-width:400px">
+    <input name="add_path" type="hidden" value="">
+    <input type="hidden" name="_xsrf" value="af0bf5b019029675d6ae65">
+    <div class="input-group t9n">
+       <input name="dir_name" class="form-control form-control-sm" type="text" placeholder="<t9n>[RU]Новый файл[EN]New file name</t9n>">
+       <span class="input-group-btn">
+            <input class="btn btn-sm btn-outline-secondary" type="submit" name="touch" value="<t9n>[RU]Создать[EN]Create</t9n>" >
+       </span>
+    </div>
+</form>
+<br />
+<table class="table table-striped table-sm table-bordered">
+    <tr>
+        <td>
+            <form enctype="multipart/form-data" action="/my/dir_admin/?download=1" method="POST">
+                <input name="add_path" type="hidden" value="">
+                <input type="hidden" name="_xsrf" value="af0bf5b019029675d6ae65">
+                <p><t9n>[RU]Загрузить файл:[EN]File upload</t9n> <input name="userfile" type="file"></p>
+                <p class="t9n"><label><input type="checkbox" name="rewrite"> <t9n>[RU]Перезаписать[EN]Overwrite</t9n> </label>&nbsp; &nbsp; &nbsp; 
+                <input class="btn btn-sm btn-outline-secondary" type="submit" name="upload" value="<t9n>[RU]Загрузить[EN]Upload</t9n>" ></p>
+            </form>
+        </td>
+    </tr>
+</table>
+
+</div>
+<script src="/js/js.js"></script>
+<script>
+    if(search.download)
+        $('.menu-name').remove();
+    else{
+        $('.file-name,.menu-name:not([name$=".html"])').remove();
+        $('.restore[name$=".dmp.zip"]').show();
+    }
+    localize();
+</script>
+</body>
+</html>

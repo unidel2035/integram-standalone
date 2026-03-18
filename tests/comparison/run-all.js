@@ -58,6 +58,8 @@ const tests = [
   '46-legacy-aliases.js',
   '47-upload-direct.js',
   '48-bki-restore.js',
+  '49-more-legacy-aliases.js',
+  '50-dir-admin-write.js',
 ];
 
 const results = [];

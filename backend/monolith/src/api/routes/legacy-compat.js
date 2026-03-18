@@ -9979,7 +9979,7 @@ router.post('/:db/_d_alias/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
     // Get current value
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(404).json([{ error: 'Requisite not found' }]);
+      return res.status(200).json([{ error: 'Requisite not found' }]);
     }
 
     // PHP parity (lines 8604-8607): hierarchy check — parent (obj.t) must be metadata root (up=0)
@@ -10029,7 +10029,7 @@ router.post('/:db/_d_null/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacy
     // Get current value
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(404).json([{ error: 'Requisite not found' }]);
+      return res.status(200).json([{ error: 'Requisite not found' }]);
     }
 
     // Metadata verification: only allow toggling nullable on metadata-level requisites (parent.up === 0)
@@ -10084,7 +10084,7 @@ router.post('/:db/_d_multi/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
     // Get current value
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(404).json([{ error: 'Requisite not found' }]);
+      return res.status(200).json([{ error: 'Requisite not found' }]);
     }
 
     // Metadata verification: only allow toggling multi on metadata-level requisites (parent.up === 0)
@@ -10139,7 +10139,7 @@ router.post('/:db/_d_attrs/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legac
     // Get current value
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(404).json([{ error: 'Requisite not found' }]);
+      return res.status(200).json([{ error: 'Requisite not found' }]);
     }
 
     // PHP parity (index.php:8697-8708): _d_attrs does a FULL REPLACE, not read-modify-write.
@@ -10192,7 +10192,7 @@ router.post('/:db/_d_up/:reqId', legacyAuthMiddleware, legacyXsrfCheck, legacyDd
     // Get current object
     const obj = await getObjectById(db, id);
     if (!obj) {
-      return res.status(404).json([{ error: 'Requisite not found' }]);
+      return res.status(200).json([{ error: 'Requisite not found' }]);
     }
 
     // Find the previous sibling (same parent, lower order)
@@ -11729,7 +11729,11 @@ router.post('/:db/dir_admin', legacyAuthMiddleware, legacyXsrfCheck, async (req,
             try {
               targetPath = safePath(fullPath, value);
             } catch {
-              continue; // skip invalid paths
+              continue; // skip invalid paths silently (path traversal protection)
+            }
+            // PHP parity: RemoveDir() calls my_die() if file doesn't exist
+            if (!fs.existsSync(targetPath)) {
+              return sendLegacyDie(res, `Couldn't drop file '${value}'.`);
             }
             removeDir(targetPath);
           }
@@ -14991,50 +14995,56 @@ const ACTION_ALIASES = {
 router.post('/:db/_setalias/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_setalias/', '/_d_alias/');
   req.params.reqId = req.params.reqId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_setnull/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_setnull/', '/_d_null/');
   req.params.reqId = req.params.reqId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_setmulti/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_setmulti/', '/_d_multi/');
   req.params.reqId = req.params.reqId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_setorder/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_setorder/', '/_d_ord/');
   req.params.reqId = req.params.reqId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_moveup/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_moveup/', '/_d_up/');
   req.params.reqId = req.params.reqId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_deleteterm/:typeId', (req, res, next) => {
   req.url = req.url.replace('/_deleteterm/', '/_d_del/');
   req.params.typeId = req.params.typeId;
-  // Re-dispatch from the beginning of the router stack so _d_del route is matched
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_deletereq/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_deletereq/', '/_d_del_req/');
   req.params.reqId = req.params.reqId;
-  // Re-dispatch from the beginning of the router stack so _d_del_req route is matched
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
 router.post('/:db/_attributes/:typeId', (req, res, next) => {
   req.url = req.url.replace('/_attributes/', '/_d_req/');
   req.params.typeId = req.params.typeId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
@@ -15061,6 +15071,7 @@ router.post('/:db/_patchterm/:typeId', (req, res, next) => {
 router.post('/:db/_modifiers/:reqId', (req, res, next) => {
   req.url = req.url.replace('/_modifiers/', '/_d_attrs/');
   req.params.reqId = req.params.reqId;
+  req.legacySkipXsrf = true;
   router.handle(req, res, next);
 });
 
