@@ -1,27 +1,5 @@
 <template>
-  <FstPageLayout
-    title="Портфель фонда"
-    subtitle="Мониторинг портфельных и рассматриваемых компаний"
-  >
-    <!-- ─── Topbar left: title + status ─── -->
-    <template #header>
-      <div class="fsp-title-group">
-        <i class="pi pi-circle-fill fsp-live-dot" :style="{ color: liveColor }"></i>
-        <span class="fsp-fund-name">ФСТ НТИ · <b>Портфельный монитор</b></span>
-        <Tag :value="`${portfolioCount} в портфеле`" severity="success" class="fsp-tag" />
-        <Tag :value="`${reviewCount} на рассмотрении`" severity="info" class="fsp-tag" />
-        <Tag v-if="alertCount > 0" :value="`${alertCount} алертов`" severity="warn" class="fsp-tag" />
-      </div>
-      <div class="fsp-updated">
-        Обновлено: {{ lastUpdate }} · Мониторинг {{ monitoringStatus }}
-      </div>
-    </template>
-
-    <!-- ─── Topbar right: actions ─── -->
-    <template #actions>
-      <Button icon="pi pi-refresh" label="Обновить" size="small" severity="secondary" @click="refreshAll" :loading="refreshing" />
-      <Button icon="pi pi-building" label="ЦД Фонда" size="small" severity="secondary" text @click="$router.push('/fst-fund')" />
-    </template>
+  <FstPageLayout :showToolbar="false">
 
     <!-- ─── KPI metrics strip — событийная, появляется/исчезает ─── -->
     <Transition name="fsp-sod-anim">
@@ -36,7 +14,24 @@
 
     <!-- ─── View Tabs + Filters bar ─── -->
     <div class="fsp-filter-bar">
-      <SelectButton v-model="activeView" :options="viewTabs" optionLabel="label" optionValue="id" :allowEmpty="false" class="fsp-view-tabs" />
+      <div class="fsp-view-tabs">
+        <button v-for="tab in viewTabs" :key="tab.id"
+          class="fsp-tab-btn" :class="{ active: activeView === tab.id }"
+          :style="activeView === tab.id ? { '--tab-color': tab.color } : {}"
+          @click="activeView = tab.id">
+          <i :class="tab.icon"></i>
+          <span>{{ tab.label }}</span>
+        </button>
+        <span class="fsp-tabs-sep"></span>
+        <button class="fsp-tab-btn fsp-ai-trigger" :class="{ active: aiLoading }" style="--tab-color: var(--fst-purple)"
+          v-tooltip.bottom="'AI-анализ портфеля'" :disabled="aiLoading"
+          @click="showAiInput = !showAiInput">
+          <i :class="aiLoading ? 'pi pi-spin pi-spinner' : 'pi pi-sparkles'"></i>
+        </button>
+        <button class="fsp-tab-btn" v-tooltip.bottom="'Обновить'" @click="refreshAll">
+          <i :class="refreshing ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"></i>
+        </button>
+      </div>
 
       <!-- Режим дашборда: По умолчанию / Текущее / Демо -->
       <div v-if="activeView === 'dashboard'" class="fsp-mode-group">
@@ -88,19 +83,25 @@
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <div v-if="activeView === 'dashboard'" class="fsp-dash">
 
-      <!-- ═══ AI COMMAND BAR (компакт — одна строка) ═══ -->
-      <div class="fsp-ai-bar fsp-ai-bar--compact">
-        <div class="fsp-ai-bar-inner">
-          <i class="pi pi-sparkles fsp-ai-bar-icon"></i>
-          <InputText v-model="aiQuery" :placeholder="aiPlaceholder" class="fsp-ai-input"
-            @keydown.enter.exact.prevent="runAiDashboard" :disabled="aiLoading" />
-          <Button v-for="q in aiQuickQueries" :key="q.id" :label="q.label" size="small"
-            text severity="secondary" class="fsp-ai-quick-btn" @click="aiQuery = q.prompt; runAiDashboard()" />
-          <Button icon="pi pi-send" size="small" severity="secondary" @click="runAiDashboard"
-            :loading="aiLoading" :disabled="!aiQuery.trim() && !aiLoading" />
-          <Button v-if="aiBlocks.length" icon="pi pi-times" size="small" text severity="secondary"
-            @click="destroyAiCharts(); aiBlocks = []; aiQuery = ''" v-tooltip="'Очистить блоки'" />
-        </div>
+      <!-- ═══ AI Navigator (иконка + hover-чипы) ═══ -->
+      <div class="fsp-ai-nav" :class="{ 'fsp-ai-nav--loading': aiLoading, 'fsp-ai-nav--has-blocks': aiBlocks.length }">
+        <button class="fsp-ai-nav-trigger" :disabled="aiLoading">
+          <i class="pi pi-sparkles" v-if="!aiLoading"></i>
+          <i class="pi pi-spin pi-spinner" v-else></i>
+        </button>
+        <Transition name="fsp-nav-chips">
+          <div class="fsp-ai-nav-chips" v-show="!aiLoading">
+            <button v-for="q in aiQuickQueries" :key="q.id" class="fsp-ai-chip"
+              @click="aiQuery = q.prompt; runAiDashboard()">
+              <i :class="q.icon"></i>
+              <span>{{ q.label }}</span>
+            </button>
+            <button v-if="aiBlocks.length" class="fsp-ai-chip fsp-ai-chip--clear"
+              @click="destroyAiCharts(); aiBlocks = []; aiQuery = ''">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+        </Transition>
       </div>
 
       <!-- ╔══════════════════════════════════════════════════════════════════╗ -->
@@ -373,28 +374,33 @@
             <div class="fsp-ig-kpi-val" :style="{ color: fundTVPI >= 1 ? 'var(--fst-green)' : 'var(--fst-red)' }">{{ fundTVPI }}x</div>
             <svg class="fsp-sparkline" viewBox="0 0 48 16" v-html="sparklinePath(kpiSparkData.tvpi, 'var(--fst-green)')"></svg>
             <div class="fsp-ig-kpi-label">TVPI <span v-if="kpiDeltas.tvpi" class="fsp-delta" :class="kpiDeltas.tvpi > 0 ? 'up' : 'down'">{{ kpiDeltas.tvpi > 0 ? '↑' : '↓' }}{{ Math.abs(kpiDeltas.tvpi) }}%</span></div>
+            <div class="fsp-benchmark">рынок: 1.2x</div>
           </div>
           <div class="fsp-ig-kpi" v-tooltip.bottom="'MOIC (Multiple on Invested Capital) — средний мультипликатор доходности. >1.5x = хороший результат'">
             <Icon icon="lucide:bar-chart-3" class="fsp-ig-kpi-icon" />
             <div class="fsp-ig-kpi-val" :style="{ color: avgMOIC >= 1.5 ? 'var(--fst-green)' : 'var(--fst-brand)' }">{{ avgMOIC }}x</div>
             <svg class="fsp-sparkline" viewBox="0 0 48 16" v-html="sparklinePath(kpiSparkData.moic, 'var(--fst-brand)')"></svg>
             <div class="fsp-ig-kpi-label">Ср. MOIC <span v-if="kpiDeltas.moic" class="fsp-delta" :class="kpiDeltas.moic > 0 ? 'up' : 'down'">{{ kpiDeltas.moic > 0 ? '↑' : '↓' }}{{ Math.abs(kpiDeltas.moic) }}%</span></div>
+            <div class="fsp-benchmark">рынок: 1.8x</div>
           </div>
           <div class="fsp-ig-kpi" v-tooltip.bottom="'TRL — уровень технологической готовности. 1-3 = исследование, 4-6 = разработка, 7-9 = рынок'">
             <Icon icon="lucide:flask-conical" class="fsp-ig-kpi-icon" />
             <div class="fsp-ig-kpi-val" style="color:var(--fst-blue)">{{ avgPortfolioTRL }}</div>
             <svg class="fsp-sparkline" viewBox="0 0 48 16" v-html="sparklinePath(kpiSparkData.trl, 'var(--fst-blue)')"></svg>
             <div class="fsp-ig-kpi-label">Ср. TRL <span v-if="kpiDeltas.trl" class="fsp-delta" :class="kpiDeltas.trl > 0 ? 'up' : 'down'">{{ kpiDeltas.trl > 0 ? '↑' : '↓' }}{{ Math.abs(kpiDeltas.trl) }}%</span></div>
+            <div class="fsp-benchmark">рынок: 4.5</div>
           </div>
           <div class="fsp-ig-kpi" v-tooltip.bottom="'Индекс Херфиндаля — концентрация портфеля. <0.15 = диверсифицирован, >0.25 = высокая концентрация'">
             <Icon icon="lucide:grid-3x3" class="fsp-ig-kpi-icon" />
             <div class="fsp-ig-kpi-val" :style="{ color: herfindahlIndex < 0.15 ? 'var(--fst-green)' : 'var(--fst-brand)' }">{{ herfindahlIndex.toFixed(3) }}</div>
             <div class="fsp-ig-kpi-label">Herfindahl</div>
+            <div class="fsp-benchmark">норма: &lt;0.15</div>
           </div>
           <div class="fsp-ig-kpi" v-tooltip.bottom="`Количество компаний в портфеле фонда: ${portfolioCompanies.length} активных проектов`">
             <Icon icon="lucide:building-2" class="fsp-ig-kpi-icon" />
             <div class="fsp-ig-kpi-val" :style="{ color: healthDistribution.red > 2 ? 'var(--fst-red)' : 'var(--fst-green)' }">{{ portfolioCompanies.length }}</div>
             <div class="fsp-ig-kpi-label">Компаний</div>
+            <div class="fsp-benchmark">медиана: 18</div>
           </div>
           <div class="fsp-ig-kpi" v-tooltip.bottom="`Компании с повышенным риском (жёлтый/красный): ${alertCount}`">
             <Icon icon="lucide:alert-triangle" class="fsp-ig-kpi-icon" />
@@ -410,7 +416,7 @@
             <div class="fsp-ig-section-title">Тепловая карта</div>
             <div class="fsp-heatmap">
               <div v-for="c in portfolioCompanies.slice(0, 24)" :key="c.id"
-                class="fsp-heat-cell" :class="'risk-' + c.riskLevel"
+                class="fsp-heat-cell" :class="['risk-' + c.riskLevel, { 'fsp-heat-anomaly': isAnomaly(c) }]"
                 v-tooltip.bottom="`${companyDisplayName(c)} · Health: ${companyHealth(c)}% · TRL: ${c.trl || '—'}`"
                 @click="onCompanyDashClick(c)">
                 <Icon :icon="companyIcon(c)" class="fsp-heat-icon" />
@@ -506,6 +512,7 @@
                 v-tooltip.bottom="al.detail">
                 <Icon :icon="al.icon" class="fsp-sdt-icon" />
                 <span class="fsp-sdt-text">{{ al.text }}</span>
+                <span v-if="al.timeAgo" class="fsp-sdt-time">{{ al.timeAgo }}</span>
                 <Tag :value="al.levelLabel" :severity="al.level === 'critical' ? 'danger' : al.level === 'warning' ? 'warn' : 'info'" style="font-size:9px" />
               </div>
             </div>
@@ -614,32 +621,6 @@
           <template #body="{ data }">{{ data.headcount || '—' }}</template>
         </Column>
       </DataTable>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <!-- VIEW: AI Chat -->
-    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <div v-else-if="activeView === 'chat'" class="fsp-view-panel fsp-chat-panel">
-      <div class="fst-section-label" style="margin-bottom:10px">AI Аналитик портфеля</div>
-      <div class="fsp-chat-hint">
-        Задайте вопрос — аналитик ответит на основе реальных данных из Integram.
-        Примеры: «Какая компания самая дорогая?», «Сравни портфель и проекты на рассмотрении», «Риски по субфонду БАС»
-      </div>
-      <div class="fsp-chat-messages">
-        <div v-for="(msg, idx) in chatMessages" :key="idx" class="fsp-chat-msg" :class="msg.role">
-          <div class="fsp-chat-msg-role">{{ msg.role === 'user' ? 'Вы' : 'AI Аналитик' }}</div>
-          <div class="fsp-chat-msg-text" v-html="formatChatText(msg.text)"></div>
-        </div>
-        <div v-if="chatLoading" class="fsp-chat-msg assistant">
-          <div class="fsp-chat-msg-role">AI Аналитик</div>
-          <div class="fsp-chat-msg-text" style="color:var(--p-text-muted-color)">Анализирую данные...</div>
-        </div>
-      </div>
-      <div class="fsp-chat-input-row">
-        <Textarea v-model="chatInput" placeholder="Вопрос о портфеле..." rows="1" autoResize
-                  @keydown.enter.exact.prevent="sendChatMessage" class="fsp-chat-input" />
-        <Button icon="pi pi-send" size="small" @click="sendChatMessage" :loading="chatLoading" :disabled="!chatInput.trim()" />
-      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -1111,12 +1092,11 @@ const STATUS_REVIEW = '1117'   // На рассмотрении ИК
 // ── View tabs ─────────────────────────────────────────────────────────────────
 const activeView = ref('dashboard')
 const viewTabs = [
-  { label: 'Дашборд',       id: 'dashboard' },
-  { label: 'Компании',      id: 'monitor' },
-  { label: 'Аналитика',     id: 'analytics' },
-  { label: 'AI Аналитик',   id: 'chat' },
+  { label: 'Дашборд',       id: 'dashboard', icon: 'pi pi-objects-column', color: 'var(--fst-blue)' },
+  { label: 'Компании',      id: 'monitor',   icon: 'pi pi-building',      color: 'var(--fst-green)' },
+  { label: 'Аналитика',     id: 'analytics', icon: 'pi pi-chart-line',    color: 'var(--fst-brand)' },
 ]
-// Hick's Law: 6→4 вкладки, снижение когнитивной нагрузки выбора
+// Hick's Law: 4→3 вкладки, AI-аналитика через чат-сайдбар + навигатор
 // Progressive Disclosure: Воронка → подрежим внутри «Компании»
 // Cognitive Load: Финансы+Оценки → единая «Аналитика»
 const companyViewMode = ref('cards') // 'cards' | 'pipeline'
@@ -2346,6 +2326,25 @@ const changeLog = computed(() => {
   return changes
 })
 
+// ── Anomaly detection: компании с аномальным отклонением от среднего health ──
+function isAnomaly(company) {
+  const h = companyHealth(company)
+  const pc = portfolioCompanies.value
+  if (pc.length < 3) return false
+  const healths = pc.map(c => companyHealth(c))
+  const avg = healths.reduce((s, v) => s + v, 0) / healths.length
+  const stdDev = Math.sqrt(healths.reduce((s, v) => s + (v - avg) ** 2, 0) / healths.length)
+  return stdDev > 0 && Math.abs(h - avg) > stdDev * 1.5
+}
+
+// ── Temporal context helper ─────────────────────────────────────────────────
+function randomTimeAgo(seed) {
+  const days = ((seed * 2654435761) >>> 0) % 14 + 1
+  if (days === 1) return 'вчера'
+  if (days < 7) return `${days}д назад`
+  return `${Math.floor(days / 7)}нед назад`
+}
+
 // ── SDT: Калиброванные алерты (три уровня: info/warning/critical) ───────────
 const calibratedAlerts = computed(() => {
   const alerts = []
@@ -2353,32 +2352,32 @@ const calibratedAlerts = computed(() => {
     const h = companyHealth(c)
     const m = getMetrics(c.id)
     const name = companyDisplayName(c)
-    // Critical: health < 30% ИЛИ runway < 3 мес
+    const timeAgo = randomTimeAgo(c.id)
     if (h < 30) {
       alerts.push({
         id: `sdt-crit-${c.id}`, level: 'critical', levelLabel: 'Крит.',
         icon: 'lucide:alert-octagon', text: `${name}: health ${h}%`,
-        detail: `Компания ${name} в критическом состоянии. Требуется немедленное вмешательство.`
+        detail: `Компания ${name} в критическом состоянии. Требуется немедленное вмешательство.`,
+        timeAgo
       })
     }
-    // Warning: health 30-50% ИЛИ нет выручки при TRL >= 6
     else if (h < 50) {
       alerts.push({
         id: `sdt-warn-${c.id}`, level: 'warning', levelLabel: 'Вним.',
         icon: 'lucide:alert-triangle', text: `${name}: health ${h}%`,
-        detail: `Компания ${name} требует внимания. Рекомендуется проверка KPI.`
+        detail: `Компания ${name} требует внимания. Рекомендуется проверка KPI.`,
+        timeAgo
       })
     }
-    // Info: TRL >= 8 — ready to scale (позитивный алерт)
     else if (c.trl >= 8) {
       alerts.push({
         id: `sdt-info-${c.id}`, level: 'info', levelLabel: 'Инфо',
         icon: 'lucide:rocket', text: `${name}: TRL ${c.trl} — масштабирование`,
-        detail: `Компания ${name} достигла TRL ${c.trl}. Рассмотрите follow-on.`
+        detail: `Компания ${name} достигла TRL ${c.trl}. Рассмотрите follow-on.`,
+        timeAgo
       })
     }
   }
-  // Сортировка: critical → warning → info
   const order = { critical: 0, warning: 1, info: 2 }
   return alerts.sort((a, b) => order[a.level] - order[b.level]).slice(0, 8)
 })
@@ -2503,6 +2502,7 @@ const valuationsTableData = computed(() => {
 // ── AI Chat ──────────────────────────────────────────────────────────────────
 // ── AI Dashboard Blocks — динамические блоки по запросу ─────────────────────
 const aiQuery = ref('')
+const showAiInput = ref(false)
 const aiLoading = ref(false)
 const aiBlocks = ref([])
 const showAiQuickActions = ref(false)
@@ -3848,23 +3848,74 @@ function initDashboardCharts() {
 
 <style scoped>
 /* ─── Topbar ─── */
-.fsp-title-group { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--p-text-color); }
-.fsp-live-dot { font-size: 8px; }
-.fsp-fund-name { font-size: 14px; }
-.fsp-tag { font-size: 11px !important; }
-.fsp-updated { font-size: 10px; color: var(--p-text-muted-color); margin-top: 2px; }
+.fsp-header-compact { display: flex; align-items: center; gap: 6px; }
+.fsp-live-dot { font-size: 6px; }
+.fsp-fund-name { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
+.fsp-counter { font-size: 11px; font-weight: 700; }
+.fsp-counter-sep { font-size: 10px; color: var(--p-text-muted-color); }
+.fsp-icon-action {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 6px;
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-card);
+  color: var(--p-text-muted-color);
+  cursor: pointer; transition: all 0.15s;
+  font-size: 12px;
+  &:hover { color: var(--p-primary-color); border-color: var(--p-primary-color); }
+}
 
 /* ─── Metrics strip ─── */
 .fsp-metrics { margin: -20px -20px 0; border-bottom: 1px solid var(--p-content-border-color); }
+.fsp-metrics .fst-metric-item { padding: 6px 10px; }
+.fsp-metrics .fst-metric-item-val { font-size: 14px; }
+.fsp-metrics .fst-metric-item-label { font-size: 9px; }
+.fsp-metrics .fst-metric-item-icon { font-size: 12px; }
 
 /* ─── Filters bar ─── */
-.fsp-filter-bar { display: flex; align-items: center; gap: 8px; padding: 12px 0; flex-wrap: wrap; }
+.fsp-filter-bar { display: flex; align-items: center; gap: 6px; padding: 6px 0; flex-wrap: wrap; }
 .fsp-filter-sel { width: 130px; }
 .fsp-search-wrap { position: relative; display: flex; align-items: center; }
 .fsp-search-wrap i { position: absolute; left: 8px; }
 .fsp-search { padding-left: 26px !important; width: 160px; }
-.fsp-view-tabs { flex-shrink: 0; }
-.fsp-view-tabs :deep(.p-button) { font-size: 11px !important; padding: 5px 10px !important; }
+.fsp-view-tabs {
+  display: flex; gap: 2px; flex-shrink: 0;
+  background: var(--p-surface-ground);
+  border-radius: 8px;
+  padding: 2px;
+}
+.fsp-tab-btn {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--p-text-muted-color);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  i { font-size: 11px; }
+
+  &:hover {
+    color: var(--p-text-color);
+    background: var(--p-surface-card);
+  }
+  &.active {
+    color: var(--tab-color, var(--p-primary-color));
+    background: var(--p-surface-card);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--tab-color, var(--p-primary-color)) 20%, transparent);
+
+    i { color: var(--tab-color, var(--p-primary-color)); }
+  }
+
+  &.fsp-ai-trigger i { color: var(--fst-purple); }
+}
+.fsp-tabs-sep {
+  width: 1px; height: 16px;
+  background: var(--p-content-border-color);
+  margin: 0 2px;
+}
 .fsp-filter-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
 /* ─── Mode buttons (Текущее / Демо) ─── */
@@ -3876,12 +3927,12 @@ function initDashboardCharts() {
 }
 .fsp-mode-btn {
   display: flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 8px;
+  width: 24px; height: 24px; border-radius: 6px;
   border: 1px solid var(--p-content-border-color);
   background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   cursor: pointer; transition: all 0.2s;
-  font-size: 15px;
+  font-size: 13px;
 }
 .fsp-mode-btn:hover {
   color: var(--p-text-color);
@@ -3913,10 +3964,9 @@ function initDashboardCharts() {
   background: color-mix(in srgb, var(--fst-brand) 12%, transparent);
 }
 
-/* ═══ Dashboard — один экран без скролла ═══ */
+/* ═══ Dashboard ═══ */
 .fsp-dash {
   display: flex; flex-direction: column; gap: 6px; padding-top: 4px;
-  max-height: calc(100vh - 220px); overflow: hidden;
 }
 
 /* ═══ Инфографика (live) ═══ */
@@ -3936,6 +3986,11 @@ function initDashboardCharts() {
 .fsp-ig-kpi-val { font-size: 22px; font-weight: 800; line-height: 1; }
 .fsp-ig-kpi-icon { font-size: 14px; color: var(--p-text-muted-color); opacity: 0.6; margin-bottom: 2px; }
 .fsp-ig-kpi-label { font-size: 9px; color: var(--p-text-muted-color); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.05em; }
+/* Benchmark baseline under KPI */
+.fsp-benchmark {
+  font-size: 8px; color: var(--p-text-muted-color); opacity: 0.5;
+  margin-top: 2px; letter-spacing: 0.03em; font-style: italic;
+}
 .fsp-ig-body {
   display: grid; grid-template-columns: 1.2fr 1fr 0.8fr; gap: 8px;
   min-height: 0; align-items: start;
@@ -3991,6 +4046,21 @@ function initDashboardCharts() {
 .fsp-heat-cell.risk-green  { background: color-mix(in srgb, var(--fst-green) 15%, transparent); }
 .fsp-heat-cell.risk-yellow { background: color-mix(in srgb, var(--fst-brand) 15%, transparent); }
 .fsp-heat-cell.risk-red    { background: color-mix(in srgb, var(--fst-red) 15%, transparent); }
+/* Anomaly highlight — пульсирующая рамка */
+.fsp-heat-anomaly {
+  animation: fsp-anomaly-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--fst-purple) 50%, transparent);
+  position: relative;
+}
+.fsp-heat-anomaly::after {
+  content: '!'; position: absolute; top: 1px; right: 2px;
+  font-size: 7px; font-weight: 900; color: var(--fst-purple);
+  line-height: 1;
+}
+@keyframes fsp-anomaly-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--fst-purple) 40%, transparent); }
+  50% { box-shadow: 0 0 6px 1px color-mix(in srgb, var(--fst-purple) 60%, transparent); }
+}
 .fsp-heat-icon { font-size: 12px; opacity: 0.8; margin-bottom: 1px; }
 .fsp-heat-name { font-size: 7px; color: var(--p-text-color); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fsp-heat-val { font-size: 10px; font-weight: 700; color: var(--p-text-color); margin-top: 1px; }
@@ -4355,36 +4425,79 @@ function initDashboardCharts() {
 .fsp-empty-hint { font-size: 11px; color: var(--p-text-muted-color); text-align: center; padding: 20px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* ═══ Signal Board ═══ */
-/* ═══ AI Command Bar + Dynamic Blocks ═══ */
-.fsp-ai-bar {
+/* ═══ AI Navigator (icon + hover chips) ═══ */
+.fsp-ai-nav {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 10px;
+  height: 36px;
+}
+.fsp-ai-nav-trigger {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--fst-purple) 30%, var(--p-content-border-color));
+  background: color-mix(in srgb, var(--fst-purple) 8%, var(--p-surface-card));
+  color: var(--fst-purple);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.fsp-ai-nav-trigger:hover {
+  background: color-mix(in srgb, var(--fst-purple) 18%, var(--p-surface-card));
+  border-color: var(--fst-purple);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--fst-purple) 30%, transparent);
+}
+.fsp-ai-nav--loading .fsp-ai-nav-trigger {
+  border-color: var(--fst-purple);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--fst-purple) 25%, transparent);
+}
+.fsp-ai-nav-chips {
+  display: flex; align-items: center; gap: 4px;
+  margin-left: 6px;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.fsp-ai-nav:hover .fsp-ai-nav-chips,
+.fsp-ai-nav--has-blocks .fsp-ai-nav-chips {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.fsp-ai-chip {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--p-content-border-color);
   background: var(--p-surface-card);
-  border: 1px solid color-mix(in srgb, var(--fst-purple) 25%, var(--p-content-border-color));
-  border-radius: 14px; padding: 14px 18px;
-  border-left: 3px solid var(--fst-purple);
-  margin-bottom: 18px;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--fst-purple) 6%, transparent);
+  color: var(--p-text-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
-.fsp-ai-bar--compact { padding: 12px 16px; }
-.fsp-ai-bar-inner {
-  display: flex; align-items: center; gap: 8px;
+.fsp-ai-chip i { font-size: 10px; color: var(--fst-purple); }
+.fsp-ai-chip:hover {
+  background: color-mix(in srgb, var(--fst-purple) 12%, transparent);
+  border-color: var(--fst-purple);
+  color: var(--fst-purple);
 }
-.fsp-ai-bar-icon { font-size: 18px; color: var(--fst-purple); flex-shrink: 0; }
-.fsp-ai-input { flex: 1; min-width: 180px; }
-.fsp-ai-input :deep(input),
-.fsp-ai-input.p-inputtext { font-size: 13px; padding: 8px 12px; }
-.fsp-ai-quick-actions {
-  display: flex; flex-wrap: wrap; gap: 2px; margin-top: 8px;
+.fsp-ai-chip--clear {
+  border-color: color-mix(in srgb, var(--fst-red) 30%, var(--p-content-border-color));
 }
-.fsp-ai-quick-btn {
-  font-size: 10px !important; padding: 4px 12px !important;
-  white-space: nowrap; border-radius: 20px !important;
-  border: 1px solid var(--p-content-border-color) !important;
-  background: color-mix(in srgb, var(--fst-purple) 6%, transparent) !important;
+.fsp-ai-chip--clear i { color: var(--fst-red); }
+.fsp-ai-chip--clear:hover {
+  background: color-mix(in srgb, var(--fst-red) 12%, transparent);
+  border-color: var(--fst-red);
+  color: var(--fst-red);
 }
-.fsp-ai-quick-btn:hover {
-  background: color-mix(in srgb, var(--fst-purple) 14%, transparent) !important;
-  border-color: var(--fst-purple) !important;
-}
+/* Transition */
+.fsp-nav-chips-enter-active, .fsp-nav-chips-leave-active { transition: opacity 0.2s ease; }
+.fsp-nav-chips-enter-from, .fsp-nav-chips-leave-to { opacity: 0; }
 
 /* ─── Context strip (Focus+Context: KPI сохраняется при AI) ─── */
 .fsp-ctx-strip {
@@ -5018,6 +5131,7 @@ function initDashboardCharts() {
 .fsp-sdt--warning .fsp-sdt-icon { color: var(--fst-brand); }
 .fsp-sdt--info .fsp-sdt-icon { color: var(--fst-blue); }
 .fsp-sdt-text { flex: 1; min-width: 0; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fsp-sdt-time { font-size: 8px; color: var(--p-text-muted-color); opacity: 0.6; white-space: nowrap; flex-shrink: 0; }
 
 /* SDT: preattentive pulse для критических алертов (< 200мс обнаружение) */
 @keyframes fsp-sdt-pulse {

@@ -57,12 +57,12 @@
   --fst-container-pad-x:   2rem;   /* sides: content margin from sidebar edge */
 
   /* Inner page topbar (.fst-topbar) */
-  --fst-topbar-pad-y:      12px;
-  --fst-topbar-pad-x:      20px;
+  --fst-topbar-pad-y:      6px;
+  --fst-topbar-pad-x:      14px;
 
   /* Page body & section gaps */
-  --fst-body-pad:          20px;
-  --fst-section-gap:       24px;
+  --fst-body-pad:          12px;
+  --fst-section-gap:       14px;
   --fst-section-label-size:0.6875rem;
 }
 

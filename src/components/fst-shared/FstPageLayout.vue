@@ -1,6 +1,6 @@
 <template>
   <div class="fst-page">
-    <Toolbar class="fst-page-toolbar">
+    <Toolbar v-if="showToolbar" class="fst-page-toolbar">
       <template #start>
         <slot name="header">
           <div class="fst-page-title-block">
@@ -36,6 +36,7 @@ defineProps({
   subtitle: { type: String, default: '' },
   icon: { type: String, default: '' },
   live: { type: Boolean, default: true },
+  showToolbar: { type: Boolean, default: true },
   bodyClass: { type: [String, Object, Array], default: '' }
 });
 </script>
@@ -91,18 +92,18 @@ defineProps({
 
 .fst-page-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--p-text-color);
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
 .fst-page-subtitle {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 10px;
   color: var(--p-text-muted-color);
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
 .fst-page-actions {

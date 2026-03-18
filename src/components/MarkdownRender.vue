@@ -60,8 +60,8 @@ const parsedMarkdown = computed(() => {
 :deep(.markdown-content) {
   width: 100%;
   overflow: hidden;
-  font-size: inherit;
-  line-height: inherit;
+  font-size: 0.82rem;
+  line-height: 1.4;
 }
 
 :deep(.markdown-content p) {
@@ -142,5 +142,47 @@ const parsedMarkdown = computed(() => {
   background: var(--p-text-muted-color);
   border-radius: 2px;
   opacity: 0.3;
+}
+
+/* Таблицы */
+:deep(.markdown-content table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  margin: 0.3em 0;
+}
+
+:deep(.markdown-content th) {
+  background: var(--p-surface-ground);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--p-text-muted-color);
+  padding: 4px 8px;
+  border: 1px solid var(--p-content-border-color);
+  text-align: left;
+}
+
+:deep(.markdown-content td) {
+  padding: 3px 8px;
+  border: 1px solid var(--p-content-border-color);
+  vertical-align: top;
+}
+
+:deep(.markdown-content tr:hover td) {
+  background: color-mix(in srgb, var(--p-primary-color) 4%, transparent);
+}
+
+/* Strong/Bold — не увеличиваем размер */
+:deep(.markdown-content strong) {
+  font-weight: 600;
+}
+
+/* HR */
+:deep(.markdown-content hr) {
+  border: none;
+  border-top: 1px solid var(--p-content-border-color);
+  margin: 0.4em 0;
 }
 </style>
