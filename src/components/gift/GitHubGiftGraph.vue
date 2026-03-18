@@ -868,21 +868,32 @@ function switchLayout(name) {
   setTimeout(doFit, 500)
 }
 
-// Auto-load demo data on mount
+// Auto-load data on mount — retry if fstProjects not ready yet
 onMounted(() => {
   result.value = getDemoData()
-  demoProjects.value = props.fstProjects?.length ? convertFstProjects(props.fstProjects) : getDemoProjects()
+  if (props.fstProjects?.length) {
+    demoProjects.value = convertFstProjects(props.fstProjects)
+  } else {
+    demoProjects.value = getDemoProjects()
+    // Retry after projects load (they come async from Integram)
+    setTimeout(() => {
+      if (props.fstProjects?.length) {
+        demoProjects.value = convertFstProjects(props.fstProjects)
+        nextTick(() => initCyGraph())
+      }
+    }, 2000)
+  }
   nextTick(() => initCyGraph())
 })
 
 // Rebuild graph when result or fstProjects change
 watch(result, () => { nextTick(() => initCyGraph()) })
-watch(() => props.fstProjects, (newProjects) => {
-  if (newProjects?.length) {
-    demoProjects.value = convertFstProjects(newProjects)
+watch(() => props.fstProjects?.length, (len) => {
+  if (len > 0) {
+    demoProjects.value = convertFstProjects(props.fstProjects)
     nextTick(() => initCyGraph())
   }
-}, { deep: true })
+})
 
 onBeforeUnmount(() => {
   if (cy) { cy.destroy(); cy = null }
