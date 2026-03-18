@@ -696,9 +696,34 @@
     <!-- ══ TAB: GIFT FUND / OPEN SOURCE ══ -->
     <div v-if="activeTab === 'gift-fund'" class="fst-tab-content">
 
-      <!-- Проекты ФСТ — дар-оценка портфеля -->
+      <!-- ═══ ГРАФ ПРОЕКТОВ ФСТ ═══ -->
       <div class="fst-section-title">
-        <i class="pi pi-briefcase"></i> Дар-оценка портфеля ФСТ НТИ
+        <i class="pi pi-share-alt"></i> Граф портфеля ФСТ НТИ
+      </div>
+      <div v-if="PROJECTS_POOL.length > 0" class="gift-graph-wrap">
+        <svg :viewBox="`0 0 ${graphWidth} ${graphHeight}`" class="gift-graph-svg">
+          <!-- Связи субфонд → проект -->
+          <line v-for="e in graphEdges" :key="e.id"
+            :x1="e.x1" :y1="e.y1" :x2="e.x2" :y2="e.y2"
+            :stroke="e.color" stroke-width="1.5" stroke-opacity="0.4" />
+          <!-- Узлы субфондов -->
+          <g v-for="sf in graphSubfundNodes" :key="sf.id">
+            <circle :cx="sf.x" :cy="sf.y" r="22" :fill="sf.color" fill-opacity="0.15" :stroke="sf.color" stroke-width="2" />
+            <text :x="sf.x" :y="sf.y + 4" text-anchor="middle" :fill="sf.color" font-size="9" font-weight="700">{{ sf.label }}</text>
+          </g>
+          <!-- Узлы проектов -->
+          <g v-for="n in graphProjectNodes" :key="n.id" class="gift-graph-node" @click="giftSelectedProjectId = n.projectId; fillGiftFromProject()">
+            <circle :cx="n.x" :cy="n.y" :r="n.r" :fill="n.color" fill-opacity="0.2" :stroke="n.color" stroke-width="1.5"
+              :class="{ 'gift-graph-node-selected': giftSelectedProjectId === n.projectId }" />
+            <text :x="n.x" :y="n.y - n.r - 4" text-anchor="middle" fill="var(--p-text-color)" font-size="8" font-weight="500">{{ n.label }}</text>
+            <text :x="n.x" :y="n.y + 3" text-anchor="middle" :fill="n.color" font-size="9" font-weight="700">{{ n.trl }}</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Карточки проектов -->
+      <div class="fst-section-title">
+        <i class="pi pi-briefcase"></i> Дар-оценка портфеля
       </div>
       <div v-if="PROJECTS_POOL.length === 0" class="gift-loading">Загрузка проектов...</div>
       <div v-else class="gift-portfolio-grid">
@@ -1196,6 +1221,61 @@ const alladinComparison = [
 // ── Gift Fund / Open Source ────────────────────────────────────
 
 const giftSelectedProjectId = ref(null)
+
+// ── Gift Graph (SVG) ─────────────────────────────────────────────
+const graphWidth = 700
+const graphHeight = 400
+
+const subfundColors = {
+  'БАС': 'var(--fst-blue)', 'РОБО': 'var(--fst-green)', 'МЭ': 'var(--fst-brand)',
+  'AI/Tech': 'var(--fst-purple)', 'Фотоника': 'var(--fst-cyan)', 'ФармаМед': 'var(--fst-red)',
+  'SpaceNet': 'var(--fst-blue-dark)', 'Энерджинет': 'var(--fst-green-dark)',
+  'Технет': 'var(--fst-brand-dark)', 'MediaNet': 'var(--fst-purple)',
+}
+
+const graphSubfundNodes = computed(() => {
+  const sfs = new Map()
+  for (const p of PROJECTS_POOL) {
+    const sf = p.subFund || p.subfund || p.market || 'Другое'
+    if (!sfs.has(sf)) sfs.set(sf, [])
+    sfs.get(sf).push(p)
+  }
+  const arr = [...sfs.keys()]
+  const cx = graphWidth / 2, cy = graphHeight / 2, radius = 130
+  return arr.map((sf, i) => {
+    const angle = (2 * Math.PI * i) / arr.length - Math.PI / 2
+    return { id: sf, label: sf.length > 8 ? sf.slice(0, 7) + '…' : sf, x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle), color: subfundColors[sf] || 'var(--p-text-muted-color)' }
+  })
+})
+
+const graphProjectNodes = computed(() => {
+  const sfMap = new Map()
+  graphSubfundNodes.value.forEach(sf => sfMap.set(sf.id, sf))
+  return PROJECTS_POOL.map((p, i) => {
+    const sf = sfMap.get(p.subFund || p.subfund || p.market || 'Другое') || { x: graphWidth / 2, y: graphHeight / 2, color: 'var(--p-text-muted-color)' }
+    const angle = (2 * Math.PI * i) / Math.max(PROJECTS_POOL.length, 1) + 0.5
+    const dist = 50 + Math.random() * 30
+    const name = (p.title || p.name || '').replace(/^ООО\s*/i, '').slice(0, 14)
+    return {
+      id: `p_${p.id}`, projectId: p.id, label: name,
+      trl: p.trl ? `TRL${p.trl}` : '',
+      x: sf.x + dist * Math.cos(angle), y: sf.y + dist * Math.sin(angle),
+      r: 10 + (p.trl || 5) * 1.5,
+      color: sf.color,
+    }
+  })
+})
+
+const graphEdges = computed(() => {
+  const sfMap = new Map()
+  graphSubfundNodes.value.forEach(sf => sfMap.set(sf.id, sf))
+  return PROJECTS_POOL.map((p, i) => {
+    const sf = sfMap.get(p.subFund || p.subfund || p.market || 'Другое')
+    const pn = graphProjectNodes.value[i]
+    if (!sf || !pn) return null
+    return { id: `e_${i}`, x1: sf.x, y1: sf.y, x2: pn.x, y2: pn.y, color: sf.color }
+  }).filter(Boolean)
+})
 const giftAnalysis = reactive({
   projectName: '',
   openSource: true,
@@ -2501,6 +2581,19 @@ watch(() => session.value?.arguments?.length, () => {
   line-height: 1.6;
   color: var(--p-text-color);
 }
+.gift-graph-wrap {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.gift-graph-svg { width: 100%; height: auto; }
+.gift-graph-node { cursor: pointer; }
+.gift-graph-node:hover circle { stroke-width: 3; fill-opacity: 0.4; }
+.gift-graph-node-selected { stroke-width: 3 !important; fill-opacity: 0.5 !important; }
+
 .gift-loading { text-align: center; padding: 20px; color: var(--p-text-muted-color); font-size: 12px; }
 .gift-portfolio-grid {
   display: grid;
