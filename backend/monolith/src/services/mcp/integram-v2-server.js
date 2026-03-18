@@ -41,7 +41,9 @@ async function auth(db) {
 async function post(db, endpoint, params) {
   const { token, xsrf } = await auth(db)
   params.set('_xsrf', xsrf)
-  const r = await fetch(`${INTEGRAM_SERVER}/${db}/${endpoint}?JSON_KV`, {
+  const sep = endpoint.includes('?') ? '&' : '?'
+  const url = `${INTEGRAM_SERVER}/${db}/${endpoint}${sep}JSON_KV`
+  const r = await fetch(url, {
     method: 'POST',
     headers: {
       'X-Authorization': token,
@@ -55,7 +57,10 @@ async function post(db, endpoint, params) {
 
 async function get(db, endpoint) {
   const { token } = await auth(db)
-  const r = await fetch(`${INTEGRAM_SERVER}/${db}/${endpoint}?JSON_KV`, {
+  // endpoint may contain &params — JSON_KV must come right after ?
+  const sep = endpoint.includes('?') ? '&' : '?'
+  const url = `${INTEGRAM_SERVER}/${db}/${endpoint}${sep}JSON_KV`
+  const r = await fetch(url, {
     headers: { 'X-Authorization': token }
   })
   return r.json()
@@ -80,11 +85,12 @@ const TOOLS = [
   },
   {
     name: 'integram_v2_get_object',
-    description: 'Получить один объект со всеми полями (включая reference-значения)',
+    description: 'Получить один объект со всеми полями (включая reference-значения). Если знаешь typeId — укажи для точного результата.',
     inputSchema: {
       type: 'object',
       properties: {
         objectId: { type: 'number', description: 'ID объекта' },
+        typeId: { type: 'number', description: 'ID таблицы (типа) объекта — ускоряет запрос' },
         database: { type: 'string', default: 'fst' }
       },
       required: ['objectId']
@@ -133,6 +139,21 @@ const TOOLS = [
         database: { type: 'string', default: 'fst' }
       },
       required: ['objectId', 'reqId', 'refObjectId']
+    }
+  },
+  {
+    name: 'integram_v2_upload_file',
+    description: 'Загрузить файл в FILE-поле объекта. Файл передаётся как base64. Сначала создай объект (create_object), потом загрузи файл.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        objectId: { type: 'number', description: 'ID объекта куда загружать файл' },
+        reqId: { type: 'string', description: 'ID FILE-реквизита (поля)' },
+        base64Data: { type: 'string', description: 'Содержимое файла в base64' },
+        filename: { type: 'string', description: 'Имя файла с расширением' },
+        database: { type: 'string', default: 'fst' }
+      },
+      required: ['objectId', 'reqId', 'base64Data', 'filename']
     }
   },
   {
@@ -186,8 +207,8 @@ async function executeTool(name, args) {
     switch (name) {
       case 'integram_v2_list_objects': {
         const ep = args.parentId
-          ? `object/${args.typeId}&F_U=${args.parentId}&l=${args.limit || 50}`
-          : `object/${args.typeId}&l=${args.limit || 50}&F_U=1`
+          ? `object/${args.typeId}?JSON_KV&F_U=${args.parentId}&l=${args.limit || 50}`
+          : `object/${args.typeId}?JSON_KV&l=${args.limit || 50}&F_U=1`
         const data = await get(db, ep)
         const objs = (data.object || []).map(o => ({
           id: o.id, name: o.val,
@@ -198,13 +219,25 @@ async function executeTool(name, args) {
       }
 
       case 'integram_v2_get_object': {
-        const data = await get(db, `_o_edit/${args.objectId}`)
-        const obj = data.obj || {}
-        const reqs = {}
-        for (const [k, v] of Object.entries(data.reqs || {})) {
-          reqs[k] = { name: v.type, value: v.value, ref: v.ref_type || null }
+        // Use object/{typeId}?JSON_KV&F_I={objectId} if typeId known,
+        // otherwise try object/{objectId} and parse the response
+        let data
+        if (args.typeId) {
+          data = await get(db, `object/${args.typeId}?JSON_KV&F_I=${args.objectId}`)
+        } else {
+          // Try using objectId as type (works for subordinate views)
+          data = await get(db, `object/${args.objectId}?JSON_KV`)
         }
-        result = { id: obj.id, name: obj.val, type: obj.typ_name, typeId: obj.typ, parent: obj.parent, reqs }
+        const objs = data.object || []
+        const obj = objs.find(o => String(o.id) === String(args.objectId)) || objs[0] || {}
+        const reqs = data.reqs?.[String(args.objectId)] || data.reqs?.[obj.id] || {}
+        result = {
+          id: obj.id || args.objectId,
+          name: obj.val,
+          typeId: args.typeId || obj.base,
+          parent: obj.up,
+          reqs
+        }
         break
       }
 
@@ -241,6 +274,35 @@ async function executeTool(name, args) {
         break
       }
 
+      case 'integram_v2_upload_file': {
+        // Upload file via multipart _m_save (Integram pattern for FILE requisites)
+        const { token, xsrf } = await auth(db)
+        const boundary = '----MCPBoundary' + Date.now()
+        const fileBuffer = Buffer.from(args.base64Data, 'base64')
+
+        // Build multipart body manually
+        const parts = []
+        parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="_xsrf"\r\n\r\n${xsrf}`)
+        parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="t${args.reqId}"; filename="${args.filename}"\r\nContent-Type: application/octet-stream\r\n\r\n`)
+
+        const header = Buffer.from(parts.join('\r\n') + '\r\n')
+        const footer = Buffer.from(`\r\n--${boundary}--\r\n`)
+        const body = Buffer.concat([header, fileBuffer, footer])
+
+        const uploadRes = await fetch(`${INTEGRAM_SERVER}/${db}/_m_save/${args.objectId}?JSON_KV`, {
+          method: 'POST',
+          headers: {
+            'X-Authorization': token,
+            Cookie: `${db}=${token}`,
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+          },
+          body,
+        })
+        const uploadData = await uploadRes.json().catch(() => ({}))
+        result = { objectId: args.objectId, uploaded: uploadRes.ok, response: uploadData }
+        break
+      }
+
       case 'integram_v2_delete_object': {
         await post(db, `_m_del/${args.objectId}`, new URLSearchParams())
         result = { deleted: args.objectId }
@@ -248,7 +310,7 @@ async function executeTool(name, args) {
       }
 
       case 'integram_v2_get_table_structure': {
-        const data = await get(db, `object/${args.typeId}&l=0`)
+        const data = await get(db, `object/${args.typeId}?JSON_KV&l=0`)
         const fields = []
         const reqType = data.req_type || {}
         const reqBase = data.req_base || {}
@@ -269,7 +331,7 @@ async function executeTool(name, args) {
       }
 
       case 'integram_v2_search': {
-        const data = await get(db, `object/${args.typeId}&l=${args.limit || 20}&F_U=1&F_${args.typeId}=${encodeURIComponent(args.query)}`)
+        const data = await get(db, `object/${args.typeId}?JSON_KV&l=${args.limit || 20}&F_U=1&F_${args.typeId}=${encodeURIComponent(args.query)}`)
         const objs = (data.object || []).map(o => ({
           id: o.id, name: o.val,
           ...(data.reqs?.[o.id] || {})
