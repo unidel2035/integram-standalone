@@ -696,7 +696,33 @@
     <!-- ══ TAB: GIFT FUND / OPEN SOURCE ══ -->
     <div v-if="activeTab === 'gift-fund'" class="fst-tab-content">
 
-      <GitHubGiftGraph />
+      <!-- Проекты ФСТ — дар-оценка портфеля -->
+      <div class="fst-section-title">
+        <i class="pi pi-briefcase"></i> Дар-оценка портфеля ФСТ НТИ
+      </div>
+      <div v-if="PROJECTS_POOL.value.length === 0" class="gift-loading">Загрузка проектов...</div>
+      <div v-else class="gift-portfolio-grid">
+        <div v-for="p in PROJECTS_POOL.value" :key="p.id" class="gift-project-card"
+          :class="{ 'gift-project-selected': giftSelectedProjectId === p.id }"
+          @click="giftSelectedProjectId = p.id; fillGiftFromProject()">
+          <div class="gift-project-header">
+            <span class="gift-project-name">{{ p.title || p.name }}</span>
+            <span class="gift-project-subfund" v-if="p.subFund || p.subfund">{{ p.subFund || p.subfund }}</span>
+          </div>
+          <div class="gift-project-metrics">
+            <span v-if="p.trl" class="gift-pm" :style="{ color: p.trl >= 7 ? 'var(--fst-green)' : p.trl >= 5 ? 'var(--fst-brand)' : 'var(--fst-red)' }">TRL {{ p.trl }}</span>
+            <span v-if="p.employees" class="gift-pm">{{ p.employees }} чел.</span>
+            <span v-if="p.patents" class="gift-pm">{{ p.patents }} пат.</span>
+            <span v-if="p.sovereigntyScore" class="gift-pm" :style="{ color: p.sovereigntyScore >= 7 ? 'var(--fst-green)' : 'var(--fst-brand)' }">Сув. {{ p.sovereigntyScore }}</span>
+          </div>
+          <div class="gift-project-dar">
+            <span class="gift-dar-label">Дар-потенциал:</span>
+            <span class="gift-dar-value" :style="{ color: (p.localizationRatio || 0) > 0.7 ? 'var(--fst-green)' : (p.localizationRatio || 0) > 0.4 ? 'var(--fst-brand)' : 'var(--fst-red)' }">
+              {{ (p.localizationRatio || 0) > 0.7 ? 'Высокий' : (p.localizationRatio || 0) > 0.4 ? 'Средний' : 'Низкий' }}
+            </span>
+          </div>
+        </div>
+      </div>
 
       <!-- Три вопроса -->
       <div class="fst-section-title" style="margin-top:20px">
@@ -966,7 +992,7 @@ import {
   SUBFUNDS,
 } from '@/components/fst-committee/FstCommitteeConfig.js'
 import { FstCommitteeEngine, createSession } from '@/components/fst-committee/FstCommitteeEngine.js'
-import GitHubGiftGraph from '@/components/gift/GitHubGiftGraph.vue'
+// GitHubGiftGraph removed — replaced with FST portfolio gift cards
 import { useFstData } from '@/composables/useFstData.js'
 
 const { projects: PROJECTS_POOL_REF, loadProjects } = useFstData()
@@ -2475,6 +2501,36 @@ watch(() => session.value?.arguments?.length, () => {
   line-height: 1.6;
   color: var(--p-text-color);
 }
+.gift-loading { text-align: center; padding: 20px; color: var(--p-text-muted-color); font-size: 12px; }
+.gift-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.gift-project-card {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { border-color: var(--p-primary-color); }
+  &.gift-project-selected {
+    border-color: var(--fst-purple);
+    background: color-mix(in srgb, var(--fst-purple) 6%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--fst-purple) 20%, transparent);
+  }
+}
+.gift-project-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.gift-project-name { font-size: 11px; font-weight: 600; color: var(--p-text-color); }
+.gift-project-subfund { font-size: 9px; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
+.gift-project-metrics { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.gift-pm { font-size: 10px; font-weight: 600; }
+.gift-project-dar { display: flex; gap: 4px; align-items: center; }
+.gift-dar-label { font-size: 9px; color: var(--p-text-muted-color); }
+.gift-dar-value { font-size: 10px; font-weight: 700; }
+
 .gift-questions-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
