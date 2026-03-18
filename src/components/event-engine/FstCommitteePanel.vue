@@ -770,6 +770,13 @@
       <div class="gift-analyzer">
         <div class="gift-analyzer-form">
           <div class="gift-form-row">
+            <label>Проект фонда</label>
+            <select v-model="giftSelectedProjectId" class="gift-input" @change="fillGiftFromProject">
+              <option :value="null">— выберите проект —</option>
+              <option v-for="p in PROJECTS_POOL.value" :key="p.id" :value="p.id">{{ p.title || p.name }}</option>
+            </select>
+          </div>
+          <div class="gift-form-row">
             <label>Название проекта</label>
             <input v-model="giftAnalysis.projectName" class="gift-input" placeholder="Например: AeroScan SDK"/>
           </div>
@@ -1162,6 +1169,7 @@ const alladinComparison = [
 
 // ── Gift Fund / Open Source ────────────────────────────────────
 
+const giftSelectedProjectId = ref(null)
 const giftAnalysis = reactive({
   projectName: '',
   openSource: true,
@@ -1175,6 +1183,21 @@ const giftAnalysis = reactive({
   forks: 15,
 })
 const giftResult = ref(null)
+
+function fillGiftFromProject() {
+  const p = PROJECTS_POOL.value.find(p => p.id === giftSelectedProjectId.value)
+  if (!p) return
+  giftAnalysis.projectName = p.title || p.name || ''
+  // Estimate fields from project data
+  giftAnalysis.contributors = p.employees || p.teamStrength ? Math.round((p.employees || 10) * 0.6) : 10
+  giftAnalysis.busFactor = Math.min(Math.max(Math.round((p.employees || 5) / 5), 1), 10)
+  giftAnalysis.orgs = p.patents ? Math.min(p.patents, 5) : 2
+  giftAnalysis.openSource = (p.localizationRatio || 0) > 0.7
+  giftAnalysis.topShare = p.employees > 20 ? 25 : p.employees > 5 ? 45 : 70
+  giftAnalysis.reviewDensity = p.trl >= 7 ? 80 : p.trl >= 5 ? 60 : 40
+  giftAnalysis.forks = p.trl >= 6 ? Math.round((p.employees || 5) * 2) : 5
+  giftAnalysis.mutualPairs = Math.round(giftAnalysis.contributors * 0.3)
+}
 
 function runGiftAnalysis() {
   // Используем ту же логику что и execCalcGiftHealth из AgentToolRegistry
