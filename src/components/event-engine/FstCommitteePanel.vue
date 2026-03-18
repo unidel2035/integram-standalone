@@ -701,22 +701,24 @@
         <i class="pi pi-share-alt"></i> Граф портфеля ФСТ НТИ
       </div>
       <div v-if="PROJECTS_POOL && PROJECTS_POOL.length > 0" class="gift-graph-wrap">
-        <svg :viewBox="`0 0 ${graphWidth} ${graphHeight}`" class="gift-graph-svg">
-          <!-- Связи субфонд → проект -->
+        <svg :viewBox="`0 0 ${graphWidth} ${graphHeight}`" class="gift-graph-svg" preserveAspectRatio="xMidYMid meet">
+          <!-- Связи -->
           <line v-for="e in graphEdges" :key="e.id"
             :x1="e.x1" :y1="e.y1" :x2="e.x2" :y2="e.y2"
-            :stroke="e.color" stroke-width="1.5" stroke-opacity="0.4" />
-          <!-- Узлы субфондов -->
+            :stroke="e.color" stroke-width="1" stroke-opacity="0.25" />
+          <!-- Субфонды -->
           <g v-for="sf in graphSubfundNodes" :key="sf.id">
-            <circle :cx="sf.x" :cy="sf.y" r="22" :fill="sf.color" fill-opacity="0.15" :stroke="sf.color" stroke-width="2" />
-            <text :x="sf.x" :y="sf.y + 4" text-anchor="middle" :fill="sf.color" font-size="9" font-weight="700">{{ sf.label }}</text>
+            <circle :cx="sf.x" :cy="sf.y" r="16" :fill="sf.color" fill-opacity="0.12" :stroke="sf.color" stroke-width="1.5" />
+            <text :x="sf.x" :y="sf.y - 20" text-anchor="middle" :fill="sf.color" font-size="8" font-weight="700">{{ sf.label }}</text>
+            <text :x="sf.x" :y="sf.y + 4" text-anchor="middle" :fill="sf.color" font-size="7" opacity="0.7">{{ sf.count }}</text>
           </g>
-          <!-- Узлы проектов -->
-          <g v-for="n in graphProjectNodes" :key="n.id" class="gift-graph-node" @click="giftSelectedProjectId = n.projectId; fillGiftFromProject()">
-            <circle :cx="n.x" :cy="n.y" :r="n.r" :fill="n.color" fill-opacity="0.2" :stroke="n.color" stroke-width="1.5"
-              :class="{ 'gift-graph-node-selected': giftSelectedProjectId === n.projectId }" />
-            <text :x="n.x" :y="n.y - n.r - 4" text-anchor="middle" fill="var(--p-text-color)" font-size="8" font-weight="500">{{ n.label }}</text>
-            <text :x="n.x" :y="n.y + 3" text-anchor="middle" :fill="n.color" font-size="9" font-weight="700">{{ n.trl }}</text>
+          <!-- Проекты -->
+          <g v-for="n in graphProjectNodes" :key="n.id" class="gift-graph-node"
+            @click="giftSelectedProjectId = n.projectId; fillGiftFromProject()" style="cursor:pointer">
+            <circle :cx="n.x" :cy="n.y" :r="n.r" :fill="n.color" fill-opacity="0.25" :stroke="n.color" stroke-width="1"
+              :stroke-width="giftSelectedProjectId === n.projectId ? 2.5 : 1" />
+            <text :x="n.x" :y="n.y + n.r + 10" text-anchor="middle" fill="var(--p-text-color)" font-size="6.5">{{ n.label }}</text>
+            <text v-if="n.trl" :x="n.x" :y="n.y + 2.5" text-anchor="middle" :fill="n.color" font-size="6" font-weight="700">{{ n.trl }}</text>
           </g>
         </svg>
       </div>
@@ -1223,59 +1225,80 @@ const alladinComparison = [
 const giftSelectedProjectId = ref(null)
 
 // ── Gift Graph (SVG) ─────────────────────────────────────────────
-const graphWidth = 700
-const graphHeight = 400
+const graphWidth = 900
+const graphHeight = 500
 
 const subfundColors = {
-  'БАС': 'var(--fst-blue)', 'РОБО': 'var(--fst-green)', 'МЭ': 'var(--fst-brand)',
-  'AI/Tech': 'var(--fst-purple)', 'Фотоника': 'var(--fst-cyan)', 'ФармаМед': 'var(--fst-red)',
-  'SpaceNet': 'var(--fst-blue-dark)', 'Энерджинет': 'var(--fst-green-dark)',
-  'Технет': 'var(--fst-brand-dark)', 'MediaNet': 'var(--fst-purple)',
+  'БАС': '#3b82f6', 'РОБО': '#22c55e', 'МЭ': '#f59e0b',
+  'AI/Tech': '#8b5cf6', 'Фотоника': '#06b6d4', 'ФармаМед': '#ef4444',
+  'SpaceNet': '#6366f1', 'Энерджинет': '#10b981',
+  'Технет': '#d97706', 'MediaNet': '#a855f7',
+  'Новые материалы': '#14b8a6', 'Агротех': '#84cc16',
 }
 
-const graphSubfundNodes = computed(() => {
-  const sfs = new Map()
-  for (const p of PROJECTS_POOL.value) {
-    const sf = p.subFund || p.subfund || p.market || 'Другое'
-    if (!sfs.has(sf)) sfs.set(sf, [])
-    sfs.get(sf).push(p)
-  }
-  const arr = [...sfs.keys()]
-  const cx = graphWidth / 2, cy = graphHeight / 2, radius = 130
-  return arr.map((sf, i) => {
-    const angle = (2 * Math.PI * i) / arr.length - Math.PI / 2
-    return { id: sf, label: sf.length > 8 ? sf.slice(0, 7) + '…' : sf, x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle), color: subfundColors[sf] || 'var(--p-text-muted-color)' }
-  })
-})
+// Force-directed layout: subfunds in ring, projects orbit their subfund
+const graphData = computed(() => {
+  const projects = PROJECTS_POOL.value
+  if (!projects.length) return { subfunds: [], nodes: [], edges: [] }
 
-const graphProjectNodes = computed(() => {
-  const sfMap = new Map()
-  graphSubfundNodes.value.forEach(sf => sfMap.set(sf.id, sf))
-  return PROJECTS_POOL.value.map((p, i) => {
-    const sf = sfMap.get(p.subFund || p.subfund || p.market || 'Другое') || { x: graphWidth / 2, y: graphHeight / 2, color: 'var(--p-text-muted-color)' }
-    const angle = (2 * Math.PI * i) / Math.max(PROJECTS_POOL.value.length, 1) + 0.5
-    const dist = 50 + ((i * 17 + 7) % 30)
-    const name = (p.title || p.name || '').replace(/^ООО\s*/i, '').slice(0, 14)
+  // Group by subfund
+  const groups = new Map()
+  for (const p of projects) {
+    const sf = p.subFund || p.subfund || p.market || 'Другое'
+    if (!groups.has(sf)) groups.set(sf, [])
+    groups.get(sf).push(p)
+  }
+
+  const sfKeys = [...groups.keys()]
+  const cx = graphWidth / 2, cy = graphHeight / 2
+  const sfRadius = Math.min(cx, cy) * 0.55
+
+  // Subfund nodes on a ring
+  const subfunds = sfKeys.map((sf, i) => {
+    const angle = (2 * Math.PI * i) / sfKeys.length - Math.PI / 2
     return {
-      id: `p_${p.id}`, projectId: p.id, label: name,
-      trl: p.trl ? `TRL${p.trl}` : '',
-      x: sf.x + dist * Math.cos(angle), y: sf.y + dist * Math.sin(angle),
-      r: 10 + (p.trl || 5) * 1.5,
-      color: sf.color,
+      id: sf,
+      label: sf.length > 10 ? sf.slice(0, 9) + '…' : sf,
+      x: cx + sfRadius * Math.cos(angle),
+      y: cy + sfRadius * Math.sin(angle),
+      color: subfundColors[sf] || '#94a3b8',
+      count: groups.get(sf).length,
     }
   })
+
+  const sfMap = new Map(subfunds.map(s => [s.id, s]))
+
+  // Project nodes orbit their subfund
+  const nodes = []
+  const edges = []
+  for (const [sf, projs] of groups) {
+    const sfNode = sfMap.get(sf)
+    if (!sfNode) continue
+    const orbitR = 30 + projs.length * 12
+    projs.forEach((p, j) => {
+      const angle = (2 * Math.PI * j) / projs.length - Math.PI / 2
+      const name = (p.title || p.name || '').replace(/^ООО\s*/i, '').replace(/\s*—.*/, '').slice(0, 16)
+      const r = 4 + Math.min((p.trl || 5), 9) * 0.8
+      const nx = sfNode.x + orbitR * Math.cos(angle)
+      const ny = sfNode.y + orbitR * Math.sin(angle)
+      nodes.push({
+        id: `p_${p.id}`, projectId: p.id, label: name,
+        trl: p.trl || '', x: nx, y: ny, r,
+        color: sfNode.color,
+      })
+      edges.push({
+        id: `e_${p.id}`, x1: sfNode.x, y1: sfNode.y, x2: nx, y2: ny,
+        color: sfNode.color,
+      })
+    })
+  }
+
+  return { subfunds, nodes, edges }
 })
 
-const graphEdges = computed(() => {
-  const sfMap = new Map()
-  graphSubfundNodes.value.forEach(sf => sfMap.set(sf.id, sf))
-  return PROJECTS_POOL.value.map((p, i) => {
-    const sf = sfMap.get(p.subFund || p.subfund || p.market || 'Другое')
-    const pn = graphProjectNodes.value[i]
-    if (!sf || !pn) return null
-    return { id: `e_${i}`, x1: sf.x, y1: sf.y, x2: pn.x, y2: pn.y, color: sf.color }
-  }).filter(Boolean)
-})
+const graphSubfundNodes = computed(() => graphData.value.subfunds)
+const graphProjectNodes = computed(() => graphData.value.nodes)
+const graphEdges = computed(() => graphData.value.edges)
 const giftAnalysis = reactive({
   projectName: '',
   openSource: true,
