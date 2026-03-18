@@ -66,6 +66,14 @@
       </div>
 
       <div v-if="activeView !== 'dashboard'" class="fsp-filter-right">
+        <!-- Переключатель карточки/воронка внутри «Компании» -->
+        <SelectButton v-if="activeView === 'monitor'" v-model="companyViewMode"
+          :options="[{ label: 'Карточки', id: 'cards' }, { label: 'Воронка', id: 'pipeline' }]"
+          optionLabel="label" optionValue="id" :allowEmpty="false" size="small" />
+        <!-- Переключатель Финансы/Оценки внутри «Аналитика» -->
+        <SelectButton v-if="activeView === 'analytics'" v-model="analyticsSubTab"
+          :options="[{ label: 'Финансы', id: 'finance' }, { label: 'Оценки', id: 'valuations' }]"
+          optionLabel="label" optionValue="id" :allowEmpty="false" size="small" />
         <SelectButton v-model="filterScope" :options="scopeOptions" optionLabel="label" optionValue="id" :allowEmpty="false" size="small" />
         <Select v-model="filterSubfund" :options="subfundOptions" placeholder="Все субфонды" class="fsp-filter-sel" size="small" />
         <span class="fsp-search-wrap">
@@ -550,42 +558,18 @@
 
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <!-- VIEW: PIPELINE (funnel) -->
-    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <div v-else-if="activeView === 'pipeline'" class="fsp-view-panel">
-      <div class="fst-section-label" style="margin-bottom:12px">Воронка: от заявки до портфеля</div>
-      <div class="fsp-pipeline">
-        <div v-for="stage in pipelineStages" :key="stage.id" class="fsp-pipe-stage">
-          <div class="fsp-pipe-header" :style="{ borderBottomColor: stage.color }" v-tooltip.bottom="`${stage.label}: ${stage.companies.length} компаний`">
-            <Icon v-if="stage.iconifyIcon" :icon="stage.icon" :style="{ color: stage.color, fontSize: '16px' }" />
-            <i v-else :class="stage.icon" :style="{ color: stage.color }"></i>
-            <span class="fsp-pipe-title">{{ stage.label }}</span>
-            <span class="fsp-pipe-count" :style="{ background: stage.color }">{{ stage.companies.length }}</span>
-          </div>
-          <div class="fsp-pipe-cards">
-            <div v-for="c in stage.companies" :key="c.id" class="fsp-pipe-card"
-              @click="selectCompany(c); activeView = 'monitor'"
-              v-tooltip.bottom="`${companyDisplayName(c)} · ${c.subfund} · TRL ${c.trl || '—'} · Health ${companyHealth(c)}%`">
-              <div class="fsp-pipe-card-name"><Icon :icon="companyIcon(c)" style="font-size:14px;vertical-align:-2px;margin-right:4px" />{{ companyDisplayName(c) }}</div>
-              <div class="fsp-pipe-card-meta">
-                <span v-if="c.subfund">{{ c.subfund }}</span>
-                <span v-if="c.trl">TRL {{ c.trl }}</span>
-                <span v-if="c.invested">{{ c.invested }}М</span>
-              </div>
-            </div>
-            <div v-if="!stage.companies.length" class="fsp-pipe-empty">—</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Pipeline секция перенесена внутрь монитора (companyViewMode === 'pipeline') -->
 
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <!-- VIEW: Finance Table -->
+    <!-- VIEW: Analytics (Финансы + Оценки — Progressive Disclosure) -->
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <div v-else-if="activeView === 'finance'" class="fsp-view-panel">
-      <div class="fst-section-label" style="margin-bottom:10px">Финансовые показатели (тыс. ₽)</div>
-      <DataTable :value="financeTableData" size="small" stripedRows scrollable scrollHeight="520px"
+    <div v-else-if="activeView === 'analytics'" class="fsp-view-panel">
+      <div class="fst-section-label" style="margin-bottom:10px">
+        {{ analyticsSubTab === 'finance' ? 'Финансовые показатели (тыс. ₽)' : 'Доли фонда и оценки компаний' }}
+      </div>
+
+      <!-- Sub-tab: Finance -->
+      <DataTable v-if="analyticsSubTab === 'finance'" :value="financeTableData" size="small" stripedRows scrollable scrollHeight="520px"
                  sortField="totalInvestment" :sortOrder="-1" class="fsp-datatable">
         <Column field="name" header="Компания" :sortable="true" frozen style="min-width:180px">
           <template #body="{ data }">
@@ -623,14 +607,9 @@
           </template>
         </Column>
       </DataTable>
-    </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <!-- VIEW: Valuations -->
-    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <div v-else-if="activeView === 'valuations'" class="fsp-view-panel">
-      <div class="fst-section-label" style="margin-bottom:10px">Доли фонда и оценки компаний</div>
-      <DataTable :value="valuationsTableData" size="small" stripedRows scrollable scrollHeight="520px"
+      <!-- Sub-tab: Valuations -->
+      <DataTable v-else :value="valuationsTableData" size="small" stripedRows scrollable scrollHeight="520px"
                  sortField="fundShare" :sortOrder="-1" class="fsp-datatable">
         <Column field="name" header="Компания" :sortable="true" frozen style="min-width:180px">
           <template #body="{ data }">
@@ -698,7 +677,37 @@
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <div v-else class="fsp-body">
 
+      <!-- ═══ Pipeline view (Kanban по стадиям) — подрежим внутри «Компании» ═══ -->
+      <div v-if="companyViewMode === 'pipeline'" class="fsp-pipeline-wrap">
+        <div class="fst-section-label" style="margin-bottom:12px">Воронка: от заявки до портфеля</div>
+        <div class="fsp-pipeline">
+          <div v-for="stage in pipelineStages" :key="stage.id" class="fsp-pipe-stage">
+            <div class="fsp-pipe-header" :style="{ borderBottomColor: stage.color }" v-tooltip.bottom="`${stage.label}: ${stage.companies.length} компаний`">
+              <Icon v-if="stage.iconifyIcon" :icon="stage.icon" :style="{ color: stage.color, fontSize: '16px' }" />
+              <i v-else :class="stage.icon" :style="{ color: stage.color }"></i>
+              <span class="fsp-pipe-title">{{ stage.label }}</span>
+              <span class="fsp-pipe-count" :style="{ background: stage.color }">{{ stage.companies.length }}</span>
+            </div>
+            <div class="fsp-pipe-cards">
+              <div v-for="c in stage.companies" :key="c.id" class="fsp-pipe-card"
+                @click="selectCompany(c); companyViewMode = 'cards'"
+                v-tooltip.bottom="`${companyDisplayName(c)} · ${c.subfund} · TRL ${c.trl || '—'} · Health ${companyHealth(c)}%`">
+                <div class="fsp-pipe-card-name"><Icon :icon="companyIcon(c)" style="font-size:14px;vertical-align:-2px;margin-right:4px" />{{ companyDisplayName(c) }}</div>
+                <div class="fsp-pipe-card-meta">
+                  <span v-if="c.subfund">{{ c.subfund }}</span>
+                  <span v-if="c.trl">TRL {{ c.trl }}</span>
+                  <span v-if="c.invested">{{ c.invested }}М</span>
+                </div>
+              </div>
+              <div v-if="!stage.companies.length" class="fsp-pipe-empty">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Cards view (карточки + детальная панель) ═══ -->
       <!-- Left: Company Cards -->
+      <template v-else>
       <div class="fsp-companies">
         <div class="fst-section-label fsp-companies-label">
           {{ filterScope === 'all' ? 'Все компании' : filterScope === 'portfolio' ? 'Портфельные компании' : 'На рассмотрении' }}
@@ -712,12 +721,36 @@
           <Button label="Созвать ИК" icon="pi pi-users" size="small" severity="danger" @click="callCommittee" style="margin-left:auto" />
         </div>
 
+        <!-- Compare toolbar -->
+        <div v-if="compareMode" class="fsp-compare-toolbar">
+          <Icon icon="lucide:columns-2" style="font-size:14px;color:var(--fst-purple)" />
+          <span>Сравнение: выберите до 3 компаний ({{ compareSelected.length }}/3)</span>
+          <Button v-if="compareSelected.length >= 2" label="Сравнить" icon="pi pi-chart-bar" size="small" severity="info"
+            @click="compareMode = false" />
+          <Button label="Отмена" size="small" severity="secondary" text @click="compareMode = false; compareSelected = []" />
+        </div>
+
         <!-- Grid of cards -->
         <div class="fsp-cards-grid">
           <div v-for="c in filteredCompanies" :key="c.id"
-            class="fsp-card" :class="{ selected: selectedCompany?.id === c.id, ['risk-' + c.riskLevel]: true, 'is-review': c._scope === 'review' }"
-            @click="selectCompany(c)"
+            class="fsp-card" :class="{
+              selected: selectedCompany?.id === c.id,
+              ['risk-' + c.riskLevel]: true,
+              'is-review': c._scope === 'review',
+              'fsp-card--changed': changedCompanies.has(c.id),
+              'fsp-card--compare': compareSelected.includes(c.id),
+            }"
+            :style="{ borderLeftWidth: c.invested > 0 ? Math.min(5, Math.max(2, c.invested / 200)) + 'px' : '2px' }"
+            @click="compareMode ? toggleCompare(c) : selectCompany(c)"
             v-tooltip.bottom="`${companyDisplayName(c)} · ${c.subfund} · ${c.stage} · Health ${companyHealth(c)}% · TRL ${c.trl || '—'}`">
+            <!-- Change badge (Change Blindness Prevention) -->
+            <div v-if="changedCompanies.has(c.id)" class="fsp-card-changed-badge" v-tooltip.bottom="'Данные обновились'">
+              <Icon icon="lucide:refresh-cw" style="font-size:10px" />
+            </div>
+            <!-- Compare checkbox -->
+            <div v-if="compareMode" class="fsp-card-compare-check" @click.stop="toggleCompare(c)">
+              <Icon :icon="compareSelected.includes(c.id) ? 'lucide:check-square' : 'lucide:square'" style="font-size:16px;color:var(--fst-purple)" />
+            </div>
             <div class="fsp-card-header">
               <div class="fsp-card-name"><Icon :icon="companyIcon(c)" class="fsp-card-icon" />{{ companyDisplayName(c) }}</div>
               <div class="fsp-card-badges">
@@ -753,6 +786,9 @@
               <button class="fsp-hist-btn" @click.stop="openProjectHub(c)">
                 <i class="pi pi-history" style="font-size:10px"></i> История
               </button>
+              <button v-if="!compareMode" class="fsp-hist-btn" @click.stop="compareMode = true; compareSelected = [c.id]">
+                <Icon icon="lucide:columns-2" style="font-size:10px" /> Сравнить
+              </button>
             </div>
           </div>
         </div>
@@ -772,8 +808,53 @@
                 <Tag v-else value="Портфель" severity="success" style="font-size:9px;margin-left:4px" />
               </div>
             </div>
-            <div class="fsp-detail-health-badge" :style="{ background: companyHealthBarColor(selectedCompany) }">
+            <div class="fsp-detail-health-badge"
+              :style="{ background: companyHealthBarColor(selectedCompany) }"
+              v-tooltip.bottom="healthBreakdown(selectedCompany).map(f => `${f.good ? '✓' : '✗'} ${f.label} ${f.val}`).join('\n')">
               {{ companyHealth(selectedCompany) }}%
+            </div>
+          </div>
+
+          <!-- #4 Health breakdown (прозрачность) -->
+          <div class="fsp-health-breakdown">
+            <div v-for="f in healthBreakdown(selectedCompany)" :key="f.label" class="fsp-hb-item"
+              :class="{ good: f.good, bad: !f.good }">
+              <Icon :icon="f.good ? 'lucide:check' : 'lucide:x'" class="fsp-hb-icon" />
+              <span class="fsp-hb-label">{{ f.label }}</span>
+              <span class="fsp-hb-val">{{ f.val }}</span>
+            </div>
+          </div>
+
+          <!-- Project description -->
+          <div v-if="companyDescription(selectedCompany)" class="fsp-detail-desc">
+            {{ companyDescription(selectedCompany) }}
+          </div>
+
+          <!-- Quick facts (Progressive Disclosure — System 1 уровень) -->
+          <div class="fsp-quick-facts">
+            <div v-if="selectedCompany.foundedYear" class="fsp-qf" v-tooltip.bottom="'Год основания'">
+              <Icon icon="lucide:calendar" class="fsp-qf-icon" /><span>{{ selectedCompany.foundedYear }}</span>
+            </div>
+            <div v-if="selectedCompany.headcount" class="fsp-qf" v-tooltip.bottom="'Размер команды'">
+              <Icon icon="lucide:users" class="fsp-qf-icon" /><span>{{ selectedCompany.headcount }} чел.</span>
+            </div>
+            <div v-if="selectedCompany.patents" class="fsp-qf" v-tooltip.bottom="'Патенты'">
+              <Icon icon="lucide:file-badge" class="fsp-qf-icon" /><span>{{ selectedCompany.patents }} пат.</span>
+            </div>
+            <div v-if="selectedCompany.marketSizeMln" class="fsp-qf" v-tooltip.bottom="'Объём рынка (млн ₽)'">
+              <Icon icon="lucide:globe" class="fsp-qf-icon" /><span>{{ selectedCompany.marketSizeMln }}М</span>
+            </div>
+            <div v-if="selectedCompany.mrl" class="fsp-qf" v-tooltip.bottom="'MRL — Manufacturing Readiness Level'">
+              <Icon icon="lucide:factory" class="fsp-qf-icon" /><span>MRL {{ selectedCompany.mrl }}</span>
+            </div>
+            <div v-if="selectedCompany.sovereigntyScore" class="fsp-qf" v-tooltip.bottom="'Индекс технологического суверенитета (0-9)'">
+              <Icon icon="lucide:shield-check" class="fsp-qf-icon" /><span>Суверенитет {{ selectedCompany.sovereigntyScore }}/9</span>
+            </div>
+            <div v-if="selectedCompany.trl" class="fsp-qf" v-tooltip.bottom="'TRL — Technology Readiness Level'">
+              <Icon icon="lucide:flask-conical" class="fsp-qf-icon" /><span>TRL {{ selectedCompany.trl }}</span>
+            </div>
+            <div v-if="selectedCompany.projectedIRR" class="fsp-qf" v-tooltip.bottom="'Прогнозный IRR (%)'">
+              <Icon icon="lucide:trending-up" class="fsp-qf-icon" /><span>IRR {{ selectedCompany.projectedIRR }}%</span>
             </div>
           </div>
 
@@ -848,6 +929,20 @@
           </div>
         </div>
 
+        <!-- #2 AI Analysis (one-click summary) -->
+        <div class="fsp-detail-panel">
+          <div class="fsp-detail-panel-title">
+            <i class="pi pi-sparkles" style="color:var(--fst-purple)"></i> AI-анализ
+            <Button v-if="!companyAiSummary && !companyAiLoading" label="Сгенерировать" icon="pi pi-sparkles"
+              size="small" severity="secondary" text style="margin-left:auto" @click="generateCompanyAiSummary" />
+            <i v-if="companyAiLoading" class="pi pi-spin pi-spinner" style="margin-left:auto;color:var(--fst-purple)"></i>
+          </div>
+          <div v-if="companyAiSummary" class="fsp-ai-company-summary" v-html="formatChatText(companyAiSummary)"></div>
+          <div v-else-if="!companyAiLoading" class="fsp-ai-company-hint">
+            Нажмите «Сгенерировать» для AI-анализа компании
+          </div>
+        </div>
+
         <!-- Entity Links (ontology) -->
         <div class="fsp-detail-panel">
           <EntityLinksPanel
@@ -906,11 +1001,98 @@
         </div>
       </div>
 
-      <!-- Empty state -->
-      <div v-else class="fsp-detail fsp-detail-empty">
-        <i class="pi pi-arrow-left" style="font-size:24px;color:var(--p-text-muted-color)"></i>
-        <div>Выберите компанию</div>
+      <!-- #3 Compare panel (side-by-side) -->
+      <div v-if="compareCompanies.length >= 2 && !compareMode" class="fsp-detail fsp-compare-panel">
+        <div class="fsp-compare-header">
+          <Icon icon="lucide:columns-2" style="font-size:18px;color:var(--fst-purple)" />
+          <span>Сравнение компаний</span>
+          <Button icon="pi pi-times" size="small" text severity="secondary" style="margin-left:auto"
+            @click="compareSelected = []" />
+        </div>
+        <div class="fsp-compare-grid" :style="{ gridTemplateColumns: `120px repeat(${compareCompanies.length}, 1fr)` }">
+          <!-- Header row -->
+          <div class="fsp-cmp-label"></div>
+          <div v-for="cc in compareCompanies" :key="'h-'+cc.id" class="fsp-cmp-company-name">
+            <Icon :icon="companyIcon(cc)" style="font-size:14px" /> {{ companyDisplayName(cc) }}
+          </div>
+          <!-- Rows -->
+          <template v-for="row in [
+            { label: 'Health', key: c => companyHealth(c) + '%', color: c => companyHealthBarColor(c) },
+            { label: 'TRL', key: c => c.trl || '—' },
+            { label: 'Инвестиции', key: c => c.invested ? c.invested + 'М' : '—', color: () => 'var(--fst-blue)' },
+            { label: 'Выручка', key: c => c.revenue ? c.revenue + 'М' : '—', color: c => c.revenue > 0 ? 'var(--fst-green)' : 'var(--p-text-muted-color)' },
+            { label: 'Доля ФСТ', key: c => c.fstShare ? c.fstShare + '%' : '—', color: () => 'var(--fst-purple)' },
+            { label: 'Штат', key: c => c.headcount || '—' },
+            { label: 'Субфонд', key: c => c.subfund },
+            { label: 'Стадия', key: c => c.stage },
+            { label: 'Суверенитет', key: c => c.sovereigntyScore ? c.sovereigntyScore + '/9' : '—' },
+          ]" :key="row.label">
+            <div class="fsp-cmp-label">{{ row.label }}</div>
+            <div v-for="cc in compareCompanies" :key="row.label+'-'+cc.id" class="fsp-cmp-val"
+              :style="{ color: row.color ? row.color(cc) : 'var(--p-text-color)' }">
+              {{ row.key(cc) }}
+            </div>
+          </template>
+        </div>
       </div>
+
+      <!-- Empty state → Портфельное саммари (Kahneman System 1 — мгновенный контекст) -->
+      <div v-else-if="compareCompanies.length < 2 || compareMode" class="fsp-detail fsp-detail-summary">
+        <div class="fsp-sum-header">
+          <Icon icon="lucide:layout-dashboard" style="font-size:20px;color:var(--fst-purple)" />
+          <span>Портфель ФСТ НТИ</span>
+        </div>
+        <div class="fsp-sum-stats">
+          <div class="fsp-sum-stat">
+            <div class="fsp-sum-stat-val" style="color:var(--fst-green)">{{ portfolioCount }}</div>
+            <div class="fsp-sum-stat-label">В портфеле</div>
+          </div>
+          <div class="fsp-sum-stat">
+            <div class="fsp-sum-stat-val" style="color:var(--fst-brand)">{{ reviewCount }}</div>
+            <div class="fsp-sum-stat-label">На рассмотрении</div>
+          </div>
+          <div class="fsp-sum-stat">
+            <div class="fsp-sum-stat-val" style="color:var(--fst-blue)">{{ totalInvestedSum }}</div>
+            <div class="fsp-sum-stat-label">Инвестиции (млн)</div>
+          </div>
+          <div class="fsp-sum-stat">
+            <div class="fsp-sum-stat-val" style="color:var(--fst-purple)">{{ avgTRL }}</div>
+            <div class="fsp-sum-stat-label">Ср. TRL</div>
+          </div>
+        </div>
+
+        <!-- Топ компании по инвестициям -->
+        <div class="fsp-sum-section">
+          <div class="fsp-sum-section-title">Топ компании по инвестициям</div>
+          <div v-for="c in topInvestedCompanies" :key="c.id" class="fsp-sum-top-row" @click="selectCompany(c)">
+            <Icon :icon="companyIcon(c)" style="font-size:14px;opacity:0.7" />
+            <span class="fsp-sum-top-name">{{ companyDisplayName(c) }}</span>
+            <span class="fsp-sum-top-val" style="color:var(--fst-blue)">{{ c.invested }}М</span>
+            <div class="fsp-sum-top-bar-wrap">
+              <div class="fsp-sum-top-bar" :style="{ width: (c.invested / (topInvestedCompanies[0]?.invested || 1) * 100) + '%' }"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Субфонды -->
+        <div class="fsp-sum-section">
+          <div class="fsp-sum-section-title">По субфондам</div>
+          <div v-for="sf in subfundBreakdown" :key="sf.name" class="fsp-sum-sf-row">
+            <Icon :icon="SUBFUND_ICONS[sf.name] || 'lucide:folder'" style="font-size:13px;opacity:0.6" />
+            <span class="fsp-sum-sf-name">{{ sf.name }}</span>
+            <span class="fsp-sum-sf-count">{{ sf.count }}</span>
+            <div class="fsp-sum-sf-bar-wrap">
+              <div class="fsp-sum-sf-bar" :style="{ width: sf.pct + '%' }"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fsp-sum-hint">
+          <Icon icon="lucide:mouse-pointer-click" style="font-size:14px;opacity:0.5" />
+          Выберите компанию слева для детального просмотра
+        </div>
+      </div>
+      </template>
 
     </div>
 
@@ -959,12 +1141,15 @@ const STATUS_REVIEW = '1117'   // На рассмотрении ИК
 const activeView = ref('dashboard')
 const viewTabs = [
   { label: 'Дашборд',       id: 'dashboard' },
-  { label: 'Монитор',       id: 'monitor' },
-  { label: 'Воронка',       id: 'pipeline' },
-  { label: 'Финансы',       id: 'finance' },
-  { label: 'Оценки',        id: 'valuations' },
+  { label: 'Компании',      id: 'monitor' },
+  { label: 'Аналитика',     id: 'analytics' },
   { label: 'AI Аналитик',   id: 'chat' },
 ]
+// Hick's Law: 6→4 вкладки, снижение когнитивной нагрузки выбора
+// Progressive Disclosure: Воронка → подрежим внутри «Компании»
+// Cognitive Load: Финансы+Оценки → единая «Аналитика»
+const companyViewMode = ref('cards') // 'cards' | 'pipeline'
+const analyticsSubTab = ref('finance') // 'finance' | 'valuations'
 
 // ── СОД: Контекст дашборда (кросс-блочная реактивность) ─────────────────────
 const dashCtx = reactive({
@@ -1642,6 +1827,34 @@ const avgReviewTRL = computed(() => {
 const reviewSubfunds = computed(() => {
   return new Set(reviewCompanies.value.map(c => c.subfund).filter(s => s && s !== '—')).size
 })
+
+// ── Empty state: portfolio summary (Kahneman System 1) ───────────────────────
+const totalInvestedSum = computed(() => {
+  const sum = allCompanies.value.reduce((s, c) => s + (c.invested || 0), 0)
+  return sum ? fmtMln(sum * 1000) : '0'
+})
+const avgTRL = computed(() => {
+  const trls = allCompanies.value.map(c => c.trl).filter(Boolean)
+  return trls.length ? (trls.reduce((s, v) => s + v, 0) / trls.length).toFixed(1) : '—'
+})
+const topInvestedCompanies = computed(() => {
+  return [...allCompanies.value]
+    .filter(c => c.invested > 0)
+    .sort((a, b) => b.invested - a.invested)
+    .slice(0, 5)
+})
+
+// ── Company description extractor ────────────────────────────────────────────
+function companyDescription(c) {
+  if (!c?.description) return ''
+  const raw = c.description
+  // Strip FST_FULL_APPLICATION JSON comment
+  const clean = raw.replace(/<!--FST_FULL_APPLICATION:[\s\S]*?-->/, '').trim()
+  // Strip HTML tags
+  const text = clean.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  // Limit to ~300 chars
+  return text.length > 300 ? text.slice(0, 297) + '...' : text
+}
 
 // ── EVENT-DRIVEN: Active Signals ─────────────────────────────────────────────
 function timeAgo(ts) {
@@ -2872,6 +3085,18 @@ function mapRow(row, scope) {
     events: [],
     _scope: scope,
     _projectRef: row.projectRef || null,
+    // Enriched fields from Integram
+    description: row.description || '',
+    foundedYear: row.foundedYear || 0,
+    patents: row.patents || 0,
+    marketSizeMln: row.marketSizeMln || 0,
+    teamStrength: row.teamStrength || 0,
+    projectedIRR: row.projectedIRR || 0,
+    mrl: row.mrl || 0,
+    sovereigntyScore: row.sovereigntyScore || 0,
+    legalForm: row.legalForm || '',
+    legalAddress: row.legalAddress || '',
+    ogrn: row.ogrn || '',
   }
 }
 
@@ -2927,6 +3152,11 @@ async function loadPortfolioFromDb() {
     generateDerivedEvents()
     if (dashMode.value === 'live') sodGenerateLive()
 
+    // Snapshot for change detection, then auto-select
+    detectChanges()
+    snapshotMetrics()
+    if (activeView.value === 'monitor') nextTick(autoSelectFirstCompany)
+
     toast.add({ severity: 'success', summary: `${portfolioRows.length} в портфеле + ${reviewRows.length} на рассмотрении`, life: 2000 })
     if (activeView.value === 'dashboard') nextTick(initDashboardCharts)
   } catch (err) {
@@ -2967,6 +3197,12 @@ watch([activeView, allCompanies], ([view]) => {
   } else {
     stopMetricsCycle()
   }
+  // Auto-select on tab switch to Компании (Fitts' Law)
+  if (view === 'monitor' && !selectedCompany.value && allCompanies.value.length) {
+    nextTick(autoSelectFirstCompany)
+  }
+  // Reset AI summary when switching companies tab
+  companyAiSummary.value = ''
 }, { deep: false })
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -3005,12 +3241,127 @@ function formatChatText(text) {
 
 async function selectCompany(c) {
   selectedCompany.value = c
-  if (activeView.value === 'dashboard' || activeView.value === 'pipeline') activeView.value = 'monitor'
+  companyAiSummary.value = ''
+  changedCompanies.value.delete(c.id)
+  if (activeView.value === 'dashboard') activeView.value = 'monitor'
+  if (companyViewMode.value === 'pipeline') companyViewMode.value = 'cards'
   await ensureCompanyTimeline(c)
 }
 function selectCompanyById(id) {
   const c = allCompanies.value.find(x => x.id === id)
   if (c) selectCompany(c)
+}
+
+// ── #1 Auto-select: выбираем самую проблемную компанию при первом открытии ──
+function autoSelectFirstCompany() {
+  if (selectedCompany.value || !filteredCompanies.value.length) return
+  // Приоритет: red risk → yellow → largest invested
+  const sorted = [...filteredCompanies.value].sort((a, b) => {
+    const riskOrder = { red: 0, yellow: 1, green: 2 }
+    const ra = riskOrder[a.riskLevel] ?? 2, rb = riskOrder[b.riskLevel] ?? 2
+    if (ra !== rb) return ra - rb
+    return (b.invested || 0) - (a.invested || 0)
+  })
+  selectCompany(sorted[0])
+}
+
+// ── #2 AI-саммари по отдельной компании ──────────────────────────────────────
+const companyAiSummary = ref('')
+const companyAiLoading = ref(false)
+async function generateCompanyAiSummary() {
+  if (!selectedCompany.value || companyAiLoading.value) return
+  companyAiLoading.value = true
+  companyAiSummary.value = ''
+  const c = selectedCompany.value
+  const m = getMetrics(c.id)
+  const prompt = `Дай краткий аналитический вердикт (3-5 предложений) по компании для венчурного фонда.
+Компания: ${companyDisplayName(c)}
+Субфонд: ${c.subfund}, Стадия: ${c.stage}, TRL: ${c.trl}, MRL: ${c.mrl || '—'}
+Инвестиции: ${c.invested ? c.invested + 'М ₽' : '—'}, Доля фонда: ${c.fstShare ? c.fstShare + '%' : '—'}
+Выручка: ${c.revenue ? c.revenue + 'М ₽' : '—'}, Штат: ${c.headcount || '—'}, Год основания: ${c.foundedYear || '—'}
+Патенты: ${c.patents || '—'}, Рынок: ${c.marketSizeMln ? c.marketSizeMln + 'М ₽' : '—'}
+Суверенитет: ${c.sovereigntyScore || '—'}/9, Health: ${companyHealth(c)}%
+IRR: ${m?.irr || c.projectedIRR || '—'}%, EBITDA: ${m?.ebitda ? fmtMln(m.ebitda) + ' ₽' : '—'}
+Описание: ${companyDescription(c) || '—'}
+
+Формат ответа:
+1) Ключевой вывод (одно предложение)
+2) Основные риски
+3) Рекомендация (держать/наблюдать/действовать)`
+  try {
+    const resp = await fetch('/api/ai-tokens/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modelId: 'deepseek/deepseek-chat',
+        prompt,
+        systemPrompt: 'Ты — аналитик венчурного фонда ФСТ НТИ. Будь конкретен, используй цифры.',
+        application: 'PortfolioCompanyAI'
+      })
+    })
+    const data = await resp.json()
+    companyAiSummary.value = data.response || 'Ошибка генерации'
+  } catch {
+    companyAiSummary.value = 'Не удалось получить AI-анализ'
+  } finally {
+    companyAiLoading.value = false
+  }
+}
+
+// ── #3 Сравнение компаний ────────────────────────────────────────────────────
+const compareMode = ref(false)
+const compareSelected = ref([]) // array of company ids
+function toggleCompare(c) {
+  const idx = compareSelected.value.indexOf(c.id)
+  if (idx >= 0) compareSelected.value.splice(idx, 1)
+  else if (compareSelected.value.length < 3) compareSelected.value.push(c.id)
+}
+const compareCompanies = computed(() => {
+  return compareSelected.value.map(id => allCompanies.value.find(c => c.id === id)).filter(Boolean)
+})
+
+// ── #4 Health score breakdown (прозрачность) ─────────────────────────────────
+function healthBreakdown(company) {
+  const m = getMetrics(company.id)
+  const factors = []
+  // TRL
+  if (company.trl >= 7) factors.push({ label: 'TRL зрелый', val: '+15', good: true })
+  else if (company.trl >= 4) factors.push({ label: 'TRL средний', val: '+5', good: true })
+  else factors.push({ label: 'TRL низкий', val: '-10', good: false })
+  // Revenue
+  if (m?.revenue > 0) factors.push({ label: 'Есть выручка', val: '+15', good: true })
+  else factors.push({ label: 'Нет выручки', val: '-10', good: false })
+  // Investment
+  if (m?.totalInvestment > 0) factors.push({ label: 'Инвестиции', val: '+10', good: true })
+  // Team
+  if (company.headcount >= 10) factors.push({ label: 'Команда 10+', val: '+5', good: true })
+  // Risk
+  if (company.riskLevel === 'red') factors.push({ label: 'Красный риск', val: '-20', good: false })
+  else if (company.riskLevel === 'yellow') factors.push({ label: 'Жёлтый риск', val: '-10', good: false })
+  // Patents
+  if (company.patents > 0) factors.push({ label: 'Патенты', val: '+5', good: true })
+  return factors
+}
+
+// ── #7 Change detection (Change Blindness Prevention) ────────────────────────
+const previousMetrics = ref(new Map()) // id → { trl, revenue, health }
+const changedCompanies = ref(new Set())
+
+function detectChanges() {
+  for (const c of allCompanies.value) {
+    const prev = previousMetrics.value.get(c.id)
+    if (!prev) continue
+    if (prev.trl !== c.trl || prev.revenue !== c.revenue || prev.health !== companyHealth(c)) {
+      changedCompanies.value.add(c.id)
+    }
+  }
+}
+function snapshotMetrics() {
+  const snap = new Map()
+  for (const c of allCompanies.value) {
+    snap.set(c.id, { trl: c.trl, revenue: c.revenue, health: companyHealth(c) })
+  }
+  previousMetrics.value = snap
 }
 function callCommittee() {
   toast.add({ severity: 'warn', summary: 'ИК созывается', detail: 'Уведомление отправлено членам ИК', life: 3500 })
@@ -3597,6 +3948,7 @@ function initDashboardCharts() {
 }
 
 /* ═══ Pipeline ═══ */
+.fsp-pipeline-wrap { width: 100%; padding: 0 4px; }
 .fsp-pipeline { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; }
 .fsp-pipe-stage { flex: 1; min-width: 180px; }
 .fsp-pipe-header {
@@ -3687,10 +4039,141 @@ function initDashboardCharts() {
   border-left: 1px solid var(--p-content-border-color);
   overflow-y: auto; padding: 12px; background: var(--p-surface-ground);
 }
-.fsp-detail-empty {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 12px; color: var(--p-text-muted-color); font-size: 13px; min-height: 200px;
+/* ═══ Empty state → Portfolio summary ═══ */
+.fsp-detail-summary {
+  padding: 16px; overflow-y: auto;
 }
+.fsp-sum-header {
+  display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700;
+  color: var(--p-text-color); margin-bottom: 16px;
+}
+.fsp-sum-stats {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px;
+}
+.fsp-sum-stat {
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 8px; padding: 12px; text-align: center;
+}
+.fsp-sum-stat-val { font-size: 22px; font-weight: 700; line-height: 1; }
+.fsp-sum-stat-label { font-size: 10px; color: var(--p-text-muted-color); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.fsp-sum-section { margin-bottom: 16px; }
+.fsp-sum-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--p-text-muted-color); margin-bottom: 8px;
+}
+.fsp-sum-top-row {
+  display: flex; align-items: center; gap: 6px; padding: 5px 0; cursor: pointer;
+  font-size: 12px; transition: background 0.2s;
+}
+.fsp-sum-top-row:hover { background: color-mix(in srgb, var(--p-primary-color) 8%, transparent); border-radius: 4px; }
+.fsp-sum-top-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fsp-sum-top-val { font-weight: 600; font-size: 11px; width: 50px; text-align: right; }
+.fsp-sum-top-bar-wrap { width: 60px; height: 4px; background: var(--p-content-border-color); border-radius: 2px; overflow: hidden; }
+.fsp-sum-top-bar { height: 100%; background: var(--fst-blue); border-radius: 2px; transition: width 0.5s ease; }
+.fsp-sum-sf-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 12px; }
+.fsp-sum-sf-name { flex: 1; }
+.fsp-sum-sf-count { font-weight: 600; color: var(--p-text-muted-color); font-size: 11px; width: 24px; text-align: right; }
+.fsp-sum-sf-bar-wrap { width: 50px; height: 4px; background: var(--p-content-border-color); border-radius: 2px; overflow: hidden; }
+.fsp-sum-sf-bar { height: 100%; background: var(--fst-purple); border-radius: 2px; }
+.fsp-sum-hint {
+  display: flex; align-items: center; gap: 6px; justify-content: center;
+  font-size: 11px; color: var(--p-text-muted-color); margin-top: 16px; padding-top: 12px;
+  border-top: 1px solid var(--p-content-border-color);
+}
+
+/* ═══ Detail panel: description + quick facts ═══ */
+.fsp-detail-desc {
+  font-size: 12px; line-height: 1.5; color: var(--p-text-color); margin-bottom: 12px;
+  padding: 10px; background: color-mix(in srgb, var(--p-primary-color) 5%, transparent);
+  border-radius: 6px; border-left: 3px solid var(--fst-purple);
+}
+.fsp-quick-facts {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+}
+.fsp-qf {
+  display: flex; align-items: center; gap: 4px; font-size: 11px;
+  padding: 3px 8px; border-radius: 4px;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  color: var(--p-text-color); white-space: nowrap;
+}
+.fsp-qf-icon { font-size: 12px; opacity: 0.6; }
+
+/* ═══ Health breakdown ═══ */
+.fsp-health-breakdown {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px;
+}
+.fsp-hb-item {
+  display: flex; align-items: center; gap: 3px; font-size: 10px;
+  padding: 2px 6px; border-radius: 3px;
+}
+.fsp-hb-item.good { background: color-mix(in srgb, var(--fst-green) 10%, transparent); color: var(--fst-green); }
+.fsp-hb-item.bad { background: color-mix(in srgb, var(--fst-red) 10%, transparent); color: var(--fst-red); }
+.fsp-hb-icon { font-size: 10px; }
+.fsp-hb-val { font-weight: 600; }
+
+/* ═══ AI company summary ═══ */
+.fsp-ai-company-summary {
+  font-size: 12px; line-height: 1.6; color: var(--p-text-color);
+  padding: 8px; border-radius: 6px;
+  background: color-mix(in srgb, var(--fst-purple) 5%, transparent);
+}
+.fsp-ai-company-hint {
+  font-size: 11px; color: var(--p-text-muted-color); text-align: center; padding: 8px;
+}
+
+/* ═══ Compare ═══ */
+.fsp-compare-toolbar {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: color-mix(in srgb, var(--fst-purple) 8%, transparent);
+  border: 1px solid var(--fst-purple); border-radius: 6px; margin-bottom: 8px;
+  font-size: 12px; color: var(--p-text-color);
+}
+.fsp-card--compare { border-color: var(--fst-purple) !important; }
+.fsp-card-compare-check {
+  position: absolute; top: 6px; right: 6px; cursor: pointer; z-index: 2;
+}
+.fsp-compare-panel {
+  border-left: 1px solid var(--p-content-border-color);
+  overflow-y: auto; padding: 16px; background: var(--p-surface-ground);
+}
+.fsp-compare-header {
+  display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700;
+  color: var(--p-text-color); margin-bottom: 14px;
+}
+.fsp-compare-grid {
+  display: grid; gap: 1px; font-size: 12px;
+}
+.fsp-cmp-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--p-text-muted-color); padding: 6px 4px;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+.fsp-cmp-company-name {
+  display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 11px;
+  padding: 6px 4px; border-bottom: 1px solid var(--p-content-border-color);
+  color: var(--p-text-color);
+}
+.fsp-cmp-val {
+  padding: 6px 4px; font-weight: 600; font-size: 12px;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+
+/* ═══ Card change badge (Change Blindness Prevention) ═══ */
+.fsp-card--changed { border-color: var(--fst-cyan) !important; }
+.fsp-card-changed-badge {
+  position: absolute; top: 4px; left: 4px; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--fst-cyan); color: white;
+  display: flex; align-items: center; justify-content: center;
+  animation: fsp-pulse-badge 2s ease-in-out infinite;
+}
+@keyframes fsp-pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ═══ Card visual density (Tufte data-ink) ═══ */
+.fsp-card { position: relative; border-left: 2px solid var(--p-content-border-color); transition: border-left-width 0.3s, border-color 0.3s; }
+
 .fsp-detail-panel {
   background: transparent; border: 1px solid var(--p-content-border-color);
   border-radius: 8px; padding: 12px; margin-bottom: 10px;
@@ -4333,7 +4816,7 @@ function initDashboardCharts() {
 @media (max-width: 900px) {
   .fsp-body { grid-template-columns: 1fr !important; }
   .fsp-detail { border-left: none; border-top: 1px solid var(--p-content-border-color); }
-  .fsp-detail-empty { display: none; }
+  .fsp-detail-summary { display: none; }
   .fsp-ig-body { grid-template-columns: 1fr 1fr; }
   .fsp-ig-kpis { flex-wrap: wrap; }
   .fsp-ig-kpi { min-width: 80px; }
