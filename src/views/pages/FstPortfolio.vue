@@ -5833,7 +5833,7 @@ function initDashboardCharts() {
 
 /* ═══ Portfolio Score + NAV Timeline + Correlation Row ═══ */
 .fsp-score-row {
-  display: flex; gap: 10px; margin-bottom: 10px; align-items: stretch;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px;
 }
 .fsp-score-gauge {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
@@ -5853,8 +5853,8 @@ function initDashboardCharts() {
 }
 
 .fsp-nav-timeline {
-  flex: 1; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
-  border-radius: 10px; padding: 10px 14px;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 10px; padding: 10px 14px; min-width: 0;
 }
 .fsp-nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .fsp-nav-title {
@@ -5870,7 +5870,7 @@ function initDashboardCharts() {
 
 .fsp-corr-matrix {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
-  border-radius: 10px; padding: 10px 12px; min-width: 180px;
+  border-radius: 10px; padding: 10px 12px; min-width: 0;
 }
 .fsp-corr-title {
   font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
@@ -5914,7 +5914,7 @@ function initDashboardCharts() {
 /* ═══ Technology Coverage Radar ═══ */
 .fsp-tech-radar {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
-  border-radius: 10px; padding: 10px 12px; min-width: 200px;
+  border-radius: 10px; padding: 10px 12px; min-width: 0;
   display: flex; flex-direction: column; align-items: center;
 }
 .fsp-radar-svg { width: 180px; height: 160px; }
@@ -6121,7 +6121,7 @@ function initDashboardCharts() {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .fsp-score-row { flex-direction: column; }
+  .fsp-score-row { grid-template-columns: 1fr; }
   .fsp-corr-matrix, .fsp-tech-radar { min-width: unset; }
   .fsp-swarm-grid { grid-template-columns: repeat(2, 1fr); }
   .fsp-pred-cards { flex-direction: column; }
