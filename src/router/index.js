@@ -10,6 +10,7 @@ const routes = [
     children: [
       { path: 'fst-hub', component: () => import('@/views/pages/FstHub.vue'), meta: { title: 'ФСТ НТИ — Главная' } },
       { path: 'fst-committee', component: () => import('@/views/pages/FstCommittee.vue'), meta: { title: 'AI-инвесткомитет' } },
+      { path: 'event-ontology', component: () => import('@/views/pages/EventOntologyEngine.vue'), meta: { title: 'Событийная онтология' } },
       { path: 'fst-protocol', component: () => import('@/views/pages/FstProtocol.vue'), meta: { title: 'Протоколы инвесткомитета' } },
       { path: 'fst-contract/:id', component: () => import('@/views/pages/FstSmartContract.vue'), meta: { title: 'Смарт контракт' } },
       { path: 'fst-deal', component: () => import('@/views/pages/FstDeal.vue'), meta: { title: 'Доведение сделки' } },
