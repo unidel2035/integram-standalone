@@ -112,7 +112,8 @@ export const fstMenuConfig = [
       { label: 'Нацпроект',    icon: 'pi pi-flag',       to: '/fst-natproject',  roles: ['director', 'admin'] },
       { label: 'GR-панель',    svgIcon: svgLandmark,     to: '/fst-gov',         roles: ['director', 'admin'] },
       { label: 'Agent Room',   icon: 'pi pi-comments',   to: '/fst-room',        roles: ['director', 'analyst', 'admin'] },
-      { label: 'Онтология',   icon: 'pi pi-sitemap',    to: '/event-ontology',  roles: ['director', 'analyst', 'admin'] },
+      { label: 'Онтология',       icon: 'pi pi-sitemap',    to: '/event-ontology',                          roles: ['director', 'analyst', 'admin'] },
+      { label: 'Онтология дара',  icon: 'pi pi-heart',      to: '/event-ontology?section=fstCommittee',   roles: ['director', 'analyst', 'admin'] },
     ]
   },
   {
