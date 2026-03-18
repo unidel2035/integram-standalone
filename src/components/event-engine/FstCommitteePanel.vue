@@ -700,9 +700,9 @@
       <div class="fst-section-title">
         <i class="pi pi-briefcase"></i> Дар-оценка портфеля ФСТ НТИ
       </div>
-      <div v-if="PROJECTS_POOL.value.length === 0" class="gift-loading">Загрузка проектов...</div>
+      <div v-if="PROJECTS_POOL.length === 0" class="gift-loading">Загрузка проектов...</div>
       <div v-else class="gift-portfolio-grid">
-        <div v-for="p in PROJECTS_POOL.value" :key="p.id" class="gift-project-card"
+        <div v-for="p in PROJECTS_POOL" :key="p.id" class="gift-project-card"
           :class="{ 'gift-project-selected': giftSelectedProjectId === p.id }"
           @click="giftSelectedProjectId = p.id; fillGiftFromProject()">
           <div class="gift-project-header">
@@ -799,7 +799,7 @@
             <label>Проект фонда</label>
             <select v-model="giftSelectedProjectId" class="gift-input" @change="fillGiftFromProject">
               <option :value="null">— выберите проект —</option>
-              <option v-for="p in PROJECTS_POOL.value" :key="p.id" :value="p.id">{{ p.title || p.name }}</option>
+              <option v-for="p in PROJECTS_POOL" :key="p.id" :value="p.id">{{ p.title || p.name }}</option>
             </select>
           </div>
           <div class="gift-form-row">
@@ -1211,7 +1211,7 @@ const giftAnalysis = reactive({
 const giftResult = ref(null)
 
 function fillGiftFromProject() {
-  const p = PROJECTS_POOL.value.find(p => p.id === giftSelectedProjectId.value)
+  const p = PROJECTS_POOL.find(p => p.id === giftSelectedProjectId.value)
   if (!p) return
   giftAnalysis.projectName = p.title || p.name || ''
   // Estimate fields from project data
@@ -1409,7 +1409,7 @@ const speedOptions = [
 ]
 
 const projectOptions = computed(() =>
-  PROJECTS_POOL.value.map(p => ({
+  PROJECTS_POOL.map(p => ({
     label: `${p.title || p.name} (${((p.requestedAmount || 0) / 1e6).toFixed(0)} млн)`,
     value: p.id,
   }))
@@ -1441,7 +1441,7 @@ function handleEvent() {
 }
 
 function startSession() {
-  const project = PROJECTS_POOL.value.find(p => p.id === selectedProjectId.value)
+  const project = PROJECTS_POOL.find(p => p.id === selectedProjectId.value)
   if (!project) return
   const sess = createSession(project, { speed: selectedSpeed.value })
   session.value = sess
