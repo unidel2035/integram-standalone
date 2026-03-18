@@ -76,6 +76,7 @@ import expertRoutes     from './src/api/routes/expert.js'
 import factorRoutes     from './src/api/routes/factorModel.js'
 import userRoutes       from './src/api/routes/user.js'
 import eventGraphRoutes from './src/api/routes/eventGraph.js'
+import { createEventEngineRoutes } from './src/api/routes/event-engine.js'
 import docParserRoutes  from './src/api/routes/docParser.js'
 import billingRoutes    from './src/api/routes/billing.js'
 import { logUsage, incrementUsage, checkTokenQuota, deductTokens } from './src/services/billingService.js'
@@ -760,6 +761,7 @@ app.use('/api/user',     userRoutes)
 app.use('/api/glossary',  glossaryRoutes)
 app.use('/api/fst',       grMeasuresRoutes)
 app.use('/api/fst',       eventGraphRoutes)
+app.use('/api/event-engine', createEventEngineRoutes())
 app.use('/api/fst',       docParserRoutes)
 app.use('/api',           roomRoutes)
 app.use('/api',           eventsRoutes)
