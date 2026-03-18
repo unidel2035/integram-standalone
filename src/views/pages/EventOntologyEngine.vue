@@ -239,17 +239,18 @@ function handleTutorialNav(e) {
 }
 
 onMounted(async () => {
-  await Promise.all([loadActors(), loadApplications()])
-  // Restore app selection from URL
-  if (route.query.app) {
-    selectedApplicationId.value = route.query.app
-    loadScope()
-  }
-  // Restore section from URL
+  // Restore section from URL FIRST (before any async)
   if (route.query.section && panels[route.query.section]) {
     activeSection.value = route.query.section
   }
+  if (route.query.app) {
+    selectedApplicationId.value = route.query.app
+  }
   window.addEventListener('ee-navigate', handleTutorialNav)
+  // Load data in background (don't block render)
+  Promise.all([loadActors(), loadApplications()]).then(() => {
+    if (selectedApplicationId.value) loadScope()
+  })
 })
 
 // React to browser back/forward — update activeSection from route query
