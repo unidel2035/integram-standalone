@@ -697,7 +697,7 @@ function gradeColor(g) { return GRADE_COLORS[g] || 'var(--p-text-muted-color)' }
 .fm-stress-row {
   padding: 6px 8px;
   border-radius: 4px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid transparent;
 }
 .fm-stress-row--critical {

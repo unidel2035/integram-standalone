@@ -657,7 +657,7 @@ watch(visible, (newVal) => {
   padding: 0.75rem;
   border-radius: 8px;
   border: 1px solid var(--surface-border);
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
 }
 
 .qp-item .qp-icon {
@@ -701,7 +701,7 @@ watch(visible, (newVal) => {
   align-items: flex-start;
   gap: 1rem;
   padding: 0.75rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   border: 1px solid var(--surface-border);
 }

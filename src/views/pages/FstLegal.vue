@@ -253,7 +253,7 @@ function generateDoc() {
 a.legal-btn { text-decoration: none; display: inline-flex; align-items: center; }
 
 .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.doc-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; cursor: pointer; transition: border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }
+.doc-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; cursor: pointer; transition: border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }
 .doc-card:hover { border-color: var(--p-primary-color); }
 .doc-icon { font-size: 1.8rem; }
 .doc-name { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
@@ -274,12 +274,12 @@ a.legal-btn { text-decoration: none; display: inline-flex; align-items: center; 
 .doc-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .doc-status { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
 .doc-status.signed { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
-.doc-status.draft  { background: var(--p-surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); }
+.doc-status.draft  { background: var(--p-surface-card); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); }
 .doc-status.review { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
 .doc-actions { display: flex; gap: 6px; }
 
 .ts-conditions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.ts-cond { display: grid; grid-template-columns: 220px 1fr; gap: 10px; align-items: center; padding: 8px; background: var(--p-surface-ground); border-radius: 6px; }
+.ts-cond { display: grid; grid-template-columns: 220px 1fr; gap: 10px; align-items: center; padding: 8px; background: var(--p-surface-card); border-radius: 6px; }
 .tsc-term  { font-size: 0.82rem; font-weight: 600; color: var(--p-text-color); }
 .tsc-note  { font-size: 0.68rem; color: var(--p-text-muted-color); grid-column: 1 / -1; }
 

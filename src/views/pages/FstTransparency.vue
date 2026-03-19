@@ -448,7 +448,7 @@ function statusLabel(status) {
 
 <style scoped>
 .fst-transparency-root {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -572,7 +572,7 @@ function statusLabel(status) {
 }
 .fst-tr-overview-item {
   padding: 12px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   border: 1px solid var(--surface-border);
 }
@@ -596,7 +596,7 @@ function statusLabel(status) {
 }
 .fst-tr-strategy-item {
   padding: 14px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   border: 1px solid var(--surface-border);
   border-left: 3px solid currentColor;
@@ -624,7 +624,7 @@ function statusLabel(status) {
 }
 .fst-tr-principle {
   padding: 12px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   border: 1px solid var(--surface-border);
 }
@@ -683,7 +683,7 @@ function statusLabel(status) {
   display: flex;
   gap: 12px;
   padding: 14px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   border: 1px solid var(--surface-border);
 }
@@ -720,7 +720,7 @@ function statusLabel(status) {
 }
 .fst-tr-gov-item {
   padding: 14px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   border: 1px solid var(--surface-border);
 }
@@ -751,7 +751,7 @@ function statusLabel(status) {
 .fst-tr-team-member {
   text-align: center;
   padding: 16px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   border: 1px solid var(--surface-border);
 }
@@ -795,7 +795,7 @@ function statusLabel(status) {
   display: flex;
   gap: 12px;
   padding: 14px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   border: 1px solid var(--surface-border);
 }
@@ -862,7 +862,7 @@ function statusLabel(status) {
   display: flex;
   align-items: flex-start;
   padding: 12px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   border: 1px solid var(--surface-border);
 }

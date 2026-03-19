@@ -625,7 +625,7 @@ function submitEvent() {
   flex-direction: column;
   align-items: center;
   padding: 10px 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   gap: 4px;
 }
@@ -643,7 +643,7 @@ function submitEvent() {
   margin-bottom: 16px;
   padding: 12px;
   border-radius: 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
 }
 .sm-gap-row, .sm-next-row {
   display: flex;

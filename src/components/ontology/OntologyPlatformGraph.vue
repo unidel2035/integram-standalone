@@ -243,7 +243,7 @@ function entityColor(et) { return ENTITY_TYPES[et]?.color || '#94a3b8' }
 .ont-graph__canvas {
   width: 100%;
   height: 340px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   transition: height 0.2s;
 }
 .ont-graph__canvas.fullscreen {

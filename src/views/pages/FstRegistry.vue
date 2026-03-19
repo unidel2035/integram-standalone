@@ -211,7 +211,7 @@ function syncRegistry() { syncStatus.value[3].status = 'ok'; syncStatus.value[3]
 .reg-section h2 { margin: 0 0 14px; font-size: 1.05rem; color: var(--p-text-color); }
 
 .portfolio-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.co-status-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; }
+.co-status-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; }
 .cos-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .cos-name { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); }
 .cos-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
@@ -243,7 +243,7 @@ function syncRegistry() { syncStatus.value[3].status = 'ok'; syncStatus.value[3]
 .reg-use, .reg-date { font-size: 0.72rem; color: var(--p-text-muted-color); }
 
 .req-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.req-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px; }
+.req-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px; }
 .req-title { font-weight: 700; font-size: 0.85rem; color: var(--p-text-color); margin-bottom: 4px; }
 .req-desc { font-size: 0.72rem; color: var(--p-text-muted-color); margin-bottom: 6px; }
 .req-threshold { font-size: 0.78rem; font-weight: 600; color: var(--p-primary-color); }

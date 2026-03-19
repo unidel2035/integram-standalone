@@ -242,7 +242,7 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 .ov-grade { font-size: 0.85rem; font-weight: 700; padding: 3px 10px; border-radius: 5px; }
 
 .esg-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 18px; }
-.esg-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
+.esg-section-title { font-size:0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
 .e-color { color: var(--fst-green); } .s-color { color: var(--fst-blue); } .g-color { color: var(--fst-purple); }
 
 .esg-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
@@ -269,7 +269,7 @@ function exportEsg() { alert('Экспорт TCFD-отчёта') }
 .mi-pct { font-size: 0.72rem; color: var(--p-text-muted-color); min-width: 35px; text-align: right; }
 
 .tcfd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.tcfd-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.tcfd-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
 .tcfd-cat { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; width: fit-content; }
 .tcfd-cat.risk        { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 .tcfd-cat.opportunity { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }

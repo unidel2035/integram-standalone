@@ -235,7 +235,7 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 </script>
 
 <style scoped>
-.ilpa-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
+.ilpa-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-card); }
 .ilpa-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .ilpa-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .ilpa-subtitle { font-size: 0.8rem; color: var(--p-text-muted-color); }
@@ -267,9 +267,9 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .ilpa-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
 .ilpa-table th { padding: 8px 12px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.75rem; font-weight: 600; }
 .ilpa-table td { padding: 9px 12px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
-.ilpa-table tfoot td { border-top: 2px solid var(--p-content-border-color); border-bottom: none; background: var(--p-surface-ground); }
-.ilpa-table tr.cas-total { background: var(--p-surface-ground); }
-.ilpa-table tr.cas-sub td { color: var(--p-text-muted-color); font-style: italic; font-size: 0.8rem; background: var(--p-surface-ground); padding-top: 12px; }
+.ilpa-table tfoot td { border-top: 2px solid var(--p-content-border-color); border-bottom: none; background: var(--p-surface-card); }
+.ilpa-table tr.cas-total { background: var(--p-surface-card); }
+.ilpa-table tr.cas-sub td { color: var(--p-text-muted-color); font-style: italic; font-size: 0.8rem; background: var(--p-surface-card); padding-top: 12px; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .bold { font-weight: 700; }
 .green { color: var(--fst-green); } .red { color: var(--fst-red); } .orange { color: var(--fst-brand); } .gray { color: var(--p-text-muted-color); } .blue { color: var(--fst-blue); }
@@ -279,7 +279,7 @@ function sendToLps() { alert('Отчёт ILPA за ' + selectedQuarter.value + '
 .perf-block h3 { font-size: 0.9rem; margin: 0 0 10px; color: var(--p-text-color); }
 
 .portco-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-.portco-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; }
+.portco-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; }
 .portco-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .portco-name { font-weight: 700; font-size: 0.9rem; color: var(--p-text-color); }
 .portco-stage { font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; background: var(--p-primary-color); color: white; }

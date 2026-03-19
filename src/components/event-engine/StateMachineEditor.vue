@@ -377,7 +377,7 @@ onMounted(loadData)
 .fsm-form .field { display: flex; flex-direction: column; gap: 4px; }
 .fsm-form .field label { font-weight: 600; font-size: 0.85rem; }
 .fsm-exec-result { margin-top: 12px; }
-.mermaid-code { background: var(--p-surface-ground); padding: 12px; border-radius: 6px; font-size: 0.85rem; white-space: pre-wrap; max-height: 400px; overflow: auto; }
+.mermaid-code { background: var(--p-surface-card); padding: 12px; border-radius: 6px; font-size: 0.85rem; white-space: pre-wrap; max-height: 400px; overflow: auto; }
 
 /* State node styles */
 .fsm-node { padding: 8px 16px; border-radius: 8px; border: 2px solid #64748b; background: var(--p-surface-card); min-width: 80px; text-align: center; cursor: pointer; transition: all 0.2s; }

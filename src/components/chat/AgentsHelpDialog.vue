@@ -287,7 +287,7 @@ watch(visible, (newVal) => {
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;

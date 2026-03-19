@@ -208,7 +208,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   cursor: pointer;
   font-weight: 600;
@@ -235,7 +235,7 @@ onMounted(() => {
   padding: 6px 10px;
   text-align: left;
   font-weight: 600;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-bottom: 1px solid var(--p-content-border-color);
   color: var(--p-text-muted-color);
   font-size: 10px;
@@ -261,7 +261,7 @@ onMounted(() => {
 
 .tr-row-total td {
   font-weight: 700;
-  background: color-mix(in srgb, var(--p-surface-ground) 60%, transparent);
+  background: color-mix(in srgb, var(--p-surface-card) 60%, transparent);
 }
 
 .tr-input {

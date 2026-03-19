@@ -751,7 +751,7 @@ onMounted(() => {
 }
 
 .export-code-container {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   padding: 1rem;
   border-radius: 6px;
   max-height: 500px;

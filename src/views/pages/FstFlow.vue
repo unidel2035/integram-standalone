@@ -492,7 +492,7 @@ function statusLabel(status) {
 <style scoped>
 .flow-wrapper {
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 
 /* ── Topbar ────────────────────────────────────────────────────────────────── */
@@ -569,7 +569,7 @@ function statusLabel(status) {
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   margin: 6px 4px;
@@ -721,7 +721,7 @@ function statusLabel(status) {
   gap: 12px;
   padding: 9px 14px;
   border-radius: 8px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   font-size: 13px;
   color: var(--p-text-muted-color);
 }
@@ -761,7 +761,7 @@ function statusLabel(status) {
   justify-content: center;
   font-size: 10px;
   font-weight: 700;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
 }
 
@@ -776,7 +776,7 @@ function statusLabel(status) {
 
 .stage-summary-cell {
   flex: 1; text-align: center;
-  padding: 12px; background: var(--p-surface-ground); border-radius: 8px;
+  padding: 12px; background: var(--p-surface-card); border-radius: 8px;
 }
 
 .stage-count { font-size: 24px; font-weight: 700; line-height: 1; }
@@ -801,7 +801,7 @@ function statusLabel(status) {
 
 .ic-session-card {
   display: flex; align-items: center; gap: 14px;
-  padding: 12px 14px; background: var(--p-surface-ground); border-radius: 10px;
+  padding: 12px 14px; background: var(--p-surface-card); border-radius: 10px;
 }
 
 .ic-session-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; flex-shrink: 0; }
@@ -818,7 +818,7 @@ function statusLabel(status) {
 
 .expert-task {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px; background: var(--p-surface-ground); border-radius: 8px; font-size: 13px;
+  padding: 10px 14px; background: var(--p-surface-card); border-radius: 8px; font-size: 13px;
 }
 
 /* ── Alerts list ───────────────────────────────────────────────────────────── */

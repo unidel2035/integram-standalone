@@ -262,11 +262,11 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .dd-meta { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--p-text-muted-color); }
 
 .dd-detail { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; }
-.dd-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
-.dd-block-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 12px; }
+.dd-section-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
+.dd-block-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 12px; }
 .dd-tabs { margin-bottom: 16px; }
 .check-grid { display: flex; flex-direction: column; gap: 8px; }
-.dd-check { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--p-surface-ground); }
+.dd-check { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--p-surface-card); }
 .dd-check.ok   { border-left: 3px solid var(--fst-green); }
 .dd-check.warn { border-left: 3px solid var(--fst-brand); }
 .dd-check.fail { border-left: 3px solid var(--fst-red); }
@@ -280,7 +280,7 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .check-source { font-size: 0.68rem; color: var(--p-text-muted-color); white-space: nowrap; }
 
 .fin-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
-.fin-metric { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px; }
+.fin-metric { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px; }
 .fm-label   { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .fm-val     { font-size: 1.2rem; font-weight: 700; margin: 4px 0; }
 .fm-val.green  { color: var(--fst-green); } .fm-val.orange { color: var(--fst-brand); } .fm-val.red { color: var(--fst-red); }
@@ -299,7 +299,7 @@ function exportDd() { alert('Экспорт DD-отчёта по ' + selectedDd.
 .dd-verdict.proceed { background: color-mix(in srgb, var(--fst-green) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-green) 27%, transparent); }
 .dd-verdict.caution { background: color-mix(in srgb, var(--fst-brand) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-brand) 27%, transparent); }
 .dd-verdict.reject  { background: color-mix(in srgb, var(--fst-red) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-red) 27%, transparent); }
-.dd-verdict.pending { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); }
+.dd-verdict.pending { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); }
 .verdict-icon { font-size: 1.5rem; font-weight: 700; }
 .dd-verdict.proceed .verdict-icon { color: var(--fst-green); }
 .dd-verdict.caution .verdict-icon { color: var(--fst-brand); }

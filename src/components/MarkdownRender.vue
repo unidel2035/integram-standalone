@@ -101,7 +101,7 @@ const parsedMarkdown = computed(() => {
 
 /* Блоки кода */
 :deep(.markdown-content pre) {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   padding: 0.6em 0.8em;
   border-radius: 6px;
@@ -115,7 +115,7 @@ const parsedMarkdown = computed(() => {
 /* Inline код */
 :deep(.markdown-content code:not(pre code)) {
   font-family: 'SF Mono', 'Fira Code', monospace;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   padding: 0.1em 0.35em;
   border-radius: 3px;
   font-size: 0.88em;
@@ -153,7 +153,7 @@ const parsedMarkdown = computed(() => {
 }
 
 :deep(.markdown-content th) {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   font-weight: 600;
   font-size: 0.72rem;
   text-transform: uppercase;

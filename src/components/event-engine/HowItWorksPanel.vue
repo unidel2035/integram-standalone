@@ -421,7 +421,7 @@ const domains = [
 
 .hiw-example-card {
   padding: 12px 14px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   border: 1px solid var(--p-surface-border);
 }
@@ -452,7 +452,7 @@ const domains = [
   display: flex;
   gap: 10px;
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   align-items: flex-start;
 }
@@ -576,7 +576,7 @@ const domains = [
   padding: 10px 14px;
   border-radius: 10px;
   border: 2px solid;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   transition: transform 0.15s;
 }
 

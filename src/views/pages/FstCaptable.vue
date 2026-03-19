@@ -334,13 +334,13 @@ function exportCsv() {
 
 .ct-tabs { padding: 12px 0 4px; }
 
-.ct-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; overflow-x: auto; }
-.ct-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 16px; }
+.ct-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; overflow-x: auto; }
+.ct-section-title { font-size:0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 16px; }
 
 .ct-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; min-width: 700px; }
 .ct-table th { padding: 8px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.75rem; font-weight: 600; }
 .ct-table td { padding: 9px 10px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
-.ct-table tfoot td { border-top: 2px solid var(--p-content-border-color); border-bottom: none; background: var(--p-surface-ground); }
+.ct-table tfoot td { border-top: 2px solid var(--p-content-border-color); border-bottom: none; background: var(--p-surface-card); }
 .ct-table tr.highlight { background: color-mix(in srgb, var(--p-primary-color) 4%, transparent); }
 .sh-name { font-weight: 600; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -364,7 +364,7 @@ function exportCsv() {
 .ctrl-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
 .ctrl-group label { font-size: 0.75rem; color: var(--p-text-muted-color); }
 
-.dilution-result { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px; background: var(--p-surface-ground); border-radius: 8px; margin-bottom: 16px; }
+.dilution-result { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px; background: var(--p-surface-card); border-radius: 8px; margin-bottom: 16px; }
 .dil-stat { display: flex; flex-direction: column; gap: 2px; }
 .dil-stat span { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .dil-stat strong { font-size: 1.1rem; font-weight: 700; }
@@ -372,14 +372,14 @@ function exportCsv() {
 .dil-table { margin-top: 12px; }
 
 .liq-waterfall { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
-.liq-step { display: flex; align-items: center; gap: 14px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px 16px; }
+.liq-step { display: flex; align-items: center; gap: 14px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px 16px; }
 .liq-rank { font-size: 1.2rem; font-weight: 900; color: var(--p-primary-color); width: 24px; }
 .liq-info { flex: 1; }
 .liq-name { font-weight: 600; font-size: 0.9rem; color: var(--p-text-color); }
 .liq-type { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .liq-amounts { text-align: right; font-size: 0.82rem; }
 .liq-pref { color: var(--p-text-muted-color); }
-.liq-summary { display: flex; gap: 24px; padding: 12px 16px; background: var(--p-surface-ground); border-radius: 8px; font-size: 0.85rem; color: var(--p-text-color); }
+.liq-summary { display: flex; gap: 24px; padding: 12px 16px; background: var(--p-surface-card); border-radius: 8px; font-size: 0.85rem; color: var(--p-text-color); }
 
 .modal-overlay { position: fixed; inset: 0; background: color-mix(in srgb, var(--p-text-color) 50%, transparent); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .modal-box { background: var(--p-surface-card); border-radius: 12px; padding: 24px; width: 400px; max-width: 95vw; }

@@ -256,7 +256,7 @@ defineExpose({
 }
 
 .tour-card.tour-completed {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-color: var(--green-200);
 }
 
@@ -305,7 +305,7 @@ defineExpose({
   font-size: 0.85rem;
   color: var(--text-color-secondary);
   padding: 0.25rem 0.5rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
 }
 

@@ -163,16 +163,16 @@ const statusDot = {
   gap: 8px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--p-content-border-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 
 .pee-header-icon {
-  font-size: 14px;
+  font-size: 0.93rem;
   color: var(--p-primary-color);
 }
 
 .pee-header-title {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -180,7 +180,7 @@ const statusDot = {
 }
 
 .pee-stage-badge {
-  font-size: 11px;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
@@ -190,7 +190,7 @@ const statusDot = {
 }
 
 .pee-section-label {
-  font-size: 10px;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--p-text-muted-color);
@@ -216,13 +216,13 @@ const statusDot = {
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid var(--p-content-border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 
 .pee-event-card:hover {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-color: var(--p-primary-color);
 }
 
@@ -234,7 +234,7 @@ const statusDot = {
 }
 
 .pee-event-icon {
-  font-size: 16px;
+  font-size: 1rem;
   margin-top: 1px;
   flex-shrink: 0;
 }
@@ -244,12 +244,12 @@ const statusDot = {
 }
 
 .pee-event-label {
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 500;
 }
 
 .pee-event-desc {
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
   margin-top: 2px;
   overflow: hidden;
@@ -268,14 +268,14 @@ const statusDot = {
 }
 
 .pee-event-ref {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   font-style: italic;
   white-space: nowrap;
 }
 
 .pee-event-play {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-primary-color);
 }
 
@@ -286,11 +286,11 @@ const statusDot = {
   gap: 8px;
   padding: 32px 16px;
   color: var(--p-text-muted-color);
-  font-size: 13px;
+  font-size: 0.88rem;
 }
 
 .pee-empty-icon {
-  font-size: 28px;
+  font-size: 1.75rem;
   opacity: 0.4;
 }
 
@@ -309,16 +309,16 @@ const statusDot = {
 }
 
 .pee-confirm-ref {
-  font-size: 12px;
+  font-size: 0.83rem;
   color: var(--p-text-muted-color);
   font-style: italic;
 }
 
 .pee-confirm-desc {
-  font-size: 13px;
+  font-size: 0.88rem;
   line-height: 1.5;
-  background: var(--p-surface-ground);
-  border-radius: 8px;
+  background: var(--p-surface-card);
+  border-radius: 12px;
   padding: 10px 12px;
   color: var(--p-text-muted-color);
 }
@@ -330,7 +330,7 @@ const statusDot = {
 }
 
 .pee-confirm-label {
-  font-size: 11px;
+  font-size: 0.78rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;

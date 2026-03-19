@@ -2325,7 +2325,7 @@ onUnmounted(() => {
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
 }
 
@@ -2515,7 +2515,7 @@ onUnmounted(() => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
 }
 .fst-rs {
   padding: 12px 14px;
@@ -3047,7 +3047,7 @@ onUnmounted(() => {
   padding: 5px 10px;
   border-radius: 8px;
   border: 1px solid var(--surface-border);
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   flex-shrink: 0;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -3092,7 +3092,7 @@ onUnmounted(() => {
   flex-wrap: wrap;
   gap: 6px;
   padding: 6px 10px;
-  background: color-mix(in srgb, var(--surface-ground) 80%, transparent);
+  background: color-mix(in srgb, var(--p-surface-card) 80%, transparent);
   border-bottom: 1px solid var(--surface-border);
   border-radius: 6px 6px 0 0;
   animation: fadeIn .2s ease;
@@ -3220,7 +3220,7 @@ onUnmounted(() => {
 }
 .ck-metric:hover {
   border-bottom-color: var(--ck-c, var(--p-primary-color));
-  background: color-mix(in srgb, var(--ck-c, var(--p-primary-color)) 6%, var(--surface-ground));
+  background: color-mix(in srgb, var(--ck-c, var(--p-primary-color)) 6%, var(--p-surface-card));
 }
 .ck-metric-icon {
   font-size: 16px;
@@ -3514,7 +3514,7 @@ onUnmounted(() => {
 .fst-tbl-stage {
   font-size: 0.6875rem;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
@@ -3577,7 +3577,7 @@ onUnmounted(() => {
   font-size: 0.6rem;
   font-weight: 600;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
@@ -3621,7 +3621,7 @@ onUnmounted(() => {
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 5px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   white-space: nowrap;
 }
@@ -3878,7 +3878,7 @@ onUnmounted(() => {
   padding: 0 16px;
   height: 52px;
   border-bottom: 1px solid var(--surface-border);
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   flex-shrink: 0;
   gap: 12px;
 }
@@ -3949,7 +3949,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   z-index: 1;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
 }
 .fst-phase-step--done .fst-phase-dot,
 .fst-phase-step--active .fst-phase-dot {
@@ -4224,7 +4224,7 @@ onUnmounted(() => {
 }
 .fst-arg-type--summary {
   border-color: color-mix(in srgb, var(--fst-green) 20%, transparent);
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
 }
 .fst-arg-header {
   display: flex;
@@ -4272,7 +4272,7 @@ onUnmounted(() => {
   align-items: baseline;
   gap: 4px;
   font-size: 0.75rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-left: 2px solid var(--surface-border);
   border-radius: 0 4px 4px 0;
   padding: 4px 8px;
@@ -4905,7 +4905,7 @@ onUnmounted(() => {
   padding: 0.6rem 0.75rem;
   border-radius: 6px;
   border-left: 3px solid var(--surface-border);
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
 }
 .fst-rec-item.priority-critical,
 .fst-rec-item.priority-high {
@@ -5067,7 +5067,7 @@ onUnmounted(() => {
   padding: 2px 8px;
   border-radius: 10px;
   border: 1px solid var(--surface-border);
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
@@ -5089,7 +5089,7 @@ onUnmounted(() => {
 }
 /* Issue #160: debug panel */
 .fst-debug-panel {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 8px 10px;
@@ -5175,7 +5175,7 @@ onUnmounted(() => {
   padding: 7px 10px;
   border: 1px solid var(--surface-border);
   border-radius: 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   font-size: 0.875rem;
   outline: none;

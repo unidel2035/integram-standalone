@@ -469,7 +469,7 @@ function startSession(mode) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   overflow: hidden;
 }
 
@@ -555,7 +555,7 @@ function startSession(mode) {
 }
 
 .help-row code {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   font-size: 0.8rem;
@@ -564,7 +564,7 @@ function startSession(mode) {
 }
 
 .help-row kbd {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;

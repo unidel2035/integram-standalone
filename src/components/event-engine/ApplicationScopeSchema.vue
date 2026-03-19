@@ -108,7 +108,7 @@ onMounted(loadTree)
   border: 1px solid var(--p-surface-border);
   border-radius: 8px;
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 
 .schema-header {

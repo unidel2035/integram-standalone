@@ -606,7 +606,7 @@ ${conds || '(условия не определены)'}
 .snp-btn:disabled { opacity: 0.5; cursor: default; }
 .snp-btn-ai { background: var(--p-primary-color); color: #fff; border-color: var(--p-primary-color); }
 .snp-btn-ai:hover:not(:disabled) { opacity: 0.85; }
-.snp-btn-save { background: var(--surface-ground); color: var(--p-text-color); }
+.snp-btn-save { background: var(--p-surface-card); color: var(--p-text-color); }
 .snp-btn-save:hover:not(:disabled) { background: var(--surface-hover); }
 
 /* Сетка */
@@ -703,7 +703,7 @@ ${conds || '(условия не определены)'}
   border-bottom: 1px solid var(--p-surface-50, rgba(0,0,0,0.04));
 }
 .snp-cell-input {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid transparent;
   border-radius: 4px;
   padding: 3px 5px;
@@ -739,7 +739,7 @@ ${conds || '(условия не определены)'}
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 10px 16px;
   border: 1px solid var(--surface-border);
@@ -782,7 +782,7 @@ ${conds || '(условия не определены)'}
 }
 
 .snp-negotiation-log {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 10px 12px;

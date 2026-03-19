@@ -69,7 +69,7 @@ defineProps({
 }
 
 .pm-item:hover {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 
 .pm-item--alert {
@@ -77,20 +77,20 @@ defineProps({
 }
 
 .pm-icon {
-  font-size: 15px;
+  font-size: 0.95rem;
   opacity: 0.6;
   margin-bottom: 2px;
 }
 
 .pm-val {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
 }
 
 .pm-label {
-  font-size: 10px;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--p-text-muted-color);
@@ -111,7 +111,7 @@ defineProps({
 }
 
 .pm-next-val {
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 600;
   text-align: center;
   max-width: 260px;

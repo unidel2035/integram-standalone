@@ -160,7 +160,7 @@ function exportReport() { alert('Экспорт отчёта соответст�
 </script>
 
 <style scoped>
-.np-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-ground); }
+.np-root { padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 100vh; background: var(--p-surface-card); }
 .np-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .np-header h1 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--p-text-color); }
 .np-sub { font-size: 0.8rem; color: var(--p-text-muted-color); }
@@ -202,11 +202,11 @@ function exportReport() { alert('Экспорт отчёта соответст�
 .m-status { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
 .m-status.active  { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
 .m-status.review  { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
-.m-status.planned { background: var(--p-surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); }
+.m-status.planned { background: var(--p-surface-card); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); }
 .m-status.done    { background: color-mix(in srgb, var(--fst-green) 20%, transparent); color: var(--fst-green); }
 
 .fp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.fp-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
+.fp-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
 .fp-code { font-weight: 900; font-size: 0.82rem; color: var(--p-primary-color); }
 .fp-name { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
 .fp-budget { font-size: 1rem; font-weight: 700; color: var(--p-text-color); }

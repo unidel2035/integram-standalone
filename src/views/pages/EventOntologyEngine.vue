@@ -1,16 +1,12 @@
 <template>
-  <div class="event-engine">
-    <div class="ee-header">
-      <h2>Движок событийной онтологии</h2>
-      <span class="ee-subtitle">событийная онтология</span>
-      <div class="ee-header-actions">
-        <Select v-model="selectedApplicationId" :options="applications" optionLabel="val" optionValue="id"
-          placeholder="Все данные" showClear class="ee-app-select" />
-        <Select v-model="currentActorId" :options="actors" optionLabel="val" optionValue="id"
-          placeholder="Текущий актор" class="ee-actor-select" />
-        <Button icon="pi pi-refresh" severity="secondary" text @click="refresh" :loading="loading" />
-      </div>
-    </div>
+  <FstPageLayout title="Событийная онтология" subtitle="Движок событийной онтологии" icon="pi pi-sitemap">
+    <template #actions>
+      <Select v-model="selectedApplicationId" :options="applications" optionLabel="val" optionValue="id"
+        placeholder="Все данные" showClear class="ee-app-select" />
+      <Select v-model="currentActorId" :options="actors" optionLabel="val" optionValue="id"
+        placeholder="Текущий актор" class="ee-actor-select" />
+      <Button icon="pi pi-refresh" severity="secondary" text @click="refresh" :loading="loading" />
+    </template>
 
     <div v-if="selectedApplicationId" class="ee-scope-bar">
       <i class="pi pi-filter" />
@@ -24,13 +20,14 @@
         <component :is="currentPanel" v-bind="panelProps" />
       </KeepAlive>
     </div>
-  </div>
+  </FstPageLayout>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, provide, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 // Lazy-load all panels to avoid missing dependency build errors
@@ -267,39 +264,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.event-engine {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 9rem);
-  background: var(--p-surface-ground);
-}
-
-.ee-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-surface-border);
-}
-
-.ee-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-}
-
-.ee-subtitle {
-  color: var(--p-text-muted-color);
-  font-size: 0.85rem;
-}
-
-.ee-header-actions {
-  margin-left: auto;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
 .ee-app-select {
   width: 220px;
 }
@@ -312,26 +276,24 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 20px;
-  background: var(--p-primary-50);
-  border-bottom: 1px solid var(--p-primary-200);
-  font-size: 0.85rem;
-  color: var(--p-primary-700);
+  padding: 8px 20px;
+  margin: -20px -20px 0;
+  background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--p-primary-color) 25%, transparent);
+  font-size: 0.83rem;
+  color: var(--p-primary-color);
 }
 
 .ee-scope-bar i {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
 }
 
 .ee-scope-info {
-  color: var(--p-primary-500);
-  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.78rem;
 }
 
 .ee-content {
-  flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding-top: 16px;
 }
 </style>

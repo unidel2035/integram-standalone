@@ -97,7 +97,7 @@ function doAction() {
   align-items: center;
   gap: 10px;
   padding: 6px 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   font-size: 12px;

@@ -75,7 +75,7 @@
       <div v-else class="spb-legend">
         <span class="leg-pill" style="--dot:#22c55e">Оба покрывают</span>
         <span class="leg-pill" style="--dot:#3b82f6">Только ФСТ НТИ</span>
-        <span class="leg-pill" :style="{ '--dot': '#f59e0b' }">Только {{ otherFundName }}</span>
+        <span class="leg-pill" :style="{ '--dot': 'var(--fst-brand)' }">Только {{ otherFundName }}</span>
         <span class="leg-pill" style="--dot:rgba(100,116,139,0.4)">Не покрыто</span>
       </div>
     </div>
@@ -302,7 +302,7 @@
             <text
               :x="15" :y="band.midY + 3"
               text-anchor="start"
-              :fill="isDark ? '#94a3b8' : '#475569'"
+              :fill="isDark ? 'var(--p-text-muted-color)' : '#475569'"
               :font-size="sideLabelFontSize"
               font-weight="600"
               font-family="'Space Grotesk', system-ui, sans-serif"
@@ -417,12 +417,12 @@
         <!-- Строки по режиму -->
         <template v-if="viewMode === 'страны'">
           <div v-if="selectedCountry1" class="spb-tt-row">
-            <span class="spb-tt-dot" :style="{ background: tt.left || '#6b7280' }"></span>
+            <span class="spb-tt-dot" :style="{ background: tt.left || 'var(--p-text-muted-color)' }"></span>
             <span class="spb-tt-label">{{ selectedCountry1.name }}:</span>
             <span class="spb-tt-val" :style="{ color: tt.left || 'var(--p-text-muted-color)' }">{{ LEVEL_NAMES[country1Status(tt.techId)] || '—' }}</span>
           </div>
           <div v-if="selectedCountry2" class="spb-tt-row">
-            <span class="spb-tt-dot" :style="{ background: tt.right || '#6b7280' }"></span>
+            <span class="spb-tt-dot" :style="{ background: tt.right || 'var(--p-text-muted-color)' }"></span>
             <span class="spb-tt-label">{{ selectedCountry2.name }}:</span>
             <span class="spb-tt-val" :style="{ color: tt.right || 'var(--p-text-muted-color)' }">{{ LEVEL_NAMES[country2Status(tt.techId)] || '—' }}</span>
           </div>
@@ -673,7 +673,7 @@ const selectedCountry1 = ref(null)
 const selectedCountry2 = ref(null)
 
 // SVG исключение: hex разрешены для статусных цветов
-const LEVEL_COLORS = { '2408': '#22c55e', '2409': '#f59e0b', '2410': '#ef4444' }
+const LEVEL_COLORS = { '2408': 'var(--fst-green)', '2409': 'var(--fst-brand)', '2410': 'var(--fst-red)' }
 const LEVEL_NAMES  = { '2408': 'КЛЮЧ',    '2409': 'ШАНС',    '2410': 'КРИЗИС'  }
 
 // ── Состояние: fst db ─────────────────────────────────────────────────────────
@@ -689,7 +689,7 @@ const fstActiveCo        = ref(new Set())   // выбранные компани
 const extActiveCo        = ref(new Set())   // выбранные компании другого фонда
 
 // Цвета компаний (SVG исключение)
-const COMPANY_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#84cc16', '#f43f5e', '#0ea5e9']
+const COMPANY_COLORS = ['var(--fst-blue)', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#84cc16', '#f43f5e', '#0ea5e9']
 
 // Статусы для модала
 const STATUS_OPTIONS = [
@@ -697,7 +697,7 @@ const STATUS_OPTIONS = [
   { label: 'ШАНС',   value: 'ШАНС'   },
   { label: 'КРИЗИС', value: 'КРИЗИС' }
 ]
-const STATUS_HEX = { 'КЛЮЧ': '#22c55e', 'ШАНС': '#f59e0b', 'КРИЗИС': '#ef4444' }
+const STATUS_HEX = { 'КЛЮЧ': 'var(--fst-green)', 'ШАНС': 'var(--fst-brand)', 'КРИЗИС': 'var(--fst-red)' }
 
 // ── Другие фонды (статические данные, expandable через fst db) ────────────────
 const OTHER_FUNDS = [
@@ -1361,17 +1361,17 @@ function pятnoAnalysis(techId) {
   const s1 = country1Status(techId)
   const s2 = country2Status(techId)
   if (!s1 && !s2) return { color: null, label: null }
-  if (s1 === '2408' && s2 === '2408') return { color: '#22c55e', label: 'Стратегическое совпадение' }
-  if (s1 === '2410' && s2 === '2410') return { color: '#ef4444', label: 'Проблемное пятно — оба в КРИЗИС' }
-  if (s1 === '2408' && s2 === '2410') return { color: '#3b82f6', label: 'Экспортный потенциал' }
-  if (s1 === '2410' && s2 === '2408') return { color: '#a855f7', label: 'Совместность — нужен партнёр' }
-  if (s1 === '2409' || s2 === '2409') return { color: '#f59e0b', label: 'Развиваемые технологии' }
+  if (s1 === '2408' && s2 === '2408') return { color: 'var(--fst-green)', label: 'Стратегическое совпадение' }
+  if (s1 === '2410' && s2 === '2410') return { color: 'var(--fst-red)', label: 'Проблемное пятно — оба в КРИЗИС' }
+  if (s1 === '2408' && s2 === '2410') return { color: 'var(--fst-blue)', label: 'Экспортный потенциал' }
+  if (s1 === '2410' && s2 === '2408') return { color: 'var(--fst-purple)', label: 'Совместность — нужен партнёр' }
+  if (s1 === '2409' || s2 === '2409') return { color: 'var(--fst-brand)', label: 'Развиваемые технологии' }
   return { color: LEVEL_COLORS[s1] || LEVEL_COLORS[s2] || null, label: null }
 }
 
 // ── Вспомогательные функции: портфель ────────────────────────────────────────
 function coIndex(coId) { return portfolioCompanies.value.findIndex(c => c.id === coId) }
-function coColor(coId) { return COMPANY_COLORS[coIndex(coId) % COMPANY_COLORS.length] || '#6b7280' }
+function coColor(coId) { return COMPANY_COLORS[coIndex(coId) % COMPANY_COLORS.length] || 'var(--p-text-muted-color)' }
 function coStatus(coId, techId) { return coStatusMap.value[`${coId}_${techId}`]?.status || null }
 
 function brickCompanyDots(techId) {
@@ -1455,7 +1455,7 @@ const compatibilityPairs = computed(() => {
         if (sa && sb && sa === sb) synergy += 1
       }
       const score = Math.round(Math.min((synergy / (allTechs.size * 2)) * 100, 100))
-      const color = score >= 60 ? '#22c55e' : score >= 30 ? '#f59e0b' : '#94a3b8'
+      const color = score >= 60 ? 'var(--fst-green)' : score >= 30 ? 'var(--fst-brand)' : 'var(--p-text-muted-color)'
       pairs.push({ key: `${a.id}_${b.id}`, name1: a.name, name2: b.name, score, color })
     }
   }
@@ -1470,16 +1470,16 @@ const UNKNOWN_FILL = 'rgba(100,116,139,0.18)'
 function brickTintColor(techId) {
   if (viewMode.value === 'страны') {
     const { color } = pятnoAnalysis(techId)
-    return color ? color + '20' : 'rgba(100,116,139,0.07)'  // #RRGGBB20 ≈ 12% opacity
+    return color ? color + '20' : 'color-mix(in srgb, var(--p-text-muted-color) 7%, transparent)'  // #RRGGBB20 ≈ 12% opacity
   }
   if (viewMode.value === 'портфель') {
     const dots = brickCompanyDots(techId)
-    return dots.length ? dots[0].color + '20' : 'rgba(100,116,139,0.07)'
+    return dots.length ? dots[0].color + '20' : 'color-mix(in srgb, var(--p-text-muted-color) 7%, transparent)'
   }
   if (fstCovers(techId) && extCovers(techId)) return '#22c55e20'
   if (fstCovers(techId)) return '#3b82f620'
   if (extCovers(techId)) return '#f59e0b20'
-  return 'rgba(100,116,139,0.07)'
+  return 'color-mix(in srgb, var(--p-text-muted-color) 7%, transparent)'
 }
 
 // Цвет текста индекса без заливки (темнее/светлее в зависимости от темы и статуса)
@@ -1510,9 +1510,9 @@ function brickFill(techId) {
   }
   // Фонды режим
   const our = fstCovers(techId), ext = extCovers(techId)
-  if (our && ext)  return '#22c55e'
-  if (our && !ext) return '#3b82f6'
-  if (!our && ext) return '#f59e0b'
+  if (our && ext)  return 'var(--fst-green)'
+  if (our && !ext) return 'var(--fst-blue)'
+  if (!our && ext) return 'var(--fst-brand)'
   return UNKNOWN_FILL
 }
 function brickOpacity(techId) { return brickFill(techId) === UNKNOWN_FILL ? 1 : 0.78 }
@@ -1541,7 +1541,7 @@ function bandScoreColor(band) {
   if (!band.bricks.length) return 'rgba(148,163,184,0.4)'
   const [num, den] = (bandScore(band) || '0/1').split('/').map(Number)
   const pct = den > 0 ? num / den : 0
-  return pct >= 0.7 ? '#22c55e' : pct >= 0.4 ? '#f59e0b' : '#ef4444'
+  return pct >= 0.7 ? 'var(--fst-green)' : pct >= 0.4 ? 'var(--fst-brand)' : 'var(--fst-red)'
 }
 
 // ── Тултип ───────────────────────────────────────────────────────────────────
@@ -1615,18 +1615,18 @@ async function saveStatuses() {
 .spb-settings {
   display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
   padding: 8px 14px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
 }
 .spb-settings-title {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--p-text-muted-color);
   white-space: nowrap;
 }
 .spb-settings-row { display: flex; align-items: center; gap: 8px; }
 .spb-settings-label {
-  font-size: 12px; color: var(--p-text-color);
+  font-size: 0.83rem; color: var(--p-text-color);
   cursor: pointer; white-space: nowrap;
   user-select: none;
 }
@@ -1636,9 +1636,9 @@ async function saveStatuses() {
 .leg-pill {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 2px 9px 2px 6px; border-radius: 20px;
-  font-size: 10px; font-weight: 500;
+  font-size: 0.75rem; font-weight: 500;
   color: var(--p-text-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   white-space: nowrap;
 }
@@ -1648,12 +1648,12 @@ async function saveStatuses() {
   background: var(--dot, rgba(100,116,139,0.4));
 }
 .leg-pill-note {
-  font-size: 10px; color: var(--p-text-muted-color);
+  font-size: 0.75rem; color: var(--p-text-muted-color);
   padding: 2px 4px;
 }
 
 .spb-loading { flex: 1; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--p-text-muted-color); }
-.spb-empty   { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--p-text-muted-color); font-size: 13px; }
+.spb-empty   { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--p-text-muted-color); font-size: 0.88rem; }
 
 /* ── Основная строка ── */
 .spb-main-row { flex: 1; display: flex; align-items: stretch; gap: 8px; min-height: 0; }
@@ -1667,28 +1667,28 @@ async function saveStatuses() {
   gap: 3px; overflow-y: auto; padding-top: 4px;
 }
 .panel-label {
-  font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px;
   text-transform: uppercase; color: var(--p-text-muted-color);
   text-align: center; padding: 2px 4px 8px;
   border-bottom: 1px solid var(--p-content-border-color);
   margin-bottom: 4px;
 }
 .panel-sublabel {
-  font-size: 9px; font-weight: 600; letter-spacing: 1px;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 1px;
   text-transform: uppercase; color: var(--p-text-muted-color);
   text-align: center; padding: 8px 4px 4px; margin-top: 4px;
   border-top: 1px solid var(--p-content-border-color);
 }
 .panel-item {
   padding: 6px 8px; border-radius: 8px; cursor: pointer;
-  font-size: 11px; color: var(--p-text-color);
+  font-size: 0.78rem; color: var(--p-text-color);
   border: 1px solid transparent; transition: all 0.14s;
   text-align: center; line-height: 1.3;
   display: flex; align-items: center; justify-content: center; gap: 5px;
 }
-.panel-item:hover  { background: var(--p-surface-ground); border-color: var(--p-content-border-color); }
+.panel-item:hover  { background: var(--p-surface-card); border-color: var(--p-content-border-color); }
 .panel-item.active {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-color: var(--p-primary-color);
   color: var(--p-primary-color);
   font-weight: 600;
@@ -1696,23 +1696,23 @@ async function saveStatuses() {
 /* Флаг + название — вертикально */
 .flag-item { flex-direction: column; gap: 4px; padding: 8px 4px; }
 .flag-item .panel-flag { border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
-.flag-item span { font-size: 10px; font-weight: 600; }
+.flag-item span { font-size: 0.75rem; font-weight: 600; }
 /* Активный флаг: рамка цветом флага/акцента */
 .flag-item.active { border-color: var(--p-primary-color); }
 
 .company-item       { opacity: 0.5; transition: opacity 0.14s; }
 .company-item.active { opacity: 1; }
-.fund-item           { font-weight: 600; font-size: 12px; }
-.sub-item            { font-size: 10px; opacity: 0.75; }
+.fund-item           { font-weight: 600; font-size: 0.83rem; }
+.sub-item            { font-size: 0.75rem; opacity: 0.75; }
 .sub-item.active     { opacity: 1; }
 
-.panel-empty { font-size: 10px; color: var(--p-text-muted-color); text-align: center; padding: 10px 4px; line-height: 1.5; }
+.panel-empty { font-size: 0.75rem; color: var(--p-text-muted-color); text-align: center; padding: 10px 4px; line-height: 1.5; }
 .panel-score-row {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 5px 8px; font-size: 10px;
+  padding: 5px 8px; font-size: 0.75rem;
   border-top: 1px solid var(--p-content-border-color); margin-top: 4px;
 }
-.panel-score { font-weight: 700; font-size: 12px; }
+.panel-score { font-weight: 700; font-size: 0.83rem; }
 
 /* Точка компании */
 .co-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -1721,15 +1721,15 @@ async function saveStatuses() {
 .compat-list { display: flex; flex-direction: column; gap: 8px; padding: 4px 0; }
 .compat-row  { display: flex; flex-direction: column; gap: 3px; }
 .compat-names {
-  font-size: 9px; color: var(--p-text-muted-color);
+  font-size: 0.7rem; color: var(--p-text-muted-color);
   line-height: 1.3; text-align: center;
 }
 .compat-bar-wrap {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px; height: 5px; overflow: hidden;
 }
 .compat-bar { height: 5px; border-radius: 4px; transition: width 0.5s ease; }
-.compat-pct { font-size: 10px; font-weight: 700; text-align: right; }
+.compat-pct { font-size: 0.75rem; font-weight: 700; text-align: right; }
 
 /* ── Кирпичи SVG ── */
 .spb-brick { cursor: pointer; }
@@ -1759,23 +1759,23 @@ async function saveStatuses() {
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 .spb-tt-half { flex: 1; }
-.spb-tt-code { font-size: 24px; font-weight: 700; letter-spacing: 1.5px; color: var(--p-text-color); line-height: 1; }
-.spb-tt-name { font-size: 12px; font-weight: 500; color: var(--p-text-color); line-height: 1.4; margin-top: 3px; }
+.spb-tt-code { font-size: 1.5rem; font-weight: 700; letter-spacing: 1.5px; color: var(--p-text-color); line-height: 1; }
+.spb-tt-name { font-size: 0.83rem; font-weight: 500; color: var(--p-text-color); line-height: 1.4; margin-top: 3px; }
 .spb-tt-cat  {
-  font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
   color: var(--p-text-muted-color); display: flex; align-items: center; gap: 4px;
   padding-top: 4px; border-top: 1px solid var(--p-content-border-color);
 }
-.spb-tt-row  { display: flex; align-items: center; gap: 7px; font-size: 11px; }
+.spb-tt-row  { display: flex; align-items: center; gap: 7px; font-size: 0.78rem; }
 .spb-tt-dot  { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
 .spb-tt-label { color: var(--p-text-muted-color); flex: 1; }
 .spb-tt-val   { font-weight: 700; }
 .spb-tt-pятно {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.3px;
   padding: 4px 10px; border-radius: 6px; margin-top: 2px;
-  color: #fff;
+  color: white;
 }
-.spb-tt-white { font-size: 10px; color: var(--p-text-muted-color); font-style: italic; }
+.spb-tt-white { font-size: 0.75rem; color: var(--p-text-muted-color); font-style: italic; }
 .spb-tt-arrow {
   position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
   border-left: 8px solid transparent; border-right: 8px solid transparent;
@@ -1793,33 +1793,33 @@ async function saveStatuses() {
 .spb-modal-top { display: flex; align-items: flex-start; gap: 14px; }
 .spb-modal-badge {
   padding: 8px 16px; border-radius: 8px; font-weight: 700;
-  font-size: 22px; letter-spacing: 2px; color: #fff; flex-shrink: 0;
+  font-size: 1.4rem; letter-spacing: 2px; color: white; flex-shrink: 0;
   min-width: 72px; text-align: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
-.spb-modal-cat  { font-size: 11px; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
-.spb-modal-desc { font-size: 13px; color: var(--p-text-color); line-height: 1.6; }
-.spb-modal-set  { background: var(--p-surface-ground); border-radius: 10px; padding: 14px; }
-.spb-modal-note { font-size: 11px; color: var(--p-text-muted-color); }
+.spb-modal-cat  { font-size: 0.78rem; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+.spb-modal-desc { font-size: 0.88rem; color: var(--p-text-color); line-height: 1.6; }
+.spb-modal-set  { background: var(--p-surface-card); border-radius: 12px; padding: 14px; }
+.spb-modal-note { font-size: 0.78rem; color: var(--p-text-muted-color); }
 .spb-modal-co-row {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 7px 0; border-bottom: 1px solid var(--p-content-border-color);
 }
 .spb-modal-co-row:last-child { border-bottom: none; }
-.spb-modal-co-name { font-size: 12px; font-weight: 600; color: var(--p-text-color); min-width: 90px; }
-.page-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--p-text-muted-color); }
-.spb-modal-leaders { background: var(--p-surface-ground); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.spb-modal-co-name { font-size: 0.83rem; font-weight: 600; color: var(--p-text-color); min-width: 90px; }
+.page-section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--p-text-muted-color); }
+.spb-modal-leaders { background: var(--p-surface-card); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .spb-modal-leaders-row { display: flex; align-items: flex-start; gap: 8px; }
-.spb-leaders-flag { font-size: 16px; line-height: 1.4; flex-shrink: 0; }
-.spb-leaders-list { font-size: 12px; color: var(--p-text-color); line-height: 1.6; }
+.spb-leaders-flag { font-size: 1rem; line-height: 1.4; flex-shrink: 0; }
+.spb-leaders-list { font-size: 0.83rem; color: var(--p-text-color); line-height: 1.6; }
 /* Тип взаимодействия */
 .spb-modal-interaction { display: flex; align-items: center; gap: 8px; }
 /* Потенциальное сотрудничество */
-.spb-modal-collab { background: var(--p-surface-ground); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.spb-modal-collab { background: var(--p-surface-card); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
 .spb-collab-row { display: flex; align-items: flex-start; gap: 10px; }
 .spb-collab-body { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
-.spb-collab-offer, .spb-collab-need { font-size: 12px; color: var(--p-text-color); line-height: 1.6; display: flex; flex-direction: column; gap: 3px; }
-.spb-collab-tag { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.07em; border-radius: 4px; padding: 1px 5px; margin-bottom: 2px; }
+.spb-collab-offer, .spb-collab-need { font-size: 0.83rem; color: var(--p-text-color); line-height: 1.6; display: flex; flex-direction: column; gap: 3px; }
+.spb-collab-tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.07em; border-radius: 4px; padding: 1px 5px; margin-bottom: 2px; }
 .spb-collab-tag.offer { background: color-mix(in srgb, var(--fst-green) 15%, transparent); color: var(--fst-green-dark); }
 .spb-collab-tag.need  { background: color-mix(in srgb, var(--fst-blue) 15%, transparent); color: var(--fst-blue-dark); }
 </style>

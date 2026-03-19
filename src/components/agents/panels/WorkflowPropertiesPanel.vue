@@ -246,7 +246,7 @@ const clearCanvas = () => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: var(--content-border-radius);
 
   i {

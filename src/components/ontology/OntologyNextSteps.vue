@@ -194,7 +194,7 @@ function timeAgo(ts) {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   margin-bottom: 12px;
 }
@@ -232,7 +232,7 @@ function timeAgo(ts) {
   transition: background 0.15s;
 }
 .ont-step:hover {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 .ont-step--intra {
   border-left: 2px solid var(--p-primary-color);
@@ -245,7 +245,7 @@ function timeAgo(ts) {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,7 +286,7 @@ function timeAgo(ts) {
   color: var(--p-text-muted-color);
 }
 .ont-step__enable-tag {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   padding: 1px 6px;

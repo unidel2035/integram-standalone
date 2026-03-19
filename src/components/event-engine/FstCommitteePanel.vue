@@ -2,11 +2,7 @@
   <div class="fst-panel">
     <!-- Tab switcher -->
     <div class="fst-panel-tabs">
-      <button v-for="tab in tabs" :key="tab.id"
-        :class="['fst-tab-btn', { active: activeTab === tab.id }]"
-        @click="activeTab = tab.id">
-        <i :class="tab.icon"></i> {{ tab.label }}
-      </button>
+      <SelectButton v-model="activeTab" :options="tabs" optionLabel="label" optionValue="id" :allowEmpty="false" />
     </div>
 
     <!-- ══ TAB: ONTOLOGY ══ -->
@@ -151,7 +147,7 @@
       <div class="fst-section-title">
         <i class="pi pi-share-alt"></i> Граф причинности событийной онтологии ФСТ НТИ
       </div>
-      <p style="font-size:12px;color:var(--p-text-muted-color,#888);margin-bottom:16px">
+      <p style="font-size:0.83rem;color:var(--p-text-muted-color,var(--p-text-muted-color));margin-bottom:16px">
         Визуализация цепи событий и причинно-следственных связей между фазами инвесткомитета.
         Зелёные рёбра — нормальный поток, красные — терминальные состояния, оранжевые — условные переходы.
       </p>
@@ -184,9 +180,9 @@
               :width="node.w" height="36" rx="8"
               :fill="node.fill" :stroke="node.stroke" stroke-width="1.5" opacity="0.95"/>
             <text :x="node.x" :y="node.y - 4" text-anchor="middle" dominant-baseline="middle"
-              font-size="9" fill="#fff" font-weight="600">{{ node.label }}</text>
+              font-size="9" fill="white" font-weight="600">{{ node.label }}</text>
             <text :x="node.x" :y="node.y + 9" text-anchor="middle" dominant-baseline="middle"
-              font-size="7.5" fill="rgba(255,255,255,0.7)">{{ node.sublabel }}</text>
+              font-size="7.5" fill="white" opacity="0.7">{{ node.sublabel }}</text>
           </g>
         </svg>
 
@@ -201,11 +197,11 @@
 
       <!-- Legend -->
       <div class="fst-causal-legend">
-        <div class="fst-legend-item"><span class="fst-legend-line" style="background:#42a5f5"></span>Основной поток</div>
-        <div class="fst-legend-item"><span class="fst-legend-line" style="background:#ffa726"></span>Условный переход</div>
-        <div class="fst-legend-item"><span class="fst-legend-line" style="background:#4caf50"></span>Терминал: одобрено</div>
-        <div class="fst-legend-item"><span class="fst-legend-line" style="background:#ef5350"></span>Терминал: отклонено</div>
-        <div class="fst-legend-item"><span class="fst-legend-line" style="background:#888;border-style:dashed"></span>Опциональный</div>
+        <div class="fst-legend-item"><span class="fst-legend-line" style="background:var(--fst-blue)"></span>Основной поток</div>
+        <div class="fst-legend-item"><span class="fst-legend-line" style="background:var(--fst-brand)"></span>Условный переход</div>
+        <div class="fst-legend-item"><span class="fst-legend-line" style="background:var(--fst-green)"></span>Терминал: одобрено</div>
+        <div class="fst-legend-item"><span class="fst-legend-line" style="background:var(--fst-red)"></span>Терминал: отклонено</div>
+        <div class="fst-legend-item"><span class="fst-legend-line" style="background:var(--p-text-muted-color);border-style:dashed"></span>Опциональный</div>
       </div>
 
       <!-- Event causality table -->
@@ -220,7 +216,7 @@
           <tr v-for="c in causalityMatrix" :key="c.cause + c.effect">
             <td><code>{{ c.cause }}</code></td>
             <td><code>{{ c.effect }}</code></td>
-            <td style="font-size:11px;color:var(--p-text-muted-color,#888)">{{ c.condition }}</td>
+            <td style="font-size:0.78rem;color:var(--p-text-muted-color,var(--p-text-muted-color))">{{ c.condition }}</td>
           </tr>
         </tbody>
       </table>
@@ -231,7 +227,7 @@
       <div class="fst-section-title">
         <i class="pi pi-sliders-h"></i> Настройка поведения AI-агентов
       </div>
-      <p style="font-size:12px;color:var(--p-text-muted-color,#888);margin-bottom:16px">
+      <p style="font-size:0.83rem;color:var(--p-text-muted-color,var(--p-text-muted-color));margin-bottom:16px">
         Редактируйте веса агентов и их скоринговые формулы. Изменения применяются к следующей симуляции.
       </p>
 
@@ -284,7 +280,7 @@
       <div class="fst-ac-validation">
         <div class="fst-ac-val-row">
           <span>Сумма весов голосов агентов:</span>
-          <span :style="{ color: Math.abs(totalAgentWeight - 1) < 0.02 ? '#4caf50' : '#ef5350', fontWeight: 600 }">
+          <span :style="{ color: Math.abs(totalAgentWeight - 1) < 0.02 ? 'var(--fst-green)' : 'var(--fst-red)', fontWeight: 600 }">
             {{ (totalAgentWeight * 100).toFixed(0) }}%
             {{ Math.abs(totalAgentWeight - 1) < 0.02 ? '✓ корректно' : '⚠ должно быть ~100%' }}
           </span>
@@ -294,7 +290,7 @@
       <div style="margin-top:12px">
         <Button label="Сбросить к умолчаниям" icon="pi pi-refresh" severity="secondary" size="small"
           @click="resetAgentConfigs" />
-        <span style="font-size:11px;color:#888;margin-left:12px">
+        <span style="font-size:0.78rem;color:var(--p-text-muted-color);margin-left:12px">
           Изменения применяются автоматически к следующей симуляции
         </span>
       </div>
@@ -307,7 +303,7 @@
         <!-- Project + Speed selectors -->
         <div v-if="!session" class="fst-sim-launch">
           <div class="fst-sim-launch-title">
-            <i class="pi pi-play-circle" style="color:#ffa726;font-size:24px"></i>
+            <i class="pi pi-play-circle" style="color:var(--fst-brand);font-size:1.5rem"></i>
             Запустить симуляцию инвесткомитета
           </div>
           <div class="fst-sim-select-row">
@@ -337,7 +333,7 @@
                 active: phaseIdx === idx,
               }]">
               <div class="fst-sim-phase-dot" :style="{ background: phaseIdx >= idx ? ph.color : 'transparent', borderColor: ph.color }">
-                <i v-if="phaseIdx > idx" class="pi pi-check" style="font-size:8px;color:#fff"></i>
+                <i v-if="phaseIdx > idx" class="pi pi-check" style="font-size:0.65rem;color:white"></i>
               </div>
               <div class="fst-sim-phase-label">{{ ph.label }}</div>
             </div>
@@ -355,7 +351,7 @@
                 <div class="fst-sim-agent-info">
                   <div class="fst-sim-agent-name" :style="{ color: agent.color }">{{ agent.shortName }}</div>
                   <div v-if="agentStatus(agent.id).thinking" class="fst-sim-think">
-                    <i class="pi pi-spin pi-spinner" style="font-size:9px"></i>
+                    <i class="pi pi-spin pi-spinner" style="font-size:0.7rem"></i>
                     {{ agentStatus(agent.id).thinkText?.slice(0, 30) }}
                   </div>
                   <div v-else-if="agentStatus(agent.id).vote" class="fst-sim-vote-badge"
@@ -363,7 +359,7 @@
                     {{ VERDICTS[agentStatus(agent.id).vote]?.label }} · {{ agentStatus(agent.id).voteScore }}
                   </div>
                   <div v-else-if="agentStatus(agent.id).done" class="fst-sim-ready">
-                    <i class="pi pi-check" style="color:#4caf50;font-size:9px"></i> готов
+                    <i class="pi pi-check" style="color:var(--fst-green);font-size:0.7rem"></i> готов
                   </div>
                 </div>
               </div>
@@ -373,7 +369,7 @@
             <div class="fst-sim-timeline-col">
               <div class="fst-sim-col-title">
                 Дебаты
-                <span style="font-size:10px;color:#666;margin-left:6px">{{ session.arguments.length }} арг.</span>
+                <span style="font-size:0.75rem;color:#666;margin-left:6px">{{ session.arguments.length }} арг.</span>
               </div>
 
               <!-- Loading -->
@@ -384,7 +380,7 @@
                     <div :style="{ width: agentStatus(agent.id).done ? '100%' : agentStatus(agent.id).thinking ? '60%' : '5%', background: agent.color }"></div>
                   </div>
                   <i :class="agentStatus(agent.id).done ? 'pi pi-check' : 'pi pi-spin pi-spinner'"
-                    :style="{ color: agentStatus(agent.id).done ? '#4caf50' : '#42a5f5', fontSize: '10px' }"></i>
+                    :style="{ color: agentStatus(agent.id).done ? 'var(--fst-green)' : 'var(--fst-blue)', fontSize: '10px' }"></i>
                 </div>
               </div>
 
@@ -409,7 +405,7 @@
                       <span>{{ agentById(vote.agentId)?.avatar }}</span>
                       <span :style="{ color: agentById(vote.agentId)?.color, fontSize: '11px' }">{{ agentById(vote.agentId)?.shortName }}</span>
                       <span class="fst-sim-vote-pill" :style="{ background: VERDICTS[vote.verdict]?.color }">{{ VERDICTS[vote.verdict]?.label }}</span>
-                      <span style="font-size:11px;color:#888">{{ vote.score }}/100</span>
+                      <span style="font-size:0.78rem;color:var(--p-text-muted-color)">{{ vote.score }}/100</span>
                     </div>
                   </TransitionGroup>
                 </div>
@@ -446,7 +442,7 @@
 
               <!-- Human approval -->
               <div v-if="session.phase === 'HUMAN_APPROVAL'" class="fst-sim-human">
-                <div style="font-size:11px;color:#ffa726;font-weight:600;margin-bottom:8px">
+                <div style="font-size:0.78rem;color:var(--fst-brand);font-weight:600;margin-bottom:8px">
                   <i class="pi pi-users"></i> Утверждение комитета
                 </div>
                 <div class="fst-sim-human-btns">
@@ -461,7 +457,7 @@
 
               <!-- Concluded → transition to recs -->
               <div v-if="session.phase === 'CONCLUDED'" class="fst-sim-concluded">
-                <i class="pi pi-check-circle" style="color:#4caf50;font-size:18px"></i>
+                <i class="pi pi-check-circle" style="color:var(--fst-green);font-size:1.1rem"></i>
                 <div style="margin-top:4px">Голосование завершено — формируются рекомендации...</div>
               </div>
             </div>
@@ -550,7 +546,7 @@
               <div :style="{ width: (session.revisionProgress * 100) + '%' }"></div>
             </div>
             <div class="fst-revision-step">
-              <i class="pi pi-arrow-right" style="font-size:10px;color:#26a69a"></i>
+              <i class="pi pi-arrow-right" style="font-size:0.75rem;color:#26a69a"></i>
               {{ session.revisionStep }}
             </div>
             <!-- Metrics changing live -->
@@ -589,9 +585,9 @@
                   <td class="fst-diff-old">{{ d.before }}</td>
                   <td class="fst-diff-arrow">
                     <i :class="d.improved ? 'pi pi-arrow-up' : 'pi pi-minus'"
-                      :style="{ color: d.improved ? '#4caf50' : '#888' }"></i>
+                      :style="{ color: d.improved ? 'var(--fst-green)' : 'var(--p-text-muted-color)' }"></i>
                   </td>
-                  <td class="fst-diff-new" :style="{ color: d.improved ? '#4caf50' : '#ccc' }">
+                  <td class="fst-diff-new" :style="{ color: d.improved ? 'var(--fst-green)' : '#ccc' }">
                     {{ d.after }}
                   </td>
                 </tr>
@@ -604,7 +600,7 @@
               <strong :style="{ color: scoreColor(predictedNextScore) }">
                 {{ predictedNextScore }}/100
               </strong>
-              <span class="fst-score-delta" :style="{ color: '#4caf50' }">
+              <span class="fst-score-delta" :style="{ color: 'var(--fst-green)' }">
                 +{{ predictedNextScore - session.decision.aggregatedScore }}
               </span>
             </div>
@@ -645,7 +641,7 @@
                 {{ VERDICTS[session.decision.recommendation]?.label }}
               </div>
             </div>
-            <span style="font-size:9px;color:#888">текущий</span>
+            <span style="font-size:0.7rem;color:var(--p-text-muted-color)">текущий</span>
           </div>
         </div>
       </div>
@@ -732,17 +728,17 @@
         <i class="pi pi-question-circle"></i> Три вопроса онтологии дара
       </div>
       <div class="gift-questions-grid">
-        <div class="gift-q-card" style="border-left:3px solid #e91e63">
+        <div class="gift-q-card" style="border-left:3px solid var(--fst-red)">
           <div class="gift-q-num">1</div>
           <div class="gift-q-title">Что фонд ОТДАЁТ кроме денег?</div>
           <div class="gift-q-desc">Менторство, связи, экспертиза. Слой дара: utilitas → bonum → gratia</div>
         </div>
-        <div class="gift-q-card" style="border-left:3px solid #9c27b0">
+        <div class="gift-q-card" style="border-left:3px solid var(--fst-purple)">
           <div class="gift-q-num">2</div>
           <div class="gift-q-title">Трансформирует ли это портфель?</div>
           <div class="gift-q-desc">Не IRR — а «фонд стал видеть рынок иначе». Взаимная трансформация</div>
         </div>
-        <div class="gift-q-card" style="border-left:3px solid #00bcd4">
+        <div class="gift-q-card" style="border-left:3px solid var(--fst-cyan)">
           <div class="gift-q-num">3</div>
           <div class="gift-q-title">Может ли проект сказать нет?</div>
           <div class="gift-q-desc">Свобода отказа = здоровый проект. Все принимают = зависимость</div>
@@ -754,11 +750,11 @@
         <i class="pi pi-users"></i> Агенты дар-анализа
       </div>
       <div class="gift-agents-grid">
-        <div class="gift-agent-card" style="border-color:#e91e63">
+        <div class="gift-agent-card" style="border-color:var(--fst-red)">
           <div class="gift-agent-header">
             <span class="gift-agent-emoji">🤲</span>
             <div>
-              <div class="gift-agent-name" style="color:#e91e63">Аналитик дара</div>
+              <div class="gift-agent-name" style="color:var(--fst-red)">Аналитик дара</div>
               <div class="gift-agent-role">gift_dar</div>
             </div>
           </div>
@@ -772,11 +768,11 @@
             <div class="gift-rule gift-rule--red">Lone-maintainer паттерн (xz-сценарий) → REJECT</div>
           </div>
         </div>
-        <div class="gift-agent-card" style="border-color:#00bcd4">
+        <div class="gift-agent-card" style="border-color:var(--fst-cyan)">
           <div class="gift-agent-header">
             <span class="gift-agent-emoji">🔓</span>
             <div>
-              <div class="gift-agent-name" style="color:#00bcd4">Аудитор open source</div>
+              <div class="gift-agent-name" style="color:var(--fst-cyan)">Аудитор open source</div>
               <div class="gift-agent-role">opensource_audit</div>
             </div>
           </div>
@@ -874,7 +870,7 @@
               {{ giftResult.suggestedStance }}
             </span>
             <span class="gift-result-layer"
-              :style="{ color: giftResult.giftLayer === 'gratia' ? '#e91e63' : giftResult.giftLayer === 'bonum' ? '#9c27b0' : '#78909c' }">
+              :style="{ color: giftResult.giftLayer === 'gratia' ? 'var(--fst-red)' : giftResult.giftLayer === 'bonum' ? 'var(--fst-purple)' : 'var(--p-text-muted-color)' }">
               {{ giftResult.giftLayer === 'gratia' ? 'Благодать' : giftResult.giftLayer === 'bonum' ? 'Благо' : 'Утилита' }}
             </span>
           </div>
@@ -884,28 +880,28 @@
               <div class="gift-metric-label">Плотность благодарности</div>
               <div class="gift-metric-value">{{ giftResult.gratitudeDensity }}</div>
               <div class="gift-metric-bar">
-                <div :style="{ width: Math.min(giftResult.gratitudeDensity * 500, 100) + '%', background: '#e91e63' }"></div>
+                <div :style="{ width: Math.min(giftResult.gratitudeDensity * 500, 100) + '%', background: 'var(--fst-red)' }"></div>
               </div>
             </div>
             <div class="gift-metric">
               <div class="gift-metric-label">Устойчивость к закладкам</div>
-              <div class="gift-metric-value" :style="{ color: giftResult.backdoorResistance === 'high' ? '#4caf50' : giftResult.backdoorResistance === 'low' ? '#ef5350' : '#ffa726' }">
+              <div class="gift-metric-value" :style="{ color: giftResult.backdoorResistance === 'high' ? 'var(--fst-green)' : giftResult.backdoorResistance === 'low' ? 'var(--fst-red)' : 'var(--fst-brand)' }">
                 {{ giftResult.backdoorResistance === 'high' ? 'Высокая' : giftResult.backdoorResistance === 'low' ? 'Низкая' : 'Средняя' }}
                 ({{ giftResult.backdoorScore }}/100)
               </div>
               <div class="gift-metric-bar">
-                <div :style="{ width: giftResult.backdoorScore + '%', background: giftResult.backdoorResistance === 'high' ? '#4caf50' : giftResult.backdoorResistance === 'low' ? '#ef5350' : '#ffa726' }"></div>
+                <div :style="{ width: giftResult.backdoorScore + '%', background: giftResult.backdoorResistance === 'high' ? 'var(--fst-green)' : giftResult.backdoorResistance === 'low' ? 'var(--fst-red)' : 'var(--fst-brand)' }"></div>
               </div>
             </div>
             <div class="gift-metric">
               <div class="gift-metric-label">Риск выгорания</div>
-              <div class="gift-metric-value" :style="{ color: giftResult.burnoutRisk === 'low' ? '#4caf50' : giftResult.burnoutRisk === 'critical' ? '#ef5350' : '#ffa726' }">
+              <div class="gift-metric-value" :style="{ color: giftResult.burnoutRisk === 'low' ? 'var(--fst-green)' : giftResult.burnoutRisk === 'critical' ? 'var(--fst-red)' : 'var(--fst-brand)' }">
                 {{ giftResult.burnoutRisk === 'low' ? 'Низкий' : giftResult.burnoutRisk === 'critical' ? 'Критический' : giftResult.burnoutRisk === 'high' ? 'Высокий' : 'Средний' }}
               </div>
             </div>
             <div class="gift-metric">
               <div class="gift-metric-label">Суверенность</div>
-              <div class="gift-metric-value" :style="{ color: giftResult.sovereigntyGift.includes('ДАРИТ') ? '#4caf50' : '#ef5350' }">
+              <div class="gift-metric-value" :style="{ color: giftResult.sovereigntyGift.includes('ДАРИТ') ? 'var(--fst-green)' : 'var(--fst-red)' }">
                 {{ giftResult.sovereigntyGift }}
               </div>
             </div>
@@ -921,7 +917,7 @@
 
           <!-- Burnout signals -->
           <div v-if="giftResult.burnoutSignals.length" class="gift-signals">
-            <div class="gift-obs-title" style="color:#ef5350">Сигналы выгорания (xz/faker.js паттерн)</div>
+            <div class="gift-obs-title" style="color:var(--fst-red)">Сигналы выгорания (xz/faker.js паттерн)</div>
             <div v-for="(sig, i) in giftResult.burnoutSignals" :key="i" class="gift-signal-item">
               ⚠ {{ sig }}
             </div>
@@ -938,8 +934,8 @@
         <tbody>
           <tr v-for="m in githubMapping" :key="m.github">
             <td><code>{{ m.github }}</code></td>
-            <td style="color:#e91e63">{{ m.gift }}</td>
-            <td style="font-size:11px;color:var(--p-text-muted-color)">{{ m.insight }}</td>
+            <td style="color:var(--fst-red)">{{ m.gift }}</td>
+            <td style="font-size:0.78rem;color:var(--p-text-muted-color)">{{ m.insight }}</td>
           </tr>
         </tbody>
       </table>
@@ -952,18 +948,18 @@
         <div class="gift-compare-card gift-compare--bad">
           <div class="gift-compare-title">xz-utils (бэкдор 2024)</div>
           <div class="gift-compare-row"><span>Мейнтейнер:</span> <span>1 человек, 80%+ кода</span></div>
-          <div class="gift-compare-row"><span>Gratitude density:</span> <span style="color:#ef5350">~0</span></div>
-          <div class="gift-compare-row"><span>Review coverage:</span> <span style="color:#ef5350">&lt;10%</span></div>
-          <div class="gift-compare-row"><span>Newcomer trust:</span> <span style="color:#ef5350">Быстрый, без взаимности</span></div>
-          <div class="gift-compare-row"><span>Результат:</span> <span style="color:#ef5350">Бэкдор в OpenSSH</span></div>
+          <div class="gift-compare-row"><span>Gratitude density:</span> <span style="color:var(--fst-red)">~0</span></div>
+          <div class="gift-compare-row"><span>Review coverage:</span> <span style="color:var(--fst-red)">&lt;10%</span></div>
+          <div class="gift-compare-row"><span>Newcomer trust:</span> <span style="color:var(--fst-red)">Быстрый, без взаимности</span></div>
+          <div class="gift-compare-row"><span>Результат:</span> <span style="color:var(--fst-red)">Бэкдор в OpenSSH</span></div>
         </div>
         <div class="gift-compare-card gift-compare--good">
           <div class="gift-compare-title">Здоровый проект</div>
           <div class="gift-compare-row"><span>Мейнтейнеры:</span> <span>3+ из разных org</span></div>
-          <div class="gift-compare-row"><span>Gratitude density:</span> <span style="color:#4caf50">>0.2</span></div>
-          <div class="gift-compare-row"><span>Review coverage:</span> <span style="color:#4caf50">>80%</span></div>
-          <div class="gift-compare-row"><span>Newcomer trust:</span> <span style="color:#4caf50">Постепенный, с review</span></div>
-          <div class="gift-compare-row"><span>Результат:</span> <span style="color:#4caf50">Безопасный форк</span></div>
+          <div class="gift-compare-row"><span>Gratitude density:</span> <span style="color:var(--fst-green)">>0.2</span></div>
+          <div class="gift-compare-row"><span>Review coverage:</span> <span style="color:var(--fst-green)">>80%</span></div>
+          <div class="gift-compare-row"><span>Newcomer trust:</span> <span style="color:var(--fst-green)">Постепенный, с review</span></div>
+          <div class="gift-compare-row"><span>Результат:</span> <span style="color:var(--fst-green)">Безопасный форк</span></div>
         </div>
       </div>
 
@@ -977,7 +973,7 @@
           <tr v-for="ep in giftEndpoints" :key="ep.path">
             <td><code>{{ ep.method }}</code></td>
             <td><code>{{ ep.path }}</code></td>
-            <td style="font-size:11px">{{ ep.desc }}</td>
+            <td style="font-size:0.78rem">{{ ep.desc }}</td>
           </tr>
         </tbody>
       </table>
@@ -990,6 +986,7 @@
 import { ref, computed, reactive, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
+import SelectButton from 'primevue/selectbutton'
 import {
   AGENTS, SCORING_DIMS, PHASES, PHASE_ORDER, VERDICTS,
   SUBFUNDS,
@@ -1024,43 +1021,43 @@ const activeTab = ref('ontology')
 const ontologyClasses = [
   {
     name: 'Project',
-    color: '#42a5f5',
+    color: 'var(--fst-blue)',
     description: 'Инвестиционный проект / заявка',
     properties: ['projectId', 'title', 'company', 'trl', 'mrl', 'sovereigntyScore', 'localizationRatio', 'marketSize', 'projectedIRR', 'requestedAmount'],
   },
   {
     name: 'Agent',
-    color: '#7e57c2',
+    color: 'var(--fst-purple)',
     description: 'AI Агент инвесткомитета',
     properties: ['agentId', 'name', 'role', 'avatar', 'weight', 'bias', 'scoringWeights', 'focus'],
   },
   {
     name: 'CommitteeSession',
-    color: '#ffa726',
+    color: 'var(--fst-brand)',
     description: 'Сессия инвесткомитета',
     properties: ['sessionId', 'project', 'agents', 'phase', 'startedAt', 'arguments', 'votes', 'decision'],
   },
   {
     name: 'Argument',
-    color: '#ef5350',
+    color: 'var(--fst-red)',
     description: 'Аргумент / тезис агента',
     properties: ['argumentId', 'agentId', 'type', 'text', 'targetArgId', 'dimension', 'strength', 'timestamp'],
   },
   {
     name: 'Vote',
-    color: '#26c6da',
+    color: 'var(--fst-cyan)',
     description: 'Голос агента по проекту',
     properties: ['voteId', 'agentId', 'verdict', 'score', 'confidence', 'rationale'],
   },
   {
     name: 'Decision',
-    color: '#66bb6a',
+    color: 'var(--fst-green)',
     description: 'Решение комитета',
     properties: ['decisionId', 'aggregatedScore', 'recommendation', 'conditions', 'risks', 'voteCounts', 'humanApproval'],
   },
   {
     name: 'Company',
-    color: '#78909c',
+    color: 'var(--p-text-muted-color)',
     description: 'Компания-заявитель',
     properties: ['companyId', 'name', 'inn', 'foundedYear', 'employees', 'revenue', 'patents'],
   },
@@ -1089,7 +1086,7 @@ const ontologyRelations = [
 const eventGroups = [
   {
     name: 'SESSION_EVENTS',
-    color: '#42a5f5',
+    color: 'var(--fst-blue)',
     icon: 'pi pi-calendar',
     events: [
       { type: 'SessionCreated',    description: 'Создана новая сессия инвесткомитета' },
@@ -1100,7 +1097,7 @@ const eventGroups = [
   },
   {
     name: 'ANALYSIS_EVENTS',
-    color: '#7e57c2',
+    color: 'var(--fst-purple)',
     icon: 'pi pi-file-search',
     events: [
       { type: 'AgentAnalysisStarted',   description: 'Агент начал изучение документации проекта' },
@@ -1110,7 +1107,7 @@ const eventGroups = [
   },
   {
     name: 'DEBATE_EVENTS',
-    color: '#ef5350',
+    color: 'var(--fst-red)',
     icon: 'pi pi-comments',
     events: [
       { type: 'ArgumentRaised',         description: 'Агент выдвинул аргумент (type: OPENING/CHALLENGE/COUNTER/SUMMARY)' },
@@ -1121,7 +1118,7 @@ const eventGroups = [
   },
   {
     name: 'VOTING_EVENTS',
-    color: '#26c6da',
+    color: 'var(--fst-cyan)',
     icon: 'pi pi-check-square',
     events: [
       { type: 'VotingStarted',   description: 'Начато голосование агентов' },
@@ -1132,7 +1129,7 @@ const eventGroups = [
   },
   {
     name: 'DECISION_EVENTS',
-    color: '#66bb6a',
+    color: 'var(--fst-green)',
     icon: 'pi pi-flag',
     events: [
       { type: 'DecisionFormed',    description: 'Решение сформировано (aggregatedScore, recommendation)' },
@@ -1141,7 +1138,7 @@ const eventGroups = [
   },
   {
     name: 'HUMAN_APPROVAL_EVENTS',
-    color: '#ffa726',
+    color: 'var(--fst-brand)',
     icon: 'pi pi-users',
     events: [
       { type: 'HumanApprovalRequested', description: 'Запрос утверждения людьми' },
@@ -1328,34 +1325,34 @@ const causalGraph = computed(() => {
   const W = 900, H = 520
   // Layout: phases as nodes in a flow, events as smaller nodes
   const phases = [
-    { id: 'LOADING',           label: 'Анализ',       sublabel: 'AgentAnalysisStarted', description: 'Агенты изучают документы проекта',          fill: '#42a5f5', stroke: '#1565c0', x: 80,  y: 80 },
-    { id: 'PRIMARY_POSITIONS', label: 'Позиции',      sublabel: 'ArgumentRaised×6',    description: 'Каждый агент выдвигает первичный тезис',      fill: '#7e57c2', stroke: '#4527a0', x: 240, y: 80 },
-    { id: 'CROSS_DEBATE',      label: 'Дебаты',       sublabel: 'CHALLENGE/COUNTER',   description: '3 раунда перекрёстных аргументов',            fill: '#ef5350', stroke: '#b71c1c', x: 420, y: 80 },
-    { id: 'FINAL_POSITIONS',   label: 'Финал',        sublabel: 'SUMMARY×6',          description: 'Каждый агент формулирует итоговую позицию',    fill: '#ff7043', stroke: '#bf360c', x: 600, y: 80 },
-    { id: 'VOTING',            label: 'Голосование',  sublabel: 'VoteCast×6',         description: 'Агенты голосуют с весами и confidence',        fill: '#26c6da', stroke: '#00838f', x: 770, y: 80 },
-    { id: 'SYNTHESIS',         label: 'Синтез',       sublabel: 'DecisionFormed',     description: 'Агрегация баллов, условия, риски',             fill: '#66bb6a', stroke: '#2e7d32', x: 770, y: 220 },
-    { id: 'HUMAN_APPROVAL',    label: 'Комитет',      sublabel: 'HumanApproval',      description: 'Председатель утверждает решение агентов',      fill: '#ffa726', stroke: '#e65100', x: 600, y: 220 },
-    { id: 'APPROVE',           label: 'ОДОБРЕНО',     sublabel: 'DecisionApproved',   description: 'Проект одобрен — переходит к инвестированию',  fill: '#4caf50', stroke: '#1b5e20', x: 420, y: 340 },
-    { id: 'DEFER',             label: 'ОТЛОЖЕНО',     sublabel: 'DecisionDeferred',   description: 'Проект отложен для доработки',                 fill: '#ffa726', stroke: '#e65100', x: 600, y: 340 },
-    { id: 'REJECT',            label: 'ОТКЛОНЕНО',    sublabel: 'DecisionRejected',   description: 'Проект отклонён',                              fill: '#ef5350', stroke: '#b71c1c', x: 780, y: 340 },
+    { id: 'LOADING',           label: 'Анализ',       sublabel: 'AgentAnalysisStarted', description: 'Агенты изучают документы проекта',          fill: 'var(--fst-blue)', stroke: '#1565c0', x: 80,  y: 80 },
+    { id: 'PRIMARY_POSITIONS', label: 'Позиции',      sublabel: 'ArgumentRaised×6',    description: 'Каждый агент выдвигает первичный тезис',      fill: 'var(--fst-purple)', stroke: '#4527a0', x: 240, y: 80 },
+    { id: 'CROSS_DEBATE',      label: 'Дебаты',       sublabel: 'CHALLENGE/COUNTER',   description: '3 раунда перекрёстных аргументов',            fill: 'var(--fst-red)', stroke: '#b71c1c', x: 420, y: 80 },
+    { id: 'FINAL_POSITIONS',   label: 'Финал',        sublabel: 'SUMMARY×6',          description: 'Каждый агент формулирует итоговую позицию',    fill: 'var(--fst-brand)', stroke: '#bf360c', x: 600, y: 80 },
+    { id: 'VOTING',            label: 'Голосование',  sublabel: 'VoteCast×6',         description: 'Агенты голосуют с весами и confidence',        fill: 'var(--fst-cyan)', stroke: '#00838f', x: 770, y: 80 },
+    { id: 'SYNTHESIS',         label: 'Синтез',       sublabel: 'DecisionFormed',     description: 'Агрегация баллов, условия, риски',             fill: 'var(--fst-green)', stroke: '#2e7d32', x: 770, y: 220 },
+    { id: 'HUMAN_APPROVAL',    label: 'Комитет',      sublabel: 'HumanApproval',      description: 'Председатель утверждает решение агентов',      fill: 'var(--fst-brand)', stroke: '#e65100', x: 600, y: 220 },
+    { id: 'APPROVE',           label: 'ОДОБРЕНО',     sublabel: 'DecisionApproved',   description: 'Проект одобрен — переходит к инвестированию',  fill: 'var(--fst-green)', stroke: '#1b5e20', x: 420, y: 340 },
+    { id: 'DEFER',             label: 'ОТЛОЖЕНО',     sublabel: 'DecisionDeferred',   description: 'Проект отложен для доработки',                 fill: 'var(--fst-brand)', stroke: '#e65100', x: 600, y: 340 },
+    { id: 'REJECT',            label: 'ОТКЛОНЕНО',    sublabel: 'DecisionRejected',   description: 'Проект отклонён',                              fill: 'var(--fst-red)', stroke: '#b71c1c', x: 780, y: 340 },
   ]
   const nodeW = (id) => id.length > 8 ? 110 : 90
   const nodes = phases.map(p => ({ ...p, w: nodeW(p.id) }))
 
   const edges = [
-    { id: 'e1',  x1: 80,  y1: 98,  x2: 190, y2: 80,  color: '#42a5f5' },
-    { id: 'e2',  x1: 290, y1: 80,  x2: 365, y2: 80,  color: '#7e57c2' },
-    { id: 'e3',  x1: 475, y1: 80,  x2: 545, y2: 80,  color: '#ef5350' },
-    { id: 'e4',  x1: 655, y1: 80,  x2: 715, y2: 80,  color: '#ff7043' },
-    { id: 'e5',  x1: 770, y1: 98,  x2: 770, y2: 200, color: '#26c6da' },
-    { id: 'e6',  x1: 770, y1: 238, x2: 660, y2: 220, color: '#66bb6a' },
-    { id: 'e7',  x1: 545, y1: 220, x2: 465, y2: 300, color: '#4caf50' },
-    { id: 'e8',  x1: 590, y1: 238, x2: 610, y2: 320, color: '#ffa726', dashed: true },
-    { id: 'e9',  x1: 615, y1: 238, x2: 760, y2: 320, color: '#ef5350', dashed: true },
+    { id: 'e1',  x1: 80,  y1: 98,  x2: 190, y2: 80,  color: 'var(--fst-blue)' },
+    { id: 'e2',  x1: 290, y1: 80,  x2: 365, y2: 80,  color: 'var(--fst-purple)' },
+    { id: 'e3',  x1: 475, y1: 80,  x2: 545, y2: 80,  color: 'var(--fst-red)' },
+    { id: 'e4',  x1: 655, y1: 80,  x2: 715, y2: 80,  color: 'var(--fst-brand)' },
+    { id: 'e5',  x1: 770, y1: 98,  x2: 770, y2: 200, color: 'var(--fst-cyan)' },
+    { id: 'e6',  x1: 770, y1: 238, x2: 660, y2: 220, color: 'var(--fst-green)' },
+    { id: 'e7',  x1: 545, y1: 220, x2: 465, y2: 300, color: 'var(--fst-green)' },
+    { id: 'e8',  x1: 590, y1: 238, x2: 610, y2: 320, color: 'var(--fst-brand)', dashed: true },
+    { id: 'e9',  x1: 615, y1: 238, x2: 760, y2: 320, color: 'var(--fst-red)', dashed: true },
     // Cross-debate loop
-    { id: 'e10', x1: 420, y1: 62,  x2: 420, y2: 30,  color: '#ef5350', dashed: true, weight: 1 },
-    { id: 'e11', x1: 420, y1: 30,  x2: 240, y2: 30,  color: '#ef5350', dashed: true, weight: 1 },
-    { id: 'e12', x1: 240, y1: 30,  x2: 240, y2: 62,  color: '#ef5350', dashed: true, weight: 1 },
+    { id: 'e10', x1: 420, y1: 62,  x2: 420, y2: 30,  color: 'var(--fst-red)', dashed: true, weight: 1 },
+    { id: 'e11', x1: 420, y1: 30,  x2: 240, y2: 30,  color: 'var(--fst-red)', dashed: true, weight: 1 },
+    { id: 'e12', x1: 240, y1: 30,  x2: 240, y2: 62,  color: 'var(--fst-red)', dashed: true, weight: 1 },
   ]
 
   return { nodes, edges, width: W, height: H }
@@ -1561,35 +1558,13 @@ watch(() => session.value?.arguments?.length, () => {
   overflow: hidden;
 }
 
-/* ── Tabs ───────────────────────────────────────────────────── */
+/* ── Tabs (PrimeVue SelectButton) ─────────────────────────── */
 .fst-panel-tabs {
-  display: flex;
-  gap: 2px;
-  border-bottom: 1px solid var(--p-surface-border, #2a2a2a);
-  padding: 0 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--p-content-border-color);
   flex-shrink: 0;
-  background: var(--p-surface-section, #111);
+  overflow-x: auto;
 }
-.fst-tab-btn {
-  padding: 10px 14px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--p-text-muted-color, #888);
-  cursor: pointer;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.15s;
-}
-.fst-tab-btn:hover { color: var(--p-text-color, #eee); }
-.fst-tab-btn.active {
-  border-bottom-color: #ffa726;
-  color: #ffa726;
-  font-weight: 600;
-}
-
 /* ── Tab content ────────────────────────────────────────────── */
 .fst-tab-content {
   flex: 1;
@@ -1599,11 +1574,11 @@ watch(() => session.value?.arguments?.length, () => {
 
 /* ── Section titles ─────────────────────────────────────────── */
 .fst-section-title {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--p-text-muted-color, #888);
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -1617,22 +1592,22 @@ watch(() => session.value?.arguments?.length, () => {
   gap: 10px;
 }
 .fst-onto-card {
-  border: 1px solid var(--p-surface-border, #2a2a2a);
+  border: 1px solid var(--p-surface-border, var(--p-content-border-color));
   border-left: 3px solid;
   border-radius: 8px;
   padding: 10px 12px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
 }
 .fst-onto-card-name {
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 700;
   font-family: monospace;
   margin-bottom: 4px;
-  color: var(--p-text-color, #e0e0e0);
+  color: var(--p-text-color, var(--p-content-border-color));
 }
 .fst-onto-card-desc {
-  font-size: 11px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   margin-bottom: 8px;
 }
 .fst-onto-card-props {
@@ -1641,15 +1616,15 @@ watch(() => session.value?.arguments?.length, () => {
   gap: 4px;
 }
 .fst-onto-prop {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-family: monospace;
   padding: 1px 5px;
   border-radius: 3px;
-  background: var(--p-surface-hover, var(--p-surface-border, #1e2230));
-  color: var(--p-text-secondary-color, #aaa);
+  background: var(--p-surface-hover, var(--p-surface-border, var(--p-surface-card)));
+  color: var(--p-text-secondary-color, var(--p-text-muted-color));
 }
 .fst-onto-prop--more {
-  color: var(--p-text-muted-color, #888);
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   font-style: italic;
 }
 
@@ -1663,14 +1638,14 @@ watch(() => session.value?.arguments?.length, () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.83rem;
   padding: 4px 8px;
   border-radius: 4px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
 }
-.fst-rel-from { font-family: monospace; font-weight: 600; color: #42a5f5; }
-.fst-rel-pred { color: var(--p-text-muted-color, #888); font-size: 11px; }
-.fst-rel-to   { font-family: monospace; font-weight: 600; color: #66bb6a; }
+.fst-rel-from { font-family: monospace; font-weight: 600; color: var(--fst-blue); }
+.fst-rel-pred { color: var(--p-text-muted-color, var(--p-text-muted-color)); font-size: 0.78rem; }
+.fst-rel-to   { font-family: monospace; font-weight: 600; color: var(--fst-green); }
 
 /* ── Scoring dims grid ──────────────────────────────────────── */
 .fst-dims-grid {
@@ -1683,10 +1658,10 @@ watch(() => session.value?.arguments?.length, () => {
   border-radius: 8px;
   padding: 10px 12px;
 }
-.fst-dim-label { font-size: 13px; font-weight: 700; }
-.fst-dim-weight { font-size: 11px; color: var(--p-text-muted-color, #888); margin-top: 2px; }
-.fst-dim-unit   { font-size: 11px; font-family: monospace; color: var(--p-text-muted-color, #aaa); }
-.fst-dim-desc   { font-size: 11px; color: var(--p-text-muted-color, #888); margin-top: 4px; line-height: 1.4; }
+.fst-dim-label { font-size: 0.88rem; font-weight: 700; }
+.fst-dim-weight { font-size: 0.78rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); margin-top: 2px; }
+.fst-dim-unit   { font-size: 0.78rem; font-family: monospace; color: var(--p-text-muted-color, var(--p-text-muted-color)); }
+.fst-dim-desc   { font-size: 0.78rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); margin-top: 4px; line-height: 1.4; }
 
 /* ── Agents grid ────────────────────────────────────────────── */
 .fst-agents-grid {
@@ -1696,9 +1671,9 @@ watch(() => session.value?.arguments?.length, () => {
 }
 .fst-agent-onto-card {
   border: 1px solid;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
 }
 .fst-agent-onto-header {
   display: flex;
@@ -1706,37 +1681,37 @@ watch(() => session.value?.arguments?.length, () => {
   gap: 10px;
   margin-bottom: 8px;
 }
-.fst-agent-onto-emoji { font-size: 24px; flex-shrink: 0; }
-.fst-agent-onto-name  { font-size: 13px; font-weight: 700; }
-.fst-agent-onto-role  { font-size: 10px; color: var(--p-text-muted-color, #888); font-family: monospace; }
-.fst-agent-onto-weight { margin-left: auto; font-size: 11px; color: var(--p-text-muted-color, #888); white-space: nowrap; }
-.fst-agent-onto-desc  { font-size: 11px; color: var(--p-text-muted-color, #aaa); line-height: 1.4; margin-bottom: 8px; }
-.fst-agent-onto-focus { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; font-size: 11px; color: var(--p-text-muted-color, #888); flex-wrap: wrap; }
+.fst-agent-onto-emoji { font-size: 1.5rem; flex-shrink: 0; }
+.fst-agent-onto-name  { font-size: 0.88rem; font-weight: 700; }
+.fst-agent-onto-role  { font-size: 0.75rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); font-family: monospace; }
+.fst-agent-onto-weight { margin-left: auto; font-size: 0.78rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); white-space: nowrap; }
+.fst-agent-onto-desc  { font-size: 0.78rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); line-height: 1.4; margin-bottom: 8px; }
+.fst-agent-onto-focus { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; font-size: 0.78rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); flex-wrap: wrap; }
 .fst-focus-tag {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-family: monospace;
   padding: 1px 5px;
   border-radius: 3px;
-  background: var(--p-surface-hover, var(--p-surface-border, #1e2230));
-  color: var(--p-text-muted-color, #aaa);
+  background: var(--p-surface-hover, var(--p-surface-border, var(--p-surface-card)));
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
 }
 .fst-agent-onto-scores { display: flex; flex-direction: column; gap: 3px; }
 .fst-ascore-row { display: flex; align-items: center; gap: 5px; }
-.fst-ascore-dim { font-size: 10px; color: var(--p-text-muted-color, #888); min-width: 65px; }
+.fst-ascore-dim { font-size: 0.75rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); min-width: 65px; }
 .fst-ascore-bar {
   flex: 1;
   height: 4px;
-  background: var(--p-surface-hover, var(--p-surface-border, #1e2230));
+  background: var(--p-surface-hover, var(--p-surface-border, var(--p-surface-card)));
   border-radius: 2px;
   overflow: hidden;
 }
 .fst-ascore-bar > div { height: 100%; border-radius: 2px; }
-.fst-ascore-val { font-size: 10px; color: var(--p-text-muted-color, #888); min-width: 24px; text-align: right; }
+.fst-ascore-val { font-size: 0.75rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); min-width: 24px; text-align: right; }
 
 /* ── Event groups ───────────────────────────────────────────── */
 .fst-event-group { margin-bottom: 16px; }
 .fst-event-group-title {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 700;
   font-family: monospace;
   margin-bottom: 6px;
@@ -1749,25 +1724,25 @@ watch(() => session.value?.arguments?.length, () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+  font-size: 0.83rem;
   padding: 5px 8px;
   border-radius: 4px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
 }
 .fst-event-type {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 0.78rem;
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
   flex-shrink: 0;
 }
-.fst-event-desc { flex: 1; color: var(--p-text-muted-color, #aaa); }
+.fst-event-desc { flex: 1; color: var(--p-text-muted-color, var(--p-text-muted-color)); }
 .fst-event-terminal {
-  font-size: 9px;
+  font-size: 0.7rem;
   font-weight: 700;
-  color: #4caf50;
-  border: 1px solid #4caf50;
+  color: var(--fst-green);
+  border: 1px solid var(--fst-green);
   padding: 1px 4px;
   border-radius: 3px;
   flex-shrink: 0;
@@ -1785,56 +1760,56 @@ watch(() => session.value?.arguments?.length, () => {
   border: 1px solid;
   border-radius: 6px;
   padding: 5px 10px;
-  font-size: 11px;
+  font-size: 0.78rem;
   display: flex;
   align-items: center;
   gap: 4px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
 }
-.fst-chain-arrow { color: var(--p-text-muted-color, #555); font-size: 12px; }
+.fst-chain-arrow { color: var(--p-text-muted-color, var(--p-text-muted-color)); font-size: 0.83rem; }
 
 /* ── Triggers table ─────────────────────────────────────────── */
 .fst-triggers-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 0.83rem;
 }
 .fst-triggers-table th {
   text-align: left;
   padding: 6px 10px;
-  border-bottom: 1px solid var(--p-surface-border, #2a2a2a);
-  color: var(--p-text-muted-color, #888);
-  font-size: 11px;
+  border-bottom: 1px solid var(--p-surface-border, var(--p-content-border-color));
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
+  font-size: 0.78rem;
 }
 .fst-triggers-table td {
   padding: 6px 10px;
-  border-bottom: 1px solid var(--p-surface-border, var(--p-surface-border, #1e2230));
+  border-bottom: 1px solid var(--p-surface-border, var(--p-surface-border, var(--p-surface-card)));
   vertical-align: top;
-  color: var(--p-text-color, #ccc);
+  color: var(--p-text-color, var(--p-content-border-color));
 }
-.fst-triggers-table code { font-family: monospace; font-size: 11px; color: #42a5f5; }
+.fst-triggers-table code { font-family: monospace; font-size: 0.78rem; color: var(--fst-blue); }
 
 /* ── Requirements table ─────────────────────────────────────── */
 .fst-req-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 0.83rem;
   margin-bottom: 8px;
 }
 .fst-req-table th {
   text-align: left;
   padding: 6px 10px;
-  border-bottom: 1px solid var(--p-surface-border, #2a2a2a);
-  color: var(--p-text-muted-color, #888);
-  font-size: 11px;
+  border-bottom: 1px solid var(--p-surface-border, var(--p-content-border-color));
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
+  font-size: 0.78rem;
 }
 .fst-req-table td {
   padding: 6px 10px;
-  border-bottom: 1px solid var(--p-surface-border, var(--p-surface-border, #1e2230));
-  color: var(--p-text-color, #ccc);
+  border-bottom: 1px solid var(--p-surface-border, var(--p-surface-border, var(--p-surface-card)));
+  color: var(--p-text-color, var(--p-content-border-color));
   vertical-align: top;
 }
-.fst-req-table code { font-family: monospace; color: #ffa726; font-size: 11px; }
+.fst-req-table code { font-family: monospace; color: var(--fst-brand); font-size: 0.78rem; }
 
 /* ── Simulator tab ──────────────────────────────────────────── */
 .fst-simulator-tab {
@@ -1855,7 +1830,7 @@ watch(() => session.value?.arguments?.length, () => {
   padding-top: 24px;
 }
 .fst-sim-launch-title {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -1866,17 +1841,17 @@ watch(() => session.value?.arguments?.length, () => {
   align-items: center;
   gap: 10px;
 }
-.fst-sim-select-label { font-size: 12px; color: var(--p-text-muted-color, #888); white-space: nowrap; min-width: 60px; }
+.fst-sim-select-label { font-size: 0.83rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); white-space: nowrap; min-width: 60px; }
 .fst-sim-select { flex: 1; }
 .fst-speed-row { display: flex; gap: 6px; }
 .fst-speed-btn {
   padding: 5px 10px;
-  border: 1px solid #333;
+  border: 1px solid var(--p-text-color);
   border-radius: 5px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 0.78rem;
 }
-.fst-speed-btn.active { border-color: #42a5f5; color: #42a5f5; background: rgba(66,165,245,0.1); }
+.fst-speed-btn.active { border-color: var(--fst-blue); color: var(--fst-blue); background: rgba(66,165,245,0.1); }
 
 /* Session */
 .fst-sim-session { display: flex; flex-direction: column; height: 100%; gap: 10px; }
@@ -1905,25 +1880,25 @@ watch(() => session.value?.arguments?.length, () => {
   left: calc(50% + 7px);
   right: calc(-50% + 7px);
   height: 1px;
-  background: var(--p-surface-border, #2a2a2a);
+  background: var(--p-surface-border, var(--p-content-border-color));
 }
-.fst-sim-phase.done::after { background: #42a5f5; }
+.fst-sim-phase.done::after { background: var(--fst-blue); }
 .fst-sim-phase-dot {
   width: 12px; height: 12px;
   border-radius: 50%;
   border: 1.5px solid;
   display: flex; align-items: center; justify-content: center;
   z-index: 1;
-  background: var(--p-surface-ground, #0f1117);
+  background: var(--p-surface-card));
 }
 .fst-sim-phase-label {
-  font-size: 9px;
-  color: var(--p-text-muted-color, #666);
+  font-size: 0.7rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   text-align: center;
   max-width: 72px;
   line-height: 1.2;
 }
-.fst-sim-phase.active .fst-sim-phase-label { color: #fff; font-weight: 600; }
+.fst-sim-phase.active .fst-sim-phase-label { color: white; font-weight: 600; }
 
 /* 3-col layout */
 .fst-sim-layout {
@@ -1935,12 +1910,12 @@ watch(() => session.value?.arguments?.length, () => {
   min-height: 0;
 }
 .fst-sim-col-title {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--p-text-muted-color, #666);
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--p-surface-border, #1e2230);
+  border-bottom: 1px solid var(--p-surface-border, var(--p-surface-card));
   margin-bottom: 6px;
   display: flex;
   align-items: center;
@@ -1950,7 +1925,7 @@ watch(() => session.value?.arguments?.length, () => {
 /* Agents col */
 .fst-sim-agents {
   overflow-y: auto;
-  border: 1px solid var(--p-surface-border, #1e2230);
+  border: 1px solid var(--p-surface-border, var(--p-surface-card));
   border-radius: 8px;
   padding: 8px;
 }
@@ -1965,68 +1940,68 @@ watch(() => session.value?.arguments?.length, () => {
   margin-bottom: 4px;
 }
 .fst-sim-agent.thinking { border-color: var(--ac); }
-.fst-sim-agent-emoji { font-size: 14px; }
+.fst-sim-agent-emoji { font-size: 0.93rem; }
 .fst-sim-agent-info { flex: 1; min-width: 0; }
-.fst-sim-agent-name { font-size: 10px; font-weight: 600; }
+.fst-sim-agent-name { font-size: 0.75rem; font-weight: 600; }
 .fst-sim-think {
-  font-size: 9px; color: #42a5f5; font-style: italic;
+  font-size: 0.7rem; color: var(--fst-blue); font-style: italic;
   display: flex; align-items: center; gap: 3px; margin-top: 2px;
 }
 .fst-sim-vote-badge {
-  font-size: 9px; padding: 1px 4px; border-radius: 3px; color: #fff; margin-top: 2px;
+  font-size: 0.7rem; padding: 1px 4px; border-radius: 3px; color: white; margin-top: 2px;
   display: inline-block;
 }
-.fst-sim-ready { font-size: 9px; color: #4caf50; margin-top: 2px; display: flex; align-items: center; gap: 2px; }
+.fst-sim-ready { font-size: 0.7rem; color: var(--fst-green); margin-top: 2px; display: flex; align-items: center; gap: 2px; }
 
 /* Timeline col */
 .fst-sim-timeline-col {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--p-surface-border, #1e2230);
+  border: 1px solid var(--p-surface-border, var(--p-surface-card));
   border-radius: 8px;
   padding: 8px;
 }
 .fst-sim-loading { margin-bottom: 8px; }
 .fst-sim-load-row {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-size: 12px;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-size: 0.83rem;
 }
 .fst-sim-load-bar {
-  flex: 1; height: 4px; background: var(--p-surface-hover, var(--p-surface-border, #1e2230)); border-radius: 2px; overflow: hidden;
+  flex: 1; height: 4px; background: var(--p-surface-hover, var(--p-surface-border, var(--p-surface-card))); border-radius: 2px; overflow: hidden;
 }
 .fst-sim-load-bar > div { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
 .fst-sim-args { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
 .fst-sim-arg {
-  border: 1px solid var(--p-surface-border, #1e2230);
+  border: 1px solid var(--p-surface-border, var(--p-surface-card));
   border-radius: 6px;
   padding: 6px 8px;
-  background: var(--p-surface-ground, #0d1018);
+  background: var(--p-surface-card));
 }
-.fst-sim-arg.counter { margin-left: 14px; border-left: 2px solid #7e57c2; }
+.fst-sim-arg.counter { margin-left: 14px; border-left: 2px solid var(--fst-purple); }
 .fst-sim-arg.type-challenge { border-color: rgba(239,83,80,0.3); }
 .fst-sim-arg.type-summary  { border-color: rgba(102,187,106,0.2); }
 .fst-sim-arg-hdr { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
 .fst-sim-arg-type {
-  font-size: 9px; padding: 1px 5px; border-radius: 3px;
-  background: var(--p-surface-hover, var(--p-surface-border, #1e2230)); color: var(--p-text-muted-color, #888);
+  font-size: 0.7rem; padding: 1px 5px; border-radius: 3px;
+  background: var(--p-surface-hover, var(--p-surface-border, var(--p-surface-card))); color: var(--p-text-muted-color, var(--p-text-muted-color));
 }
-.fst-sim-arg-text { font-size: 11px; line-height: 1.5; color: var(--p-text-color, #ccc); }
+.fst-sim-arg-text { font-size: 0.78rem; line-height: 1.5; color: var(--p-text-color, var(--p-content-border-color)); }
 .fst-sim-votes-block {
-  border: 1px solid var(--p-surface-border, #1e2230); border-radius: 6px; padding: 8px; background: var(--p-surface-ground, #0d1018); margin-top: 8px;
+  border: 1px solid var(--p-surface-border, var(--p-surface-card)); border-radius: 6px; padding: 8px; background: var(--p-surface-card)); margin-top: 8px;
 }
 .fst-sim-votes-title {
-  font-size: 10px; font-weight: 600; color: #26c6da; margin-bottom: 6px;
+  font-size: 0.75rem; font-weight: 600; color: var(--fst-cyan); margin-bottom: 6px;
   display: flex; align-items: center; gap: 4px;
 }
 .fst-sim-vote-row {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 0.78rem;
 }
-.fst-sim-vote-pill { font-size: 9px; padding: 1px 6px; border-radius: 3px; color: #fff; }
+.fst-sim-vote-pill { font-size: 0.7rem; padding: 1px 6px; border-radius: 3px; color: white; }
 
 /* Score col */
 .fst-sim-score-col {
   overflow-y: auto;
-  border: 1px solid var(--p-surface-border, #1e2230);
+  border: 1px solid var(--p-surface-border, var(--p-surface-card));
   border-radius: 8px;
   padding: 8px;
   display: flex;
@@ -2035,23 +2010,23 @@ watch(() => session.value?.arguments?.length, () => {
 }
 .fst-sim-dim-bars { display: flex; flex-direction: column; gap: 5px; }
 .fst-sim-dim-row { display: flex; align-items: center; gap: 5px; }
-.fst-sim-dim-label { font-size: 10px; color: var(--p-text-muted-color, #888); min-width: 55px; }
+.fst-sim-dim-label { font-size: 0.75rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); min-width: 55px; }
 .fst-sim-dim-bg {
-  flex: 1; height: 5px; background: var(--p-surface-hover, var(--p-surface-border, #1e2230)); border-radius: 2px; overflow: hidden;
+  flex: 1; height: 5px; background: var(--p-surface-hover, var(--p-surface-border, var(--p-surface-card))); border-radius: 2px; overflow: hidden;
 }
 .fst-sim-dim-bg > div { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
-.fst-sim-decision { text-align: center; padding: 10px; border: 1px solid var(--p-surface-border, #1e2230); border-radius: 8px; }
-.fst-sim-score-val { font-size: 32px; font-weight: 700; }
-.fst-sim-score-val small { font-size: 12px; opacity: 0.5; }
+.fst-sim-decision { text-align: center; padding: 10px; border: 1px solid var(--p-surface-border, var(--p-surface-card)); border-radius: 8px; }
+.fst-sim-score-val { font-size: 2rem; font-weight: 700; }
+.fst-sim-score-val small { font-size: 0.83rem; opacity: 0.5; }
 .fst-sim-rec {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 12px; border-radius: 12px; color: #fff; font-size: 11px; font-weight: 600;
+  padding: 3px 12px; border-radius: 12px; color: white; font-size: 0.78rem; font-weight: 600;
   margin-top: 6px;
 }
 .fst-sim-human { padding: 8px; border: 1px solid rgba(255,167,38,0.3); border-radius: 8px; }
 .fst-sim-human-btns { display: flex; flex-direction: column; gap: 5px; }
-.fst-sim-human-btns .p-button { font-size: 11px; }
-.fst-sim-concluded { text-align: center; padding: 16px; color: #4caf50; font-size: 13px; }
+.fst-sim-human-btns .p-button { font-size: 0.78rem; }
+.fst-sim-concluded { text-align: center; padding: 16px; color: var(--fst-green); font-size: 0.88rem; }
 .fst-sim-concluded > div { margin-top: 8px; }
 
 /* Controls */
@@ -2065,7 +2040,7 @@ watch(() => session.value?.arguments?.length, () => {
 .fst-recs-panel {
   margin-top: 10px;
   border: 1px solid rgba(171,71,188,0.3);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px;
   background: rgba(171,71,188,0.05);
   flex-shrink: 0;
@@ -2080,27 +2055,27 @@ watch(() => session.value?.arguments?.length, () => {
   gap: 10px;
 }
 .fst-recs-title {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 700;
-  color: #ab47bc;
+  color: var(--fst-purple);
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .fst-round-pill {
-  font-size: 10px;
+  font-size: 0.75rem;
   background: rgba(171,71,188,0.2);
-  color: #ab47bc;
+  color: var(--fst-purple);
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-left: 4px;
 }
 .fst-recs-verdict {
-  font-size: 11px;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: #fff;
+  color: white;
   padding: 3px 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   flex-shrink: 0;
 }
 .fst-recs-list {
@@ -2111,11 +2086,11 @@ watch(() => session.value?.arguments?.length, () => {
 .fst-rec-card {
   display: flex;
   gap: 10px;
-  border: 1px solid var(--p-surface-border, #2a2a2a);
-  border-left: 3px solid var(--rec-color, #ab47bc);
+  border: 1px solid var(--p-surface-border, var(--p-content-border-color));
+  border-left: 3px solid var(--rec-color, var(--fst-purple));
   border-radius: 8px;
   padding: 8px 10px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
   opacity: 0.7;
   transition: opacity 0.15s;
 }
@@ -2131,9 +2106,9 @@ watch(() => session.value?.arguments?.length, () => {
   width: 14px;
   height: 14px;
   cursor: pointer;
-  accent-color: #ab47bc;
+  accent-color: var(--fst-purple);
 }
-.fst-rec-avatar { font-size: 14px; }
+.fst-rec-avatar { font-size: 0.93rem; }
 .fst-rec-body { flex: 1; min-width: 0; }
 .fst-rec-header-row {
   display: flex;
@@ -2143,35 +2118,35 @@ watch(() => session.value?.arguments?.length, () => {
   flex-wrap: wrap;
 }
 .fst-rec-priority {
-  font-size: 9px;
+  font-size: 0.7rem;
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 3px;
   letter-spacing: 0.5px;
 }
-.priority-critical { background: rgba(239,83,80,0.2);  color: #ef5350; }
-.priority-high     { background: rgba(255,167,38,0.2); color: #ffa726; }
-.priority-medium   { background: rgba(102,187,106,0.2);color: #66bb6a; }
-.priority-low      { background: rgba(120,144,156,0.2);color: #78909c; }
-.fst-rec-effort { font-size: 10px; color: var(--p-text-muted-color, #888); }
-.fst-rec-owner  { font-size: 10px; color: var(--p-text-muted-color, #888); margin-left: auto; }
+.priority-critical { background: rgba(239,83,80,0.2);  color: var(--fst-red); }
+.priority-high     { background: rgba(255,167,38,0.2); color: var(--fst-brand); }
+.priority-medium   { background: rgba(102,187,106,0.2);color: var(--fst-green); }
+.priority-low      { background: rgba(120,144,156,0.2);color: var(--p-text-muted-color); }
+.fst-rec-effort { font-size: 0.75rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); }
+.fst-rec-owner  { font-size: 0.75rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); margin-left: auto; }
 .fst-rec-text {
-  font-size: 11px;
+  font-size: 0.78rem;
   line-height: 1.5;
-  color: var(--p-text-color, #ccc);
+  color: var(--p-text-color, var(--p-content-border-color));
   margin-bottom: 5px;
 }
 .fst-rec-metric {
-  font-size: 10px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   display: flex;
   align-items: center;
   gap: 5px;
 }
 .fst-rec-delta {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #4caf50;
+  color: var(--fst-green);
   background: rgba(76,175,80,0.15);
   padding: 1px 4px;
   border-radius: 3px;
@@ -2179,27 +2154,27 @@ watch(() => session.value?.arguments?.length, () => {
 .fst-recs-summary {
   margin-top: 10px;
   padding: 10px;
-  border: 1px solid var(--p-surface-border, #2a2a2a);
+  border: 1px solid var(--p-surface-border, var(--p-content-border-color));
   border-radius: 8px;
-  background: var(--p-surface-section, #111);
+  background: var(--p-surface-section, var(--p-surface-card));
 }
 .fst-recs-summary-row {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   margin-bottom: 4px;
 }
-.fst-recs-summary-row strong { color: var(--p-text-color, #eee); }
+.fst-recs-summary-row strong { color: var(--p-text-color, var(--p-text-color)); }
 
 /* ── Revision Animation ──────────────────────────────────────── */
 .fst-revision-anim {
   padding: 12px;
 }
 .fst-revision-title {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 600;
-  color: #26a69a;
+  color: var(--fst-cyan);
   margin-bottom: 10px;
   display: flex;
   align-items: center;
@@ -2207,20 +2182,20 @@ watch(() => session.value?.arguments?.length, () => {
 }
 .fst-revision-progress-bar {
   height: 6px;
-  background: var(--p-surface-border, #2a2a2a);
+  background: var(--p-surface-border, var(--p-content-border-color));
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 8px;
 }
 .fst-revision-progress-bar > div {
   height: 100%;
-  background: #26a69a;
+  background: var(--fst-cyan);
   border-radius: 3px;
   transition: width 0.5s ease;
 }
 .fst-revision-step {
-  font-size: 11px;
-  color: #26a69a;
+  font-size: 0.78rem;
+  color: var(--fst-cyan);
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -2229,11 +2204,11 @@ watch(() => session.value?.arguments?.length, () => {
 }
 .fst-revision-metrics { display: flex; flex-direction: column; gap: 5px; }
 .fst-rev-metric-row { display: flex; align-items: center; gap: 6px; }
-.fst-rev-metric-label { font-size: 10px; color: var(--p-text-muted-color, #888); min-width: 70px; }
+.fst-rev-metric-label { font-size: 0.75rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); min-width: 70px; }
 .fst-rev-metric-bar {
   flex: 1;
   height: 8px;
-  background: var(--p-surface-border, #2a2a2a);
+  background: var(--p-surface-border, var(--p-content-border-color));
   border-radius: 4px;
   overflow: hidden;
   position: relative;
@@ -2254,9 +2229,9 @@ watch(() => session.value?.arguments?.length, () => {
 /* ── Ready Next ──────────────────────────────────────────────── */
 .fst-ready-next { padding: 4px 0; }
 .fst-ready-title {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 600;
-  color: #26a69a;
+  color: var(--fst-cyan);
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -2265,35 +2240,35 @@ watch(() => session.value?.arguments?.length, () => {
 .fst-diff-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 0.83rem;
   margin-bottom: 10px;
 }
 .fst-diff-table th {
   text-align: left;
   padding: 4px 8px;
-  border-bottom: 1px solid var(--p-surface-border, #2a2a2a);
-  color: var(--p-text-muted-color, #888);
-  font-size: 10px;
+  border-bottom: 1px solid var(--p-surface-border, var(--p-content-border-color));
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
+  font-size: 0.75rem;
 }
-.fst-diff-table td { padding: 4px 8px; border-bottom: 1px solid var(--p-surface-border, #1e2230); }
-.fst-diff-old  { color: var(--p-text-muted-color, #888); }
+.fst-diff-table td { padding: 4px 8px; border-bottom: 1px solid var(--p-surface-border, var(--p-surface-card)); }
+.fst-diff-old  { color: var(--p-text-muted-color, var(--p-text-muted-color)); }
 .fst-diff-arrow { text-align: center; }
 .fst-diff-new  { font-weight: 600; }
 .fst-predicted-score {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.83rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   padding: 8px;
-  border: 1px solid var(--p-surface-border, #2a2a2a);
+  border: 1px solid var(--p-surface-border, var(--p-content-border-color));
   border-radius: 8px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
   margin-bottom: 8px;
 }
-.fst-predicted-score strong { font-size: 20px; font-weight: 700; }
+.fst-predicted-score strong { font-size: 1.25rem; font-weight: 700; }
 .fst-score-delta {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 700;
   background: rgba(76,175,80,0.15);
   padding: 2px 6px;
@@ -2303,17 +2278,17 @@ watch(() => session.value?.arguments?.length, () => {
 /* ── Rounds History ──────────────────────────────────────────── */
 .fst-rounds-history {
   margin-top: 10px;
-  border: 1px solid var(--p-surface-border, #2a2a2a);
+  border: 1px solid var(--p-surface-border, var(--p-content-border-color));
   border-radius: 8px;
   padding: 8px 12px;
-  background: var(--p-surface-section, #111);
+  background: var(--p-surface-section, var(--p-surface-card));
   flex-shrink: 0;
 }
 .fst-rounds-title {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--p-text-muted-color, #888);
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -2325,23 +2300,23 @@ watch(() => session.value?.arguments?.length, () => {
   align-items: center;
   gap: 8px;
   padding: 4px 0;
-  border-bottom: 1px solid var(--p-surface-border, #1e2230);
+  border-bottom: 1px solid var(--p-surface-border, var(--p-surface-card));
 }
 .fst-round-row:last-child { border-bottom: none; }
 .fst-round-row--current { opacity: 0.8; }
 .fst-round-num {
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: var(--p-text-muted-color, #888);
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   min-width: 22px;
 }
 .fst-round-info { display: flex; align-items: center; gap: 8px; flex: 1; }
-.fst-round-score { font-size: 13px; font-weight: 700; }
-.fst-round-verdict { font-size: 10px; }
-.fst-round-arrow { color: var(--p-text-muted-color, #555); font-size: 12px; }
+.fst-round-score { font-size: 0.88rem; font-weight: 700; }
+.fst-round-verdict { font-size: 0.75rem; }
+.fst-round-arrow { color: var(--p-text-muted-color, var(--p-text-muted-color)); font-size: 0.83rem; }
 .fst-round-badge {
-  font-size: 10px;
-  color: #ffa726;
+  font-size: 0.75rem;
+  color: var(--fst-brand);
   background: rgba(255,167,38,0.15);
   padding: 2px 6px;
   border-radius: 4px;
@@ -2350,10 +2325,10 @@ watch(() => session.value?.arguments?.length, () => {
 /* ── Causality Graph ────────────────────────────────────────── */
 .fst-causal-svg-wrap {
   position: relative;
-  border: 1px solid var(--p-surface-border, #2a2a2a);
-  border-radius: 10px;
+  border: 1px solid var(--p-surface-border, var(--p-content-border-color));
+  border-radius: 12px;
   overflow: hidden;
-  background: var(--p-surface-50, #f8f8f8);
+  background: var(--p-surface-50, var(--p-surface-card));
 }
 .fst-causal-svg {
   width: 100%;
@@ -2367,15 +2342,15 @@ watch(() => session.value?.arguments?.length, () => {
   bottom: 8px;
   left: 8px;
   background: var(--p-surface-overlay, rgba(0,0,0,0.85));
-  border: 1px solid var(--p-surface-border, #2a2a2a);
+  border: 1px solid var(--p-surface-border, var(--p-content-border-color));
   border-radius: 6px;
   padding: 8px 12px;
-  font-size: 11px;
-  color: var(--p-text-color, #eee);
+  font-size: 0.78rem;
+  color: var(--p-text-color, var(--p-text-color));
   pointer-events: none;
   max-width: 280px;
 }
-.fst-causal-tooltip strong { display: block; margin-bottom: 3px; color: #ffa726; }
+.fst-causal-tooltip strong { display: block; margin-bottom: 3px; color: var(--fst-brand); }
 .fst-causal-legend {
   display: flex;
   gap: 16px;
@@ -2386,8 +2361,8 @@ watch(() => session.value?.arguments?.length, () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
 }
 .fst-legend-line {
   display: inline-block;
@@ -2406,9 +2381,9 @@ watch(() => session.value?.arguments?.length, () => {
 }
 .fst-ac-card {
   border: 1px solid;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
 }
 .fst-ac-header {
   display: flex;
@@ -2416,18 +2391,18 @@ watch(() => session.value?.arguments?.length, () => {
   gap: 10px;
   margin-bottom: 10px;
 }
-.fst-ac-emoji { font-size: 22px; flex-shrink: 0; }
+.fst-ac-emoji { font-size: 1.4rem; flex-shrink: 0; }
 .fst-ac-meta  { flex: 1; }
-.fst-ac-name  { font-size: 13px; font-weight: 700; }
-.fst-ac-role  { font-size: 10px; color: var(--p-text-muted-color, #888); font-family: monospace; margin-top: 2px; }
+.fst-ac-name  { font-size: 0.88rem; font-weight: 700; }
+.fst-ac-role  { font-size: 0.75rem; color: var(--p-text-muted-color, var(--p-text-muted-color)); font-family: monospace; margin-top: 2px; }
 .fst-ac-bias-select { align-self: center; }
 .fst-bias-select {
-  font-size: 11px;
+  font-size: 0.78rem;
   padding: 4px 8px;
   border-radius: 5px;
-  border: 1px solid var(--p-surface-border, #333);
-  background: var(--p-surface-hover, #1e2230);
-  color: var(--p-text-color, #ccc);
+  border: 1px solid var(--p-surface-border, var(--p-text-color));
+  background: var(--p-surface-hover, var(--p-surface-card));
+  color: var(--p-text-color, var(--p-content-border-color));
   cursor: pointer;
 }
 .fst-ac-row {
@@ -2437,8 +2412,8 @@ watch(() => session.value?.arguments?.length, () => {
   margin-bottom: 8px;
 }
 .fst-ac-label {
-  font-size: 11px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   min-width: 70px;
 }
 .fst-ac-slider {
@@ -2447,15 +2422,15 @@ watch(() => session.value?.arguments?.length, () => {
   cursor: pointer;
 }
 .fst-ac-val {
-  font-size: 11px;
+  font-size: 0.78rem;
   font-weight: 600;
   min-width: 32px;
   text-align: right;
-  color: var(--p-text-color, #ccc);
+  color: var(--p-text-color, var(--p-content-border-color));
 }
 .fst-ac-dims-title {
-  font-size: 10px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 8px 0 5px;
@@ -2467,47 +2442,47 @@ watch(() => session.value?.arguments?.length, () => {
   margin-bottom: 4px;
 }
 .fst-ac-dim-label {
-  font-size: 10px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   min-width: 65px;
 }
 .fst-ac-desc {
-  font-size: 11px;
-  color: var(--p-text-muted-color, #888);
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
   line-height: 1.4;
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px solid var(--p-surface-border, #1e2230);
+  border-top: 1px solid var(--p-surface-border, var(--p-surface-card));
 }
 .fst-ac-validation {
   margin-top: 12px;
   padding: 10px 14px;
-  border: 1px solid var(--p-surface-border, #2a2a2a);
+  border: 1px solid var(--p-surface-border, var(--p-content-border-color));
   border-radius: 8px;
-  background: var(--p-surface-card, #111318);
+  background: var(--p-surface-card, var(--p-surface-card));
 }
 .fst-ac-val-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
-  color: var(--p-text-muted-color, #aaa);
+  font-size: 0.83rem;
+  color: var(--p-text-muted-color, var(--p-text-muted-color));
 }
 
 /* ── Gift Fund / Open Source ──────────────────────────── */
 .gift-thesis-banner {
   background: linear-gradient(135deg, rgba(233,30,99,0.08), rgba(0,188,212,0.08));
   border: 1px solid rgba(233,30,99,0.2);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 16px;
 }
 .gift-thesis-text {
-  font-size: 13px;
+  font-size: 0.88rem;
   line-height: 1.6;
   color: var(--p-text-color);
 }
-.gift-loading { text-align: center; padding: 20px; color: var(--p-text-muted-color); font-size: 12px; }
+.gift-loading { text-align: center; padding: 20px; color: var(--p-text-muted-color); font-size: 0.83rem; }
 .gift-portfolio-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -2529,13 +2504,13 @@ watch(() => session.value?.arguments?.length, () => {
   }
 }
 .gift-project-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.gift-project-name { font-size: 11px; font-weight: 600; color: var(--p-text-color); }
-.gift-project-subfund { font-size: 9px; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
+.gift-project-name { font-size: 0.78rem; font-weight: 600; color: var(--p-text-color); }
+.gift-project-subfund { font-size: 0.7rem; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: var(--fst-blue); }
 .gift-project-metrics { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
-.gift-pm { font-size: 10px; font-weight: 600; }
+.gift-pm { font-size: 0.75rem; font-weight: 600; }
 .gift-project-dar { display: flex; gap: 4px; align-items: center; }
-.gift-dar-label { font-size: 9px; color: var(--p-text-muted-color); }
-.gift-dar-value { font-size: 10px; font-weight: 700; }
+.gift-dar-label { font-size: 0.7rem; color: var(--p-text-muted-color); }
+.gift-dar-value { font-size: 0.75rem; font-weight: 700; }
 
 .gift-questions-grid {
   display: grid;
@@ -2553,19 +2528,19 @@ watch(() => session.value?.arguments?.length, () => {
   position: absolute;
   top: 8px;
   right: 12px;
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 800;
   opacity: 0.1;
   color: var(--p-text-color);
 }
 .gift-q-title {
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 600;
   margin-bottom: 6px;
   color: var(--p-text-color);
 }
 .gift-q-desc {
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
   line-height: 1.5;
 }
@@ -2577,7 +2552,7 @@ watch(() => session.value?.arguments?.length, () => {
 .gift-agent-card {
   background: var(--p-content-background);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 16px;
 }
 .gift-agent-header {
@@ -2586,19 +2561,19 @@ watch(() => session.value?.arguments?.length, () => {
   gap: 10px;
   margin-bottom: 10px;
 }
-.gift-agent-emoji { font-size: 24px; }
-.gift-agent-name { font-size: 14px; font-weight: 600; color: var(--p-text-color); }
-.gift-agent-role { font-size: 11px; color: var(--p-text-muted-color); font-family: monospace; }
-.gift-agent-desc { font-size: 12px; color: var(--p-text-muted-color); margin-bottom: 10px; line-height: 1.5; }
+.gift-agent-emoji { font-size: 1.5rem; }
+.gift-agent-name { font-size: 0.93rem; font-weight: 600; color: var(--p-text-color); }
+.gift-agent-role { font-size: 0.78rem; color: var(--p-text-muted-color); font-family: monospace; }
+.gift-agent-desc { font-size: 0.83rem; color: var(--p-text-muted-color); margin-bottom: 10px; line-height: 1.5; }
 .gift-agent-rules { display: flex; flex-direction: column; gap: 4px; }
 .gift-rule {
-  font-size: 11px;
+  font-size: 0.78rem;
   padding: 4px 8px;
   border-radius: 4px;
 }
-.gift-rule--green { background: rgba(76,175,80,0.12); color: #2e7d32; }
-.gift-rule--yellow { background: rgba(255,167,38,0.12); color: #e65100; }
-.gift-rule--red { background: rgba(239,83,80,0.12); color: #c62828; }
+.gift-rule--green { background: rgba(76,175,80,0.12); color: var(--fst-green-dark); }
+.gift-rule--yellow { background: rgba(255,167,38,0.12); color: var(--fst-brand); }
+.gift-rule--red { background: rgba(239,83,80,0.12); color: var(--fst-red); }
 
 .gift-analyzer {
   display: grid;
@@ -2616,7 +2591,7 @@ watch(() => session.value?.arguments?.length, () => {
   gap: 2px;
 }
 .gift-form-row label {
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
 }
 .gift-input {
@@ -2624,21 +2599,21 @@ watch(() => session.value?.arguments?.length, () => {
   border: 1px solid var(--p-form-field-border-color);
   border-radius: 6px;
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: 0.83rem;
   color: var(--p-text-color);
   outline: none;
 }
 .gift-input:focus {
-  border-color: #e91e63;
+  border-color: var(--fst-red);
 }
 .gift-analyze-btn {
   margin-top: 8px;
-  background: linear-gradient(135deg, #e91e63, #9c27b0);
+  background: linear-gradient(135deg, var(--fst-red), var(--fst-purple));
   color: white;
   border: none;
   border-radius: 8px;
   padding: 10px;
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -2652,7 +2627,7 @@ watch(() => session.value?.arguments?.length, () => {
 .gift-result {
   background: var(--p-content-background);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 16px;
 }
 .gift-result-header {
@@ -2662,16 +2637,16 @@ watch(() => session.value?.arguments?.length, () => {
   margin-bottom: 16px;
 }
 .gift-result-verdict {
-  font-size: 18px;
+  font-size: 1.1rem;
   font-weight: 800;
   padding: 4px 14px;
   border-radius: 6px;
 }
-.verdict-approve { background: rgba(76,175,80,0.15); color: #2e7d32; }
-.verdict-defer { background: rgba(255,167,38,0.15); color: #e65100; }
-.verdict-reject { background: rgba(239,83,80,0.15); color: #c62828; }
+.verdict-approve { background: rgba(76,175,80,0.15); color: var(--fst-green-dark); }
+.verdict-defer { background: rgba(255,167,38,0.15); color: var(--fst-brand); }
+.verdict-reject { background: rgba(239,83,80,0.15); color: var(--fst-red); }
 .gift-result-layer {
-  font-size: 14px;
+  font-size: 0.93rem;
   font-weight: 600;
   color: var(--p-text-color);
 }
@@ -2682,13 +2657,13 @@ watch(() => session.value?.arguments?.length, () => {
   margin-bottom: 16px;
 }
 .gift-metric {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 10px;
 }
-.gift-metric-label { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 4px; }
-.gift-metric-value { font-size: 14px; font-weight: 600; color: var(--p-text-color); }
+.gift-metric-label { font-size: 0.78rem; color: var(--p-text-muted-color); margin-bottom: 4px; }
+.gift-metric-value { font-size: 0.93rem; font-weight: 600; color: var(--p-text-color); }
 .gift-metric-bar {
   height: 4px;
   background: var(--p-content-border-color);
@@ -2703,20 +2678,20 @@ watch(() => session.value?.arguments?.length, () => {
 }
 .gift-observations { margin-bottom: 12px; }
 .gift-obs-title {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 600;
   color: var(--p-text-color);
   margin-bottom: 6px;
 }
 .gift-obs-item {
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
   padding: 3px 0;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .gift-signal-item {
-  font-size: 11px;
-  color: #c62828;
+  font-size: 0.78rem;
+  color: var(--fst-red);
   padding: 3px 0;
 }
 .gift-compare-grid {
@@ -2725,7 +2700,7 @@ watch(() => session.value?.arguments?.length, () => {
   gap: 14px;
 }
 .gift-compare-card {
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 14px;
 }
 .gift-compare--bad {
@@ -2737,7 +2712,7 @@ watch(() => session.value?.arguments?.length, () => {
   border: 1px solid rgba(76,175,80,0.2);
 }
 .gift-compare-title {
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 600;
   margin-bottom: 10px;
   color: var(--p-text-color);
@@ -2745,7 +2720,7 @@ watch(() => session.value?.arguments?.length, () => {
 .gift-compare-row {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 0.78rem;
   padding: 3px 0;
   color: var(--p-text-muted-color);
 }

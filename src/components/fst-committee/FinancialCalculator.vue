@@ -427,7 +427,7 @@ onMounted(() => {
   padding: 3px 10px;
   font-size: 0.78rem;
   cursor: pointer;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   transition: all 0.15s;
 }
@@ -454,7 +454,7 @@ onMounted(() => {
 }
 .fc-input-group input,
 .fc-cf-input {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 5px 8px;
@@ -491,7 +491,7 @@ onMounted(() => {
 .fc-metric {
   flex: 1;
   min-width: 80px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 8px 10px;
@@ -556,7 +556,7 @@ onMounted(() => {
 .fc-vm {
   flex: 1;
   min-width: 72px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--surface-border);
   border-radius: 7px;
   padding: 7px 8px;

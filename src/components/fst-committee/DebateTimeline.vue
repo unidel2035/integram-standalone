@@ -687,7 +687,7 @@ watch(() => allItems.value.length, () => {
 }
 .dt-arg--challenge { border-color: rgba(239,83,80,0.3); }
 .dt-arg--counter   { border-color: rgba(126,87,194,0.3); }
-.dt-arg--summary   { border-color: rgba(102,187,106,0.2); background: var(--surface-ground); }
+.dt-arg--summary   { border-color: rgba(102,187,106,0.2); background: var(--p-surface-card); }
 
 .dt-arg-header {
   display: flex;
@@ -714,7 +714,7 @@ watch(() => allItems.value.length, () => {
 }
 .dt-arg-reply {
   font-size: 10px; color: var(--p-text-muted-color);
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-left: 2px solid var(--surface-border);
   padding: 3px 8px; border-radius: 0 4px 4px 0;
   margin-bottom: 5px; line-height: 1.4;

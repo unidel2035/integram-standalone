@@ -293,7 +293,7 @@ const getNodeCenter = (nodeId) => {
 
       .diagram-text {
         padding: 1rem;
-        background: var(--surface-ground);
+        background: var(--p-surface-card);
         border-radius: 6px;
         border: 1px solid var(--surface-border);
         font-family: 'Courier New', monospace;
@@ -316,7 +316,7 @@ const getNodeCenter = (nodeId) => {
         flex-direction: column;
         gap: 0.75rem;
         padding: 1rem;
-        background: var(--surface-ground);
+        background: var(--p-surface-card);
         border-radius: 6px;
 
         .metric-item {
@@ -364,7 +364,7 @@ const getNodeCenter = (nodeId) => {
       position: relative;
       width: 100%;
       height: 600px;
-      background: var(--surface-ground);
+      background: var(--p-surface-card);
       border-radius: 8px;
       border: 2px solid var(--surface-border);
 

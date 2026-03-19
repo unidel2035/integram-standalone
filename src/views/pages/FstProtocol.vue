@@ -415,7 +415,7 @@ onMounted(() => {
 /* ── Root ─────────────────────────────────────────────────────── */
 .fst-protocol {
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   padding: 20px;
 }
 

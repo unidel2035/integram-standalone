@@ -178,7 +178,7 @@ const formatTime = (timestamp) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-ground, var(--surface-ground));
+  background: var(--p-surface-card));
   border-radius: 50%;
 }
 
@@ -287,7 +287,7 @@ const formatTime = (timestamp) => {
 .context-content {
   margin-top: 0.5rem;
   padding: 0.75rem;
-  background: var(--surface-ground, var(--surface-ground));
+  background: var(--p-surface-card));
   border-radius: 6px;
 }
 
@@ -341,6 +341,6 @@ const formatTime = (timestamp) => {
 
 :root.dark .agent-card,
 .p-dark .agent-card {
-  background: var(--surface-ground, var(--surface-ground));
+  background: var(--p-surface-card));
 }
 </style>

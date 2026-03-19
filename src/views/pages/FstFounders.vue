@@ -811,7 +811,7 @@ onMounted(() => {
    ══════════════════════════════════════════════════════════════════════════ */
 .fst-founders-root {
   min-height: 100vh;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   padding: 24px;
 }
 
@@ -934,7 +934,7 @@ onMounted(() => {
   flex: 1;
   max-width: 400px;
   padding: 0 12px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
 }
 
@@ -1244,7 +1244,7 @@ onMounted(() => {
 
 .fst-matching-result {
   padding: 16px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   margin-bottom: 12px;
 }
@@ -1315,7 +1315,7 @@ onMounted(() => {
 
 .fst-request-item {
   padding: 12px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -1611,7 +1611,7 @@ onMounted(() => {
 .fst-interaction-item,
 .fst-session-item {
   padding: 12px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   margin-bottom: 8px;
 }

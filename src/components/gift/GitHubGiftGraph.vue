@@ -1004,7 +1004,7 @@ function getDemoData() {
 
 .dc-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 
-.dc-verdict { background: var(--p-surface-ground); border-radius: 6px; padding: 8px 10px; font-size: 0.75rem; color: var(--p-text-color); margin-top: 4px; }
+.dc-verdict { background: var(--p-surface-card); border-radius: 6px; padding: 8px 10px; font-size: 0.75rem; color: var(--p-text-color); margin-top: 4px; }
 
 .dc-mini-table { margin-top: 6px; }
 .dc-mini-title { font-size: 0.68rem; font-weight: 700; color: var(--p-text-muted-color); margin-bottom: 4px; }
@@ -1024,7 +1024,7 @@ function getDemoData() {
 .dc-geo-bars, .dc-lang-bars { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
 .geo-bar-row, .lang-bar-row { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; }
 .geo-label, .lang-label { min-width: 70px; color: var(--p-text-muted-color); }
-.geo-bar-wrap, .lang-bar-wrap { flex: 1; height: 8px; background: var(--p-surface-ground); border-radius: 4px; overflow: hidden; }
+.geo-bar-wrap, .lang-bar-wrap { flex: 1; height: 8px; background: var(--p-surface-card); border-radius: 4px; overflow: hidden; }
 .geo-bar, .lang-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
 .geo-bar.geo-ru { background: var(--fst-green); }
 .geo-bar.geo-sanction { background: var(--fst-red); }
@@ -1050,22 +1050,22 @@ function getDemoData() {
 /* ── Cytoscape граф ── */
 .gift-graph-section { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
 .gift-graph-root { display: flex; flex-direction: column; }
-.gg-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--p-content-border-color); background: var(--p-surface-ground); }
+.gg-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--p-content-border-color); background: var(--p-surface-card); }
 .gg-scan-inline { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .gg-scan-input { width: 220px; font-size: 0.78rem; }
 .gg-title { font-size: 0.88rem; font-weight: 700; color: var(--p-text-color); display: flex; align-items: center; gap: 6px; }
 .gg-layouts { margin-left: auto; display: flex; gap: 4px; }
 .gg-layout-btn { background: transparent; border: 1px solid var(--p-content-border-color); color: var(--p-text-muted-color); padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; }
 .gg-layout-btn:hover { border-color: var(--p-primary-color); color: var(--p-text-color); }
-.gg-layout-btn.active { background: var(--p-primary-color); border-color: var(--p-primary-color); color: #fff; }
-.gg-legend { display: flex; gap: 14px; padding: 6px 14px; font-size: 11px; color: var(--p-text-muted-color); align-items: center; }
+.gg-layout-btn.active { background: var(--p-primary-color); border-color: var(--p-primary-color); color: white; }
+.gg-legend { display: flex; gap: 14px; padding: 6px 14px; font-size: 0.78rem; color: var(--p-text-muted-color); align-items: center; }
 .gg-legend-item { display: flex; align-items: center; gap: 5px; }
 .gg-hex { clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); border-radius: 0 !important; }
-.gg-legend-hint { margin-left: auto; font-size: 10px; color: var(--p-primary-400); font-style: italic; }
+.gg-legend-hint { margin-left: auto; font-size: 0.75rem; color: var(--p-primary-400); font-style: italic; }
 .gg-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .gg-body { display: flex; position: relative; overflow: hidden; border-radius: 0 0 10px 10px; }
-.gg-canvas { flex: 1; min-width: 0; height: calc(100vh - 16rem); min-height: 400px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #eef2ff 100%); }
-.gg-node-detail { width: 280px; flex-shrink: 0; border-left: 2px solid var(--p-primary-200); padding: 16px 18px; background: var(--p-surface-card); color: var(--p-text-color); overflow-y: auto; height: calc(100vh - 16rem); min-height: 400px; display: flex; flex-direction: column; gap: 10px; }
+.gg-canvas { flex: 1; min-width: 0; height: calc(100vh - 16rem); min-height: 400px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; }
+.gg-node-detail { width: 280px; flex-shrink: 0; border-left: 2px solid var(--p-primary-color); padding: 16px 18px; background: var(--p-surface-card); color: var(--p-text-color); overflow-y: auto; height: calc(100vh - 16rem); min-height: 400px; display: flex; flex-direction: column; gap: 10px; }
 .gg-nd-close { display: flex; justify-content: flex-end; margin: -8px -8px 0 0; }
 .gg-nd-header { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
 .gg-nd-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }

@@ -96,7 +96,7 @@ function entityColor(et) { return ENTITY_TYPES[et]?.color || '#94a3b8' }
   gap: 7px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 .causal-label  { flex: 1; font-weight: 500; }
 .causal-date   { color: var(--p-text-muted-color); font-size: 11px; white-space: nowrap; }

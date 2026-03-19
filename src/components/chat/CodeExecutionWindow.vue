@@ -370,7 +370,7 @@ function formatDate(date) {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
   margin-bottom: 0.5rem;
 
@@ -473,7 +473,7 @@ function formatDate(date) {
 
 .execution-info {
   padding: 0.5rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
   font-size: 0.875rem;
   opacity: 0.8;

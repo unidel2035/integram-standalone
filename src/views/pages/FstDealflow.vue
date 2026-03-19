@@ -17,7 +17,7 @@
 
     <!-- ─── Kanban-воронка ─── -->
     <div class="df-section">
-      <div class="fst-section-label">ВОРОНКА СДЕЛОК</div>
+      <div class="page-section-title">ВОРОНКА СДЕЛОК</div>
       <FeatureHint
         id="dealflow-kanban"
         title="Kanban-воронка сделок"
@@ -361,18 +361,19 @@ function exportCsv() {
 .df-metrics { margin: -20px -20px 0; }
 
 /* ─── Section wrapper ─── */
-.df-section { padding: 16px 24px 20px; display: flex; flex-direction: column; gap: 12px; }
+.df-section { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; }
+.page-section-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
 
 /* ─── Kanban ─── */
 .df-kanban  { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px; }
-.df-column  { min-width: 200px; flex: 1; background: var(--p-surface-ground); border-radius: 10px; display: flex; flex-direction: column; }
+.df-column  { min-width: 200px; flex: 1; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; display: flex; flex-direction: column; }
 .df-col-header { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
 .df-col-title  { font-size: 0.82rem; font-weight: 700; color: var(--p-text-color); }
 .df-col-badge  { background: color-mix(in srgb, var(--p-text-color) 10%, transparent); border-radius: 20px; padding: 2px 8px; font-size: 0.75rem; color: var(--p-text-muted-color); }
 .df-col-body   { padding: 8px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 
 /* ─── Card ─── */
-.df-card        { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 10px; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.df-card        { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 12px; cursor: pointer; transition: transform .15s, box-shadow .15s; }
 .df-card:hover  { transform: translateY(-2px); box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 15%, transparent); }
 .df-card-top    { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 4px; }
 .df-card-name   { font-size: 0.82rem; font-weight: 700; color: var(--p-text-color); }

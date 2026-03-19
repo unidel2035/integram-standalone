@@ -725,7 +725,7 @@ function formatEventTime(ts) {
   display: flex;
   height: 100%;
   overflow: hidden;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   font-size: 13px;
 }
@@ -753,7 +753,7 @@ function formatEventTime(ts) {
   right: 8px;
   width: 24px; height: 24px;
   border: none; border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
@@ -807,7 +807,7 @@ function formatEventTime(ts) {
   padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid var(--p-content-border-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   font-size: 11px; font-weight: 600;
   cursor: pointer; font-family: inherit;
@@ -834,7 +834,7 @@ function formatEventTime(ts) {
   transition: all 0.12s;
 }
 .exp-mode-btn i { font-size: 12px; flex-shrink: 0; }
-.exp-mode-btn:hover { background: var(--p-surface-ground); color: var(--p-text-color); }
+.exp-mode-btn:hover { background: var(--p-surface-card); color: var(--p-text-color); }
 .exp-mode-btn.active { background: color-mix(in srgb, var(--fst-purple) 10%, var(--p-surface-card));
   color: var(--fst-purple); }
 
@@ -853,7 +853,7 @@ function formatEventTime(ts) {
   line-height: 1.4;
   transition: all 0.12s;
 }
-.exp-quick-btn:hover { background: var(--p-surface-ground); color: var(--p-text-color); }
+.exp-quick-btn:hover { background: var(--p-surface-card); color: var(--p-text-color); }
 .exp-quick-btn span { flex: 1; }
 
 /* Files */
@@ -911,8 +911,8 @@ function formatEventTime(ts) {
   color: var(--p-text-muted-color);
   transition: all 0.12s;
 }
-.exp-conn-btn:hover { background: var(--p-surface-ground); }
-.exp-conn-btn.active { background: var(--p-surface-ground); color: var(--p-text-color); }
+.exp-conn-btn:hover { background: var(--p-surface-card); }
+.exp-conn-btn.active { background: var(--p-surface-card); color: var(--p-text-color); }
 .exp-conn-status { margin-left: auto; font-size: 10px; }
 .exp-conn-btn.active .exp-conn-status { color: var(--fst-green); }
 
@@ -922,7 +922,7 @@ function formatEventTime(ts) {
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 8px 10px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   font-size: 11px; font-family: inherit;
   resize: vertical; min-height: 60px;
@@ -937,7 +937,7 @@ function formatEventTime(ts) {
 .exp-icon-btn {
   width: 28px; height: 28px;
   border: none; border-radius: 8px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
@@ -1063,7 +1063,7 @@ function formatEventTime(ts) {
   display: flex; align-items: center; gap: 5px;
   padding: 5px 10px;
   border-radius: 7px; border: 1px solid var(--p-content-border-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   font-size: 11px; font-weight: 600;
   cursor: pointer; font-family: inherit;
@@ -1083,7 +1083,7 @@ function formatEventTime(ts) {
 .exp-help p { margin: 0 0 8px; }
 .exp-help hr { border: none; border-top: 1px solid var(--p-content-border-color); margin: 12px 0; }
 .exp-help kbd {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 4px; padding: 1px 6px;
   font-size: 12px; font-family: monospace;

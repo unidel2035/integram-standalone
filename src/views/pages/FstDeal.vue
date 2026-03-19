@@ -102,7 +102,7 @@
           <div class="fst-deal-panel-title">
             <i class="pi pi-check-circle" style="color:var(--p-primary-color)"></i> Условия ИК
           </div>
-          <ul style="margin:0;padding-left:18px;color:var(--p-text-color);font-size:13px;line-height:1.8">
+          <ul style="margin:0;padding-left:18px;color:var(--p-text-color);font-size:0.88rem;line-height:1.8">
             <li v-for="(c, i) in icConditions" :key="i">{{ c }}</li>
           </ul>
         </div>
@@ -199,7 +199,7 @@
           <div v-for="(tr, idx) in deal.tranches" :key="idx" class="fst-tranche">
             <div class="fst-tranche-header">
               <span class="fst-tranche-num">Транш {{ idx + 1 }}</span>
-              <Tag :value="tr.status" :severity="trancheStatusSeverity(tr.status)" style="font-size:10px" />
+              <Tag :value="tr.status" :severity="trancheStatusSeverity(tr.status)" style="font-size:0.75rem" />
               <LearnTooltip
                 label="Удалить транш"
                 what="Удаляет транш из структуры финансирования сделки"
@@ -228,7 +228,7 @@
               <DatePicker v-model="tr.date" dateFormat="dd.mm.yy" class="fst-input" />
             </div>
             <div class="fst-tranche-progress">
-              <span style="font-size:11px;color:var(--p-text-muted-color)">Статус исполнения:</span>
+              <span style="font-size:0.78rem;color:var(--p-text-muted-color)">Статус исполнения:</span>
               <Select v-model="tr.status" :options="trancheStatuses" size="small" class="fst-input" style="width:140px" />
             </div>
           </div>
@@ -282,7 +282,7 @@
           <div class="fst-conditions-grid">
             <div v-for="c in conditions" :key="c.key" class="fst-condition-item">
               <Checkbox v-model="deal.conditions[c.key]" :binary="true" :inputId="c.key" />
-              <label :for="c.key" style="font-size:12px;cursor:pointer">{{ c.label }}</label>
+              <label :for="c.key" style="font-size:0.83rem;cursor:pointer">{{ c.label }}</label>
             </div>
           </div>
         </div>
@@ -305,7 +305,7 @@
             </LearnTooltip>
           </div>
           <div v-if="!termSheet && !generatingTS" class="fst-term-empty">
-            <i class="pi pi-file" style="font-size:32px;color:var(--p-text-muted-color)"></i>
+            <i class="pi pi-file" style="font-size:2rem;color:var(--p-text-muted-color)"></i>
             <div>Нажмите «Term Sheet» для генерации через AI</div>
             <LearnTooltip
               label="Сгенерировать Term Sheet"
@@ -350,13 +350,13 @@
             <i class="pi pi-chart-bar" style="color:var(--fst-purple)"></i> Факторная модель T·S·M·G·E
           </div>
           <div v-if="!factorResult && !factorLoading" class="fst-term-empty">
-            <i class="pi pi-chart-bar" style="font-size:28px;color:var(--p-text-muted-color)"></i>
-            <div style="font-size:12px;text-align:center">Оценка сделки по 5 факторам: TRL, Суверенность, Мультипликатор, GR, Экспорт</div>
+            <i class="pi pi-chart-bar" style="font-size:1.75rem;color:var(--p-text-muted-color)"></i>
+            <div style="font-size:0.83rem;text-align:center">Оценка сделки по 5 факторам: TRL, Суверенность, Мультипликатор, GR, Экспорт</div>
             <Button label="Рассчитать" icon="pi pi-play" size="small" severity="secondary" @click="runFactorScore" />
           </div>
           <div v-else-if="factorLoading" class="fst-term-loading">
             <ProgressSpinner style="width:36px;height:36px" />
-            <div style="font-size:12px">Расчёт факторов...</div>
+            <div style="font-size:0.83rem">Расчёт факторов...</div>
           </div>
           <template v-else-if="factorResult">
             <FactorRadar
@@ -365,12 +365,12 @@
               :grade="factorResult.grade"
             />
             <div v-if="factorResult.redFlags?.length" style="margin-top:10px">
-              <div style="font-size:11px;color:var(--fst-red);font-weight:600;margin-bottom:4px">Красные флаги</div>
-              <div v-for="f in factorResult.redFlags" :key="f" style="font-size:11px;color:var(--p-text-muted-color);padding:2px 0">⚠ {{ f }}</div>
+              <div style="font-size:0.78rem;color:var(--fst-red);font-weight:600;margin-bottom:4px">Красные флаги</div>
+              <div v-for="f in factorResult.redFlags" :key="f" style="font-size:0.78rem;color:var(--p-text-muted-color);padding:2px 0">⚠ {{ f }}</div>
             </div>
             <div v-if="factorResult.strengths?.length" style="margin-top:8px">
-              <div style="font-size:11px;color:var(--fst-green);font-weight:600;margin-bottom:4px">Сильные стороны</div>
-              <div v-for="s in factorResult.strengths" :key="s" style="font-size:11px;color:var(--p-text-muted-color);padding:2px 0">✓ {{ s }}</div>
+              <div style="font-size:0.78rem;color:var(--fst-green);font-weight:600;margin-bottom:4px">Сильные стороны</div>
+              <div v-for="s in factorResult.strengths" :key="s" style="font-size:0.78rem;color:var(--p-text-muted-color);padding:2px 0">✓ {{ s }}</div>
             </div>
             <Button label="Пересчитать" icon="pi pi-refresh" size="small" severity="secondary" text @click="runFactorScore" :loading="factorLoading" style="margin-top:8px;width:100%" />
           </template>
@@ -410,9 +410,9 @@
     <div class="fst-deal-finmodel-section">
       <div class="fst-deal-finmodel-header" @click="finmodelExpanded = !finmodelExpanded">
         <div class="fst-deal-finmodel-title">
-          <i class="pi pi-chart-bar" style="color:var(--fst-green);font-size:16px"></i>
+          <i class="pi pi-chart-bar" style="color:var(--fst-green);font-size:1rem"></i>
           <span>Финансовая модель компании</span>
-          <Tag value="Заполняет компания" severity="success" style="font-size:10px" />
+          <Tag value="Заполняет компания" severity="success" style="font-size:0.75rem" />
           <span v-if="finmodelValues['NPV @ 15% (WACC)'] !== undefined"
             class="fst-fm-quick" :style="{ color: (finmodelValues['NPV @ 15% (WACC)'] || 0) > 0 ? 'var(--fst-green)' : 'var(--fst-red)' }">
             NPV: {{ formatFmVal(finmodelValues['NPV @ 15% (WACC)']) }} тыс.₽ ·
@@ -426,7 +426,7 @@
 
       <div v-if="finmodelExpanded" class="fst-deal-finmodel-body">
         <div class="fst-fm-info">
-          <i class="pi pi-info-circle" style="color:var(--fst-blue);font-size:12px"></i>
+          <i class="pi pi-info-circle" style="color:var(--fst-blue);font-size:0.83rem"></i>
           Финансовая модель загружается из базы api.ai2o.ru/fm. Подключите модель по ID или создайте новую.
           Результаты NPV / MOIC / IRR обновляют AI-оценку сделки.
         </div>
@@ -729,10 +729,10 @@ async function generateTermSheet() {
     ? `Конвертируемый займ по ставке ${d.clnRate}% годовых`
     : `Грантовое финансирование (невозвратное)`
   termSheet.value = `
-<div style="font-size:12px;line-height:1.7">
+<div style="font-size:0.83rem;line-height:1.7">
 <h3 style="color:var(--p-primary-color);margin:0 0 10px">TERM SHEET № ФСТ-2026-001</h3>
-<p style="color:var(--p-text-muted-color);font-size:11px">Конфиденциально · ${new Date().toLocaleDateString('ru-RU')} · Не является офертой</p>
-<table style="width:100%;border-collapse:collapse;font-size:12px">
+<p style="color:var(--p-text-muted-color);font-size:0.78rem">Конфиденциально · ${new Date().toLocaleDateString('ru-RU')} · Не является офертой</p>
+<table style="width:100%;border-collapse:collapse;font-size:0.83rem">
   <tr><td style="padding:4px 8px;font-weight:600;width:45%;color:var(--p-text-muted-color)">Эмитент</td><td style="padding:4px 8px">${d.companyName}</td></tr>
   <tr style="background:var(--p-surface-card)"><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Инвестор</td><td style="padding:4px 8px">Фонд Суверенных Технологий НТИ (${d.spvName})</td></tr>
   <tr><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">Инструмент</td><td style="padding:4px 8px">${dealTypes.find(t=>t.v===d.type)?.l}</td></tr>
@@ -742,10 +742,10 @@ async function generateTermSheet() {
   <tr><td style="padding:4px 8px;font-weight:600;color:var(--p-text-muted-color)">SPV</td><td style="padding:4px 8px">${d.spvName} (${d.spvJurisdiction})</td></tr>
 </table>
 <h4 style="margin:10px 0 4px;color:var(--p-text-color)">Транши</h4>
-${d.tranches.map((t,i)=>`<div style="padding:3px 0;font-size:11px">• Транш ${i+1}: <b>${t.amount} млн ₽</b> — ${t.triggerType==='kpi'?`KPI: ${t.kpiDesc}`:t.triggerType==='date'?'По дате':'Решение ИК'}</div>`).join('')}
+${d.tranches.map((t,i)=>`<div style="padding:3px 0;font-size:0.78rem">• Транш ${i+1}: <b>${t.amount} млн ₽</b> — ${t.triggerType==='kpi'?`KPI: ${t.kpiDesc}`:t.triggerType==='date'?'По дате':'Решение ИК'}</div>`).join('')}
 <h4 style="margin:10px 0 4px;color:var(--p-text-color)">Ключевые права инвестора</h4>
-${Object.entries(d.conditions).filter(([,v])=>v).map(([k])=>`<div style="font-size:11px">• ${conditions.find(c=>c.key===k)?.label}</div>`).join('')}
-<p style="margin-top:10px;font-size:11px;color:var(--p-text-muted-color)">Настоящий документ является предварительным соглашением об условиях инвестирования и не создаёт юридических обязательств до момента подписания корпоративного договора и устава SPV.</p>
+${Object.entries(d.conditions).filter(([,v])=>v).map(([k])=>`<div style="font-size:0.78rem">• ${conditions.find(c=>c.key===k)?.label}</div>`).join('')}
+<p style="margin-top:10px;font-size:0.78rem;color:var(--p-text-muted-color)">Настоящий документ является предварительным соглашением об условиях инвестирования и не создаёт юридических обязательств до момента подписания корпоративного договора и устава SPV.</p>
 </div>`
   generatingTS.value = false
 }
@@ -946,7 +946,7 @@ onMounted(async () => {
   flex: 1;
 }
 .fst-form-group label {
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
   font-weight: 500;
 }
@@ -963,10 +963,10 @@ onMounted(async () => {
 /* Tranches */
 .fst-tranche {
   border: 1px solid var(--p-content-border-color);
-  border-radius: 6px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 14px;
   margin-bottom: 8px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 .fst-tranche-header {
   display: flex;
@@ -975,7 +975,7 @@ onMounted(async () => {
   margin-bottom: 8px;
 }
 .fst-tranche-num {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 600;
   color: var(--p-text-color);
 }
@@ -988,9 +988,9 @@ onMounted(async () => {
 .fst-tranche-summary {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 0.83rem;
   padding: 8px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
   margin-top: 4px;
   color: var(--p-text-color);
@@ -1000,9 +1000,9 @@ onMounted(async () => {
 .fst-kpi-list { display: flex; flex-direction: column; gap: 8px; }
 .fst-kpi-card {
   border: 1px solid var(--p-content-border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1061,7 +1061,7 @@ onMounted(async () => {
   gap: 10px;
   padding: 20px;
   color: var(--p-text-muted-color);
-  font-size: 12px;
+  font-size: 0.83rem;
   text-align: center;
 }
 .fst-term-loading {
@@ -1071,12 +1071,12 @@ onMounted(async () => {
   gap: 10px;
   padding: 20px;
   color: var(--p-text-muted-color);
-  font-size: 12px;
+  font-size: 0.83rem;
 }
 .fst-term-sheet {
   max-height: 350px;
   overflow-y: auto;
-  font-size: 12px;
+  font-size: 0.83rem;
   line-height: 1.6;
 }
 
@@ -1101,13 +1101,13 @@ onMounted(async () => {
   justify-content: center;
   background: var(--p-content-border-color);
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: 0.78rem;
 }
 .fst-sc-step.done .fst-sc-dot { background: var(--fst-green); color: white; }
 .fst-sc-step.active .fst-sc-dot { background: var(--p-primary-color); color: white; }
 .fst-sc-info { flex: 1; }
-.fst-sc-label { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
-.fst-sc-desc { font-size: 11px; color: var(--p-text-muted-color); }
+.fst-sc-label { font-size: 0.83rem; font-weight: 600; color: var(--p-text-color); }
+.fst-sc-desc { font-size: 0.78rem; color: var(--p-text-muted-color); }
 
 /* AI Metrics */
 .fst-ai-metrics {
@@ -1117,29 +1117,29 @@ onMounted(async () => {
   margin-bottom: 10px;
 }
 .fst-ai-metric {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   padding: 8px;
   text-align: center;
 }
 .fst-ai-metric-label {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   margin-bottom: 2px;
 }
 .fst-ai-metric-value {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 700;
 }
 
 /* AI Verdict */
 .fst-ai-verdict-label {
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
   margin-bottom: 6px;
 }
 .fst-ai-verdict-text {
-  font-size: 12px;
+  font-size: 0.83rem;
   color: var(--p-text-color);
   border-left: 3px solid var(--fst-green);
   padding-left: 10px;
@@ -1210,7 +1210,7 @@ onMounted(async () => {
   transition: background 0.15s;
 }
 .fst-deal-finmodel-header:hover {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 .fst-deal-finmodel-section:has(.fst-deal-finmodel-body) .fst-deal-finmodel-header {
   border-bottom-color: var(--p-content-border-color);
@@ -1219,15 +1219,15 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: 0.93rem;
   font-weight: 600;
   color: var(--p-text-color);
 }
 .fst-fm-quick {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 600;
   padding: 2px 8px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
 }
 .fst-deal-finmodel-body {
@@ -1238,7 +1238,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.83rem;
   color: var(--p-text-muted-color);
   margin-bottom: 12px;
   padding: 8px 12px;

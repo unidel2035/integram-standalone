@@ -1470,7 +1470,7 @@ onMounted(() => nextTick(initCy))
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   overflow: hidden;
 }
 
@@ -1480,7 +1480,7 @@ onMounted(() => nextTick(initCy))
   inset: 0;
   z-index: 9999;
   height: 100dvh;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
 }
 
 /* ── Toolbar ─────────────────────────────────────────────────── */
@@ -1608,7 +1608,7 @@ onMounted(() => nextTick(initCy))
   gap: 5px;
   padding: 4px 9px;
   border-radius: 6px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--surface-border);
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   pointer-events: none;

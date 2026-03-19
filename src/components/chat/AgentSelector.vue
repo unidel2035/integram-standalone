@@ -387,7 +387,7 @@ function manageAgents() {
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid transparent;
 }
 
@@ -439,7 +439,7 @@ function manageAgents() {
   border-radius: 10px;
   font-size: 0.7rem;
   cursor: pointer;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   transition: all 0.15s;
   border: 1px solid transparent;
 }
@@ -507,7 +507,7 @@ function manageAgents() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   flex-shrink: 0;
 }
@@ -550,7 +550,7 @@ function manageAgents() {
   font-size: 0.6rem;
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
 }
 
@@ -619,7 +619,7 @@ function manageAgents() {
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
   border-top: 1px solid var(--surface-border);
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   gap: 0.25rem;
 }
 

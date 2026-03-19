@@ -1768,7 +1768,7 @@ const totalCount = computed(() => availableAgents.value.length)
 <style scoped>
 .available-agents-panel {
   padding: 1rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
 }
 
@@ -1930,7 +1930,7 @@ const totalCount = computed(() => availableAgents.value.length)
 }
 
 .agent-example {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   padding: 0.625rem;
   border-radius: 4px;
   margin-top: 0.75rem;

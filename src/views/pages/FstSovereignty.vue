@@ -323,7 +323,7 @@ function generateReport() { window.print() }
   border-radius: 12px; padding: 20px;
 }
 .page-section-title {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px;
 }
 
@@ -354,8 +354,8 @@ function generateReport() { window.print() }
 /* Dims grid */
 .sv-dims-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
 .dim-card {
-  background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color);
-  border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px;
 }
 .dim-card.critical { border-color: var(--fst-red); }
 .dim-header  { display: flex; align-items: flex-start; gap: 10px; }
@@ -396,7 +396,7 @@ function generateReport() { window.print() }
 .rm-steps { display: flex; flex-direction: column; gap: 8px; }
 .rm-step  {
   display: flex; align-items: center; gap: 14px;
-  background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
   border-radius: 8px; padding: 12px;
 }
 .rm-phase   { font-size: 0.72rem; font-weight: 700; color: var(--p-primary-color); min-width: 70px; }

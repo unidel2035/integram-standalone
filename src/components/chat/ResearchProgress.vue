@@ -300,7 +300,7 @@ const formatDuration = (ms) => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   flex-shrink: 0;
 }
 
@@ -389,7 +389,7 @@ const formatDuration = (ms) => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   font-size: 0.85rem;
 }

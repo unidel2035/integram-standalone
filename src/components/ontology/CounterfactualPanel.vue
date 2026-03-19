@@ -150,7 +150,7 @@ function fmtM(v) {
 .cf-row {
   display: flex; align-items: center; gap: 10px;
   padding: 6px 8px; border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   flex-wrap: wrap;
 }
 .cf-label    { flex: 1; color: var(--p-text-muted-color); min-width: 120px; }
@@ -171,7 +171,7 @@ function fmtM(v) {
   display: flex; align-items: flex-start; gap: 6px;
   color: var(--p-text-muted-color); font-size: 11px;
   padding: 6px 8px; border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 
 .cf-empty {

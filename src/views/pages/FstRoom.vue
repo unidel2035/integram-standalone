@@ -300,7 +300,7 @@ const apiExample = computed(() => JSON.stringify({
   animation: room-pulse 2s infinite;
 }
 @keyframes room-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-.room-title-text { font-size: 14px; font-weight: 600; color: var(--p-text-color); }
+.room-title-text { font-size: 0.93rem; font-weight: 600; color: var(--p-text-color); }
 .room-sep { color: var(--p-text-muted-color); }
 .room-sub { font-size: 0.82rem; color: var(--p-text-muted-color); font-weight: 400; }
 
@@ -360,7 +360,7 @@ const apiExample = computed(() => JSON.stringify({
 .room-api-code {
   margin: 0.3rem 0 0;
   font-size: 0.65rem;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
   padding: 0.4rem;
   overflow-x: auto;
@@ -415,7 +415,7 @@ const apiExample = computed(() => JSON.stringify({
   font-size: 0.75rem;
   color: var(--p-text-muted-color);
   padding: 0.2rem 0.6rem;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 12px;
 }
 .room-msg-meta {
@@ -443,7 +443,7 @@ const apiExample = computed(() => JSON.stringify({
   font-size: 0.65rem;
 }
 .room-msg-text {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
@@ -457,7 +457,7 @@ const apiExample = computed(() => JSON.stringify({
   margin-top: 0.1rem;
 }
 .room-msg-tool code {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
   padding: 0.15rem 0.4rem;
   color: var(--p-primary-color);

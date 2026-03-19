@@ -383,7 +383,7 @@ function handleDeleteChat(index) {
   position: relative;
   display: inline-block;
   padding: 0 1rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--text-color-secondary);
   font-size: 0.875rem;
   font-weight: 600;

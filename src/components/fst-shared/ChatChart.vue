@@ -98,7 +98,7 @@ onBeforeUnmount(() => { chartInstance?.destroy() })
 .chat-chart-wrap {
   margin-top: 12px;
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   max-width: 520px;

@@ -769,7 +769,7 @@ function unlockTranche() {
 
 <style scoped>
 .fex-root {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -917,7 +917,7 @@ function unlockTranche() {
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   cursor: pointer;
   transition: all 0.15s;
@@ -974,7 +974,7 @@ function unlockTranche() {
 }
 .fex-kanban-count {
   font-size: 10px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 10px;
   padding: 1px 7px;
   color: var(--p-text-muted-color);
@@ -1130,7 +1130,7 @@ function unlockTranche() {
   gap: 10px;
   padding: 8px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   margin-bottom: 6px;
 }
 .fex-alert.critical { border-left: 3px solid var(--fst-red); }
@@ -1182,7 +1182,7 @@ function unlockTranche() {
 .fex-kpi-table th {
   text-align: center;
   padding: 4px 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   font-weight: 600;
   border: 1px solid var(--p-content-border-color);
@@ -1207,7 +1207,7 @@ function unlockTranche() {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 .fex-cond-body { flex: 1; }
 .fex-cond-name { font-size: 12px; font-weight: 500; color: var(--p-text-color); }

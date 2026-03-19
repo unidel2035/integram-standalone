@@ -420,7 +420,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
 }
 
 .fp-script-wrap {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-left: 3px solid var(--fst-purple);
   border-radius: 12px;
@@ -444,7 +444,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
 }
 
 .fp-actions-wrap {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-left: 3px solid var(--fst-cyan);
   border-radius: 12px;
@@ -498,7 +498,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 .fp-card {
   background: var(--p-surface-card);
@@ -550,7 +550,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
 .fp-n {
   width: 18px; height: 18px;
   border-radius: 50%;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   display: flex;
   align-items: center;
@@ -570,7 +570,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
   color: var(--p-text-muted-color);
 }
 kbd {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-bottom-width: 2px;
   padding: 2px 7px;
@@ -595,7 +595,7 @@ kbd {
   cursor: pointer;
 }
 .fp-scenario-row--done { opacity: 0.45; cursor: pointer; }
-.fp-scenario-row:hover { background: var(--p-surface-ground); cursor: pointer; }
+.fp-scenario-row:hover { background: var(--p-surface-card); cursor: pointer; }
 
 .fp-scenario-num {
   font-size: 11px;
@@ -621,7 +621,7 @@ kbd {
 
 /* ═══════════════════════════════════════ AI INSIGHT */
 .fp-ai-wrap {
-  background: color-mix(in srgb, var(--fst-purple) 8%, var(--p-surface-ground));
+  background: color-mix(in srgb, var(--fst-purple) 8%, var(--p-surface-card));
   border: 1px solid color-mix(in srgb, var(--fst-purple) 20%, transparent);
   border-left: 3px solid var(--fst-purple);
   border-radius: 12px;

@@ -505,7 +505,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 </script>
 
 <style scoped>
-.fft-root { min-height: 100vh; background: var(--p-surface-ground); color: var(--p-text-color); font-family: 'Inter', sans-serif; display: flex; flex-direction: column }
+.fft-root { min-height: 100vh; background: var(--p-surface-card); color: var(--p-text-color); font-family: 'Inter', sans-serif; display: flex; flex-direction: column }
 
 .fft-header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: transparent; border-bottom: 1px solid var(--p-content-border-color) }
 .fft-header-left { min-width: 180px }

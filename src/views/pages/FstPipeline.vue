@@ -194,15 +194,15 @@ watch(activeDealId, async (newId) => {
       />
     </template>
 
-    <!-- ── Метрики (flush к краям) ── -->
-    <PipelineMetrics :summary="summary" style="margin: -20px -20px 0" />
+    <!-- ── Метрики (flush к краям FstPageLayout body) ── -->
+    <PipelineMetrics :summary="summary" class="fp-metrics-flush" />
 
     <!-- ── Основной layout ── -->
     <div class="fp-layout">
 
       <!-- Левая колонка: стадии -->
       <div class="fp-stages-col">
-        <div class="fp-stages-label">Подпроцессы регламента</div>
+        <div class="page-section-title">Подпроцессы регламента</div>
         <div class="fp-stages-list">
           <PipelineStage
             v-for="stage in stages"
@@ -296,12 +296,28 @@ watch(activeDealId, async (newId) => {
 </template>
 
 <style scoped>
+/* ── Metrics flush to FstPageLayout body edges ── */
+.fp-metrics-flush {
+  margin: calc(-1 * var(--fst-body-pad, 12px)) calc(-1 * var(--fst-body-pad, 12px)) 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+
+/* ── Section title ── */
+.page-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--p-text-muted-color);
+  margin-bottom: 14px;
+}
+
 /* ── Layout ── */
 .fp-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 16px;
-  padding-top: 16px;
+  gap: 20px;
+  padding-top: 20px;
   align-items: start;
 }
 
@@ -315,16 +331,10 @@ watch(activeDealId, async (newId) => {
 .fp-stages-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.fp-stages-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--p-text-muted-color);
-}
+/* .fp-stages-label → consolidated into .page-section-title */
 
 .fp-stages-list {
   display: flex;
@@ -336,7 +346,7 @@ watch(activeDealId, async (newId) => {
 .fp-detail-col {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   position: sticky;
   top: 16px;
 }
@@ -346,7 +356,7 @@ watch(activeDealId, async (newId) => {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px;
 }
 
 .fp-stage-desc {
@@ -362,18 +372,18 @@ watch(activeDealId, async (newId) => {
 }
 
 .fp-desc-icon {
-  font-size: 20px;
+  font-size: 1.25rem;
   margin-top: 2px;
   flex-shrink: 0;
 }
 
 .fp-desc-title {
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
 .fp-desc-subtitle {
-  font-size: 12px;
+  font-size: 0.83rem;
   color: var(--p-text-muted-color);
   margin-top: 3px;
   line-height: 1.4;
@@ -387,12 +397,12 @@ watch(activeDealId, async (newId) => {
 }
 
 .fp-actor-chip {
-  font-size: 10px;
+  font-size: 0.75rem;
   border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   padding: 1px 6px;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 
 /* ── Онтология ── */
@@ -403,10 +413,10 @@ watch(activeDealId, async (newId) => {
 }
 
 .fp-onto-intro {
-  font-size: 13px;
+  font-size: 0.88rem;
   line-height: 1.5;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 10px 12px;
 }
@@ -425,7 +435,7 @@ watch(activeDealId, async (newId) => {
 }
 
 .fp-onto-group-header {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 600;
   margin-bottom: 6px;
   border-left: 3px solid var(--fst-blue);
@@ -438,20 +448,20 @@ watch(activeDealId, async (newId) => {
   align-items: center;
   justify-content: space-between;
   padding: 3px 0;
-  font-size: 12px;
+  font-size: 0.83rem;
 }
 
 .fp-onto-code {
   font-family: monospace;
-  font-size: 11px;
-  background: var(--p-surface-ground);
+  font-size: 0.78rem;
+  background: var(--p-surface-card);
   padding: 1px 5px;
   border-radius: 3px;
   color: var(--fst-purple);
 }
 
 .fp-onto-ref {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   font-style: italic;
 }

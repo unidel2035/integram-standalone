@@ -283,7 +283,7 @@ function arrowPoints(edge) {
   transition: all 0.15s;
   box-sizing: border-box;
 }
-.ecg-node:hover { background: var(--p-surface-ground); }
+.ecg-node:hover { background: var(--p-surface-card); }
 .ecg-node.selected {
   box-shadow: 0 0 0 2px var(--p-primary-color);
   z-index: 2;

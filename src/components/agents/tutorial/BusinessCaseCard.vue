@@ -213,7 +213,7 @@ const getNodeStyle = (type) => {
     align-items: flex-start;
     gap: 0.75rem;
     padding: 0.75rem;
-    background: var(--surface-ground);
+    background: var(--p-surface-card);
     border-radius: 6px;
     border-left: 3px solid var(--primary-color);
 
@@ -248,7 +248,7 @@ const getNodeStyle = (type) => {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
-    background: var(--surface-ground);
+    background: var(--p-surface-card);
     border-radius: 6px;
 
     .metric-icon {
@@ -267,7 +267,7 @@ const getNodeStyle = (type) => {
     align-items: center;
     gap: 0.5rem;
     padding: 1rem;
-    background: var(--surface-ground);
+    background: var(--p-surface-card);
     border-radius: 8px;
     overflow-x: auto;
   }

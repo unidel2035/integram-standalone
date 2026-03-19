@@ -62,6 +62,7 @@ const ORPHAN_MAP = {
   'fst-learning-progress': { category: 'Обучение', categoryRoute: '/fst-dev-guide' },
   'fst-miniapp':           { category: 'Обучение', categoryRoute: '/fst-dev-guide' },
   'fst-network':           { category: 'Сделки',   categoryRoute: '/fst-dealflow' },
+  'event-ontology':        { category: 'Инфраструктура', categoryRoute: '/fst-ilpa' },
 }
 
 // slug: берём первый сегмент пути (для /fst-contract/:id → fst-contract)

@@ -61,7 +61,7 @@ function selectRole(roleId) {
   border: 1px solid color-mix(in srgb, var(--rs-color) 40%, transparent);
   background: color-mix(in srgb, var(--rs-color) 10%, var(--p-surface-card));
   color: var(--rs-color);
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -71,7 +71,7 @@ function selectRole(roleId) {
   background: color-mix(in srgb, var(--rs-color) 18%, var(--p-surface-card));
 }
 .rs-pill-label { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
-.rs-chevron { font-size: 10px; }
+.rs-chevron { font-size: 0.7rem; }
 
 .rs-menu {
   min-width: 220px;
@@ -79,7 +79,7 @@ function selectRole(roleId) {
 }
 .rs-menu-title {
   padding: 8px 14px 6px;
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -99,14 +99,19 @@ function selectRole(roleId) {
   text-align: left;
 }
 .rs-role-btn:hover {
-  background: color-mix(in srgb, var(--rs-color) 10%, var(--p-surface-ground));
+  background: color-mix(in srgb, var(--rs-color) 10%, var(--p-surface-card));
 }
 .rs-role-btn.active {
-  background: color-mix(in srgb, var(--rs-color) 15%, var(--p-surface-ground));
+  background: color-mix(in srgb, var(--rs-color) 20%, var(--p-surface-card));
+  border-left: 3px solid var(--rs-color);
 }
-.rs-role-icon { color: var(--rs-color); font-size: 14px; flex-shrink: 0; }
-.rs-role-info { flex: 1; display: flex; flex-direction: column; gap: 1px; }
-.rs-role-label { font-size: 12px; font-weight: 600; }
-.rs-role-desc { font-size: 11px; color: var(--p-text-muted-color); }
-.rs-check { color: var(--rs-color); font-size: 11px; }
+.rs-role-btn.active .rs-role-icon { color: var(--rs-color); }
+.rs-role-btn.active .rs-role-label { color: var(--p-text-color); font-weight: 700; }
+.rs-role-btn.active .rs-role-desc { color: var(--p-text-muted-color); }
+.rs-role-btn.active .rs-check { color: var(--rs-color); }
+.rs-role-icon { color: var(--rs-color); font-size: 0.93rem; flex-shrink: 0; }
+.rs-role-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.rs-role-label { font-size: 0.88rem; font-weight: 600; color: var(--p-text-color); }
+.rs-role-desc { font-size: 0.78rem; color: var(--p-text-muted-color); }
+.rs-check { color: var(--rs-color); font-size: 0.78rem; }
 </style>

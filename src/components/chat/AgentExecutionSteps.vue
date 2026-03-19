@@ -609,7 +609,7 @@ onUnmounted(() => {
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 600;
-  background: var(--surface-ground, var(--surface-ground));
+  background: var(--p-surface-card));
   border: 2px solid var(--surface-border, var(--surface-border));
   color: var(--p-text-color-secondary, var(--text-color-secondary));
   z-index: 1;
@@ -733,7 +733,7 @@ onUnmounted(() => {
 .step-details {
   margin-top: 0.5rem;
   padding: 0.75rem;
-  background: var(--surface-ground, var(--surface-ground));
+  background: var(--p-surface-card));
   border-radius: 6px;
   font-size: 0.875rem;
 }
@@ -898,7 +898,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
-  background: var(--surface-ground, var(--surface-ground));
+  background: var(--p-surface-card));
   border-radius: 16px;
   font-size: 0.875rem;
 }
@@ -918,7 +918,7 @@ onUnmounted(() => {
   gap: 0.375rem;
   margin-top: 0.5rem;
   padding: 0.375rem 0.75rem;
-  background: var(--surface-ground, var(--surface-ground));
+  background: var(--p-surface-card));
   border: 1px solid var(--surface-border, var(--surface-border));
   border-radius: 20px;
   font-size: 0.8125rem;

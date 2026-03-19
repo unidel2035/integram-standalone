@@ -298,7 +298,7 @@ function exportPdf() { window.print() }
 .memo-field input,
 .memo-field select,
 .memo-field textarea {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   padding: 8px;
@@ -348,7 +348,7 @@ function exportPdf() { window.print() }
 
 /* KPIs */
 .memo-kpi-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-.memo-kpi { background: var(--p-surface-ground); border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 95px; }
+.memo-kpi { background: var(--p-surface-card); border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 95px; }
 .memo-kpi-val   { font-size: 1.15rem; font-weight: 700; }
 .memo-kpi-label { font-size: 0.7rem; color: var(--p-text-muted-color); margin-top: 2px; }
 
@@ -367,7 +367,7 @@ function exportPdf() { window.print() }
 .memo-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
 .memo-table th,
 .memo-table td  { padding: 8px 12px; border: 1px solid var(--p-content-border-color); text-align: right; }
-.memo-table th  { background: var(--p-surface-ground); color: var(--p-text-muted-color); font-weight: 600; text-align: center; }
+.memo-table th  { background: var(--p-surface-card); color: var(--p-text-muted-color); font-weight: 600; text-align: center; }
 .memo-table td:first-child { text-align: center; font-weight: 600; }
 
 /* Risks */

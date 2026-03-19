@@ -579,7 +579,7 @@ function decisionIcon(v) {
 .fp-factor-bars { display: flex; flex-direction: column; gap: 6px; }
 .fp-factor-row { display: flex; align-items: center; gap: 8px; }
 .fp-fkey { font-size: 12px; font-weight: 700; width: 14px; color: var(--p-text-muted-color); }
-.fp-fbar { flex: 1; height: 6px; background: var(--p-surface-ground); border-radius: 3px; overflow: hidden; }
+.fp-fbar { flex: 1; height: 6px; background: var(--p-surface-card); border-radius: 3px; overflow: hidden; }
 .fp-fbar-fill { height: 100%; border-radius: 3px; transition: width .4s; }
 .fp-fscore { font-size: 11px; font-weight: 600; width: 24px; text-align: right; }
 

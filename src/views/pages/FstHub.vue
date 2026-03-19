@@ -244,7 +244,7 @@ const modulesByPhase = computed(() => {
 /* ═══════════════════════════════════════════════ BASE */
 .hub {
   min-height: 100vh;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   font-family: var(--p-font-family, 'Onest', 'Inter', sans-serif);
 }
@@ -457,7 +457,7 @@ const modulesByPhase = computed(() => {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   display: flex;
   align-items: center;

@@ -960,7 +960,7 @@ onMounted(() => {
         align-items: center;
         gap: 1rem;
         padding: 1rem;
-        background: var(--surface-ground);
+        background: var(--p-surface-card);
         border-radius: 8px;
 
         i {
@@ -1108,7 +1108,7 @@ onMounted(() => {
 
         .book-entry {
           padding: 1.5rem;
-          background: var(--surface-ground);
+          background: var(--p-surface-card);
           border-radius: 8px;
           margin-bottom: 1.5rem;
 
@@ -1128,7 +1128,7 @@ onMounted(() => {
 
           .review-card {
             padding: 1rem;
-            background: var(--surface-ground);
+            background: var(--p-surface-card);
             border-radius: 8px;
 
             .review-text {
@@ -1149,7 +1149,7 @@ onMounted(() => {
 
         .discussion-transcript {
           padding: 1.5rem;
-          background: var(--surface-ground);
+          background: var(--p-surface-card);
           border-radius: 8px;
           margin: 1.5rem 0;
 
@@ -1222,7 +1222,7 @@ onMounted(() => {
         align-items: center;
         gap: 1.5rem;
         padding: 2rem;
-        background: var(--surface-ground);
+        background: var(--p-surface-card);
         border-radius: 12px;
 
         i {
@@ -1269,7 +1269,7 @@ onMounted(() => {
         align-items: flex-start;
         gap: 1rem;
         padding: 1.5rem;
-        background: var(--surface-ground);
+        background: var(--p-surface-card);
         border-radius: 8px;
         border-left: 4px solid var(--yellow-500);
 

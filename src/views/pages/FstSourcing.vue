@@ -719,7 +719,7 @@ onMounted(() => {
 }
 
 .sourcing-btn.secondary {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   border: 1px solid var(--p-content-border-color);
 }
@@ -792,7 +792,7 @@ onMounted(() => {
 }
 
 .sourcing-filter select {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 8px 12px;
@@ -905,7 +905,7 @@ onMounted(() => {
 .sourcing-score-bar-wrapper {
   flex: 1;
   height: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -955,7 +955,7 @@ onMounted(() => {
 
 .sourcing-signal {
   font-size: 0.7rem;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   padding: 4px 8px;
   border-radius: 6px;
@@ -1002,7 +1002,7 @@ onMounted(() => {
 }
 
 .sourcing-btn-add:disabled {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   cursor: not-allowed;
 }
@@ -1063,7 +1063,7 @@ onMounted(() => {
 }
 
 .sourcing-close:hover {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 
 .sourcing-detail-body {
@@ -1149,7 +1149,7 @@ onMounted(() => {
 .sourcing-analysis-bar {
   flex: 1;
   height: 8px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -1177,7 +1177,7 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   padding: 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
 }
 
@@ -1226,7 +1226,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s;
@@ -1260,7 +1260,7 @@ onMounted(() => {
 }
 
 .sourcing-input {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
   padding: 10px 12px;

@@ -665,7 +665,7 @@ watch(() => props.visible, (newVal) => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   display: flex;
   align-items: center;
   justify-content: center;

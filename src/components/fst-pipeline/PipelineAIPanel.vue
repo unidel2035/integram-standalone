@@ -259,7 +259,7 @@ function probColor(p) {
 .paip-summary {
   font-size: 13px;
   line-height: 1.5;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 10px 12px;
   color: var(--p-text-muted-color);
@@ -335,7 +335,7 @@ function probColor(p) {
 .paip-pred-rank {
   font-size: 10px;
   font-weight: 700;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 4px;
   padding: 1px 5px;
   color: var(--p-text-muted-color);
@@ -355,7 +355,7 @@ function probColor(p) {
 
 .paip-pred-bar-track {
   height: 4px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 2px;
   overflow: hidden;
 }

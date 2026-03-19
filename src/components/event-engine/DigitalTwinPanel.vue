@@ -384,7 +384,7 @@ onMounted(loadAll)
 
 /* Status grid */
 .dt-status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.dt-card { padding: 16px; background: var(--p-surface-ground); border-radius: 8px; border: 1px solid var(--p-surface-border); }
+.dt-card { padding: 16px; background: var(--p-surface-card); border-radius: 8px; border: 1px solid var(--p-surface-border); }
 .dt-card h4 { margin: 0 0 12px; font-size: 0.95rem; }
 
 /* FSM */
@@ -413,7 +413,7 @@ onMounted(loadAll)
 /* Diagrams */
 .dt-diagrams { display: flex; flex-direction: column; gap: 12px; }
 .dt-diagram-actions { display: flex; gap: 6px; }
-.dt-diagram-render { min-height: 200px; background: var(--p-surface-ground); border-radius: 8px; padding: 16px; overflow: auto; }
+.dt-diagram-render { min-height: 200px; background: var(--p-surface-card); border-radius: 8px; padding: 16px; overflow: auto; }
 .dt-diagram-render :deep(svg) { max-width: 100%; }
 
 /* Empty state */

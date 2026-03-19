@@ -246,14 +246,14 @@ function exportGrants() {
 .g-status.review   { background: color-mix(in srgb, var(--fst-blue) 13%, transparent); color: var(--fst-blue); }
 .g-status.denied   { background: color-mix(in srgb, var(--fst-red) 13%, transparent); color: var(--fst-red); }
 .rep-badge.submitted { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
-.rep-badge.pending   { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.rep-badge.pending   { background: var(--p-surface-card); color: var(--p-text-muted-color); }
 .rep-badge.overdue   { background: color-mix(in srgb, var(--fst-red) 13%, transparent); color: var(--fst-red); }
-.rep-badge.na        { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.rep-badge.na        { background: var(--p-surface-card); color: var(--p-text-muted-color); }
 .usage-bar-wrap { display: flex; align-items: center; gap: 6px; }
 .usage-bar { height: 6px; border-radius: 3px; min-width: 4px; max-width: 50px; }
 
 .deadlines { display: flex; flex-direction: column; gap: 8px; }
-.deadline-item { display: flex; align-items: center; gap: 14px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 10px 14px; }
+.deadline-item { display: flex; align-items: center; gap: 14px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 10px 14px; }
 .deadline-item.critical { border-color: var(--fst-red); }
 .deadline-item.warning  { border-color: var(--fst-brand); }
 .dl-urgency { font-size: 1.1rem; font-weight: 900; min-width: 60px; }

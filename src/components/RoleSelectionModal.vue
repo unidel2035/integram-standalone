@@ -233,7 +233,7 @@ defineExpose({
 }
 
 .role-path-preview {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 1rem;
   margin-top: 0.5rem;

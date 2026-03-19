@@ -287,7 +287,7 @@ function sendCapCall() {
   flex-direction: column;
   gap: 20px;
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 .lp-header {
   display: flex;
@@ -346,7 +346,7 @@ function sendCapCall() {
 .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; }
 .status-pill.active { background: color-mix(in srgb, var(--fst-green) 12%, transparent); color: var(--fst-green); }
 .status-pill.watch  { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: var(--fst-brand); }
-.status-pill.exit   { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.status-pill.exit   { background: var(--p-surface-card); color: var(--p-text-muted-color); }
 
 .cf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
 .cf-block { display: flex; flex-direction: column; gap: 8px; }
@@ -357,13 +357,13 @@ function sendCapCall() {
 .cf-amount.distrib { color: var(--fst-blue); }
 .cf-note { color: var(--p-text-muted-color); font-size: 0.78rem; }
 .cf-total { margin-top: 8px; font-weight: 700; color: var(--p-text-color); font-size: 0.9rem; border-top: 1px solid var(--p-content-border-color); padding-top: 6px; }
-.cf-summary { display: flex; gap: 24px; flex-wrap: wrap; padding: 16px; background: var(--p-surface-ground); border-radius: 8px; }
+.cf-summary { display: flex; gap: 24px; flex-wrap: wrap; padding: 16px; background: var(--p-surface-card); border-radius: 8px; }
 .cf-sum-item { display: flex; flex-direction: column; gap: 4px; }
 .cf-sum-item span { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .cf-sum-item strong { font-size: 1.1rem; font-weight: 700; color: var(--p-text-color); }
 
 .fee-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.fee-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px; }
+.fee-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px; }
 .fee-label { font-weight: 700; font-size: 0.85rem; color: var(--p-text-color); }
 .fee-rate  { font-size: 0.95rem; color: var(--p-primary-color); font-weight: 700; margin: 4px 0; }
 .fee-amount{ font-size: 0.82rem; color: var(--p-text-color); }
@@ -371,7 +371,7 @@ function sendCapCall() {
 .fee-total-row { display: flex; justify-content: flex-end; gap: 12px; font-size: 0.9rem; color: var(--p-text-color); }
 
 .esg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-.esg-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; text-align: center; }
+.esg-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; text-align: center; }
 .esg-score { font-size: 2rem; font-weight: 900; margin-bottom: 4px; }
 .esg-a { color: var(--fst-green); } .esg-b { color: var(--fst-blue); } .esg-c { color: var(--fst-brand); }
 .esg-label  { font-weight: 700; font-size: 0.85rem; color: var(--p-text-color); }
@@ -389,7 +389,7 @@ function sendCapCall() {
 .modal-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .modal-form label { font-size: 0.78rem; color: var(--p-text-muted-color); }
 .modal-form input, .modal-form textarea {
-  background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
   border-radius: 6px; padding: 7px 10px; color: var(--p-text-color); font-size: 0.85rem;
   width: 100%; resize: vertical;
 }

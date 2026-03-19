@@ -645,7 +645,7 @@ watch(
   font-weight: 600;
   font-size: 12px;
   white-space: nowrap;
-  background: var(--surface-ground, #f9fafb);
+  background: var(--p-surface-card);
   border-bottom: 2px solid var(--p-content-border-color, #e2e8f0);
   color: var(--p-text-color-secondary, #64748b);
   position: sticky;

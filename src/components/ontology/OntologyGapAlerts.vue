@@ -116,7 +116,7 @@ function entityColor(et) { return ENTITY_TYPES[et]?.color || '#94a3b8' }
 .ont-gap-icon {
   width: 26px; height: 26px;
   border-radius: 6px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; font-size: 12px;
 }

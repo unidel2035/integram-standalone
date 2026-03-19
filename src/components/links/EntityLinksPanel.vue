@@ -9,25 +9,17 @@
     </div>
 
     <!-- Существующие связи -->
-    <div v-if="links.length" class="links-list">
-      <div v-for="link in links" :key="link.id" class="link-item">
-        <span class="link-direction">
-          <i :class="link.direction === 'outgoing' ? 'pi pi-arrow-right' : 'pi pi-arrow-left'"
-             :style="{ color: linkTypeInfo(link.linkType).color }" />
-        </span>
-        <Tag :value="linkTypeInfo(link.linkType).label"
-             :style="{ background: linkTypeInfo(link.linkType).color + '22', color: linkTypeInfo(link.linkType).color, border: 'none' }"
-             class="link-type-tag" />
-        <span class="link-target">
-          {{ link.targetType === 'concept' || link.sourceType === 'concept' ? '🔷' : '🏢' }}
-          {{ getLabel(link) }}
-        </span>
-        <span class="link-weight" v-tooltip="'Сила связи'">{{ link.weight }}%</span>
-        <Button icon="pi pi-times" size="small" text severity="danger"
-                @click="removeLink(link.id)" class="link-delete" />
-      </div>
+    <div v-for="link in links" :key="link.id" class="link-item">
+      <i :class="link.direction === 'outgoing' ? 'pi pi-arrow-right' : 'pi pi-arrow-left'"
+         class="link-dir" :style="{ color: linkTypeInfo(link.linkType).color }" />
+      <Tag :value="linkTypeInfo(link.linkType).label"
+           :style="{ background: `color-mix(in srgb, ${linkTypeInfo(link.linkType).color} 15%, transparent)`, color: linkTypeInfo(link.linkType).color, border: 'none' }"
+           class="link-type-tag" />
+      <span class="link-target">{{ getLabel(link) }}</span>
+      <span class="link-weight" v-tooltip="'Сила связи'">{{ link.weight }}%</span>
+      <i class="pi pi-times link-delete" @click.stop="removeLink(link.id)" v-tooltip="'Удалить'" />
     </div>
-    <div v-else-if="!loading" class="links-empty">
+    <div v-if="!links.length && !loading" class="links-empty">
       Связей нет — добавьте концепты онтологии или другие сущности
     </div>
     <div v-if="loading" class="links-loading">
@@ -153,43 +145,52 @@ watch(() => props.entityId, load)
 
 <style scoped>
 .entity-links-panel {
-  border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  padding: 12px;
-  background: var(--surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--p-surface-card);
 }
 .links-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 .links-title {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--p-text-color);
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.links-list { display: flex; flex-direction: column; gap: 6px; }
+.link-dir { font-size: 0.75rem; flex-shrink: 0; }
 .link-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 6px;
+  padding: 4px 6px;
   border-radius: 6px;
-  background: var(--surface-ground);
-  font-size: 0.85rem;
+  background: transparent;
+  border: none;
+  font-size: 0.83rem;
+  transition: background 0.12s;
 }
-.link-target { flex: 1; color: var(--p-text-color); }
+.link-item:hover { background: color-mix(in srgb, var(--p-primary-color) 6%, transparent); }
+.link-target { flex: 1; color: var(--p-text-color); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .link-weight { font-size: 0.75rem; color: var(--p-text-muted-color); min-width: 30px; text-align: right; }
-.link-delete { margin-left: auto; }
+.link-delete {
+  flex-shrink: 0; font-size: 0.65rem; color: var(--p-text-muted-color);
+  cursor: pointer; opacity: 0.3; transition: opacity 0.15s, color 0.15s;
+  padding: 2px;
+}
+.link-item:hover .link-delete { opacity: 0.7; }
+.link-delete:hover { opacity: 1; color: var(--fst-red); }
 .link-type-tag { font-size: 0.75rem; padding: 2px 6px; }
-.links-empty { font-size: 0.8rem; color: var(--p-text-muted-color); padding: 8px 0; text-align: center; }
-.links-loading { text-align: center; color: var(--p-text-muted-color); padding: 8px; }
+.links-empty { font-size: 0.83rem; color: var(--p-text-muted-color); padding: 12px 0; text-align: center; }
+.links-loading { text-align: center; color: var(--p-text-muted-color); padding: 12px; }
 .add-link-form { display: flex; flex-direction: column; gap: 16px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field label { font-size: 0.85rem; font-weight: 500; }
+.field label { font-size: 0.83rem; font-weight: 500; color: var(--p-text-muted-color); }
 .field small { color: var(--p-text-muted-color); font-size: 0.75rem; }
 </style>

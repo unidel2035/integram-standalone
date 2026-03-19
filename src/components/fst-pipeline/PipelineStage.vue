@@ -94,7 +94,7 @@ function fmtDate(ts) {
 .ps-card {
   display: flex;
   border: 1px solid var(--p-content-border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--p-surface-card);
   cursor: pointer;
   transition: box-shadow 0.15s, border-color 0.15s;
@@ -140,12 +140,12 @@ function fmtDate(ts) {
 }
 
 .ps-subprocess-icon {
-  font-size: 15px;
+  font-size: 0.95rem;
   flex-shrink: 0;
 }
 
 .ps-subprocess-label {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -153,7 +153,7 @@ function fmtDate(ts) {
 }
 
 .ps-subprocess-name {
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 500;
   color: var(--p-text-muted-color);
   white-space: nowrap;
@@ -169,11 +169,11 @@ function fmtDate(ts) {
 }
 
 .ps-status-tag {
-  font-size: 10px !important;
+  font-size: 0.75rem !important;
 }
 
 .ps-days {
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
   white-space: nowrap;
 }
@@ -189,11 +189,11 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.83rem;
 }
 
 .ps-event-icon {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--fst-green);
   flex-shrink: 0;
 }
@@ -207,7 +207,7 @@ function fmtDate(ts) {
 }
 
 .ps-event-date {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   flex-shrink: 0;
 }
@@ -219,7 +219,7 @@ function fmtDate(ts) {
 }
 
 .ps-next-label {
-  font-size: 10px;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--p-text-muted-color);
@@ -230,21 +230,21 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
   padding: 1px 0;
 }
 
-.ps-next-icon { font-size: 10px; }
+.ps-next-icon { font-size: 0.75rem; }
 
 /* SLA */
 .ps-sla {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   padding: 4px 8px;
 }
@@ -269,8 +269,8 @@ function fmtDate(ts) {
 }
 
 .ps-actor {
-  font-size: 10px;
-  background: var(--p-surface-ground);
+  font-size: 0.75rem;
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 4px;
   padding: 1px 6px;
@@ -278,7 +278,7 @@ function fmtDate(ts) {
 }
 
 .ps-reglament {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   font-style: italic;
 }

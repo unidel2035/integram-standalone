@@ -153,7 +153,7 @@ const getLessonIcon = (lesson) => {
     flex-direction: column;
     gap: 0.75rem;
     padding: 1rem;
-    background: var(--surface-ground);
+    background: var(--p-surface-card);
     border-radius: var(--content-border-radius);
   }
 
@@ -195,7 +195,7 @@ const getLessonIcon = (lesson) => {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: var(--surface-ground);
+    background: var(--p-surface-card);
     border-radius: var(--content-border-radius);
     border: 1px solid var(--surface-border);
     transition: all 0.2s;

@@ -1,5 +1,5 @@
 <template>
-  <FstPageLayout :showToolbar="false">
+  <FstPageLayout title="Портфельный монитор" subtitle="Мониторинг портфеля, аналитика и AI-отчёты" icon="pi pi-chart-bar">
 
     <!-- ─── KPI metrics strip — событийная, появляется/исчезает ─── -->
     <Transition name="fsp-sod-anim">
@@ -14,24 +14,11 @@
 
     <!-- ─── View Tabs + Filters bar ─── -->
     <div class="fsp-filter-bar">
-      <div class="fsp-view-tabs">
-        <button v-for="tab in viewTabs" :key="tab.id"
-          class="fsp-tab-btn" :class="{ active: activeView === tab.id }"
-          :style="activeView === tab.id ? { '--tab-color': tab.color } : {}"
-          @click="activeView = tab.id">
-          <i :class="tab.icon"></i>
-          <span>{{ tab.label }}</span>
-        </button>
-        <span class="fsp-tabs-sep"></span>
-        <button class="fsp-tab-btn fsp-ai-trigger" :class="{ active: aiLoading }" style="--tab-color: var(--fst-purple)"
-          v-tooltip.bottom="'AI-анализ портфеля'" :disabled="aiLoading"
-          @click="showAiInput = !showAiInput">
-          <i :class="aiLoading ? 'pi pi-spin pi-spinner' : 'pi pi-sparkles'"></i>
-        </button>
-        <button class="fsp-tab-btn" v-tooltip.bottom="'Обновить'" @click="refreshAll">
-          <i :class="refreshing ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"></i>
-        </button>
-      </div>
+      <SelectButton v-model="activeView" :options="viewTabs" optionLabel="label" optionValue="id" :allowEmpty="false" />
+      <Button icon="pi pi-sparkles" v-tooltip.bottom="'AI-анализ портфеля'" :disabled="aiLoading"
+        :loading="aiLoading" severity="secondary" size="small" text @click="showAiInput = !showAiInput" />
+      <Button :icon="refreshing ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" v-tooltip.bottom="'Обновить'"
+        severity="secondary" size="small" text @click="refreshAll" />
 
       <!-- Режим дашборда: По умолчанию / Текущее / Демо -->
       <div v-if="activeView === 'dashboard'" class="fsp-mode-group">
@@ -72,7 +59,7 @@
         <SelectButton v-model="filterScope" :options="scopeOptions" optionLabel="label" optionValue="id" :allowEmpty="false" size="small" />
         <Select v-model="filterSubfund" :options="subfundOptions" placeholder="Все субфонды" class="fsp-filter-sel" size="small" />
         <span class="fsp-search-wrap">
-          <i class="pi pi-search" style="font-size:12px;color:var(--p-text-muted-color)" />
+          <i class="pi pi-search fsp-search-icon" />
           <InputText v-model="searchQuery" placeholder="Поиск..." size="small" class="fsp-search" />
         </span>
       </div>
@@ -174,7 +161,7 @@
             <!-- RECOMMENDATION -->
             <template v-else-if="block.type === 'recommendation'">
               <div class="fsp-aib-header"><i :class="block.icon || 'pi pi-check-square'" :style="{ color: 'var(--block-color)' }"></i><span class="fsp-aib-title">{{ block.title }}</span></div>
-              <div class="fsp-aib-rec-items"><div v-for="(r, i) in block.items" :key="i" class="fsp-aib-rec-item"><i class="pi pi-angle-right" style="font-size:10px;color:var(--p-text-muted-color)"></i><span>{{ r }}</span></div></div>
+              <div class="fsp-aib-rec-items"><div v-for="(r, i) in block.items" :key="i" class="fsp-aib-rec-item"><i class="pi pi-angle-right fsp-icon-xs fsp-text-muted"></i><span>{{ r }}</span></div></div>
             </template>
             <!-- TABLE -->
             <template v-else-if="block.type === 'table'">
@@ -501,7 +488,7 @@
         <div class="fsp-pred-stream" v-if="predictiveSignals.length">
           <div class="fsp-pred-header">
             <i class="pi pi-sparkles" style="color:var(--fst-purple)"></i>
-            <span class="fsp-ig-section-title" style="margin:0">Предиктивная разведка</span>
+            <span class="page-section-title page-section-title--flush">Предиктивная разведка</span>
           </div>
           <div class="fsp-pred-cards">
             <div v-for="sig in predictiveSignals" :key="sig.id"
@@ -510,7 +497,7 @@
               <div class="fsp-pred-top">
                 <Icon :icon="sig.icon" class="fsp-pred-icon" :style="{ color: sig.color }" />
                 <span class="fsp-pred-text">{{ sig.text }}</span>
-                <Tag :value="sig.horizon" :severity="sig.severity === 'critical' ? 'danger' : sig.severity === 'warning' ? 'warn' : 'info'" style="font-size:9px" />
+                <Tag :value="sig.horizon" :severity="sig.severity === 'critical' ? 'danger' : sig.severity === 'warning' ? 'warn' : 'info'" class="fsp-tag-sm" />
               </div>
               <Transition name="fsp-brief-anim">
                 <div v-if="expandedPrediction === sig.id" class="fsp-pred-detail">
@@ -554,7 +541,7 @@
                 </div>
                 <div class="fsp-swarm-steps">
                   <div v-for="step in agent.steps" :key="step.id" class="fsp-swarm-step">
-                    <i :class="step.done ? 'pi pi-check' : 'pi pi-spin pi-spinner'" style="font-size:9px"
+                    <i :class="[step.done ? 'pi pi-check' : 'pi pi-spin pi-spinner', 'fsp-tag-sm']"
                       :style="{ color: step.done ? 'var(--fst-green)' : 'var(--agent-color)' }"></i>
                     <span>{{ step.label }}</span>
                   </div>
@@ -588,8 +575,8 @@
           <div class="fsp-constellation" @mouseenter="constZoomed = true" @mouseleave="constZoomed = false">
             <div class="fsp-constellation-header">
               <i class="pi pi-share-alt" style="color:var(--fst-cyan)"></i>
-              <span class="fsp-ig-section-title" style="margin:0">Техкарта портфеля</span>
-              <i class="pi pi-expand" style="font-size:9px;color:var(--p-text-muted-color);margin-left:auto;opacity:0.5"></i>
+              <span class="page-section-title page-section-title--flush">Техкарта портфеля</span>
+              <i class="pi pi-expand fsp-tag-sm fsp-text-muted" style="margin-left:auto;opacity:0.5"></i>
             </div>
             <svg viewBox="50 20 500 260" class="fsp-constellation-svg">
               <line v-for="e in constellationData.edges" :key="e.id"
@@ -612,14 +599,14 @@
               </g>
             </svg>
             <div class="fsp-constellation-legend">
-              <span><i class="pi pi-circle-fill" style="color:var(--fst-cyan);font-size:6px"></i> Технология</span>
-              <span><i class="pi pi-circle-fill" style="color:var(--fst-green);font-size:6px"></i> Компания</span>
+              <span><i class="pi pi-circle-fill fsp-legend-dot" style="color:var(--fst-cyan)"></i> Технология</span>
+              <span><i class="pi pi-circle-fill fsp-legend-dot" style="color:var(--fst-green)"></i> Компания</span>
             </div>
           </div>
 
           <!-- Tech Domain Stats — right side -->
           <div class="fsp-domain-stats">
-            <div class="fsp-ig-section-title">Технологические домены</div>
+            <div class="page-section-title">Технологические домены</div>
             <div class="fsp-domain-list">
               <div v-for="ax in radarAxes" :key="ax.id" class="fsp-domain-row">
                 <span class="fsp-domain-name">{{ ax.id }}</span>
@@ -632,7 +619,7 @@
               </div>
             </div>
             <div class="fsp-domain-footer">
-              <span style="color:var(--p-text-muted-color);font-size:8px"><i class="pi pi-minus" style="font-size:6px;color:var(--fst-brand)"></i> Цель НТИ 2030</span>
+              <span class="fsp-text-muted" style="font-size:0.65rem"><i class="pi pi-minus fsp-legend-dot" style="color:var(--fst-brand)"></i> Цель НТИ 2030</span>
             </div>
           </div>
         </div>
@@ -667,7 +654,7 @@
         <div class="fsp-ig-body">
           <!-- Колонка 1: Тепловая карта + Health-бар -->
           <div class="fsp-ig-col">
-            <div class="fsp-ig-section-title">Тепловая карта</div>
+            <div class="page-section-title">Тепловая карта</div>
             <div class="fsp-heatmap">
               <div v-for="c in portfolioCompanies.slice(0, 24)" :key="c.id"
                 class="fsp-heat-cell" :class="['risk-' + c.riskLevel, { 'fsp-heat-anomaly': isAnomaly(c) }]"
@@ -687,19 +674,19 @@
               <div class="fsp-ig-hb-seg" :style="{ flex: healthDistribution.red, background: 'var(--fst-red)' }" v-tooltip.bottom="`Критично (<40%): ${healthDistribution.red} компаний`"></div>
             </div>
             <div class="fsp-ig-health-legend">
-              <span><i class="pi pi-circle-fill" style="color:var(--fst-green);font-size:7px"></i> {{ healthDistribution.green }} норма</span>
-              <span><i class="pi pi-circle-fill" style="color:var(--fst-brand);font-size:7px"></i> {{ healthDistribution.yellow }} внимание</span>
-              <span><i class="pi pi-circle-fill" style="color:var(--fst-red);font-size:7px"></i> {{ healthDistribution.red }} критично</span>
+              <span><i class="pi pi-circle-fill fsp-legend-dot-sm" style="color:var(--fst-green)"></i> {{ healthDistribution.green }} норма</span>
+              <span><i class="pi pi-circle-fill fsp-legend-dot-sm" style="color:var(--fst-brand)"></i> {{ healthDistribution.yellow }} внимание</span>
+              <span><i class="pi pi-circle-fill fsp-legend-dot-sm" style="color:var(--fst-red)"></i> {{ healthDistribution.red }} критично</span>
             </div>
           </div>
 
           <!-- Колонка 2: Runway + субфонды -->
           <div class="fsp-ig-col">
-            <div class="fsp-ig-section-title">Runway</div>
+            <div class="page-section-title">Runway</div>
             <template v-if="runwayData.length">
               <div class="fsp-runway-list">
                 <div v-for="r in runwayData.slice(0, 8)" :key="r.name" class="fsp-runway-row" v-tooltip.bottom="`${r.name}: ${r.months} мес. ${r.months < 6 ? '— нужен следующий транш!' : r.months < 12 ? '— runway менее года' : '— в норме'}`">
-                  <div class="fsp-runway-name"><Icon v-if="r._icon" :icon="r._icon" style="font-size:11px;opacity:0.6;margin-right:2px" />{{ r.name }}</div>
+                  <div class="fsp-runway-name"><Icon v-if="r._icon" :icon="r._icon" class="fsp-icon-xs" style="opacity:0.6;margin-right:2px" />{{ r.name }}</div>
                   <div class="fsp-runway-bar-wrap">
                     <div class="fsp-runway-bar" :style="{ width: Math.min(100, r.months / 24 * 100) + '%', background: r.months < 6 ? 'var(--fst-red)' : r.months < 12 ? 'var(--fst-brand)' : 'var(--fst-green)' }"></div>
                   </div>
@@ -709,7 +696,7 @@
             </template>
             <div v-else class="fsp-ig-no-data">Нет данных о финансах</div>
             <!-- Субфонды как мини-бары -->
-            <div class="fsp-ig-section-title" style="margin-top:10px">Субфонды</div>
+            <div class="page-section-title page-section-title--mt">Субфонды</div>
             <div class="fsp-ig-subfunds">
               <div v-for="sf in subfundBreakdown" :key="sf.name" class="fsp-ig-sf-row" v-tooltip.bottom="`${sf.name}: ${sf.count} компаний (${sf.pct}% портфеля)`">
                 <Icon :icon="SUBFUND_ICONS[sf.name] || 'lucide:folder'" class="fsp-ig-sf-icon" />
@@ -725,7 +712,7 @@
           <!-- Колонка 3: Зейгарник (прогресс) + События + Что изменилось -->
           <div class="fsp-ig-col">
             <!-- ── Зейгарник: Action Items с прогресс-барами ── -->
-            <div v-if="actionItems.length" class="fsp-ig-section-title">
+            <div v-if="actionItems.length" class="page-section-title">
               Задачи <span class="fsp-onto-count">{{ actionItemsCompleted }}/{{ actionItems.length }}</span>
             </div>
             <div v-if="actionItems.length" class="fsp-action-items">
@@ -745,7 +732,7 @@
             </div>
 
             <!-- ── Change Blindness: Что изменилось ── -->
-            <div v-if="changeLog.length" class="fsp-ig-section-title" style="margin-top:10px">
+            <div v-if="changeLog.length" class="page-section-title page-section-title--mt">
               Что изменилось <span class="fsp-onto-count">{{ changeLog.length }}</span>
             </div>
             <div v-if="changeLog.length" class="fsp-changelog">
@@ -759,7 +746,7 @@
             </div>
 
             <!-- ── SDT: Калиброванные алерты (три уровня) ── -->
-            <div v-if="calibratedAlerts.length" class="fsp-ig-section-title" style="margin-top:10px">
+            <div v-if="calibratedAlerts.length" class="page-section-title page-section-title--mt">
               Алерты <span class="fsp-onto-count">{{ calibratedAlerts.length }}</span>
             </div>
             <div v-if="calibratedAlerts.length" class="fsp-sdt-alerts">
@@ -769,12 +756,12 @@
                 <Icon :icon="al.icon" class="fsp-sdt-icon" />
                 <span class="fsp-sdt-text">{{ al.text }}</span>
                 <span v-if="al.timeAgo" class="fsp-sdt-time">{{ al.timeAgo }}</span>
-                <Tag :value="al.levelLabel" :severity="al.level === 'critical' ? 'danger' : al.level === 'warning' ? 'warn' : 'info'" style="font-size:9px" />
+                <Tag :value="al.levelLabel" :severity="al.level === 'critical' ? 'danger' : al.level === 'warning' ? 'warn' : 'info'" class="fsp-tag-sm" />
               </div>
             </div>
 
             <!-- ── Последние события (сжатые) ── -->
-            <div class="fsp-ig-section-title" style="margin-top:10px">Последние события <span v-if="allEventsFlat.length" class="fsp-onto-count">{{ allEventsFlat.length }}</span></div>
+            <div class="page-section-title page-section-title--mt">Последние события <span v-if="allEventsFlat.length" class="fsp-onto-count">{{ allEventsFlat.length }}</span></div>
             <div class="fsp-ig-feed">
               <div v-for="ev in allEventsFlat.slice(0, 6)" :key="ev.id" class="fsp-ig-feed-item"
                 v-tooltip.bottom="`${ev.label} · ${ev.companyName} · ${ev.phase} · ${ev.dateStr}`">
@@ -796,8 +783,9 @@
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
     <!-- VIEW: Analytics (Финансы + Оценки — Progressive Disclosure) -->
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <div v-else-if="activeView === 'analytics'" class="fsp-view-panel">
-      <div class="fst-section-label" style="margin-bottom:10px">
+    <div v-else-if="activeView === 'analytics'" class="page-content">
+      <div class="page-card">
+      <div class="page-section-title" style="margin-bottom:10px">
         {{ analyticsSubTab === 'finance' ? 'Финансовые показатели (тыс. ₽)' : 'Доли фонда и оценки компаний' }}
       </div>
 
@@ -806,13 +794,13 @@
                  sortField="totalInvestment" :sortOrder="-1" class="fsp-datatable">
         <Column field="name" header="Компания" :sortable="true" frozen style="min-width:180px">
           <template #body="{ data }">
-            <span class="fsp-dt-name" @click="selectCompanyById(data.id)"><Icon :icon="companyIcon(data)" style="font-size:14px;vertical-align:-2px;margin-right:4px" />{{ companyDisplayName(data) }}</span>
+            <span class="fsp-dt-name" @click="selectCompanyById(data.id)"><Icon :icon="companyIcon(data)" class="fsp-icon-md fsp-icon-inline" />{{ companyDisplayName(data) }}</span>
             <div class="fsp-dt-sub">{{ data.subfund }} · {{ data.statusLabel }}</div>
           </template>
         </Column>
         <Column field="totalInvestment" header="Инвестиции" :sortable="true" style="min-width:110px">
           <template #body="{ data }">
-            <span style="font-weight:600;color:var(--fst-blue)">{{ fmtMln(data.totalInvestment) }}</span>
+            <span class="fsp-val-blue">{{ fmtMln(data.totalInvestment) }}</span>
           </template>
         </Column>
         <Column field="revenue" header="Выручка" :sortable="true" style="min-width:110px">
@@ -846,13 +834,13 @@
                  sortField="fundShare" :sortOrder="-1" class="fsp-datatable">
         <Column field="name" header="Компания" :sortable="true" frozen style="min-width:180px">
           <template #body="{ data }">
-            <span class="fsp-dt-name" @click="selectCompanyById(data.id)"><Icon :icon="companyIcon(data)" style="font-size:14px;vertical-align:-2px;margin-right:4px" />{{ companyDisplayName(data) }}</span>
+            <span class="fsp-dt-name" @click="selectCompanyById(data.id)"><Icon :icon="companyIcon(data)" class="fsp-icon-md fsp-icon-inline" />{{ companyDisplayName(data) }}</span>
             <div class="fsp-dt-sub">{{ data.subfund }}</div>
           </template>
         </Column>
         <Column field="fundShare" header="Доля %" :sortable="true" style="min-width:80px">
           <template #body="{ data }">
-            <span v-if="data.fundShare" style="font-weight:700;color:var(--fst-purple)">{{ data.fundShare }}%</span>
+            <span v-if="data.fundShare" class="fsp-val-purple">{{ data.fundShare }}%</span>
             <span v-else style="color:var(--p-text-muted-color)">—</span>
           </template>
         </Column>
@@ -864,7 +852,7 @@
         </Column>
         <Column field="navEstimate" header="NAV" :sortable="true" style="min-width:110px">
           <template #body="{ data }">
-            <span v-if="data.navEstimate" style="font-weight:600;color:var(--fst-green)">{{ fmtMln(data.navEstimate) }} ₽</span>
+            <span v-if="data.navEstimate" class="fsp-val-green">{{ fmtMln(data.navEstimate) }} ₽</span>
             <span v-else style="color:var(--p-text-muted-color)">—</span>
           </template>
         </Column>
@@ -877,6 +865,7 @@
           <template #body="{ data }">{{ data.headcount || '—' }}</template>
         </Column>
       </DataTable>
+      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -886,7 +875,7 @@
 
       <!-- ═══ Pipeline view (Kanban по стадиям) — подрежим внутри «Компании» ═══ -->
       <div v-if="companyViewMode === 'pipeline'" class="fsp-pipeline-wrap">
-        <div class="fst-section-label" style="margin-bottom:12px">Воронка: от заявки до портфеля</div>
+        <div class="page-section-title" style="margin-bottom:12px">Воронка: от заявки до портфеля</div>
         <div class="fsp-pipeline">
           <div v-for="stage in pipelineStages" :key="stage.id" class="fsp-pipe-stage">
             <div class="fsp-pipe-header" :style="{ borderBottomColor: stage.color }" v-tooltip.bottom="`${stage.label}: ${stage.companies.length} компаний`">
@@ -899,7 +888,7 @@
               <div v-for="c in stage.companies" :key="c.id" class="fsp-pipe-card"
                 @click="selectCompany(c); companyViewMode = 'cards'"
                 v-tooltip.bottom="`${companyDisplayName(c)} · ${c.subfund} · TRL ${c.trl || '—'} · Health ${companyHealth(c)}%`">
-                <div class="fsp-pipe-card-name"><Icon :icon="companyIcon(c)" style="font-size:14px;vertical-align:-2px;margin-right:4px" />{{ companyDisplayName(c) }}</div>
+                <div class="fsp-pipe-card-name"><Icon :icon="companyIcon(c)" class="fsp-icon-md fsp-icon-inline" />{{ companyDisplayName(c) }}</div>
                 <div class="fsp-pipe-card-meta">
                   <span v-if="c.subfund">{{ c.subfund }}</span>
                   <span v-if="c.trl">TRL {{ c.trl }}</span>
@@ -916,21 +905,21 @@
       <!-- Left: Company Cards -->
       <template v-else>
       <div class="fsp-companies">
-        <div class="fst-section-label fsp-companies-label">
+        <div class="page-section-title fsp-companies-label">
           {{ filterScope === 'all' ? 'Все компании' : filterScope === 'portfolio' ? 'Портфельные компании' : 'На рассмотрении' }}
-          <span style="font-weight:400;color:var(--p-text-muted-color)"> ({{ filteredCompanies.length }})</span>
+          <span class="fsp-text-muted" style="font-weight:400"> ({{ filteredCompanies.length }})</span>
         </div>
 
         <!-- Alert banner -->
         <div v-if="criticalAlerts.length" class="fsp-alert-banner">
-          <i class="pi pi-exclamation-triangle" style="color:var(--fst-red);font-size:14px"></i>
+          <i class="pi pi-exclamation-triangle fsp-icon-md fsp-val-red"</i>
           <span><b>Критические риски:</b> {{ criticalAlerts.map(a => a.company).join(', ') }}</span>
           <Button label="Созвать ИК" icon="pi pi-users" size="small" severity="danger" @click="callCommittee" style="margin-left:auto" />
         </div>
 
         <!-- Compare toolbar -->
         <div v-if="compareMode" class="fsp-compare-toolbar">
-          <Icon icon="lucide:columns-2" style="font-size:14px;color:var(--fst-purple)" />
+          <Icon icon="lucide:columns-2" class="fsp-icon-md" style="color:var(--fst-purple)" />
           <span>Сравнение: выберите до 3 компаний ({{ compareSelected.length }}/3)</span>
           <Button v-if="compareSelected.length >= 2" label="Сравнить" icon="pi pi-chart-bar" size="small" severity="info"
             @click="compareMode = false" />
@@ -952,17 +941,17 @@
             v-tooltip.bottom="`${companyDisplayName(c)} · ${c.subfund} · ${c.stage} · Health ${companyHealth(c)}% · TRL ${c.trl || '—'}`">
             <!-- Change badge (Change Blindness Prevention) -->
             <div v-if="changedCompanies.has(c.id)" class="fsp-card-changed-badge" v-tooltip.bottom="'Данные обновились'">
-              <Icon icon="lucide:refresh-cw" style="font-size:10px" />
+              <Icon icon="lucide:refresh-cw" class="fsp-icon-xs" />
             </div>
             <!-- Compare checkbox -->
             <div v-if="compareMode" class="fsp-card-compare-check" @click.stop="toggleCompare(c)">
-              <Icon :icon="compareSelected.includes(c.id) ? 'lucide:check-square' : 'lucide:square'" style="font-size:16px;color:var(--fst-purple)" />
+              <Icon :icon="compareSelected.includes(c.id) ? 'lucide:check-square' : 'lucide:square'" class="fsp-icon-lg" style="color:var(--fst-purple)" />
             </div>
             <div class="fsp-card-header">
               <div class="fsp-card-name"><Icon :icon="companyIcon(c)" class="fsp-card-icon" />{{ companyDisplayName(c) }}</div>
               <div class="fsp-card-badges">
-                <Tag v-if="c._scope === 'review'" value="ИК" style="font-size:9px;background:var(--fst-brand);color:white" />
-                <Tag :value="c.subfund" style="font-size:9px;background:var(--fst-blue);color:white" />
+                <Tag v-if="c._scope === 'review'" value="ИК" class="fsp-tag-sm-brand" />
+                <Tag :value="c.subfund" class="fsp-tag-sm-blue" />
                 <div class="fsp-traffic-light" :style="{ background: riskColor(c.riskLevel) }" v-tooltip.bottom="riskLabel(c.riskLevel)"></div>
               </div>
             </div>
@@ -991,10 +980,10 @@
             </div>
             <div class="fsp-card-footer-actions">
               <button class="fsp-hist-btn" @click.stop="openProjectHub(c)">
-                <i class="pi pi-history" style="font-size:10px"></i> История
+                <i class="pi pi-history fsp-icon-xs"></i> История
               </button>
               <button v-if="!compareMode" class="fsp-hist-btn" @click.stop="compareMode = true; compareSelected = [c.id]">
-                <Icon icon="lucide:columns-2" style="font-size:10px" /> Сравнить
+                <Icon icon="lucide:columns-2" class="fsp-icon-xs" /> Сравнить
               </button>
             </div>
           </div>
@@ -1008,11 +997,11 @@
         <div class="fsp-detail-panel">
           <div class="fsp-detail-company-header">
             <div>
-              <div class="fsp-detail-name"><Icon :icon="companyIcon(selectedCompany)" style="font-size:20px;vertical-align:-3px;margin-right:6px" />{{ companyDisplayName(selectedCompany) }}</div>
+              <div class="fsp-detail-name"><Icon :icon="companyIcon(selectedCompany)" class="fsp-icon-xl fsp-icon-inline-lg" />{{ companyDisplayName(selectedCompany) }}</div>
               <div class="fsp-detail-sub">
                 {{ selectedCompany.inn ? selectedCompany.inn + ' · ' : '' }}{{ selectedCompany.stage }} · {{ selectedCompany.subfund }}
-                <Tag v-if="selectedCompany._scope === 'review'" value="На рассмотрении" severity="warn" style="font-size:9px;margin-left:4px" />
-                <Tag v-else value="Портфель" severity="success" style="font-size:9px;margin-left:4px" />
+                <Tag v-if="selectedCompany._scope === 'review'" value="На рассмотрении" severity="warn" class="fsp-tag-sm" style="margin-left:4px" />
+                <Tag v-else value="Портфель" severity="success" class="fsp-tag-sm" style="margin-left:4px" />
               </div>
             </div>
             <div class="fsp-detail-health-badge"
@@ -1124,7 +1113,7 @@
             </div>
             <!-- Revenue dynamics -->
             <div v-if="getMetrics(selectedCompany.id).revenueByYear?.length > 1" class="fsp-rm-dynamics">
-              <div class="fsp-rm-dyn-title">Динамика выручки</div>
+              <div class="page-section-title">Динамика выручки</div>
               <div class="fsp-rm-dyn-row" v-for="r in getMetrics(selectedCompany.id).revenueByYear" :key="r.year">
                 <span class="fsp-rm-dyn-year">{{ r.year }}</span>
                 <div class="fsp-rm-dyn-bar-wrap">
@@ -1211,7 +1200,7 @@
       <!-- #3 Compare panel (side-by-side) -->
       <div v-if="compareCompanies.length >= 2 && !compareMode" class="fsp-detail fsp-compare-panel">
         <div class="fsp-compare-header">
-          <Icon icon="lucide:columns-2" style="font-size:18px;color:var(--fst-purple)" />
+          <Icon icon="lucide:columns-2" class="fsp-icon-lg" style="color:var(--fst-purple)" />
           <span>Сравнение компаний</span>
           <Button icon="pi pi-times" size="small" text severity="secondary" style="margin-left:auto"
             @click="compareSelected = []" />
@@ -1220,7 +1209,7 @@
           <!-- Header row -->
           <div class="fsp-cmp-label"></div>
           <div v-for="cc in compareCompanies" :key="'h-'+cc.id" class="fsp-cmp-company-name">
-            <Icon :icon="companyIcon(cc)" style="font-size:14px" /> {{ companyDisplayName(cc) }}
+            <Icon :icon="companyIcon(cc)" class="fsp-icon-md" /> {{ companyDisplayName(cc) }}
           </div>
           <!-- Rows -->
           <template v-for="row in [
@@ -1246,7 +1235,7 @@
       <!-- Empty state → Портфельное саммари (Kahneman System 1 — мгновенный контекст) -->
       <div v-else-if="compareCompanies.length < 2 || compareMode" class="fsp-detail fsp-detail-summary">
         <div class="fsp-sum-header">
-          <Icon icon="lucide:layout-dashboard" style="font-size:20px;color:var(--fst-purple)" />
+          <Icon icon="lucide:layout-dashboard" class="fsp-icon-xl" style="color:var(--fst-purple)" />
           <span>Портфель ФСТ НТИ</span>
         </div>
         <div class="fsp-sum-stats">
@@ -1270,9 +1259,9 @@
 
         <!-- Топ компании по инвестициям -->
         <div class="fsp-sum-section">
-          <div class="fsp-sum-section-title">Топ компании по инвестициям</div>
+          <div class="page-section-title">Топ компании по инвестициям</div>
           <div v-for="c in topInvestedCompanies" :key="c.id" class="fsp-sum-top-row" @click="selectCompany(c)">
-            <Icon :icon="companyIcon(c)" style="font-size:14px;opacity:0.7" />
+            <Icon :icon="companyIcon(c)" class="fsp-icon-md" style="opacity:0.7" />
             <span class="fsp-sum-top-name">{{ companyDisplayName(c) }}</span>
             <span class="fsp-sum-top-val" style="color:var(--fst-blue)">{{ c.invested }}М</span>
             <div class="fsp-sum-top-bar-wrap">
@@ -1283,9 +1272,9 @@
 
         <!-- Субфонды -->
         <div class="fsp-sum-section">
-          <div class="fsp-sum-section-title">По субфондам</div>
+          <div class="page-section-title">По субфондам</div>
           <div v-for="sf in subfundBreakdown" :key="sf.name" class="fsp-sum-sf-row">
-            <Icon :icon="SUBFUND_ICONS[sf.name] || 'lucide:folder'" style="font-size:13px;opacity:0.6" />
+            <Icon :icon="SUBFUND_ICONS[sf.name] || 'lucide:folder'" class="fsp-icon-sm" style="opacity:0.6" />
             <span class="fsp-sum-sf-name">{{ sf.name }}</span>
             <span class="fsp-sum-sf-count">{{ sf.count }}</span>
             <div class="fsp-sum-sf-bar-wrap">
@@ -1295,7 +1284,7 @@
         </div>
 
         <div class="fsp-sum-hint">
-          <Icon icon="lucide:mouse-pointer-click" style="font-size:14px;opacity:0.5" />
+          <Icon icon="lucide:mouse-pointer-click" class="fsp-icon-md" style="opacity:0.5" />
           Выберите компанию слева для детального просмотра
         </div>
       </div>
@@ -2098,7 +2087,7 @@ const activeSignals = computed(() => {
       signals.push({
         id: ev.id, label: def.label, company: companyDisplayName(c), companyId: c.id,
         icon: def.icon, color: def.color, phase: def.phase,
-        phaseColor: PHASE_COLORS[def.phase] || '#64748b',
+        phaseColor: PHASE_COLORS[def.phase] || 'var(--p-text-muted-color)',
         severity, fresh: (now - ev.ts) < FRESH_MS,
         ts: ev.ts, timeAgo: timeAgo(ev.ts), chain,
       })
@@ -2109,16 +2098,16 @@ const activeSignals = computed(() => {
 
 // ── EVENT-DRIVEN: Phase Timeline ────────────────────────────────────────────
 const PHASE_DEFS = [
-  { id: 'source', label: 'Поиск', icon: 'pi pi-filter', color: '#64748b' },
-  { id: 'negotiate', label: 'Переговоры', icon: 'pi pi-file', color: '#f59e0b' },
-  { id: 'dd', label: 'Due Diligence', icon: 'pi pi-search', color: '#6366f1' },
-  { id: 'close', label: 'Закрытие', icon: 'pi pi-lock', color: '#10b981' },
-  { id: 'init', label: 'Вход', icon: 'pi pi-plus-circle', color: '#22c55e' },
-  { id: 'monitor', label: 'Мониторинг', icon: 'pi pi-chart-bar', color: '#3b82f6' },
-  { id: 'milestone', label: 'Вехи', icon: 'pi pi-star', color: '#f97316' },
-  { id: 'alert', label: 'Алерты', icon: 'pi pi-exclamation-triangle', color: '#ef4444' },
-  { id: 'growth', label: 'Рост', icon: 'pi pi-trending-up', color: '#8b5cf6' },
-  { id: 'exit', label: 'Выход', icon: 'pi pi-sign-out', color: '#06b6d4' },
+  { id: 'source', label: 'Поиск', icon: 'pi pi-filter', color: 'var(--p-text-muted-color)' },
+  { id: 'negotiate', label: 'Переговоры', icon: 'pi pi-file', color: 'var(--fst-brand)' },
+  { id: 'dd', label: 'Due Diligence', icon: 'pi pi-search', color: 'var(--fst-purple)' },
+  { id: 'close', label: 'Закрытие', icon: 'pi pi-lock', color: 'var(--fst-green)' },
+  { id: 'init', label: 'Вход', icon: 'pi pi-plus-circle', color: 'var(--fst-green)' },
+  { id: 'monitor', label: 'Мониторинг', icon: 'pi pi-chart-bar', color: 'var(--fst-blue)' },
+  { id: 'milestone', label: 'Вехи', icon: 'pi pi-star', color: 'var(--fst-brand)' },
+  { id: 'alert', label: 'Алерты', icon: 'pi pi-exclamation-triangle', color: 'var(--fst-red)' },
+  { id: 'growth', label: 'Рост', icon: 'pi pi-trending-up', color: 'var(--fst-purple)' },
+  { id: 'exit', label: 'Выход', icon: 'pi pi-sign-out', color: 'var(--fst-cyan)' },
 ]
 
 const phaseTimeline = computed(() => {
@@ -2305,11 +2294,11 @@ const ontologyBlocks = computed(() => {
 
 // ── Dashboard: All events flat (for live feed) ──────────────────────────────
 const PHASE_COLORS = {
-  init: '#22c55e', monitor: '#3b82f6', milestone: '#f97316',
-  alert: '#ef4444', growth: '#8b5cf6', exit: '#06b6d4',
-  source: '#64748b', negotiate: '#f59e0b', dd: '#6366f1',
-  close: '#10b981', 'post-close': '#0ea5e9', fundraise: '#a855f7',
-  deploy: '#14b8a6', return: '#ec4899',
+  init: 'var(--fst-green)', monitor: 'var(--fst-blue)', milestone: 'var(--fst-brand)',
+  alert: 'var(--fst-red)', growth: 'var(--fst-purple)', exit: 'var(--fst-cyan)',
+  source: 'var(--p-text-muted-color)', negotiate: 'var(--fst-brand)', dd: 'var(--fst-purple)',
+  close: 'var(--fst-green)', 'post-close': 'var(--fst-blue)', fundraise: 'var(--fst-purple)',
+  deploy: 'var(--fst-cyan)', return: 'var(--fst-red)',
 }
 
 const allEventsFlat = computed(() => {
@@ -2323,9 +2312,9 @@ const allEventsFlat = computed(() => {
         id: ev.id,
         label: def.label || ev.type.replace(/_/g, ' '),
         companyName: companyDisplayName(c),
-        color: def.color || '#64748b',
+        color: def.color || 'var(--p-text-muted-color)',
         phase: def.phase || 'other',
-        phaseColor: PHASE_COLORS[def.phase] || '#64748b',
+        phaseColor: PHASE_COLORS[def.phase] || 'var(--p-text-muted-color)',
         ts: ev.ts,
         dateStr: new Date(ev.ts).toLocaleDateString('ru-RU'),
       })
@@ -4512,10 +4501,10 @@ function initDashboardCharts() {
 <style scoped>
 /* ─── Topbar ─── */
 .fsp-header-compact { display: flex; align-items: center; gap: 6px; }
-.fsp-live-dot { font-size: 6px; }
-.fsp-fund-name { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
-.fsp-counter { font-size: 11px; font-weight: 700; }
-.fsp-counter-sep { font-size: 10px; color: var(--p-text-muted-color); }
+.fsp-live-dot { font-size: 0.5rem; }
+.fsp-fund-name { font-size: 0.83rem; font-weight: 600; color: var(--p-text-color); }
+.fsp-counter { font-size: 0.78rem; font-weight: 700; }
+.fsp-counter-sep { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .fsp-icon-action {
   display: flex; align-items: center; justify-content: center;
   width: 26px; height: 26px; border-radius: 6px;
@@ -4523,16 +4512,16 @@ function initDashboardCharts() {
   background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   cursor: pointer; transition: all 0.15s;
-  font-size: 12px;
+  font-size: 0.83rem;
   &:hover { color: var(--p-primary-color); border-color: var(--p-primary-color); }
 }
 
 /* ─── Metrics strip ─── */
 .fsp-metrics { margin: -20px -20px 0; border-bottom: 1px solid var(--p-content-border-color); }
 .fsp-metrics .fst-metric-item { padding: 6px 10px; }
-.fsp-metrics .fst-metric-item-val { font-size: 14px; }
-.fsp-metrics .fst-metric-item-label { font-size: 9px; }
-.fsp-metrics .fst-metric-item-icon { font-size: 12px; }
+.fsp-metrics .fst-metric-item-val { font-size: 0.93rem; }
+.fsp-metrics .fst-metric-item-label { font-size: 0.7rem; }
+.fsp-metrics .fst-metric-item-icon { font-size: 0.83rem; }
 
 /* ─── Filters bar ─── */
 .fsp-filter-bar { display: flex; align-items: center; gap: 6px; padding: 6px 0; flex-wrap: wrap; }
@@ -4540,45 +4529,7 @@ function initDashboardCharts() {
 .fsp-search-wrap { position: relative; display: flex; align-items: center; }
 .fsp-search-wrap i { position: absolute; left: 8px; }
 .fsp-search { padding-left: 26px !important; width: 160px; }
-.fsp-view-tabs {
-  display: flex; gap: 2px; flex-shrink: 0;
-  background: var(--p-surface-ground);
-  border-radius: 8px;
-  padding: 2px;
-}
-.fsp-tab-btn {
-  display: flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 500;
-  padding: 3px 10px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--p-text-muted-color);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-
-  i { font-size: 11px; }
-
-  &:hover {
-    color: var(--p-text-color);
-    background: var(--p-surface-card);
-  }
-  &.active {
-    color: var(--tab-color, var(--p-primary-color));
-    background: var(--p-surface-card);
-    box-shadow: 0 1px 3px color-mix(in srgb, var(--tab-color, var(--p-primary-color)) 20%, transparent);
-
-    i { color: var(--tab-color, var(--p-primary-color)); }
-  }
-
-  &.fsp-ai-trigger i { color: var(--fst-purple); }
-}
-.fsp-tabs-sep {
-  width: 1px; height: 16px;
-  background: var(--p-content-border-color);
-  margin: 0 2px;
-}
+/* View tabs — PrimeVue SelectButton (per guideline) */
 .fsp-filter-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
 /* ─── Mode buttons (Текущее / Демо) ─── */
@@ -4595,7 +4546,7 @@ function initDashboardCharts() {
   background: var(--p-surface-card);
   color: var(--p-text-muted-color);
   cursor: pointer; transition: all 0.2s;
-  font-size: 13px;
+  font-size: 0.88rem;
 }
 .fsp-mode-btn:hover {
   color: var(--p-text-color);
@@ -4617,7 +4568,7 @@ function initDashboardCharts() {
   border: 1px solid var(--p-content-border-color);
   background: var(--p-surface-card);
   color: var(--p-text-muted-color);
-  font-size: 10px; font-weight: 600;
+  font-size: 0.75rem; font-weight: 600;
   cursor: pointer; transition: all 0.15s;
 }
 .fsp-speed-btn:hover { color: var(--p-text-color); border-color: var(--fst-brand); }
@@ -4627,18 +4578,28 @@ function initDashboardCharts() {
   background: color-mix(in srgb, var(--fst-brand) 12%, transparent);
 }
 
+/* ═══ Page content wrapper (guideline) ═══ */
+.page-content {
+  display: flex; flex-direction: column; gap: 16px; padding-top: 16px;
+}
+.page-card {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px; padding: 20px;
+}
+
 /* ═══ Dashboard ═══ */
 .fsp-dash {
-  display: flex; flex-direction: column; gap: 6px; padding-top: 4px;
+  display: flex; flex-direction: column; gap: 16px; padding-top: 16px;
 }
 
 /* ═══ Инфографика (live) ═══ */
 .fsp-infograph {
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex; flex-direction: column; gap: 16px;
 }
 .fsp-ig-kpis {
   display: flex; gap: 0; background: var(--p-surface-card);
-  border: 1px solid var(--p-content-border-color); border-radius: 8px;
+  border: 1px solid var(--p-content-border-color); border-radius: 12px;
   overflow: hidden;
 }
 .fsp-ig-kpi {
@@ -4646,12 +4607,12 @@ function initDashboardCharts() {
   border-right: 1px solid var(--p-content-border-color);
 }
 .fsp-ig-kpi:last-child { border-right: none; }
-.fsp-ig-kpi-val { font-size: 22px; font-weight: 800; line-height: 1; }
-.fsp-ig-kpi-icon { font-size: 14px; color: var(--p-text-muted-color); opacity: 0.6; margin-bottom: 2px; }
-.fsp-ig-kpi-label { font-size: 9px; color: var(--p-text-muted-color); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.05em; }
+.fsp-ig-kpi-val { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.fsp-ig-kpi-icon { font-size: 0.93rem; color: var(--p-text-muted-color); opacity: 0.6; margin-bottom: 2px; }
+.fsp-ig-kpi-label { font-size: 0.7rem; color: var(--p-text-muted-color); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.05em; }
 /* Benchmark baseline under KPI */
 .fsp-benchmark {
-  font-size: 8px; color: var(--p-text-muted-color); opacity: 0.5;
+  font-size: 0.65rem; color: var(--p-text-muted-color); opacity: 0.5;
   margin-top: 2px; letter-spacing: 0.03em; font-style: italic;
 }
 .fsp-ig-body {
@@ -4662,15 +4623,15 @@ function initDashboardCharts() {
 .fsp-ig-col {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 8px; padding: 10px 12px;
+  border-radius: 12px; padding: 20px;
   min-width: 0; overflow: hidden;
   max-height: calc(100vh - 490px);
   overflow-y: auto;
 }
-.fsp-ig-section-title {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
+.page-section-title {
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.07em; color: var(--p-text-muted-color);
-  margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 5px;
 }
 /* Health bar */
 .fsp-ig-health-bar {
@@ -4678,25 +4639,25 @@ function initDashboardCharts() {
 }
 .fsp-ig-hb-seg { min-width: 4px; border-radius: 2px; }
 .fsp-ig-health-legend {
-  display: flex; gap: 10px; margin-top: 4px; font-size: 9px; color: var(--p-text-muted-color);
+  display: flex; gap: 10px; margin-top: 4px; font-size: 0.7rem; color: var(--p-text-muted-color);
 }
 .fsp-ig-health-legend span { display: flex; align-items: center; gap: 3px; }
 /* Субфонды */
 .fsp-ig-subfunds { display: flex; flex-direction: column; gap: 3px; }
 .fsp-ig-sf-row { display: flex; align-items: center; gap: 6px; }
-.fsp-ig-sf-icon { font-size: 12px; opacity: 0.6; flex-shrink: 0; }
-.fsp-ig-sf-name { font-size: 10px; color: var(--p-text-color); width: 60px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fsp-ig-sf-icon { font-size: 0.83rem; opacity: 0.6; flex-shrink: 0; }
+.fsp-ig-sf-name { font-size: 0.75rem; color: var(--p-text-color); width: 60px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fsp-ig-sf-bar-wrap { flex: 1; height: 6px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden; }
 .fsp-ig-sf-bar { height: 100%; border-radius: 3px; }
-.fsp-ig-sf-val { font-size: 10px; font-weight: 700; color: var(--p-text-color); width: 20px; text-align: right; }
+.fsp-ig-sf-val { font-size: 0.75rem; font-weight: 700; color: var(--p-text-color); width: 20px; text-align: right; }
 /* Лента */
 .fsp-ig-feed { display: flex; flex-direction: column; gap: 2px; }
 .fsp-ig-feed-item { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
 .fsp-ig-feed-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .fsp-ig-feed-body { min-width: 0; }
-.fsp-ig-feed-label { font-size: 10px; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fsp-ig-feed-meta { font-size: 9px; color: var(--p-text-muted-color); }
-.fsp-ig-no-data { font-size: 10px; color: var(--p-text-muted-color); font-style: italic; padding: 8px 0; }
+.fsp-ig-feed-label { font-size: 0.75rem; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fsp-ig-feed-meta { font-size: 0.7rem; color: var(--p-text-muted-color); }
+.fsp-ig-no-data { font-size: 0.75rem; color: var(--p-text-muted-color); font-style: italic; padding: 8px 0; }
 
 /* Heatmap */
 .fsp-heatmap { display: flex; flex-wrap: wrap; gap: 3px; }
@@ -4717,24 +4678,24 @@ function initDashboardCharts() {
 }
 .fsp-heat-anomaly::after {
   content: '!'; position: absolute; top: 1px; right: 2px;
-  font-size: 7px; font-weight: 900; color: var(--fst-purple);
+  font-size: 0.6rem; font-weight: 900; color: var(--fst-purple);
   line-height: 1;
 }
 @keyframes fsp-anomaly-pulse {
   0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--fst-purple) 40%, transparent); }
   50% { box-shadow: 0 0 6px 1px color-mix(in srgb, var(--fst-purple) 60%, transparent); }
 }
-.fsp-heat-icon { font-size: 12px; opacity: 0.8; margin-bottom: 1px; }
-.fsp-heat-name { font-size: 7px; color: var(--p-text-color); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fsp-heat-val { font-size: 10px; font-weight: 700; color: var(--p-text-color); margin-top: 1px; }
+.fsp-heat-icon { font-size: 0.83rem; opacity: 0.8; margin-bottom: 1px; }
+.fsp-heat-name { font-size: 0.6rem; color: var(--p-text-color); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fsp-heat-val { font-size: 0.75rem; font-weight: 700; color: var(--p-text-color); margin-top: 1px; }
 
 /* Subfund breakdown */
 .fsp-subfund-list { display: flex; flex-direction: column; gap: 6px; }
 .fsp-sf-row { display: flex; align-items: center; gap: 8px; }
-.fsp-sf-name { font-size: 11px; color: var(--p-text-color); width: 100px; flex-shrink: 0; }
+.fsp-sf-name { font-size: 0.78rem; color: var(--p-text-color); width: 100px; flex-shrink: 0; }
 .fsp-sf-bar-wrap { flex: 1; height: 8px; background: var(--p-content-border-color); border-radius: 4px; overflow: hidden; }
 .fsp-sf-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
-.fsp-sf-count { font-size: 12px; font-weight: 700; color: var(--p-text-color); width: 24px; text-align: right; }
+.fsp-sf-count { font-size: 0.83rem; font-weight: 700; color: var(--p-text-color); width: 24px; text-align: right; }
 
 /* Top lists */
 .fsp-top-list { display: flex; flex-direction: column; gap: 4px; }
@@ -4742,29 +4703,29 @@ function initDashboardCharts() {
   display: flex; justify-content: space-between; align-items: center;
   padding: 5px 8px; border-radius: 6px; cursor: pointer; transition: background 0.15s;
 }
-.fsp-top-row:hover { background: var(--p-surface-ground); }
-.fsp-top-name { font-size: 12px; color: var(--p-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.fsp-top-val { font-size: 12px; font-weight: 700; flex-shrink: 0; margin-left: 8px; }
+.fsp-top-row:hover { background: var(--p-surface-card); }
+.fsp-top-name { font-size: 0.83rem; color: var(--p-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.fsp-top-val { font-size: 0.83rem; font-weight: 700; flex-shrink: 0; margin-left: 8px; }
 
 /* Ontology blocks */
 .fsp-ontology-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 .fsp-onto-block {
   flex: 1; min-width: 180px;
-  background: var(--p-surface-ground); border-radius: 8px; padding: 10px;
+  background: var(--p-surface-card); border-radius: 12px; padding: 10px;
 }
 .fsp-onto-phase {
-  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--p-text-muted-color); margin-bottom: 6px; padding-bottom: 4px;
   border-bottom: 2px solid var(--p-content-border-color);
 }
 .fsp-onto-events { display: flex; flex-direction: column; gap: 3px; }
 .fsp-onto-event {
-  display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--p-text-color);
+  display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--p-text-color);
   padding: 2px 4px; border-radius: 3px; cursor: default;
 }
 .fsp-onto-event:hover { background: var(--p-surface-card); }
 .fsp-onto-count {
-  margin-left: auto; font-size: 9px; font-weight: 700;
+  margin-left: auto; font-size: 0.7rem; font-weight: 700;
   background: var(--p-primary-color); color: white; border-radius: 8px; padding: 0 4px;
 }
 
@@ -4777,9 +4738,9 @@ function initDashboardCharts() {
   padding: 8px 10px; margin-bottom: 8px;
   border-bottom: 3px solid var(--p-content-border-color);
 }
-.fsp-pipe-title { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
+.fsp-pipe-title { font-size: 0.83rem; font-weight: 600; color: var(--p-text-color); }
 .fsp-pipe-count {
-  margin-left: auto; font-size: 11px; font-weight: 700; color: white;
+  margin-left: auto; font-size: 0.78rem; font-weight: 700; color: white;
   border-radius: 10px; padding: 1px 7px;
 }
 .fsp-pipe-cards { display: flex; flex-direction: column; gap: 6px; }
@@ -4788,22 +4749,24 @@ function initDashboardCharts() {
   border-radius: 6px; padding: 8px 10px; cursor: pointer; transition: border-color 0.15s;
 }
 .fsp-pipe-card:hover { border-color: var(--p-primary-color); }
-.fsp-pipe-card-name { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
-.fsp-pipe-card-meta { font-size: 10px; color: var(--p-text-muted-color); display: flex; gap: 8px; margin-top: 2px; }
-.fsp-pipe-empty { font-size: 11px; color: var(--p-text-muted-color); text-align: center; padding: 12px; }
+.fsp-pipe-card-name { font-size: 0.83rem; font-weight: 600; color: var(--p-text-color); }
+.fsp-pipe-card-meta { font-size: 0.75rem; color: var(--p-text-muted-color); display: flex; gap: 8px; margin-top: 2px; }
+.fsp-pipe-empty { font-size: 0.78rem; color: var(--p-text-muted-color); text-align: center; padding: 12px; }
 
 /* ═══ View panels ═══ */
 .fsp-view-panel {
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
-  border-radius: 8px; padding: 16px;
-  background: var(--p-surface-card); min-height: 300px;
+  border-radius: 12px; padding: 20px;
+  min-height: 300px;
 }
 
 /* ═══ Monitor body ═══ */
 .fsp-body {
   display: grid; grid-template-columns: 1fr 380px; gap: 0;
   min-height: 0; border: 1px solid var(--p-content-border-color);
-  border-radius: 8px; overflow: hidden;
+  border-radius: 12px; overflow: hidden;
+  background: var(--p-surface-card);
 }
 .fsp-companies { overflow-y: auto; padding: 12px; }
 .fsp-companies-label { margin-bottom: 10px; }
@@ -4813,8 +4776,8 @@ function initDashboardCharts() {
   display: flex; align-items: center; gap: 10px;
   background: color-mix(in srgb, var(--fst-red) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--fst-red) 40%, transparent);
-  border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;
-  font-size: 12px; color: var(--p-text-color); flex-wrap: wrap;
+  border-radius: 12px; padding: 10px 14px; margin-bottom: 12px;
+  font-size: 0.83rem; color: var(--p-text-color); flex-wrap: wrap;
 }
 
 /* Cards grid */
@@ -4823,7 +4786,7 @@ function initDashboardCharts() {
 /* Card */
 .fsp-card {
   background: transparent; border: 1px solid var(--p-content-border-color);
-  border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.15s; position: relative;
+  border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.15s; position: relative;
 }
 .fsp-card:hover { border-color: var(--p-primary-color); }
 .fsp-card.selected { border-color: var(--p-primary-color); box-shadow: 0 0 0 2px color-mix(in srgb, var(--p-primary-color) 20%, transparent); }
@@ -4833,39 +4796,39 @@ function initDashboardCharts() {
 .fsp-card.is-review   { border-style: dashed; }
 
 .fsp-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.fsp-card-name { font-weight: 600; font-size: 13px; color: var(--p-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; display: flex; align-items: center; gap: 5px; }
-.fsp-card-icon { font-size: 16px; opacity: 0.7; flex-shrink: 0; }
+.fsp-card-name { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; display: flex; align-items: center; gap: 5px; }
+.fsp-card-icon { font-size: 1rem; opacity: 0.7; flex-shrink: 0; }
 .fsp-card-badges { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .fsp-traffic-light { width: 10px; height: 10px; border-radius: 50%; }
-.fsp-card-stage { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 8px; }
+.fsp-card-stage { font-size: 0.78rem; color: var(--p-text-muted-color); margin-bottom: 8px; }
 .fsp-card-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; }
 .fsp-card-metric { text-align: center; }
-.fsp-m-label { font-size: 9px; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 3px; }
-.fsp-m-icon { font-size: 10px; opacity: 0.7; }
-.fsp-m-val { font-size: 13px; font-weight: 600; }
+.fsp-m-label { font-size: 0.7rem; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 3px; }
+.fsp-m-icon { font-size: 0.75rem; opacity: 0.7; }
+.fsp-m-val { font-size: 0.88rem; font-weight: 600; }
 .fsp-health-bar-wrap { height: 6px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden; position: relative; margin-bottom: 6px; }
 .fsp-health-bar { height: 100%; border-radius: 3px; transition: width 0.5s; }
-.fsp-health-val { position: absolute; right: 0; top: -14px; font-size: 10px; color: var(--p-text-muted-color); }
+.fsp-health-val { position: absolute; right: 0; top: -14px; font-size: 0.75rem; color: var(--p-text-muted-color); }
 
 .fsp-card-footer-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
 .fsp-hist-btn {
   background: none; border: 1px solid var(--p-content-border-color); border-radius: 6px;
-  padding: 2px 8px; font-size: 10px; color: var(--p-text-muted-color); cursor: pointer;
+  padding: 2px 8px; font-size: 0.75rem; color: var(--p-text-muted-color); cursor: pointer;
   display: flex; align-items: center; gap: 4px; transition: background .15s, color .15s;
 }
-.fsp-hist-btn:hover { background: var(--p-surface-ground); color: var(--p-text-color); }
+.fsp-hist-btn:hover { background: var(--p-surface-card); color: var(--p-text-color); }
 
 /* Detail panel */
 .fsp-detail {
   border-left: 1px solid var(--p-content-border-color);
-  overflow-y: auto; padding: 12px; background: var(--p-surface-ground);
+  overflow-y: auto; padding: 20px; background: var(--p-surface-card);
 }
 /* ═══ Empty state → Portfolio summary ═══ */
 .fsp-detail-summary {
   padding: 16px; overflow-y: auto;
 }
 .fsp-sum-header {
-  display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 700;
   color: var(--p-text-color); margin-bottom: 16px;
 }
 .fsp-sum-stats {
@@ -4873,38 +4836,35 @@ function initDashboardCharts() {
 }
 .fsp-sum-stat {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
-  border-radius: 8px; padding: 12px; text-align: center;
+  border-radius: 12px; padding: 12px; text-align: center;
 }
-.fsp-sum-stat-val { font-size: 22px; font-weight: 700; line-height: 1; }
-.fsp-sum-stat-label { font-size: 10px; color: var(--p-text-muted-color); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.fsp-sum-stat-val { font-size: 1.4rem; font-weight: 700; line-height: 1; }
+.fsp-sum-stat-label { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
 .fsp-sum-section { margin-bottom: 16px; }
-.fsp-sum-section-title {
-  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
-  color: var(--p-text-muted-color); margin-bottom: 8px;
-}
+/* .page-section-title → consolidated into .page-section-title */
 .fsp-sum-top-row {
   display: flex; align-items: center; gap: 6px; padding: 5px 0; cursor: pointer;
-  font-size: 12px; transition: background 0.2s;
+  font-size: 0.83rem; transition: background 0.2s;
 }
 .fsp-sum-top-row:hover { background: color-mix(in srgb, var(--p-primary-color) 8%, transparent); border-radius: 4px; }
 .fsp-sum-top-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fsp-sum-top-val { font-weight: 600; font-size: 11px; width: 50px; text-align: right; }
+.fsp-sum-top-val { font-weight: 600; font-size: 0.78rem; width: 50px; text-align: right; }
 .fsp-sum-top-bar-wrap { width: 60px; height: 4px; background: var(--p-content-border-color); border-radius: 2px; overflow: hidden; }
 .fsp-sum-top-bar { height: 100%; background: var(--fst-blue); border-radius: 2px; transition: width 0.5s ease; }
-.fsp-sum-sf-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 12px; }
+.fsp-sum-sf-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 0.83rem; }
 .fsp-sum-sf-name { flex: 1; }
-.fsp-sum-sf-count { font-weight: 600; color: var(--p-text-muted-color); font-size: 11px; width: 24px; text-align: right; }
+.fsp-sum-sf-count { font-weight: 600; color: var(--p-text-muted-color); font-size: 0.78rem; width: 24px; text-align: right; }
 .fsp-sum-sf-bar-wrap { width: 50px; height: 4px; background: var(--p-content-border-color); border-radius: 2px; overflow: hidden; }
 .fsp-sum-sf-bar { height: 100%; background: var(--fst-purple); border-radius: 2px; }
 .fsp-sum-hint {
   display: flex; align-items: center; gap: 6px; justify-content: center;
-  font-size: 11px; color: var(--p-text-muted-color); margin-top: 16px; padding-top: 12px;
+  font-size: 0.78rem; color: var(--p-text-muted-color); margin-top: 16px; padding-top: 12px;
   border-top: 1px solid var(--p-content-border-color);
 }
 
 /* ═══ Detail panel: description + quick facts ═══ */
 .fsp-detail-desc {
-  font-size: 12px; line-height: 1.5; color: var(--p-text-color); margin-bottom: 12px;
+  font-size: 0.83rem; line-height: 1.5; color: var(--p-text-color); margin-bottom: 12px;
   padding: 10px; background: color-mix(in srgb, var(--p-primary-color) 5%, transparent);
   border-radius: 6px; border-left: 3px solid var(--fst-purple);
 }
@@ -4912,34 +4872,34 @@ function initDashboardCharts() {
   display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
 }
 .fsp-qf {
-  display: flex; align-items: center; gap: 4px; font-size: 11px;
+  display: flex; align-items: center; gap: 4px; font-size: 0.78rem;
   padding: 3px 8px; border-radius: 4px;
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
   color: var(--p-text-color); white-space: nowrap;
 }
-.fsp-qf-icon { font-size: 12px; opacity: 0.6; }
+.fsp-qf-icon { font-size: 0.83rem; opacity: 0.6; }
 
 /* ═══ Health breakdown ═══ */
 .fsp-health-breakdown {
   display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px;
 }
 .fsp-hb-item {
-  display: flex; align-items: center; gap: 3px; font-size: 10px;
+  display: flex; align-items: center; gap: 3px; font-size: 0.75rem;
   padding: 2px 6px; border-radius: 3px;
 }
 .fsp-hb-item.good { background: color-mix(in srgb, var(--fst-green) 10%, transparent); color: var(--fst-green); }
 .fsp-hb-item.bad { background: color-mix(in srgb, var(--fst-red) 10%, transparent); color: var(--fst-red); }
-.fsp-hb-icon { font-size: 10px; }
+.fsp-hb-icon { font-size: 0.75rem; }
 .fsp-hb-val { font-weight: 600; }
 
 /* ═══ AI company summary ═══ */
 .fsp-ai-company-summary {
-  font-size: 12px; line-height: 1.6; color: var(--p-text-color);
+  font-size: 0.83rem; line-height: 1.6; color: var(--p-text-color);
   padding: 8px; border-radius: 6px;
   background: color-mix(in srgb, var(--fst-purple) 5%, transparent);
 }
 .fsp-ai-company-hint {
-  font-size: 11px; color: var(--p-text-muted-color); text-align: center; padding: 8px;
+  font-size: 0.78rem; color: var(--p-text-muted-color); text-align: center; padding: 8px;
 }
 
 /* ═══ Compare ═══ */
@@ -4947,7 +4907,7 @@ function initDashboardCharts() {
   display: flex; align-items: center; gap: 8px; padding: 8px 12px;
   background: color-mix(in srgb, var(--fst-purple) 8%, transparent);
   border: 1px solid var(--fst-purple); border-radius: 6px; margin-bottom: 8px;
-  font-size: 12px; color: var(--p-text-color);
+  font-size: 0.83rem; color: var(--p-text-color);
 }
 .fsp-card--compare { border-color: var(--fst-purple) !important; }
 .fsp-card-compare-check {
@@ -4955,27 +4915,27 @@ function initDashboardCharts() {
 }
 .fsp-compare-panel {
   border-left: 1px solid var(--p-content-border-color);
-  overflow-y: auto; padding: 16px; background: var(--p-surface-ground);
+  overflow-y: auto; padding: 16px; background: var(--p-surface-card);
 }
 .fsp-compare-header {
-  display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; font-size: 0.93rem; font-weight: 700;
   color: var(--p-text-color); margin-bottom: 14px;
 }
 .fsp-compare-grid {
-  display: grid; gap: 1px; font-size: 12px;
+  display: grid; gap: 1px; font-size: 0.83rem;
 }
 .fsp-cmp-label {
-  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--p-text-muted-color); padding: 6px 4px;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .fsp-cmp-company-name {
-  display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 11px;
+  display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 0.78rem;
   padding: 6px 4px; border-bottom: 1px solid var(--p-content-border-color);
   color: var(--p-text-color);
 }
 .fsp-cmp-val {
-  padding: 6px 4px; font-weight: 600; font-size: 12px;
+  padding: 6px 4px; font-weight: 600; font-size: 0.83rem;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 
@@ -4996,80 +4956,80 @@ function initDashboardCharts() {
 .fsp-card { position: relative; border-left: 2px solid var(--p-content-border-color); transition: border-left-width 0.3s, border-color 0.3s; }
 
 .fsp-detail-panel {
-  background: transparent; border: 1px solid var(--p-content-border-color);
-  border-radius: 8px; padding: 12px; margin-bottom: 10px;
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px;
 }
 .fsp-detail-panel-title {
-  display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; font-size: 0.83rem; font-weight: 600;
   color: var(--p-text-color); margin-bottom: 10px; padding-bottom: 6px;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .fsp-detail-company-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
-.fsp-detail-name { font-size: 14px; font-weight: 700; color: var(--p-text-color); }
-.fsp-detail-sub { font-size: 11px; color: var(--p-text-muted-color); margin-top: 2px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.fsp-detail-name { font-size: 0.93rem; font-weight: 700; color: var(--p-text-color); }
+.fsp-detail-sub { font-size: 0.78rem; color: var(--p-text-muted-color); margin-top: 2px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .fsp-detail-health-badge {
   width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
-  justify-content: center; font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
+  justify-content: center; font-size: 0.83rem; font-weight: 700; color: white; flex-shrink: 0;
 }
 
 /* KPI */
 .fsp-kpi-section { display: flex; flex-direction: column; gap: 6px; }
 .fsp-kpi-row { display: flex; align-items: center; gap: 8px; }
-.fsp-kpi-label { font-size: 11px; color: var(--p-text-muted-color); width: 70px; flex-shrink: 0; }
+.fsp-kpi-label { font-size: 0.78rem; color: var(--p-text-muted-color); width: 70px; flex-shrink: 0; }
 .fsp-kpi-bar-wrap { flex: 1; height: 6px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden; }
 .fsp-kpi-bar { height: 100%; border-radius: 3px; transition: width 0.5s; }
-.fsp-kpi-nums { font-size: 11px; width: 90px; text-align: right; flex-shrink: 0; }
+.fsp-kpi-nums { font-size: 0.78rem; width: 90px; text-align: right; flex-shrink: 0; }
 
 /* Real Metrics */
 .fsp-real-metrics { display: flex; flex-direction: column; gap: 4px; }
 .fsp-rm-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--p-content-border-color); }
 .fsp-rm-row:last-child { border-bottom: none; }
-.fsp-rm-label { font-size: 11px; color: var(--p-text-muted-color); }
-.fsp-rm-val { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
+.fsp-rm-label { font-size: 0.78rem; color: var(--p-text-muted-color); }
+.fsp-rm-val { font-size: 0.83rem; font-weight: 600; color: var(--p-text-color); }
 .fsp-rm-dynamics { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--p-content-border-color); }
-.fsp-rm-dyn-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--p-text-muted-color); margin-bottom: 6px; }
+/* .page-section-title → consolidated into .page-section-title */
 .fsp-rm-dyn-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-.fsp-rm-dyn-year { font-size: 10px; color: var(--p-text-muted-color); width: 32px; flex-shrink: 0; }
+.fsp-rm-dyn-year { font-size: 0.75rem; color: var(--p-text-muted-color); width: 32px; flex-shrink: 0; }
 .fsp-rm-dyn-bar-wrap { flex: 1; height: 5px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden; }
 .fsp-rm-dyn-bar { height: 100%; background: var(--fst-green); border-radius: 3px; transition: width 0.3s; }
-.fsp-rm-dyn-val { font-size: 10px; font-weight: 600; color: var(--fst-green); width: 48px; text-align: right; }
+.fsp-rm-dyn-val { font-size: 0.75rem; font-weight: 600; color: var(--fst-green); width: 48px; text-align: right; }
 
 /* Events */
 .fsp-events { display: flex; flex-direction: column; gap: 6px; }
-.fsp-tl-count { background: var(--p-primary-color); color: white; border-radius: 10px; padding: 0 5px; font-size: 10px; }
-.fsp-add-event-dialog { margin-top: 0.6rem; padding: 0.6rem; background: var(--p-surface-ground); border-radius: 8px; border: 1px solid var(--p-content-border-color); }
+.fsp-tl-count { background: var(--p-primary-color); color: white; border-radius: 10px; padding: 0 5px; font-size: 0.75rem; }
+.fsp-add-event-dialog { margin-top: 0.6rem; padding: 0.6rem; background: var(--p-surface-card); border-radius: 8px; border: 1px solid var(--p-content-border-color); }
 .fsp-aed-title { font-size: 0.78rem; font-weight: 600; color: var(--p-text-color); margin-bottom: 0.4rem; }
 .fsp-event { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--p-content-border-color); }
 .fsp-event:last-child { border-bottom: none; }
 .fsp-event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .fsp-event-body { flex: 1; }
-.fsp-event-title { font-size: 12px; color: var(--p-text-color); }
-.fsp-event-date { font-size: 10px; color: var(--p-text-muted-color); }
+.fsp-event-title { font-size: 0.83rem; color: var(--p-text-color); }
+.fsp-event-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
 
 /* Nav */
 .fsp-detail-nav { display: flex; gap: 8px; justify-content: center; }
 
 /* DataTable */
-.fsp-datatable { font-size: 12px; }
+.fsp-datatable { font-size: 0.83rem; }
 .fsp-dt-name { font-weight: 600; color: var(--p-primary-color); cursor: pointer; }
 .fsp-dt-name:hover { text-decoration: underline; }
-.fsp-dt-sub { font-size: 10px; color: var(--p-text-muted-color); }
+.fsp-dt-sub { font-size: 0.75rem; color: var(--p-text-muted-color); }
 
 /* Chat */
 .fsp-chat-panel { display: flex; flex-direction: column; }
-.fsp-chat-hint { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 12px; line-height: 1.5; }
+.fsp-chat-hint { font-size: 0.78rem; color: var(--p-text-muted-color); margin-bottom: 12px; line-height: 1.5; }
 .fsp-chat-messages {
   flex: 1; overflow-y: auto; max-height: 400px; display: flex; flex-direction: column; gap: 10px;
-  margin-bottom: 12px; padding: 8px; background: var(--p-surface-ground);
+  margin-bottom: 12px; padding: 8px; background: var(--p-surface-card);
   border-radius: 8px; border: 1px solid var(--p-content-border-color); min-height: 120px;
 }
 .fsp-chat-msg { padding: 8px 12px; border-radius: 8px; max-width: 85%; }
 .fsp-chat-msg.user { background: color-mix(in srgb, var(--p-primary-color) 12%, transparent); align-self: flex-end; }
 .fsp-chat-msg.assistant { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); align-self: flex-start; }
-.fsp-chat-msg-role { font-size: 10px; font-weight: 600; color: var(--p-text-muted-color); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-.fsp-chat-msg-text { font-size: 12px; color: var(--p-text-color); line-height: 1.6; }
+.fsp-chat-msg-role { font-size: 0.75rem; font-weight: 600; color: var(--p-text-muted-color); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.fsp-chat-msg-text { font-size: 0.83rem; color: var(--p-text-color); line-height: 1.6; }
 .fsp-chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
-.fsp-chat-input { flex: 1; font-size: 12px; }
+.fsp-chat-input { flex: 1; font-size: 0.83rem; }
 
 /* Chart containers */
 .fsp-chart-wrap { position: relative; height: 110px; padding: 0; }
@@ -5081,11 +5041,11 @@ function initDashboardCharts() {
 .fsp-feed-item:last-child { border-bottom: none; }
 .fsp-feed-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .fsp-feed-body { flex: 1; min-width: 0; }
-.fsp-feed-label { font-size: 11px; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fsp-feed-meta { font-size: 9px; color: var(--p-text-muted-color); }
+.fsp-feed-label { font-size: 0.78rem; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fsp-feed-meta { font-size: 0.7rem; color: var(--p-text-muted-color); }
 
 /* Empty hints */
-.fsp-empty-hint { font-size: 11px; color: var(--p-text-muted-color); text-align: center; padding: 20px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.fsp-empty-hint { font-size: 0.78rem; color: var(--p-text-muted-color); text-align: center; padding: 20px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
 /* ═══ Signal Board ═══ */
 /* ═══ AI Navigator (icon + hover chips) ═══ */
@@ -5099,7 +5059,7 @@ function initDashboardCharts() {
   border: 1px solid color-mix(in srgb, var(--fst-purple) 30%, var(--p-content-border-color));
   background: color-mix(in srgb, var(--fst-purple) 8%, var(--p-surface-card));
   color: var(--fst-purple);
-  font-size: 14px;
+  font-size: 0.93rem;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.25s ease;
@@ -5133,7 +5093,7 @@ function initDashboardCharts() {
 }
 .fsp-ai-chip {
   display: flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 600;
+  font-size: 0.75rem; font-weight: 600;
   padding: 4px 10px;
   border-radius: 14px;
   border: 1px solid var(--p-content-border-color);
@@ -5143,7 +5103,7 @@ function initDashboardCharts() {
   white-space: nowrap;
   transition: all 0.2s ease;
 }
-.fsp-ai-chip i { font-size: 10px; color: var(--fst-purple); }
+.fsp-ai-chip i { font-size: 0.75rem; color: var(--fst-purple); }
 .fsp-ai-chip:hover {
   background: color-mix(in srgb, var(--fst-purple) 12%, transparent);
   border-color: var(--fst-purple);
@@ -5173,13 +5133,13 @@ function initDashboardCharts() {
 .fsp-ctx-kpi {
   display: flex; align-items: center; gap: 5px;
 }
-.fsp-ctx-icon { font-size: 13px; opacity: 0.5; }
-.fsp-ctx-val { font-size: 14px; font-weight: 700; line-height: 1; }
-.fsp-ctx-label { font-size: 10px; color: var(--p-text-muted-color); text-transform: uppercase; letter-spacing: 0.04em; }
+.fsp-ctx-icon { font-size: 0.88rem; opacity: 0.5; }
+.fsp-ctx-val { font-size: 0.93rem; font-weight: 700; line-height: 1; }
+.fsp-ctx-label { font-size: 0.75rem; color: var(--p-text-muted-color); text-transform: uppercase; letter-spacing: 0.04em; }
 .fsp-ctx-health {
   display: flex; align-items: center; gap: 4px;
   margin-left: auto;
-  font-size: 11px; font-weight: 600;
+  font-size: 0.78rem; font-weight: 600;
   color: var(--p-text-muted-color);
 }
 .fsp-ctx-dot {
@@ -5220,40 +5180,40 @@ function initDashboardCharts() {
   display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
 }
 .fsp-aib-header i { font-size: 15px; opacity: 0.85; }
-.fsp-aib-title { font-size: 13px; font-weight: 700; color: var(--p-text-color); letter-spacing: -0.01em; }
-.fsp-aib-text { font-size: 12px; line-height: 1.5; color: var(--p-text-color); white-space: pre-wrap; }
+.fsp-aib-title { font-size: 0.88rem; font-weight: 700; color: var(--p-text-color); letter-spacing: -0.01em; }
+.fsp-aib-text { font-size: 0.83rem; line-height: 1.5; color: var(--p-text-color); white-space: pre-wrap; }
 
 /* Ranking */
 .fsp-aib-ranking { display: flex; flex-direction: column; gap: 4px; }
 .fsp-aib-rank-row {
   display: flex; align-items: center; gap: 8px; padding: 4px 8px;
-  border-radius: 6px; background: var(--p-surface-ground); font-size: 12px;
+  border-radius: 6px; background: var(--p-surface-card); font-size: 0.83rem;
 }
 .fsp-aib-rank-pos {
   width: 18px; height: 18px; border-radius: 50%;
   background: color-mix(in srgb, var(--block-color) 15%, transparent);
-  color: var(--block-color); font-size: 10px; font-weight: 700;
+  color: var(--block-color); font-size: 0.75rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .fsp-aib-rank-name { flex: 1; color: var(--p-text-color); }
-.fsp-aib-rank-val { font-weight: 700; font-size: 12px; white-space: nowrap; }
+.fsp-aib-rank-val { font-weight: 700; font-size: 0.83rem; white-space: nowrap; }
 
 /* Metric */
 .fsp-aib-metric-val { font-size: 28px; font-weight: 800; line-height: 1; margin: 4px 0; }
-.fsp-aib-metric-sub { font-size: 11px; color: var(--p-text-muted-color); }
+.fsp-aib-metric-sub { font-size: 0.78rem; color: var(--p-text-muted-color); }
 
 /* Comparison */
 .fsp-aib-compare {
   display: flex; align-items: center; gap: 12px; justify-content: center; margin: 8px 0;
 }
 .fsp-aib-compare-side { text-align: center; }
-.fsp-aib-compare-val { font-size: 22px; font-weight: 800; line-height: 1; }
-.fsp-aib-compare-label { font-size: 10px; color: var(--p-text-muted-color); margin-top: 4px; }
+.fsp-aib-compare-val { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.fsp-aib-compare-label { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 4px; }
 .fsp-aib-compare-vs {
-  font-size: 11px; font-weight: 700; color: var(--p-text-muted-color);
-  padding: 4px 8px; border-radius: 8px; background: var(--p-surface-ground);
+  font-size: 0.78rem; font-weight: 700; color: var(--p-text-muted-color);
+  padding: 4px 8px; border-radius: 8px; background: var(--p-surface-card);
 }
-.fsp-aib-verdict { font-size: 11px; color: var(--p-text-muted-color); text-align: center; margin-top: 6px; font-style: italic; }
+.fsp-aib-verdict { font-size: 0.78rem; color: var(--p-text-muted-color); text-align: center; margin-top: 6px; font-style: italic; }
 
 /* Alert block */
 .fsp-ai-block--alert { border-top-color: var(--fst-red); background: color-mix(in srgb, var(--fst-red) 3%, var(--p-surface-card)); }
@@ -5262,15 +5222,15 @@ function initDashboardCharts() {
 /* Recommendation */
 .fsp-aib-rec-items { display: flex; flex-direction: column; gap: 4px; }
 .fsp-aib-rec-item {
-  display: flex; align-items: flex-start; gap: 6px; font-size: 12px;
+  display: flex; align-items: flex-start; gap: 6px; font-size: 0.83rem;
   padding: 4px 0; color: var(--p-text-color); line-height: 1.4;
 }
 
 /* Table */
-.fsp-aib-table { font-size: 11px; }
+.fsp-aib-table { font-size: 0.78rem; }
 .fsp-aib-table-head {
   display: flex; gap: 4px; padding: 4px 6px; font-weight: 700;
-  color: var(--p-text-muted-color); text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px;
+  color: var(--p-text-muted-color); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .fsp-aib-table-head span { flex: 1; }
@@ -5288,19 +5248,19 @@ function initDashboardCharts() {
 
 /* Horizontal bars (CSS-only) */
 .fsp-aib-hbars { display: flex; flex-direction: column; gap: 6px; }
-.fsp-aib-hbar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.fsp-aib-hbar-row { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; }
 .fsp-aib-hbar-label { width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--p-text-color); flex-shrink: 0; }
-.fsp-aib-hbar-track { flex: 1; height: 16px; background: var(--p-surface-ground); border-radius: 4px; overflow: hidden; }
+.fsp-aib-hbar-track { flex: 1; height: 16px; background: var(--p-surface-card); border-radius: 4px; overflow: hidden; }
 .fsp-aib-hbar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease-out; min-width: 2px; }
 .fsp-aib-hbar-val { font-weight: 700; white-space: nowrap; min-width: 50px; text-align: right; color: var(--p-text-color); }
 
 /* Gauge */
 .fsp-aib-gauge { text-align: center; }
-.fsp-aib-gauge-track { height: 14px; background: var(--p-surface-ground); border-radius: 7px; overflow: hidden; margin-bottom: 8px; }
+.fsp-aib-gauge-track { height: 14px; background: var(--p-surface-card); border-radius: 7px; overflow: hidden; margin-bottom: 8px; }
 .fsp-aib-gauge-fill { height: 100%; border-radius: 7px; transition: width 0.8s ease-out; }
 .fsp-aib-gauge-labels { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
 .fsp-aib-gauge-val { font-size: 28px; font-weight: 800; line-height: 1; }
-.fsp-aib-gauge-max { font-size: 14px; color: var(--p-text-muted-color); }
+.fsp-aib-gauge-max { font-size: 0.93rem; color: var(--p-text-muted-color); }
 
 /* Chart blocks — constrained widths */
 .fsp-ai-block--bar_chart,
@@ -5326,12 +5286,12 @@ function initDashboardCharts() {
 .fsp-phase-drill-list { display: flex; flex-wrap: wrap; gap: 4px; }
 .fsp-phase-drill-item {
   display: flex; align-items: center; gap: 6px; padding: 4px 10px;
-  border-radius: 6px; cursor: pointer; font-size: 11px;
-  background: var(--p-surface-ground); transition: all 0.15s;
+  border-radius: 6px; cursor: pointer; font-size: 0.78rem;
+  background: var(--p-surface-card); transition: all 0.15s;
 }
-.fsp-phase-drill-item:hover { background: color-mix(in srgb, var(--p-primary-color) 10%, var(--p-surface-ground)); }
+.fsp-phase-drill-item:hover { background: color-mix(in srgb, var(--p-primary-color) 10%, var(--p-surface-card)); }
 .fsp-phase-drill-name { font-weight: 600; color: var(--p-text-color); }
-.fsp-phase-drill-sub { color: var(--p-text-muted-color); font-size: 10px; }
+.fsp-phase-drill-sub { color: var(--p-text-muted-color); font-size: 0.75rem; }
 .fsp-phase-node.focused .fsp-phase-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--fst-blue) 40%, transparent); transform: scale(1.15); }
 .fsp-phase-node.focused .fsp-phase-label { color: var(--p-text-color); font-weight: 600; }
 
@@ -5342,22 +5302,22 @@ function initDashboardCharts() {
   border-radius: 8px; border-left: 3px solid var(--fst-purple); overflow-x: auto;
 }
 .fsp-signal-strip-label {
-  display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 700;
   color: var(--fst-purple); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em;
 }
 .fsp-signal-count {
   background: var(--fst-purple); color: white; border-radius: 8px; padding: 0 5px;
-  font-size: 9px; margin-left: 2px;
+  font-size: 0.7rem; margin-left: 2px;
 }
 .fsp-signal-chips { display: flex; gap: 4px; overflow-x: auto; }
 .fsp-signal-chip {
   display: flex; align-items: center; gap: 4px; padding: 3px 8px;
-  border-radius: 6px; font-size: 10px; cursor: pointer;
-  background: var(--p-surface-ground); border: 1px solid transparent;
+  border-radius: 6px; font-size: 0.75rem; cursor: pointer;
+  background: var(--p-surface-card); border: 1px solid transparent;
   white-space: nowrap; transition: all 0.15s;
 }
 .fsp-signal-chip:hover { border-color: var(--p-primary-color); }
-.fsp-signal-chip.critical { background: color-mix(in srgb, var(--fst-red) 8%, var(--p-surface-ground)); }
+.fsp-signal-chip.critical { background: color-mix(in srgb, var(--fst-red) 8%, var(--p-surface-card)); }
 .fsp-schip-name { font-weight: 600; color: var(--p-text-color); }
 .fsp-schip-type { color: var(--p-text-muted-color); }
 
@@ -5365,7 +5325,7 @@ function initDashboardCharts() {
 .fsp-event-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .fsp-echip {
   display: flex; align-items: center; gap: 4px; padding: 3px 8px;
-  border-radius: 6px; font-size: 10px; cursor: pointer;
+  border-radius: 6px; font-size: 0.75rem; cursor: pointer;
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
   white-space: nowrap; transition: all 0.15s;
 }
@@ -5376,12 +5336,12 @@ function initDashboardCharts() {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
 }
 .fsp-chains-label {
-  display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; gap: 3px; font-size: 0.75rem; font-weight: 700;
   color: var(--fst-cyan); text-transform: uppercase; white-space: nowrap;
 }
 .fsp-chain-chip {
   display: flex; align-items: center; gap: 3px; padding: 2px 7px;
-  border-radius: 5px; font-size: 10px;
+  border-radius: 5px; font-size: 0.75rem;
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
 }
 .fsp-cch-from { color: var(--p-text-color); font-weight: 500; }
@@ -5394,7 +5354,7 @@ function initDashboardCharts() {
   padding: 2px 0;
 }
 .fsp-sod-hint {
-  font-size: 11px; color: var(--p-text-muted-color);
+  font-size: 0.78rem; color: var(--p-text-muted-color);
   display: flex; align-items: center; gap: 4px;
 }
 .fsp-sod-stream {
@@ -5418,23 +5378,23 @@ function initDashboardCharts() {
 .fsp-sod--clickable { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
 .fsp-sod--clickable:hover { transform: translateY(-1px); box-shadow: 0 2px 8px color-mix(in srgb, var(--sod-color) 20%, transparent); }
 .fsp-sod-left { display: flex; align-items: flex-start; gap: 8px; }
-.fsp-sod-icon { font-size: 14px; color: var(--sod-color); flex-shrink: 0; margin-top: 1px; }
+.fsp-sod-icon { font-size: 0.93rem; color: var(--sod-color); flex-shrink: 0; margin-top: 1px; }
 .fsp-sod-body { flex: 1; min-width: 0; }
-.fsp-sod-title { font-size: 12px; font-weight: 700; color: var(--p-text-color); }
-.fsp-sod-text { font-size: 10px; color: var(--p-text-muted-color); margin-top: 1px; line-height: 1.4; }
+.fsp-sod-title { font-size: 0.83rem; font-weight: 700; color: var(--p-text-color); }
+.fsp-sod-text { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 1px; line-height: 1.4; }
 
 /* Визуальная часть блоков */
 .fsp-sod-visual { margin-top: 4px; }
 .fsp-sod-bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-.fsp-sod-bar-label { font-size: 9px; width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--p-text-muted-color); }
+.fsp-sod-bar-label { font-size: 0.7rem; width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--p-text-muted-color); }
 .fsp-sod-bar-track { flex: 1; height: 10px; background: var(--p-content-border-color); border-radius: 3px; overflow: hidden; }
 .fsp-sod-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease-out; }
 .fsp-sod-kpis { display: flex; gap: 12px; }
 .fsp-sod-kpi { text-align: center; }
-.fsp-sod-kpi-val { font-size: 16px; font-weight: 800; line-height: 1.1; }
-.fsp-sod-kpi-label { font-size: 9px; color: var(--p-text-muted-color); text-transform: uppercase; }
+.fsp-sod-kpi-val { font-size: 1rem; font-weight: 800; line-height: 1.1; }
+.fsp-sod-kpi-label { font-size: 0.7rem; color: var(--p-text-muted-color); text-transform: uppercase; }
 .fsp-sod-pie { display: flex; flex-direction: column; gap: 2px; }
-.fsp-sod-pie-row { display: flex; align-items: center; gap: 5px; font-size: 10px; }
+.fsp-sod-pie-row { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; }
 .fsp-sod-pie-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .fsp-sod-pie-label { color: var(--p-text-color); flex: 1; }
 .fsp-sod-pie-pct { font-weight: 700; color: var(--p-text-color); }
@@ -5463,7 +5423,7 @@ function initDashboardCharts() {
   position: relative; width: 100%;
   height: calc(100vh - 320px); min-height: 360px; overflow: hidden;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--p-surface-ground) 80%, black);
+  background: color-mix(in srgb, var(--p-surface-card) 80%, black);
   border: 1px solid var(--p-content-border-color);
 }
 .fsp-field-grid {
@@ -5519,7 +5479,7 @@ function initDashboardCharts() {
 
 /* ── Bar value label ── */
 .fsp-sod-bar-val {
-  font-size: 10px; font-weight: 700; color: var(--p-text-color);
+  font-size: 0.75rem; font-weight: 700; color: var(--p-text-color);
   min-width: 32px; text-align: right; flex-shrink: 0;
 }
 
@@ -5537,7 +5497,7 @@ function initDashboardCharts() {
   100% { opacity: 1; transform: scaleY(1); }
 }
 .fsp-spark-label {
-  font-size: 9px; color: var(--p-text-muted-color); text-align: center;
+  font-size: 0.7rem; color: var(--p-text-muted-color); text-align: center;
 }
 
 /* ── Mini table ── */
@@ -5546,14 +5506,14 @@ function initDashboardCharts() {
 }
 .fsp-sod-trow {
   display: flex; justify-content: space-between; gap: 6px;
-  font-size: 10px; color: var(--p-text-color);
+  font-size: 0.75rem; color: var(--p-text-color);
   padding: 2px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 50%, transparent);
 }
 .fsp-sod-trow:last-child { border-bottom: none; }
 .fsp-sod-trow--head {
   font-weight: 700; color: var(--p-text-muted-color);
-  text-transform: uppercase; font-size: 9px; letter-spacing: 0.04em;
+  text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em;
   border-bottom: 1px solid var(--p-content-border-color);
   padding-bottom: 3px; margin-bottom: 1px;
 }
@@ -5571,8 +5531,8 @@ function initDashboardCharts() {
 .fsp-gauge-labels {
   display: flex; justify-content: space-between; align-items: baseline;
 }
-.fsp-gauge-val { font-size: 12px; font-weight: 800; }
-.fsp-gauge-max { font-size: 9px; color: var(--p-text-muted-color); }
+.fsp-gauge-val { font-size: 0.83rem; font-weight: 800; }
+.fsp-gauge-max { font-size: 0.7rem; color: var(--p-text-muted-color); }
 
 /* Flash transitions */
 .fsp-flash-enter-active { transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -5591,9 +5551,9 @@ function initDashboardCharts() {
   display: flex; align-items: center; gap: 6px; margin-left: 8px;
 }
 .fsp-demo-speed-label {
-  font-size: 10px; color: var(--p-text-muted-color); text-transform: uppercase; font-weight: 600;
+  font-size: 0.75rem; color: var(--p-text-muted-color); text-transform: uppercase; font-weight: 600;
 }
-.fsp-demo-speed :deep(.p-button) { font-size: 10px !important; padding: 2px 8px !important; }
+.fsp-demo-speed :deep(.p-button) { font-size: 0.75rem !important; padding: 2px 8px !important; }
 
 /* ═══ Диалог компании ═══ */
 .fsp-cd-status { display: flex; gap: 8px; margin-bottom: 16px; }
@@ -5602,10 +5562,10 @@ function initDashboardCharts() {
 }
 .fsp-cd-metric {
   text-align: center; padding: 10px 4px;
-  background: var(--p-surface-ground); border-radius: 8px;
+  background: var(--p-surface-card); border-radius: 8px;
 }
 .fsp-cd-metric-val { font-size: 20px; font-weight: 800; line-height: 1; }
-.fsp-cd-metric-label { font-size: 10px; color: var(--p-text-muted-color); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.04em; }
+.fsp-cd-metric-label { font-size: 0.75rem; color: var(--p-text-muted-color); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.04em; }
 .fsp-cd-health-bar {
   height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 16px;
   background: var(--p-content-border-color);
@@ -5617,9 +5577,9 @@ function initDashboardCharts() {
   padding: 8px 0; border-bottom: 1px solid var(--p-content-border-color);
 }
 .fsp-cd-detail-row:last-child { border-bottom: none; }
-.fsp-cd-detail-label { font-size: 12px; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 4px; }
-.fsp-cd-icon { font-size: 13px; opacity: 0.6; }
-.fsp-cd-detail-val { font-size: 12px; font-weight: 600; color: var(--p-text-color); }
+.fsp-cd-detail-label { font-size: 0.83rem; color: var(--p-text-muted-color); display: flex; align-items: center; gap: 4px; }
+.fsp-cd-icon { font-size: 0.88rem; opacity: 0.6; }
+.fsp-cd-detail-val { font-size: 0.83rem; font-weight: 600; color: var(--p-text-color); }
 .risk-text-green { color: var(--fst-green) !important; }
 .risk-text-yellow { color: var(--fst-brand) !important; }
 .risk-text-red { color: var(--fst-red) !important; }
@@ -5630,7 +5590,7 @@ function initDashboardCharts() {
   border-radius: 12px; padding: 14px 20px;
 }
 .fsp-phase-timeline-label {
-  font-size: 11px; font-weight: 600; color: var(--p-text-color);
+  font-size: 0.78rem; font-weight: 600; color: var(--p-text-color);
   display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
 }
 .fsp-phase-timeline {
@@ -5649,9 +5609,9 @@ function initDashboardCharts() {
   align-items: center; justify-content: center; z-index: 1;
   transition: background 0.3s, box-shadow 0.3s;
 }
-.fsp-phase-label { font-size: 9px; color: var(--p-text-muted-color); margin-top: 4px; text-align: center; white-space: nowrap; }
+.fsp-phase-label { font-size: 0.7rem; color: var(--p-text-muted-color); margin-top: 4px; text-align: center; white-space: nowrap; }
 .fsp-phase-count {
-  font-size: 9px; font-weight: 700; color: var(--p-text-color); margin-top: 1px;
+  font-size: 0.7rem; font-weight: 700; color: var(--p-text-color); margin-top: 1px;
 }
 .fsp-phase-line {
   position: absolute; top: 14px; left: 50%; width: 100%; height: 2px;
@@ -5662,19 +5622,19 @@ function initDashboardCharts() {
 /* Runway */
 .fsp-runway-list { display: flex; flex-direction: column; gap: 4px; }
 .fsp-runway-row { display: flex; align-items: center; gap: 6px; }
-.fsp-runway-name { font-size: 10px; color: var(--p-text-color); width: 100px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fsp-runway-name { font-size: 0.75rem; color: var(--p-text-color); width: 100px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fsp-runway-bar-wrap { flex: 1; height: 10px; background: var(--p-content-border-color); border-radius: 5px; overflow: hidden; }
 .fsp-runway-bar { height: 100%; border-radius: 5px; transition: width 0.5s; }
-.fsp-runway-val { font-size: 12px; font-weight: 700; width: 50px; text-align: right; flex-shrink: 0; }
+.fsp-runway-val { font-size: 0.83rem; font-weight: 700; width: 50px; text-align: right; flex-shrink: 0; }
 
 /* Fund KPIs */
 .fsp-fund-kpis { display: flex; flex-direction: column; gap: 2px; }
 .fsp-fund-kpis--compact .fsp-fkpi-row { padding: 4px 0; }
-.fsp-fund-kpis--compact .fsp-fkpi-val { font-size: 12px; }
+.fsp-fund-kpis--compact .fsp-fkpi-val { font-size: 0.83rem; }
 .fsp-fkpi-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--p-content-border-color); }
 .fsp-fkpi-row:last-child { border-bottom: none; }
-.fsp-fkpi-label { font-size: 11px; color: var(--p-text-muted-color); }
-.fsp-fkpi-val { font-size: 13px; font-weight: 700; color: var(--p-text-color); }
+.fsp-fkpi-label { font-size: 0.78rem; color: var(--p-text-muted-color); }
+.fsp-fkpi-val { font-size: 0.88rem; font-weight: 700; color: var(--p-text-color); }
 
 /* Responsive */
 @media (max-width: 900px) {
@@ -5699,7 +5659,7 @@ function initDashboardCharts() {
 
 /* ── Change Blindness: Дельты ── */
 .fsp-delta {
-  font-size: 9px; font-weight: 600; padding: 1px 4px; border-radius: 6px; margin-left: 3px;
+  font-size: 0.7rem; font-weight: 600; padding: 1px 4px; border-radius: 6px; margin-left: 3px;
   display: inline-block; line-height: 1.2;
 }
 .fsp-delta.up { color: var(--fst-green); background: color-mix(in srgb, var(--fst-green) 12%, transparent); }
@@ -5714,7 +5674,7 @@ function initDashboardCharts() {
 }
 .fsp-proj-item {
   display: flex; align-items: center; gap: 6px; padding: 5px 10px;
-  border-radius: 8px; font-size: 10px; white-space: nowrap; flex-shrink: 0;
+  border-radius: 8px; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0;
   border-left: 2px solid transparent; transition: all 0.3s ease;
 }
 .fsp-proj--critical {
@@ -5732,10 +5692,10 @@ function initDashboardCharts() {
   background: color-mix(in srgb, var(--fst-blue) 6%, transparent);
   color: var(--fst-blue);
 }
-.fsp-proj-icon { font-size: 12px; opacity: 0.8; }
+.fsp-proj-icon { font-size: 0.83rem; opacity: 0.8; }
 .fsp-proj-text { font-weight: 500; }
 .fsp-proj-when {
-  font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+  font-size: 0.7rem; font-weight: 700; padding: 1px 5px; border-radius: 4px;
   background: color-mix(in srgb, currentColor 12%, transparent); margin-left: auto;
 }
 
@@ -5748,10 +5708,10 @@ function initDashboardCharts() {
 .fsp-action-item:hover { background: color-mix(in srgb, var(--fst-blue) 6%, transparent); }
 .fsp-action-item.done { opacity: 0.6; }
 .fsp-ai-check { flex-shrink: 0; }
-.fsp-ai-check-icon { font-size: 13px; color: var(--p-text-muted-color); }
+.fsp-ai-check-icon { font-size: 0.88rem; color: var(--p-text-muted-color); }
 .fsp-ai-check-icon.done { color: var(--fst-green); }
 .fsp-ai-body { flex: 1; min-width: 0; }
-.fsp-ai-text { font-size: 10px; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fsp-ai-text { font-size: 0.75rem; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fsp-ai-progress-bar {
   height: 3px; background: color-mix(in srgb, var(--p-text-muted-color) 15%, transparent);
   border-radius: 2px; margin-top: 3px; overflow: hidden;
@@ -5760,26 +5720,26 @@ function initDashboardCharts() {
   height: 100%; border-radius: 2px;
   transition: width 0.8s ease;
 }
-.fsp-ai-pct { font-size: 9px; font-weight: 600; flex-shrink: 0; }
+.fsp-ai-pct { font-size: 0.7rem; font-weight: 600; flex-shrink: 0; }
 
 /* ── Change Blindness: Что изменилось ── */
 .fsp-changelog { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
 .fsp-change-item {
   display: flex; align-items: center; gap: 5px; padding: 3px 6px;
-  border-radius: 5px; font-size: 10px; transition: all 0.3s ease;
+  border-radius: 5px; font-size: 0.75rem; transition: all 0.3s ease;
 }
 .fsp-change-item:hover { background: color-mix(in srgb, var(--fst-blue) 6%, transparent); }
 .fsp-change--positive .fsp-change-icon { color: var(--fst-green); }
 .fsp-change--negative .fsp-change-icon { color: var(--fst-red); }
 .fsp-change--neutral .fsp-change-icon { color: var(--fst-blue); }
-.fsp-change-icon { font-size: 11px; flex-shrink: 0; }
+.fsp-change-icon { font-size: 0.78rem; flex-shrink: 0; }
 .fsp-change-text { color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── SDT: Калиброванные алерты ── */
 .fsp-sdt-alerts { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
 .fsp-sdt-alert {
   display: flex; align-items: center; gap: 5px; padding: 4px 6px;
-  border-radius: 6px; font-size: 10px; border-left: 2px solid transparent;
+  border-radius: 6px; font-size: 0.75rem; border-left: 2px solid transparent;
   transition: all 0.3s ease;
 }
 .fsp-sdt-alert:hover { background: color-mix(in srgb, var(--p-text-muted-color) 6%, transparent); }
@@ -5789,12 +5749,12 @@ function initDashboardCharts() {
 }
 .fsp-sdt--warning { border-left-color: var(--fst-brand); }
 .fsp-sdt--info { border-left-color: var(--fst-blue); }
-.fsp-sdt-icon { font-size: 11px; flex-shrink: 0; }
+.fsp-sdt-icon { font-size: 0.78rem; flex-shrink: 0; }
 .fsp-sdt--critical .fsp-sdt-icon { color: var(--fst-red); }
 .fsp-sdt--warning .fsp-sdt-icon { color: var(--fst-brand); }
 .fsp-sdt--info .fsp-sdt-icon { color: var(--fst-blue); }
 .fsp-sdt-text { flex: 1; min-width: 0; color: var(--p-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fsp-sdt-time { font-size: 8px; color: var(--p-text-muted-color); opacity: 0.6; white-space: nowrap; flex-shrink: 0; }
+.fsp-sdt-time { font-size: 0.65rem; color: var(--p-text-muted-color); opacity: 0.6; white-space: nowrap; flex-shrink: 0; }
 
 /* SDT: preattentive pulse для критических алертов (< 200мс обнаружение) */
 @keyframes fsp-sdt-pulse {
@@ -5816,16 +5776,16 @@ function initDashboardCharts() {
 }
 .fsp-brief-header {
   display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
-  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--fst-brand);
 }
-.fsp-brief-header i { font-size: 14px; }
+.fsp-brief-header i { font-size: 0.93rem; }
 .fsp-brief-close {
   margin-left: auto; background: none; border: none; cursor: pointer; color: var(--p-text-muted-color);
-  font-size: 12px; padding: 2px; opacity: 0.5; transition: opacity 0.2s;
+  font-size: 0.83rem; padding: 2px; opacity: 0.5; transition: opacity 0.2s;
 }
 .fsp-brief-close:hover { opacity: 1; }
-.fsp-brief-text { font-size: 12px; line-height: 1.6; color: var(--p-text-color); }
+.fsp-brief-text { font-size: 0.83rem; line-height: 1.6; color: var(--p-text-color); }
 .fsp-brief-anim-enter-active { transition: all 0.4s ease; }
 .fsp-brief-anim-leave-active { transition: all 0.3s ease; }
 .fsp-brief-anim-enter-from { opacity: 0; transform: translateY(-8px); max-height: 0; }
@@ -5833,65 +5793,69 @@ function initDashboardCharts() {
 
 /* ═══ Portfolio Score + NAV Timeline + Correlation Row ═══ */
 .fsp-score-row {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px;
+  align-items: stretch;
+}
+.fsp-score-row > * {
+  min-height: 0;
 }
 .fsp-score-gauge {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
-  border-radius: 10px; padding: 10px 16px; text-align: center; min-width: 120px;
+  border-radius: 12px; padding: 20px; text-align: center; min-width: 120px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   position: relative;
 }
 .fsp-score-svg { width: 80px; height: 48px; }
 .fsp-score-arc { transition: stroke-dasharray 1s ease; }
 .fsp-score-val {
-  font-size: 22px; font-weight: 800; line-height: 1; margin-top: -6px;
+  font-size: 1.4rem; font-weight: 800; line-height: 1; margin-top: -6px;
   font-variant-numeric: tabular-nums;
 }
 .fsp-score-label {
-  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--p-text-muted-color); margin-top: 4px;
 }
 
 .fsp-nav-timeline {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
-  border-radius: 10px; padding: 10px 14px; min-width: 0;
+  border-radius: 12px; padding: 20px; min-width: 0;
 }
 .fsp-nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .fsp-nav-title {
-  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--p-text-muted-color);
 }
-.fsp-nav-val { font-size: 13px; font-weight: 700; color: var(--fst-purple); }
+.fsp-nav-val { font-size: 0.88rem; font-weight: 700; color: var(--fst-purple); }
 .fsp-nav-svg { width: 100%; height: 28px; }
 .fsp-nav-labels {
-  display: flex; justify-content: space-between; font-size: 8px; color: var(--p-text-muted-color);
+  display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--p-text-muted-color);
   margin-top: 2px;
 }
 
 .fsp-corr-matrix {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
-  border-radius: 10px; padding: 10px 12px; min-width: 0;
+  border-radius: 12px; padding: 20px; min-width: 0;
 }
 .fsp-corr-title {
-  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--p-text-muted-color); margin-bottom: 6px;
 }
 .fsp-corr-head {
   display: grid; grid-template-columns: 1fr repeat(3, 42px); gap: 3px;
-  font-size: 8px; font-weight: 700; color: var(--p-text-muted-color);
+  font-size: 0.65rem; font-weight: 700; color: var(--p-text-muted-color);
   text-align: center; margin-bottom: 3px;
 }
 .fsp-corr-head span:first-child { text-align: left; }
 .fsp-corr-row {
   display: grid; grid-template-columns: 1fr repeat(3, 42px); gap: 3px;
-  font-size: 10px; margin-bottom: 2px;
+  font-size: 0.75rem; margin-bottom: 2px;
 }
 .fsp-corr-name {
-  font-weight: 600; font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-weight: 600; font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .fsp-corr-cell {
   text-align: center; border-radius: 4px; padding: 2px 0; font-weight: 600;
-  font-size: 9px; color: var(--p-text-color); font-variant-numeric: tabular-nums;
+  font-size: 0.7rem; color: var(--p-text-color); font-variant-numeric: tabular-nums;
 }
 
 /* ═══ Company Pulse Sparkline on Heatmap Hover ═══ */
@@ -5914,13 +5878,13 @@ function initDashboardCharts() {
 /* ═══ Technology Coverage Radar ═══ */
 .fsp-tech-radar {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
-  border-radius: 10px; padding: 10px 12px; min-width: 0;
+  border-radius: 12px; padding: 20px; min-width: 0;
   display: flex; flex-direction: column; align-items: center;
 }
 .fsp-radar-svg { width: 180px; height: 160px; }
-.fsp-radar-label { font-size: 8px; fill: var(--p-text-muted-color); font-weight: 600; }
+.fsp-radar-label { font-size: 0.65rem; fill: var(--p-text-muted-color); font-weight: 600; }
 .fsp-radar-legend {
-  display: flex; gap: 10px; font-size: 8px; color: var(--p-text-muted-color); margin-top: 4px;
+  display: flex; gap: 10px; font-size: 0.65rem; color: var(--p-text-muted-color); margin-top: 4px;
 }
 
 /* ═══ Agent Swarm Live Analysis ═══ */
@@ -5930,15 +5894,15 @@ function initDashboardCharts() {
 }
 .fsp-swarm-header {
   display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-  font-size: 12px; font-weight: 700; color: var(--p-text-color);
+  font-size: 0.83rem; font-weight: 700; color: var(--p-text-color);
 }
 .fsp-swarm-timer {
-  margin-left: auto; font-size: 10px; font-weight: 600;
+  margin-left: auto; font-size: 0.75rem; font-weight: 600;
   color: var(--fst-purple); font-variant-numeric: tabular-nums;
 }
 .fsp-swarm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .fsp-swarm-tile {
-  background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color);
+  background: var(--p-surface-card); border: 1px solid var(--p-content-border-color);
   border-left: 3px solid var(--agent-color); border-radius: 8px; padding: 10px;
   transition: all 0.3s ease; min-height: 120px;
 }
@@ -5946,7 +5910,7 @@ function initDashboardCharts() {
 .fsp-swarm-tile.error { border-left-color: var(--fst-red); }
 .fsp-swarm-tile-head {
   display: flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 700; margin-bottom: 8px;
+  font-size: 0.78rem; font-weight: 700; margin-bottom: 8px;
 }
 .fsp-swarm-dot {
   width: 6px; height: 6px; border-radius: 50%; margin-left: auto; flex-shrink: 0;
@@ -5959,31 +5923,31 @@ function initDashboardCharts() {
 .fsp-swarm-steps { display: flex; flex-direction: column; gap: 3px; }
 .fsp-swarm-step {
   display: flex; align-items: center; gap: 5px;
-  font-size: 9px; color: var(--p-text-muted-color);
+  font-size: 0.7rem; color: var(--p-text-muted-color);
 }
 .fsp-swarm-result { margin-top: 8px; }
 .fsp-swarm-stance {
-  display: inline-block; font-size: 8px; font-weight: 800; letter-spacing: 0.08em;
+  display: inline-block; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em;
   padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;
 }
 .fsp-swarm-stance.positive { background: color-mix(in srgb, var(--fst-green) 15%, transparent); color: var(--fst-green); }
 .fsp-swarm-stance.caution { background: color-mix(in srgb, var(--fst-brand) 15%, transparent); color: var(--fst-brand); }
 .fsp-swarm-stance.critical { background: color-mix(in srgb, var(--fst-red) 15%, transparent); color: var(--fst-red); }
-.fsp-swarm-text { font-size: 10px; line-height: 1.4; color: var(--p-text-color); margin-bottom: 6px; }
+.fsp-swarm-text { font-size: 0.75rem; line-height: 1.4; color: var(--p-text-color); margin-bottom: 6px; }
 .fsp-swarm-conf { display: flex; align-items: center; gap: 6px; }
 .fsp-swarm-conf-bar {
   flex: 1; height: 3px; background: color-mix(in srgb, var(--p-text-muted-color) 15%, transparent);
   border-radius: 2px; overflow: hidden;
 }
 .fsp-swarm-conf-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
-.fsp-swarm-conf span { font-size: 9px; font-weight: 700; color: var(--p-text-muted-color); }
+.fsp-swarm-conf span { font-size: 0.7rem; font-weight: 700; color: var(--p-text-muted-color); }
 .fsp-swarm-synthesis {
   display: flex; align-items: flex-start; gap: 8px; margin-top: 10px;
   padding: 10px 12px; border-radius: 8px;
-  background: color-mix(in srgb, var(--fst-green) 5%, var(--p-surface-ground));
+  background: color-mix(in srgb, var(--fst-green) 5%, var(--p-surface-card));
   border: 1px solid color-mix(in srgb, var(--fst-green) 20%, var(--p-content-border-color));
 }
-.fsp-swarm-synth-text { font-size: 11px; line-height: 1.5; color: var(--p-text-color); }
+.fsp-swarm-synth-text { font-size: 0.78rem; line-height: 1.5; color: var(--p-text-color); }
 
 /* ═══ Predictive Signal Stream ═══ */
 .fsp-pred-stream {
@@ -6006,8 +5970,8 @@ function initDashboardCharts() {
 .fsp-pred--warning { border-left-color: var(--fst-brand); }
 .fsp-pred--info { border-left-color: var(--fst-blue); }
 .fsp-pred-top { display: flex; align-items: center; gap: 6px; }
-.fsp-pred-icon { font-size: 12px; flex-shrink: 0; }
-.fsp-pred-text { flex: 1; font-size: 10px; line-height: 1.4; color: var(--p-text-color); }
+.fsp-pred-icon { font-size: 0.83rem; flex-shrink: 0; }
+.fsp-pred-text { flex: 1; font-size: 0.75rem; line-height: 1.4; color: var(--p-text-color); }
 .fsp-pred-detail { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--p-content-border-color); }
 .fsp-pred-chain { display: flex; flex-direction: column; gap: 2px; }
 .fsp-pred-chain-step { display: flex; align-items: center; gap: 6px; position: relative; padding-left: 12px; }
@@ -6018,11 +5982,11 @@ function initDashboardCharts() {
   position: absolute; left: 2.5px; top: 10px; width: 1px; height: 12px;
   background: var(--p-content-border-color);
 }
-.fsp-pred-chain-label { font-size: 8px; color: var(--p-text-muted-color); font-weight: 600; }
-.fsp-pred-chain-entity { font-size: 9px; color: var(--p-text-color); font-weight: 600; }
+.fsp-pred-chain-label { font-size: 0.65rem; color: var(--p-text-muted-color); font-weight: 600; }
+.fsp-pred-chain-entity { font-size: 0.7rem; color: var(--p-text-color); font-weight: 600; }
 .fsp-pred-concepts { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
 .fsp-pred-concept-tag {
-  font-size: 8px; padding: 2px 6px; border-radius: 8px;
+  font-size: 0.65rem; padding: 2px 6px; border-radius: 8px;
   background: color-mix(in srgb, var(--fst-cyan) 12%, transparent);
   color: var(--fst-cyan); font-weight: 600;
 }
@@ -6051,7 +6015,7 @@ function initDashboardCharts() {
 }
 .fsp-domain-list { display: flex; flex-direction: column; gap: 5px; }
 .fsp-domain-row {
-  display: flex; align-items: center; gap: 6px; font-size: 10px;
+  display: flex; align-items: center; gap: 6px; font-size: 0.75rem;
 }
 .fsp-domain-name {
   width: 70px; font-weight: 600; color: var(--p-text-color);
@@ -6071,7 +6035,7 @@ function initDashboardCharts() {
   color: var(--p-text-color); flex-shrink: 0;
 }
 .fsp-domain-count {
-  font-size: 9px; color: var(--p-text-muted-color); width: 45px; text-align: right; flex-shrink: 0;
+  font-size: 0.7rem; color: var(--p-text-muted-color); width: 45px; text-align: right; flex-shrink: 0;
 }
 .fsp-domain-footer { margin-top: 6px; }
 
@@ -6081,7 +6045,7 @@ function initDashboardCharts() {
   z-index: 1000; width: 680px; max-width: 90vw; height: 420px;
   background: var(--p-surface-card); border: 1px solid var(--fst-cyan);
   border-radius: 14px; padding: 16px;
-  box-shadow: 0 20px 60px color-mix(in srgb, var(--fst-cyan) 15%, rgba(0,0,0,0.5));
+  box-shadow: 0 20px 60px color-mix(in srgb, var(--fst-cyan) 15%, color-mix(in srgb, var(--p-text-color) 50%, transparent));
   backdrop-filter: blur(8px);
 }
 .fsp-const-zoom-svg { width: 100%; height: 100%; }
@@ -6091,7 +6055,7 @@ function initDashboardCharts() {
 }
 .fsp-const-edge.highlighted { opacity: 0.8; stroke-width: 2; }
 .fsp-const-concept { cursor: default; }
-.fsp-const-label { font-size: 7px; fill: var(--fst-cyan); font-weight: 600; }
+.fsp-const-label { font-size: 0.6rem; fill: var(--fst-cyan); font-weight: 600; }
 .fsp-const-company { cursor: pointer; transition: transform 0.2s; }
 .fsp-const-company:hover { transform: scale(1.15); }
 .fsp-const-circle {
@@ -6101,9 +6065,9 @@ function initDashboardCharts() {
 .fsp-const-company.hovered .fsp-const-circle { opacity: 1; }
 .fsp-const-company.orphan .fsp-const-circle { animation: orphan-pulse 2s ease-in-out infinite; }
 @keyframes orphan-pulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.35; } }
-.fsp-const-name { font-size: 7px; fill: var(--p-text-color); font-weight: 600; }
+.fsp-const-name { font-size: 0.6rem; fill: var(--p-text-color); font-weight: 600; }
 .fsp-constellation-legend {
-  display: flex; gap: 12px; font-size: 9px; color: var(--p-text-muted-color);
+  display: flex; gap: 12px; font-size: 0.7rem; color: var(--p-text-muted-color);
   align-items: center; margin-top: 4px;
 }
 
@@ -6118,6 +6082,43 @@ function initDashboardCharts() {
   background: color-mix(in srgb, var(--fst-blue) 12%, transparent);
   border-color: var(--fst-blue); color: var(--fst-blue);
 }
+
+/* ═══ Utility classes — inline style extraction ═══ */
+/* Tag sizing */
+.fsp-tag-sm { font-size: 0.7rem; }
+.fsp-tag-sm-brand { font-size: 0.7rem; background: var(--fst-brand); color: white; }
+.fsp-tag-sm-blue { font-size: 0.7rem; background: var(--fst-blue); color: white; }
+
+/* Icon sizing (inline icons) */
+.fsp-icon-xs { font-size: 0.75rem; }
+.fsp-icon-sm { font-size: 0.83rem; }
+.fsp-icon-md { font-size: 0.93rem; }
+.fsp-icon-lg { font-size: 1rem; }
+.fsp-icon-xl { font-size: 20px; }
+.fsp-icon-inline { vertical-align: -2px; margin-right: 4px; }
+.fsp-icon-inline-lg { vertical-align: -3px; margin-right: 6px; }
+
+/* Legend dots */
+.fsp-legend-dot { font-size: 0.5rem; }
+.fsp-legend-dot-sm { font-size: 0.6rem; }
+
+/* Muted text helper */
+.fsp-text-muted { color: var(--p-text-muted-color); }
+.fsp-text-bold { font-weight: 600; }
+.fsp-text-bold-700 { font-weight: 700; }
+
+/* Colored values */
+.fsp-val-blue { font-weight: 600; color: var(--fst-blue); }
+.fsp-val-green { font-weight: 600; color: var(--fst-green); }
+.fsp-val-purple { font-weight: 700; color: var(--fst-purple); }
+.fsp-val-red { color: var(--fst-red); }
+
+/* Section title spacing variants */
+.page-section-title--mt { margin-top: 10px; }
+.page-section-title--flush { margin: 0; }
+
+/* Search icon in input */
+.fsp-search-icon { font-size: 0.83rem; color: var(--p-text-muted-color); }
 
 /* Responsive */
 @media (max-width: 768px) {

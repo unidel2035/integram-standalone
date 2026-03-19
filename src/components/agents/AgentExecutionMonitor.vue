@@ -331,7 +331,7 @@ onUnmounted(() => {
   align-items: center;
   padding: 0.75rem 1rem;
   cursor: pointer;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-bottom: 1px solid var(--surface-border);
 }
 
@@ -418,7 +418,7 @@ onUnmounted(() => {
   gap: 0.75rem;
   padding: 0.5rem;
   border-radius: 8px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   transition: all 0.2s;
 }
 
@@ -486,7 +486,7 @@ onUnmounted(() => {
 }
 
 .tool-calls {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 0.75rem;
 }
@@ -521,7 +521,7 @@ onUnmounted(() => {
 }
 
 .sgr-section {
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   padding: 0.75rem;
 }

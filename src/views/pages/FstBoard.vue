@@ -753,7 +753,7 @@ onMounted(() => {
 
 <style scoped>
 .fstb-root {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -824,7 +824,7 @@ onMounted(() => {
 }
 .fstb-tab:hover {
   color: var(--p-text-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
 }
 .fstb-tab.active {
   color: var(--p-primary-color);
@@ -871,7 +871,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 10px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   margin-bottom: 8px;
@@ -945,7 +945,7 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   padding: 10px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-left: 3px solid var(--p-content-border-color);
   border-radius: 4px;
   margin-bottom: 8px;
@@ -1021,7 +1021,7 @@ onMounted(() => {
   align-items: flex-start;
   gap: 8px;
   padding: 8px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s;
@@ -1055,7 +1055,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-bottom: 1px solid var(--p-content-border-color);
 }
 .fstb-bp-content {
@@ -1075,7 +1075,7 @@ onMounted(() => {
 
 /* Right Card */
 .fstb-right-card {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   padding: 10px;
@@ -1126,7 +1126,7 @@ onMounted(() => {
 
 /* Approval Card */
 .fstb-approval-card {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   padding: 10px;
@@ -1221,7 +1221,7 @@ onMounted(() => {
 
 /* Voting Card */
 .fstb-voting-card {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   padding: 12px;
@@ -1281,7 +1281,7 @@ onMounted(() => {
 }
 .fstb-history-item {
   padding: 10px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border-radius: 6px;
   margin-bottom: 8px;
 }

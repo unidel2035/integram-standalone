@@ -265,7 +265,7 @@ onMounted(load)
 .search-mode { display: flex; align-items: center; white-space: nowrap; }
 .search-toggle { display: flex; align-items: center; gap: 4px; font-size: 0.82rem; cursor: pointer; color: var(--p-text-muted-color); }
 .search-toggle input { cursor: pointer; }
-.kag-results { background: var(--p-surface-ground); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+.kag-results { background: var(--p-surface-card); border: 1px solid var(--p-surface-border); border-radius: 8px; padding: 10px; margin-bottom: 12px; }
 .kag-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--p-primary-color); }
 .kag-item { padding: 6px 8px; border-bottom: 1px solid var(--p-surface-border); font-size: 0.85rem; }
 .kag-item:last-child { border-bottom: none; }
@@ -275,7 +275,7 @@ onMounted(load)
 .model-links { display: flex; flex-wrap: wrap; gap: 4px; }
 .text-muted { color: var(--p-text-muted-color); font-size: 0.85rem; }
 .ontology-link { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--primary-700); }
-.ontology-details { background: var(--surface-ground, #f8fafc); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.85rem; }
+.ontology-details { background: var(--p-surface-card); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.85rem; }
 .ontology-details div + div { margin-top: 0.5rem; }
 .ml-2 { margin-left: 0.5rem; }
 .mb-3 { margin-bottom: 0.75rem; }

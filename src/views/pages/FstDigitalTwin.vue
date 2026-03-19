@@ -802,7 +802,7 @@ onUnmounted(() => { clearTimeout(timer); chart?.destroy() })
 <style scoped>
 .fdt-root {
   min-height: 100vh;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   font-family: 'Inter', sans-serif;
   display: flex;

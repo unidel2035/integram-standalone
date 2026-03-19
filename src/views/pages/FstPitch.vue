@@ -432,7 +432,7 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 .pitch-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .pitch-problem-card {
   display: flex; gap: 16px; align-items: flex-start;
-  padding: 16px; background: var(--p-surface-ground); border-radius: 8px;
+  padding: 16px; background: var(--p-surface-card); border-radius: 8px;
 }
 .pitch-problem-title { font-weight: 600; margin-bottom: 4px; color: var(--p-text-color); }
 .pitch-problem-text { font-size: 13px; color: var(--p-text-muted-color); line-height: 1.5; }
@@ -466,7 +466,7 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 .pitch-market-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
 .pitch-market-box {
   text-align: center; padding: 20px 12px;
-  background: var(--p-surface-ground); border-radius: 8px;
+  background: var(--p-surface-card); border-radius: 8px;
 }
 .pitch-market-val { font-size: 24px; font-weight: 800; }
 .pitch-market-label { font-size: 12px; font-weight: 700; color: var(--p-text-color); margin: 4px 0; }
@@ -482,7 +482,7 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 
 /* FINANCIALS */
 .pitch-fin-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 28px; }
-.pitch-fin-kpi { text-align: center; padding: 16px 8px; background: var(--p-surface-ground); border-radius: 8px; }
+.pitch-fin-kpi { text-align: center; padding: 16px 8px; background: var(--p-surface-card); border-radius: 8px; }
 .pitch-fin-val { font-size: 20px; font-weight: 800; }
 .pitch-fin-label { font-size: 11px; color: var(--p-text-muted-color); margin-top: 4px; line-height: 1.3; }
 .pitch-cashflow {}
@@ -518,13 +518,13 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 
 /* TERM SHEET */
 .pitch-term-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.pitch-term-item { padding: 14px; background: var(--p-surface-ground); border-radius: 8px; }
+.pitch-term-item { padding: 14px; background: var(--p-surface-card); border-radius: 8px; }
 .pitch-term-label { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 4px; }
 .pitch-term-val { font-size: 15px; font-weight: 700; color: var(--p-text-color); }
 .pitch-tranches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .pitch-tranche {
   padding: 20px; border-radius: 10px; text-align: center;
-  background: color-mix(in srgb, var(--fst-blue) 8%, var(--p-surface-ground));
+  background: color-mix(in srgb, var(--fst-blue) 8%, var(--p-surface-card));
   border: 1px solid color-mix(in srgb, var(--fst-blue) 20%, transparent);
 }
 .pitch-tranche-num { font-size: 11px; color: var(--p-text-muted-color); margin-bottom: 6px; }
@@ -534,7 +534,7 @@ function share() { navigator.clipboard?.writeText(window.location.href) }
 
 /* TEAM */
 .pitch-team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
-.pitch-team-member { text-align: center; padding: 20px 12px; background: var(--p-surface-ground); border-radius: 10px; }
+.pitch-team-member { text-align: center; padding: 20px 12px; background: var(--p-surface-card); border-radius: 10px; }
 .pitch-team-avatar { font-size: 40px; margin-bottom: 10px; }
 .pitch-team-name { font-weight: 700; margin-bottom: 2px; color: var(--p-text-color); }
 .pitch-team-role { font-size: 12px; color: var(--fst-blue); margin-bottom: 6px; font-weight: 600; }

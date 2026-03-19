@@ -605,7 +605,7 @@ function sendOffer(buyer) {
 </script>
 
 <style scoped>
-.sec-root { padding: 24px; display: flex; flex-direction: column; gap: 24px; min-height: 100vh; background: var(--p-surface-ground); }
+.sec-root { padding: 24px; display: flex; flex-direction: column; gap: 24px; min-height: 100vh; background: var(--p-surface-card); }
 
 /* Header */
 .sec-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
@@ -632,7 +632,7 @@ function sendOffer(buyer) {
 .sec-position { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 24px; }
 .sec-position h2 { margin: 0 0 16px; font-size: 1.1rem; color: var(--p-text-color); }
 .sec-pos-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
-.sec-pos-card { display: flex; align-items: center; gap: 14px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 16px; }
+.sec-pos-card { display: flex; align-items: center; gap: 14px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 16px; }
 .sec-pos-icon { width: 48px; height: 48px; border-radius: 10px; background: var(--p-primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
 .sec-pos-val { font-size: 1.5rem; font-weight: 700; color: var(--p-primary-color); }
 .sec-pos-lbl { font-size: 0.75rem; color: var(--p-text-muted-color); margin-top: 2px; }
@@ -655,7 +655,7 @@ function sendOffer(buyer) {
 
 /* Offers Grid */
 .sec-offers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.sec-offer-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s; }
+.sec-offer-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s; }
 .sec-offer-card:hover { border-color: var(--p-primary-color); box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 8%, transparent); }
 .sec-offer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .sec-offer-header h3 { margin: 0; font-size: 1rem; color: var(--p-text-color); }
@@ -674,7 +674,7 @@ function sendOffer(buyer) {
 
 /* Valuation */
 .sec-val-methods { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
-.sec-val-method { background: var(--p-surface-ground); border: 2px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; }
+.sec-val-method { background: var(--p-surface-card); border: 2px solid var(--p-content-border-color); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; }
 .sec-val-method:hover { border-color: var(--p-primary-color); }
 .sec-val-method.active { border-color: var(--p-primary-color); background: var(--p-primary-color)11; }
 .sec-val-method-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -685,7 +685,7 @@ function sendOffer(buyer) {
 .sec-val-result-val { font-size: 1.6rem; font-weight: 700; color: var(--p-primary-color); }
 .sec-val-result-label { font-size: 0.7rem; color: var(--p-text-muted-color); margin-top: 4px; }
 
-.sec-val-details { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; }
+.sec-val-details { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 20px; }
 .sec-val-details h3 { margin: 0 0 16px; font-size: 1rem; color: var(--p-text-color); }
 .sec-val-calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .sec-val-param { display: flex; flex-direction: column; gap: 4px; }
@@ -710,7 +710,7 @@ function sendOffer(buyer) {
 .sec-badge.status-cancelled { background: color-mix(in srgb, var(--fst-red) 12%, transparent); color: var(--fst-red); }
 
 .sec-history-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
-.sec-sum-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+.sec-sum-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
 .sec-sum-label { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .sec-sum-value { font-size: 1.3rem; font-weight: 700; color: var(--p-primary-color); }
 
@@ -718,7 +718,7 @@ function sendOffer(buyer) {
 .sec-network-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 
 .sec-buyers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.sec-buyer-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s; }
+.sec-buyer-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s; }
 .sec-buyer-card:hover { border-color: var(--p-primary-color); box-shadow: 0 4px 12px color-mix(in srgb, var(--p-text-color) 8%, transparent); }
 .sec-buyer-header { display: flex; align-items: center; gap: 12px; }
 .sec-buyer-avatar { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; flex-shrink: 0; }

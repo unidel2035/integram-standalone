@@ -849,7 +849,7 @@ function initNetworkGraph() {
 .filter-group { display: flex; gap: 8px; }
 
 .investor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-.inv-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.2s; }
+.inv-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: all 0.2s; }
 .inv-card:hover { border-color: var(--p-primary-color); box-shadow: 0 2px 8px color-mix(in srgb, var(--p-text-color) 10%, transparent); }
 .inv-header { display: flex; align-items: center; gap: 10px; }
 .inv-avatar { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: white; }
@@ -886,7 +886,7 @@ function initNetworkGraph() {
 .num { text-align: right; }
 .share-pct { font-size: 0.68rem; color: var(--p-text-muted-color); }
 .co-list { display: flex; gap: 4px; flex-wrap: wrap; }
-.co-chip { font-size: 0.68rem; padding: 1px 6px; border-radius: 4px; background: var(--p-surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); cursor: pointer; }
+.co-chip { font-size: 0.68rem; padding: 1px 6px; border-radius: 4px; background: var(--p-surface-card); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); cursor: pointer; }
 .co-chip:hover { background: var(--p-primary-color); color: white; }
 .rights-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
 .rights-badge.pari-passu { background: color-mix(in srgb, var(--fst-blue) 13%, transparent); color: var(--fst-blue); }
@@ -901,7 +901,7 @@ function initNetworkGraph() {
 .deal-date { font-size: 0.75rem; color: var(--p-text-muted-color); }
 
 /* Analytics */
-.analytics-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.analytics-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
 .analytics-card h3 { margin: 0 0 12px; font-size: 0.95rem; color: var(--p-text-color); display: flex; align-items: center; gap: 8px; }
 .network-graph { margin: 16px 0; }
 .graph-legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px; font-size: 0.75rem; color: var(--p-text-muted-color); }
@@ -914,11 +914,11 @@ function initNetworkGraph() {
 /* Heatmap */
 .heatmap-container { overflow-x: auto; }
 .heatmap-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-.heatmap-table th { padding: 8px; text-align: center; border: 1px solid var(--p-content-border-color); background: var(--p-surface-ground); font-size: 0.7rem; color: var(--p-text-muted-color); }
+.heatmap-table th { padding: 8px; text-align: center; border: 1px solid var(--p-content-border-color); background: var(--p-surface-card); font-size: 0.7rem; color: var(--p-text-muted-color); }
 .heatmap-table td { padding: 8px; text-align: center; border: 1px solid var(--p-content-border-color); }
 .heatmap-label { text-align: left !important; font-weight: 600; color: var(--p-text-color); }
 .heatmap-cell { cursor: pointer; transition: all 0.2s; }
-.heatmap-cell.heat-0 { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.heatmap-cell.heat-0 { background: var(--p-surface-card); color: var(--p-text-muted-color); }
 .heatmap-cell.heat-1 { background: color-mix(in srgb, var(--fst-blue) 20%, transparent); color: var(--fst-blue); }
 .heatmap-cell.heat-2 { background: color-mix(in srgb, var(--fst-green) 40%, transparent); color: var(--fst-green); }
 .heatmap-cell.heat-3 { background: var(--fst-green); color: white; font-weight: 700; }
@@ -926,7 +926,7 @@ function initNetworkGraph() {
 
 /* Syndication Potential */
 .potential-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
-.potential-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.potential-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .potential-header { display: flex; justify-content: space-between; align-items: center; }
 .potential-company { font-weight: 700; font-size: 0.88rem; color: var(--p-text-color); }
 .potential-score { font-size: 0.85rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
@@ -943,7 +943,7 @@ function initNetworkGraph() {
 
 /* Term Sheets */
 .ts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.ts-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.ts-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .ts-name { font-weight: 700; font-size: 0.88rem; color: var(--p-primary-color); }
 .ts-desc { font-size: 0.75rem; color: var(--p-text-muted-color); }
 .ts-terms { display: flex; flex-direction: column; gap: 4px; }
@@ -958,7 +958,7 @@ function initNetworkGraph() {
 
 /* Investor Details Modal */
 .investor-details { display: flex; flex-direction: column; gap: 16px; }
-.detail-section { padding: 12px; background: var(--p-surface-ground); border-radius: 8px; }
+.detail-section { padding: 12px; background: var(--p-surface-card); border-radius: 8px; }
 .detail-section h4 { margin: 0 0 8px; font-size: 0.85rem; color: var(--p-primary-color); }
 .detail-section p { margin: 4px 0; font-size: 0.8rem; color: var(--p-text-color); }
 .detail-section a { color: var(--p-primary-color); text-decoration: none; }

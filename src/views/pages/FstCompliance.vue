@@ -248,11 +248,11 @@ function exportReport() { alert('Экспорт AML-отчёта') }
 .kyc-badge, .risk-badge { padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
 .kyc-badge.verified { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
 .kyc-badge.review   { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
-.kyc-badge.pending  { background: var(--p-surface-ground); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); }
+.kyc-badge.pending  { background: var(--p-surface-card); color: var(--p-text-muted-color); border: 1px solid var(--p-content-border-color); }
 .risk-badge.low     { background: color-mix(in srgb, var(--fst-green) 13%, transparent); color: var(--fst-green); }
 .risk-badge.medium  { background: color-mix(in srgb, var(--fst-brand) 13%, transparent); color: var(--fst-brand); }
 .risk-badge.high    { background: color-mix(in srgb, var(--fst-red) 13%, transparent); color: var(--fst-red); }
-.risk-badge.unknown { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.risk-badge.unknown { background: var(--p-surface-card); color: var(--p-text-muted-color); }
 .date-col { font-size: 0.75rem; }
 .warn-date { color: var(--fst-brand); font-weight: 600; }
 .officer { font-size: 0.75rem; color: var(--p-text-muted-color); }
@@ -278,7 +278,7 @@ function exportReport() { alert('Экспорт AML-отчёта') }
 .check-result.pending { background: color-mix(in srgb, var(--fst-brand) 10%, transparent); color: var(--fst-brand); border: 1px solid color-mix(in srgb, var(--fst-brand) 27%, transparent); }
 
 .aml-scan-form { display: flex; gap: 8px; margin-bottom: 14px; }
-.scan-input { flex: 1; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; }
+.scan-input { flex: 1; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 8px 12px; color: var(--p-text-color); font-size: 0.85rem; }
 .scan-result { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 14px; }
 .scan-result.clean { background: color-mix(in srgb, var(--fst-green) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-green) 27%, transparent); }
 .scan-result.alert { background: color-mix(in srgb, var(--fst-red) 10%, transparent); border: 1px solid color-mix(in srgb, var(--fst-red) 27%, transparent); }
@@ -298,7 +298,7 @@ function exportReport() { alert('Экспорт AML-отчёта') }
 .source-type { font-size: 0.68rem; color: var(--p-text-muted-color); }
 
 .reg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.reg-card { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
+.reg-card { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
 .reg-card.compliant { border-left: 3px solid var(--fst-green); }
 .reg-card.review    { border-left: 3px solid var(--fst-brand); }
 .reg-code { font-weight: 700; font-size: 0.82rem; color: var(--p-primary-color); }

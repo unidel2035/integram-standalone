@@ -196,7 +196,7 @@ onMounted(async () => {
 .sysml-toolbar h3 { margin: 0; white-space: nowrap; }
 .sysml-model-select { width: 200px; }
 .sysml-diagram-container { display: flex; flex-direction: column; gap: 8px; }
-.sysml-mermaid { min-height: 300px; max-height: 70vh; background: var(--p-surface-ground); border-radius: 8px; padding: 16px; overflow: auto; }
+.sysml-mermaid { min-height: 300px; max-height: 70vh; background: var(--p-surface-card); border-radius: 8px; padding: 16px; overflow: auto; }
 .sysml-mermaid :deep(svg) { min-width: 600px; height: auto; }
 .sysml-mermaid :deep(.node rect), .sysml-mermaid :deep(.node polygon) { rx: 6; ry: 6; }
 .sysml-mermaid :deep(.classLabel .label) { font-size: 14px !important; }

@@ -1175,7 +1175,7 @@ function generateAuditPackage() {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   min-height: 100vh;
 }
 
@@ -2059,7 +2059,7 @@ function generateAuditPackage() {
   padding: 0.6rem;
   border: 1px solid var(--surface-border);
   border-radius: 4px;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   color: var(--p-text-color);
   font-size: 0.95rem;
 }

@@ -15,6 +15,7 @@ import { useToast } from 'primevue/usetoast'
 import { getPlatformState, getAIPlatformBriefing, ENTITY_LENSES } from '@/services/platformStateService.js'
 import { buildPipelineStages, getPipelineSummary, SUBPROCESS_DEFS } from '@/services/pipelineService.js'
 import { getEventDef } from '@/config/eventRegistry.js'
+import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const router    = useRouter()
 const evtStore  = useEventStore()
@@ -183,16 +184,8 @@ function fmtDate(ts) {
 </script>
 
 <template>
-  <div class="cc-root">
-
-    <!-- ══ TOPBAR ══════════════════════════════════════════════════════════════ -->
-    <div class="cc-topbar">
-      <div class="cc-topbar-left">
-        <i class="pi pi-sitemap cc-logo-icon"></i>
-        <span class="cc-logo-title">Command Center</span>
-        <span class="cc-logo-sub">Онтология событий · Live State</span>
-      </div>
-
+  <FstPageLayout title="Command Center" subtitle="Онтология событий · Live State" icon="pi pi-sitemap">
+    <template #actions>
       <!-- Сводка по алертам -->
       <div v-if="platformState" class="cc-topbar-alerts">
         <div v-if="platformState.summary.criticalCount" class="cc-alert-chip cc-alert-chip--error">
@@ -205,19 +198,16 @@ function fmtDate(ts) {
           <i class="pi pi-check-circle"></i> Всё в норме
         </div>
       </div>
-
-      <div class="cc-topbar-right">
-        <Button
-          :loading="aiLoading"
-          label="AI Брифинг"
-          icon="pi pi-sparkles"
-          size="small"
-          :severity="aiBriefing ? 'secondary' : 'primary'"
-          @click="loadAIBriefing"
-        />
-        <Button icon="pi pi-refresh" severity="secondary" size="small" text @click="refresh" />
-      </div>
-    </div>
+      <Button
+        :loading="aiLoading"
+        label="AI Брифинг"
+        icon="pi pi-sparkles"
+        size="small"
+        :severity="aiBriefing ? 'secondary' : 'primary'"
+        @click="loadAIBriefing"
+      />
+      <Button icon="pi pi-refresh" severity="secondary" size="small" text @click="refresh" />
+    </template>
 
     <!-- ══ AI БРИФИНГ ════════════════════════════════════════════════════════ -->
     <Transition name="cc-slide">
@@ -228,7 +218,7 @@ function fmtDate(ts) {
       </div>
     </Transition>
 
-    <!-- ══ МЕТРИКИ ══════════════════════════════════════════════════════════ -->
+    <!-- ══ МЕТРИКИ (flush) ═══════════════════════════════════════════════════ -->
     <div v-if="platformState" class="cc-metrics">
       <div class="cc-metric">
         <div class="cc-metric-val">{{ platformState.summary.dealsInWork }}</div>
@@ -258,204 +248,153 @@ function fmtDate(ts) {
       </div>
     </div>
 
-    <!-- ══ ВОРОНКА КОНВЕЙЕРА (только deal) ══════════════════════════════════ -->
-    <div v-if="pipelineOverview.length" class="cc-pipeline-overview">
-      <div class="cc-section-label">Конвейер сделок ПП-1→ПП-6</div>
-      <div class="cc-pipeline-track">
-        <div
-          v-for="(sub, i) in pipelineOverview"
-          :key="sub.id"
-          class="cc-pipeline-node"
-          :style="{ borderColor: sub.color }"
-        >
-          <div class="cc-pipeline-node-label" :style="{ color: sub.color }">{{ sub.label }}</div>
-          <div class="cc-pipeline-node-name">{{ sub.name }}</div>
-          <div v-for="deal in sub.deals" :key="deal.entityId" class="cc-pipeline-deal">
-            <i class="pi pi-circle-fill" style="font-size:6px; color:var(--fst-brand)"></i>
-            {{ deal.entityId }}
-          </div>
-          <div v-if="i < pipelineOverview.length - 1" class="cc-pipeline-arrow">→</div>
-        </div>
-      </div>
-    </div>
+    <!-- ══ PAGE CONTENT ══════════════════════════════════════════════════════ -->
+    <div class="page-content">
 
-    <!-- ══ ФИЛЬТРЫ ══════════════════════════════════════════════════════════ -->
-    <div class="cc-filters">
-      <button
-        v-for="f in filters"
-        :key="f.id"
-        class="cc-filter-btn"
-        :class="{ 'cc-filter-btn--active': activeFilter === f.id }"
-        @click="activeFilter = f.id"
-      >
-        <i :class="f.icon"></i>
-        {{ f.label }}
-        <span v-if="f.id !== 'all'" class="cc-filter-count">
-          {{
-            f.id === 'alert'
-              ? platformState?.entities.filter(e=>e.alerts.length).length
-              : platformState?.entities.filter(e=>e.entityType===f.id).length
-          }}
-        </span>
-      </button>
-    </div>
-
-    <!-- ══ КАРТОЧКИ СУЩНОСТЕЙ ══════════════════════════════════════════════ -->
-    <div class="cc-cards">
-      <div
-        v-for="card in visibleEntities"
-        :key="`${card.entityType}:${card.entityId}`"
-        class="cc-card"
-        :class="{ 'cc-card--urgent': card.urgency >= 80, 'cc-card--warn': card.urgency >= 40 && card.urgency < 80 }"
-        @click="navigateTo(card)"
-      >
-        <!-- Шапка карточки -->
-        <div class="cc-card-header">
-          <div class="cc-card-type" :style="{ color: card.lens.color }">
-            <i :class="card.lens.icon"></i>
-            {{ card.lens.label }}
-          </div>
-          <div class="cc-card-id">{{ entityIdLabel(card) }}</div>
-          <div class="cc-card-urgency" v-if="card.urgency >= 40"
-            :style="{ color: card.urgency >= 80 ? 'var(--fst-red)' : 'var(--fst-brand)' }">
-            <i :class="card.urgency >= 80 ? 'pi pi-times-circle' : 'pi pi-exclamation-triangle'"></i>
-          </div>
-        </div>
-
-        <!-- Фаза / состояние -->
-        <div class="cc-card-phase">{{ phaseLabel(card) }}</div>
-
-        <!-- Последнее событие -->
-        <div class="cc-card-last-event">
-          <i :class="card.lastEvt?.icon || 'pi pi-circle'" style="font-size:11px; opacity:0.6"></i>
-          <span>{{ card.lastEvt?.label }}</span>
-          <span class="cc-card-date">{{ fmtDate(card.lastEvt?.ts) }}</span>
-        </div>
-
-        <!-- Алерты -->
-        <div v-if="card.alerts.length" class="cc-card-alerts">
+      <!-- ══ ВОРОНКА КОНВЕЙЕРА (только deal) ════════════════════════════════ -->
+      <div v-if="pipelineOverview.length" class="page-card cc-pipeline-overview">
+        <div class="page-section-title">Конвейер сделок ПП-1 - ПП-6</div>
+        <div class="cc-pipeline-track">
           <div
-            v-for="(a, i) in card.alerts.slice(0,2)"
-            :key="i"
-            class="cc-card-alert"
-            :class="severityClass(a.severity)"
+            v-for="(sub, i) in pipelineOverview"
+            :key="sub.id"
+            class="cc-pipeline-node"
+            :style="{ borderColor: sub.color }"
           >
-            <i :class="a.severity === 'error' ? 'pi pi-times-circle' : 'pi pi-exclamation-triangle'"></i>
-            {{ a.message }}
+            <div class="cc-pipeline-node-label" :style="{ color: sub.color }">{{ sub.label }}</div>
+            <div class="cc-pipeline-node-name">{{ sub.name }}</div>
+            <div v-for="deal in sub.deals" :key="deal.entityId" class="cc-pipeline-deal">
+              <i class="pi pi-circle-fill cc-pipeline-deal-dot"></i>
+              {{ deal.entityId }}
+            </div>
+            <div v-if="i < pipelineOverview.length - 1" class="cc-pipeline-arrow">→</div>
           </div>
-        </div>
-
-        <!-- Следующие действия (для deal) -->
-        <div v-if="card.nextActions.length" class="cc-card-next">
-          <div class="cc-card-next-label">Следующий шаг:</div>
-          <div v-for="action in card.nextActions.slice(0,1)" :key="action.type" class="cc-card-next-action">
-            <i :class="action.icon || 'pi pi-arrow-right'" :style="{ color: action.color }" style="font-size:11px"></i>
-            {{ action.label }}
-          </div>
-        </div>
-
-        <!-- Статистика -->
-        <div class="cc-card-footer">
-          <span class="cc-card-stat"><i class="pi pi-list"></i> {{ card.eventsCount }} событий</span>
-          <span class="cc-card-stat"><i class="pi pi-calendar"></i> {{ card.totalDays }} дн.</span>
-          <Button
-            label="Открыть"
-            severity="secondary"
-            size="small"
-            text
-            class="cc-card-btn"
-            @click.stop="navigateTo(card)"
-          />
         </div>
       </div>
 
-      <!-- Пустое состояние -->
-      <div v-if="!visibleEntities.length" class="cc-empty">
-        <i class="pi pi-inbox" style="font-size:32px; opacity:0.3"></i>
-        <span>Нет сущностей в этой категории</span>
-        <span style="font-size:11px; color:var(--p-text-muted-color)">
-          Данные появятся после регистрации первых событий
-        </span>
+      <!-- ══ ФИЛЬТРЫ ════════════════════════════════════════════════════════ -->
+      <div class="cc-filters">
+        <SelectButton
+          v-model="activeFilter"
+          :options="filters"
+          optionLabel="label"
+          optionValue="id"
+          :allowEmpty="false"
+        />
       </div>
-    </div>
 
-    <!-- ══ КРОСС-СУЩНОСТНЫЙ ГРАФ ══════════════════════════════════════════ -->
-    <div v-if="platformState?.crossLinks.length" class="cc-cross-section">
-      <div class="cc-section-label">Активные цепочки онтологии</div>
-      <div class="cc-cross-links">
+      <!-- ══ КАРТОЧКИ СУЩНОСТЕЙ ══════════════════════════════════════════════ -->
+      <div class="cc-cards">
         <div
-          v-for="link in platformState.crossLinks.slice(0,8)"
-          :key="link.id"
-          class="cc-cross-link"
-          :class="{ 'cc-cross-link--done': link.enablesDone }"
+          v-for="card in visibleEntities"
+          :key="`${card.entityType}:${card.entityId}`"
+          class="cc-card"
+          :class="{ 'cc-card--urgent': card.urgency >= 80, 'cc-card--warn': card.urgency >= 40 && card.urgency < 80 }"
+          @click="navigateTo(card)"
         >
-          <div class="cc-cross-from">
-            <i :class="ENTITY_LENSES[link.trigger.entityType]?.icon" style="font-size:11px"></i>
-            <code>{{ link.trigger.eventType }}</code>
+          <!-- Шапка карточки -->
+          <div class="cc-card-header">
+            <div class="cc-card-type" :style="{ color: card.lens.color }">
+              <i :class="card.lens.icon"></i>
+              {{ card.lens.label }}
+            </div>
+            <div class="cc-card-id">{{ entityIdLabel(card) }}</div>
+            <div class="cc-card-urgency" v-if="card.urgency >= 40"
+              :style="{ color: card.urgency >= 80 ? 'var(--fst-red)' : 'var(--fst-brand)' }">
+              <i :class="card.urgency >= 80 ? 'pi pi-times-circle' : 'pi pi-exclamation-triangle'"></i>
+            </div>
           </div>
-          <div class="cc-cross-arrow">
-            <i :class="link.enablesDone ? 'pi pi-check' : 'pi pi-arrow-right'"
-              :style="{ color: link.enablesDone ? 'var(--fst-green)' : 'var(--fst-brand)' }"></i>
+
+          <!-- Фаза / состояние -->
+          <div class="cc-card-phase">{{ phaseLabel(card) }}</div>
+
+          <!-- Последнее событие -->
+          <div class="cc-card-last-event">
+            <i :class="card.lastEvt?.icon || 'pi pi-circle'" class="cc-last-event-icon"></i>
+            <span>{{ card.lastEvt?.label }}</span>
+            <span class="cc-card-date">{{ fmtDate(card.lastEvt?.ts) }}</span>
           </div>
-          <div class="cc-cross-to">
-            <i :class="ENTITY_LENSES[link.enables.entityType]?.icon" style="font-size:11px"></i>
-            <code>{{ link.enables.eventType }}</code>
+
+          <!-- Алерты -->
+          <div v-if="card.alerts.length" class="cc-card-alerts">
+            <div
+              v-for="(a, i) in card.alerts.slice(0,2)"
+              :key="i"
+              class="cc-card-alert"
+              :class="severityClass(a.severity)"
+            >
+              <i :class="a.severity === 'error' ? 'pi pi-times-circle' : 'pi pi-exclamation-triangle'"></i>
+              {{ a.message }}
+            </div>
           </div>
-          <div class="cc-cross-label">{{ link.label }}</div>
+
+          <!-- Следующие действия (для deal) -->
+          <div v-if="card.nextActions.length" class="cc-card-next">
+            <div class="cc-card-next-label">Следующий шаг:</div>
+            <div v-for="action in card.nextActions.slice(0,1)" :key="action.type" class="cc-card-next-action">
+              <i :class="action.icon || 'pi pi-arrow-right'" :style="{ color: action.color }" class="cc-next-action-icon"></i>
+              {{ action.label }}
+            </div>
+          </div>
+
+          <!-- Статистика -->
+          <div class="cc-card-footer">
+            <span class="cc-card-stat"><i class="pi pi-list"></i> {{ card.eventsCount }} событий</span>
+            <span class="cc-card-stat"><i class="pi pi-calendar"></i> {{ card.totalDays }} дн.</span>
+            <Button
+              label="Открыть"
+              severity="secondary"
+              size="small"
+              text
+              class="cc-card-btn"
+              @click.stop="navigateTo(card)"
+            />
+          </div>
+        </div>
+
+        <!-- Пустое состояние -->
+        <div v-if="!visibleEntities.length" class="cc-empty">
+          <i class="pi pi-inbox cc-empty-icon"></i>
+          <span>Нет сущностей в этой категории</span>
+          <span class="cc-empty-hint">
+            Данные появятся после регистрации первых событий
+          </span>
         </div>
       </div>
-    </div>
 
-  </div>
+      <!-- ══ КРОСС-СУЩНОСТНЫЙ ГРАФ ══════════════════════════════════════════ -->
+      <div v-if="platformState?.crossLinks.length" class="page-card cc-cross-section">
+        <div class="page-section-title">Активные цепочки онтологии</div>
+        <div class="cc-cross-links">
+          <div
+            v-for="link in platformState.crossLinks.slice(0,8)"
+            :key="link.id"
+            class="cc-cross-link"
+            :class="{ 'cc-cross-link--done': link.enablesDone }"
+          >
+            <div class="cc-cross-from">
+              <i :class="ENTITY_LENSES[link.trigger.entityType]?.icon" class="cc-cross-entity-icon"></i>
+              <code>{{ link.trigger.eventType }}</code>
+            </div>
+            <div class="cc-cross-arrow">
+              <i :class="link.enablesDone ? 'pi pi-check' : 'pi pi-arrow-right'"
+                :style="{ color: link.enablesDone ? 'var(--fst-green)' : 'var(--fst-brand)' }"></i>
+            </div>
+            <div class="cc-cross-to">
+              <i :class="ENTITY_LENSES[link.enables.entityType]?.icon" class="cc-cross-entity-icon"></i>
+              <code>{{ link.enables.eventType }}</code>
+            </div>
+            <div class="cc-cross-label">{{ link.label }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </FstPageLayout>
 </template>
 
 <style scoped>
-/* ═══ КОРЕНЬ ═══════════════════════════════════════════════════════════════ */
-.cc-root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--p-surface-ground);
-  padding: 6rem 0 0;  /* topbar offset */
-}
-
-/* ═══ TOPBAR ════════════════════════════════════════════════════════════════ */
-.cc-topbar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 24px;
-  background: var(--p-surface-card);
-  border-bottom: 1px solid var(--p-content-border-color);
-  position: sticky;
-  top: 4rem;
-  z-index: 10;
-}
-
-.cc-topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-}
-
-.cc-logo-icon {
-  font-size: 20px;
-  color: var(--p-primary-color);
-}
-
-.cc-logo-title {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.cc-logo-sub {
-  font-size: 11px;
-  color: var(--p-text-muted-color);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
+/* ═══ TOPBAR ALERTS ════════════════════════════════════════════════════════ */
 .cc-topbar-alerts {
   display: flex;
   gap: 8px;
@@ -465,7 +404,7 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 0.83rem;
   padding: 4px 10px;
   border-radius: 20px;
   font-weight: 600;
@@ -474,25 +413,20 @@ function fmtDate(ts) {
 .cc-alert-chip--warn  { background: color-mix(in srgb, var(--fst-brand) 15%, transparent); color: var(--fst-brand); }
 .cc-alert-chip--ok    { background: color-mix(in srgb, var(--fst-green) 15%, transparent); color: var(--fst-green); }
 
-.cc-topbar-right {
-  display: flex;
-  gap: 8px;
-}
-
 /* ═══ AI БРИФИНГ ════════════════════════════════════════════════════════════ */
 .cc-briefing {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 14px 24px;
+  padding: 14px 20px;
   background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
   border-bottom: 1px solid var(--p-content-border-color);
-  font-size: 13px;
+  font-size: 0.88rem;
   line-height: 1.5;
 }
 
 .cc-briefing-icon {
-  font-size: 18px;
+  font-size: 1.1rem;
   color: var(--p-primary-color);
   flex-shrink: 0;
   margin-top: 1px;
@@ -505,12 +439,12 @@ function fmtDate(ts) {
 .cc-slide-enter-active, .cc-slide-leave-active { transition: all 0.25s ease; }
 .cc-slide-enter-from, .cc-slide-leave-to { opacity: 0; transform: translateY(-8px); }
 
-/* ═══ МЕТРИКИ ═══════════════════════════════════════════════════════════════ */
+/* ═══ МЕТРИКИ (flush) ══════════════════════════════════════════════════════ */
 .cc-metrics {
   display: flex;
   align-items: center;
-  padding: 16px 24px;
-  background: var(--p-surface-card);
+  padding: 16px 20px;
+  margin: -20px -20px 0;
   border-bottom: 1px solid var(--p-content-border-color);
   gap: 0;
 }
@@ -521,13 +455,13 @@ function fmtDate(ts) {
 }
 
 .cc-metric-val {
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 700;
   line-height: 1;
 }
 
 .cc-metric-label {
-  font-size: 11px;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--p-text-muted-color);
@@ -540,20 +474,33 @@ function fmtDate(ts) {
   background: var(--p-content-border-color);
 }
 
-/* ═══ ВОРОНКА ═══════════════════════════════════════════════════════════════ */
-.cc-pipeline-overview {
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--p-content-border-color);
-  background: var(--p-surface-card);
+/* ═══ PAGE CONTENT ═════════════════════════════════════════════════════════ */
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
 }
 
-.cc-section-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--p-text-muted-color);
+.page-card {
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.page-section-title {
+  font-size: 0.78rem;
   font-weight: 700;
-  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--p-text-muted-color);
+  margin-bottom: 14px;
+}
+
+/* ═══ ВОРОНКА ═══════════════════════════════════════════════════════════════ */
+.cc-pipeline-overview {
+  /* inherits .page-card */
 }
 
 .cc-pipeline-track {
@@ -574,12 +521,12 @@ function fmtDate(ts) {
 }
 
 .cc-pipeline-node-label {
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 700;
 }
 
 .cc-pipeline-node-name {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   margin-bottom: 6px;
 }
@@ -588,11 +535,16 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
-  background: var(--p-surface-ground);
+  font-size: 0.78rem;
+  background: var(--p-surface-card);
   border-radius: 4px;
   padding: 2px 6px;
   margin-bottom: 2px;
+}
+
+.cc-pipeline-deal-dot {
+  font-size: 0.38rem;
+  color: var(--fst-brand);
 }
 
 .cc-pipeline-arrow {
@@ -600,7 +552,7 @@ function fmtDate(ts) {
   right: -8px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
   z-index: 1;
 }
@@ -609,46 +561,6 @@ function fmtDate(ts) {
 .cc-filters {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 12px 24px;
-  border-bottom: 1px solid var(--p-content-border-color);
-  background: var(--p-surface-card);
-  overflow-x: auto;
-}
-
-.cc-filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 20px;
-  background: transparent;
-  color: var(--p-text-muted-color);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-
-.cc-filter-btn:hover {
-  border-color: var(--p-primary-color);
-  color: var(--p-text-color);
-}
-
-.cc-filter-btn--active {
-  background: var(--p-primary-color);
-  border-color: var(--p-primary-color);
-  color: #fff;
-}
-
-.cc-filter-count {
-  font-size: 11px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
-  padding: 0 5px;
-  min-width: 18px;
-  text-align: center;
 }
 
 /* ═══ КАРТОЧКИ ═══════════════════════════════════════════════════════════════ */
@@ -656,7 +568,6 @@ function fmtDate(ts) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
-  padding: 16px 24px;
 }
 
 .cc-card {
@@ -672,7 +583,7 @@ function fmtDate(ts) {
 }
 
 .cc-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--p-text-color) 10%, transparent);
   border-color: var(--p-primary-color);
 }
 
@@ -695,7 +606,7 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -703,7 +614,7 @@ function fmtDate(ts) {
 
 .cc-card-id {
   flex: 1;
-  font-size: 13px;
+  font-size: 0.88rem;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -711,9 +622,10 @@ function fmtDate(ts) {
 }
 
 .cc-card-phase {
-  font-size: 12px;
+  font-size: 0.83rem;
   color: var(--p-text-muted-color);
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   padding: 3px 8px;
   display: inline-flex;
@@ -724,8 +636,13 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.83rem;
   min-width: 0;
+}
+
+.cc-last-event-icon {
+  font-size: 0.78rem;
+  opacity: 0.6;
 }
 
 .cc-card-last-event > span:first-of-type {
@@ -736,7 +653,7 @@ function fmtDate(ts) {
 }
 
 .cc-card-date {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
   flex-shrink: 0;
 }
@@ -751,7 +668,7 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 0.78rem;
   padding: 3px 8px;
   border-radius: 5px;
 }
@@ -764,7 +681,7 @@ function fmtDate(ts) {
 }
 
 .cc-card-next-label {
-  font-size: 10px;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--p-text-muted-color);
@@ -775,8 +692,12 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.83rem;
   font-weight: 500;
+}
+
+.cc-next-action-icon {
+  font-size: 0.78rem;
 }
 
 .cc-card-footer {
@@ -792,13 +713,13 @@ function fmtDate(ts) {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 0.78rem;
   color: var(--p-text-muted-color);
 }
 
 .cc-card-btn {
   margin-left: auto;
-  font-size: 11px !important;
+  font-size: 0.78rem !important;
 }
 
 .cc-empty {
@@ -809,13 +730,22 @@ function fmtDate(ts) {
   gap: 8px;
   padding: 48px;
   color: var(--p-text-muted-color);
-  font-size: 13px;
+  font-size: 0.88rem;
+}
+
+.cc-empty-icon {
+  font-size: 2rem;
+  opacity: 0.3;
+}
+
+.cc-empty-hint {
+  font-size: 0.78rem;
+  color: var(--p-text-muted-color);
 }
 
 /* ═══ КРОСС-ГРАФ ═══════════════════════════════════════════════════════════ */
 .cc-cross-section {
-  padding: 16px 24px 24px;
-  border-top: 1px solid var(--p-content-border-color);
+  /* inherits .page-card */
 }
 
 .cc-cross-links {
@@ -833,7 +763,7 @@ function fmtDate(ts) {
   background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 0.78rem;
   align-items: center;
 }
 
@@ -849,9 +779,14 @@ function fmtDate(ts) {
   overflow: hidden;
 }
 
+.cc-cross-entity-icon {
+  font-size: 0.78rem;
+}
+
 .cc-cross-from code, .cc-cross-to code {
-  font-size: 9px;
-  background: var(--p-surface-ground);
+  font-size: 0.7rem;
+  background: var(--p-surface-card);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 3px;
   padding: 1px 4px;
   color: var(--fst-purple);
@@ -866,7 +801,7 @@ function fmtDate(ts) {
 
 .cc-cross-label {
   grid-column: 1 / -1;
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--p-text-muted-color);
 }
 </style>

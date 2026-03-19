@@ -416,7 +416,7 @@ const getGradeClass = (grade) => {
       align-items: flex-start;
       gap: 0.75rem;
       padding: 0.75rem;
-      background: var(--surface-ground);
+      background: var(--p-surface-card);
       border-radius: 6px;
       border-left: 3px solid var(--surface-border);
       transition: all 0.2s;
@@ -533,7 +533,7 @@ const getGradeClass = (grade) => {
 
       .simple-canvas {
         padding: 1rem;
-        background: var(--surface-ground);
+        background: var(--p-surface-card);
         border-radius: 8px;
         border: 2px dashed var(--surface-border);
         min-height: 400px;
@@ -730,7 +730,7 @@ const getGradeClass = (grade) => {
 
     .hint-item {
       padding: 1rem;
-      background: var(--surface-ground);
+      background: var(--p-surface-card);
       border-radius: 6px;
       border-left: 3px solid var(--orange-500);
 

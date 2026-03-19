@@ -436,7 +436,7 @@ onMounted(() => {
 .selected-users-preview {
   margin-top: 1.5rem;
   padding: 1rem;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
 }
 

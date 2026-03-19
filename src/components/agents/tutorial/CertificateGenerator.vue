@@ -394,7 +394,7 @@ const restartCourse = () => {
           display: flex;
           justify-content: space-between;
           padding: 0.5rem;
-          background: var(--surface-ground);
+          background: var(--p-surface-card);
           border-radius: 6px;
 
           &.bonus {
@@ -531,7 +531,7 @@ const restartCourse = () => {
 
                 .skill-item {
                   padding: 0.5rem;
-                  background: var(--surface-ground);
+                  background: var(--p-surface-card);
                   border-radius: 4px;
                   font-size: 0.9rem;
                 }
@@ -543,7 +543,7 @@ const restartCourse = () => {
               justify-content: center;
               gap: 2rem;
               padding: 1rem;
-              background: var(--surface-ground);
+              background: var(--p-surface-card);
               border-radius: 6px;
 
               .achievement-stat {
@@ -577,7 +577,7 @@ const restartCourse = () => {
 
     .unlocked-features {
       padding: 1.5rem;
-      background: var(--surface-ground);
+      background: var(--p-surface-card);
       border-radius: 8px;
 
       h3 {
@@ -654,7 +654,7 @@ const restartCourse = () => {
 
         .next-step-link {
           padding: 0.75rem;
-          background: var(--surface-ground);
+          background: var(--p-surface-card);
           border-radius: 6px;
           text-decoration: none;
           color: var(--text-color);

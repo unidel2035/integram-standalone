@@ -656,7 +656,7 @@ function fmtDate(ts) {
 }
 .arena-scan-log {
   width: 100%; max-width: 380px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 10px; padding: 10px 14px;
   display: flex; flex-direction: column; gap: 7px;
@@ -692,7 +692,7 @@ function fmtDate(ts) {
 /* IRR breakdown */
 .arena-victory-irr {
   width: 100%; max-width: 360px;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 12px; padding: 12px 16px;
   display: flex; flex-direction: column; gap: 8px;

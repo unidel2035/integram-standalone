@@ -608,8 +608,8 @@ async function runCompatSearch() {
   position: relative;
   transition: all 0.12s;
 }
-.spm-pyramid-item:hover { background: var(--p-surface-ground); }
-.spm-pyramid-item.active { background: var(--p-surface-ground); border-color: var(--p-primary-color); }
+.spm-pyramid-item:hover { background: var(--p-surface-card); }
+.spm-pyramid-item.active { background: var(--p-surface-card); border-color: var(--p-primary-color); }
 .spm-pi-name { font-size: 13px; font-weight: 600; color: var(--p-text-color); }
 .spm-pi-meta { font-size: 11px; color: var(--p-text-muted-color); margin-top: 2px; }
 .spm-pi-del  { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); opacity: 0; }
@@ -637,7 +637,7 @@ async function runCompatSearch() {
 /* Layer card */
 .spm-layers { display: flex; flex-direction: column; gap: 8px; }
 .spm-layer-card {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px; padding: 10px 12px;
 }
@@ -696,7 +696,7 @@ async function runCompatSearch() {
 .spm-compat-controls { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 .spm-compat-results { display: flex; flex-direction: column; gap: 8px; }
 .spm-compat-card {
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   border: 1px solid var(--p-content-border-color);
   border-radius: 8px; padding: 10px 14px;
 }
@@ -713,7 +713,7 @@ async function runCompatSearch() {
   padding: 7px 10px; border-radius: 6px; cursor: pointer;
   transition: background 0.1s;
 }
-.spm-picker-item:hover { background: var(--p-surface-ground); }
+.spm-picker-item:hover { background: var(--p-surface-card); }
 .spm-picker-name { flex: 1; font-size: 13px; color: var(--p-text-color); }
 
 /* Form */

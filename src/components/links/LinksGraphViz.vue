@@ -253,7 +253,7 @@ onUnmounted(() => { if (animFrame) cancelAnimationFrame(animFrame) })
 <style scoped>
 .lgv-wrap {
   position: relative;
-  background: var(--surface-ground);
+  background: var(--p-surface-card);
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--surface-border);

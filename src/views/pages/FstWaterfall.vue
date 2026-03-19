@@ -357,8 +357,8 @@ function exportWaterfall() {
 .wf-inputs-card, .wf-stack-card, .wf-result-card, .wf-irr-card {
   background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 12px; padding: 20px;
 }
-.wf-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
-.wf-subsection-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin: 16px 0 10px; }
+.wf-section-title { font-size:0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin-bottom: 14px; }
+.wf-subsection-title { font-size:0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--p-text-muted-color); margin: 16px 0 10px; }
 
 .wf-inputs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 .wf-field { display: flex; flex-direction: column; gap: 4px; }
@@ -368,19 +368,19 @@ function exportWaterfall() {
 .wf-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
 .wf-table th { padding: 7px 10px; text-align: left; color: var(--p-text-muted-color); border-bottom: 1px solid var(--p-content-border-color); font-size: 0.75rem; }
 .wf-table td { padding: 8px 10px; border-bottom: 1px solid var(--p-content-border-color); color: var(--p-text-color); }
-.wf-table tfoot td { border-top: 2px solid var(--p-content-border-color); border-bottom: none; background: var(--p-surface-ground); }
+.wf-table tfoot td { border-top: 2px solid var(--p-content-border-color); border-bottom: none; background: var(--p-surface-card); }
 .inv-name { font-weight: 600; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .bold { font-weight: 700; }
 .green { color: var(--fst-green); } .red { color: var(--fst-red); }
 .pref-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-.pref-badge.none     { background: var(--p-surface-ground); color: var(--p-text-muted-color); }
+.pref-badge.none     { background: var(--p-surface-card); color: var(--p-text-muted-color); }
 .pref-badge.non_part { background: color-mix(in srgb, var(--fst-blue) 12%, transparent); color: color-mix(in srgb, var(--fst-blue) 70%, var(--p-text-color)); }
 .pref-badge.part     { background: color-mix(in srgb, var(--fst-purple) 12%, transparent); color: color-mix(in srgb, var(--fst-purple) 70%, var(--p-text-color)); }
 .pref-badge.capped   { background: color-mix(in srgb, var(--fst-brand) 12%, transparent); color: color-mix(in srgb, var(--fst-brand) 70%, var(--p-text-color)); }
 
 .wf-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid var(--p-content-border-color); padding-bottom: 12px; }
-.wf-step { display: grid; grid-template-columns: 30px 1fr auto 150px; align-items: center; gap: 12px; background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px 16px; }
+.wf-step { display: grid; grid-template-columns: 30px 1fr auto 150px; align-items: center; gap: 12px; background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 12px 16px; }
 .step-num { font-size: 1.1rem; font-weight: 900; color: var(--p-primary-color); }
 .step-title { font-weight: 600; font-size: 0.88rem; color: var(--p-text-color); }
 .step-desc  { font-size: 0.72rem; color: var(--p-text-muted-color); }
@@ -396,7 +396,7 @@ function exportWaterfall() {
 .result-table td, .result-table th { vertical-align: middle; }
 
 .irr-scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-.irr-sc { background: var(--p-surface-ground); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; }
+.irr-sc { background: var(--p-surface-card); border: 1px solid var(--p-content-border-color); border-radius: 8px; padding: 14px; }
 .irr-exit { font-size: 1.4rem; font-weight: 900; color: var(--p-primary-color); }
 .irr-label { font-size: 0.75rem; color: var(--p-text-muted-color); margin: 2px 0 8px; }
 .irr-val { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }

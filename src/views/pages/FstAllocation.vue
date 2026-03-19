@@ -766,7 +766,7 @@ onUnmounted(() => {
 <style scoped>
 .fst-allocation {
   min-height: 100vh;
-  background: var(--p-surface-ground);
+  background: var(--p-surface-card);
   display: flex;
   flex-direction: column;
 }
