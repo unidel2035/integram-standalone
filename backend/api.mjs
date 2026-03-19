@@ -84,6 +84,9 @@ import { refreshConfig } from './src/services/fstConfigService.js'
 import { createKAGFstMCPRoutes } from './src/api/routes/kag.js'
 import { createClaudeMemoryRoutes } from './src/api/routes/claude-memory.js'
 import { createFundOrchestrator } from './src/agents/orchestration/FundOrchestrator.js'
+import { createAgentBusRoutes } from './src/api/routes/agent-bus.js'
+import { getAgentBus } from './src/services/AgentBus.js'
+import AgentBusFederation from './src/services/AgentBusFederation.js'
 
 const app = express()
 const server = createServer(app)
@@ -767,6 +770,7 @@ app.use('/api',           roomRoutes)
 app.use('/api',           eventsRoutes)
 app.use('/api',           aiTokensRoutes)
 app.use('/api',           billingRoutes)
+app.use('/api/agent-bus', createAgentBusRoutes())
 
 // ── Doc Blocks — create/sync document in Integram kval ───────────────────────
 // Simplified: creates type 1022 Document in kval and returns documentId.
@@ -900,4 +904,8 @@ server.listen(PORT, () => {
   console.log(`[FST API] Listening on port ${PORT}`)
   // Загружаем конфиг из Integram в фоне (с fallback на дефолты)
   refreshConfig().catch(err => console.warn('[FstConfig] Initial load failed:', err.message))
+  // Start AgentBus P2P Federation
+  const agentBus = getAgentBus()
+  const federation = new AgentBusFederation(agentBus)
+  federation.start(PORT).catch(err => console.warn('[Federation] Start error:', err.message))
 })
