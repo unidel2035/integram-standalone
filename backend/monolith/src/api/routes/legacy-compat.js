@@ -13245,39 +13245,70 @@ router.get('/:db/export/:typeId', legacyAuthMiddleware, async (req, res) => {
 // ============================================================================
 
 /**
- * Get user grants for the current session (NODE-ONLY, no PHP equivalent — see #451)
+ * Get user grants for the current session
  * GET /:db/grants
  *
- * PHP parity: PHP has no /grants route — it returns plain text `null` (200).
- * Node returns the same plain text `null` to match PHP behaviour.
+ * Node-only endpoint (PHP had no /grants route).
+ * Returns the grants object for the authenticated user's role.
+ * Format: { "<typeId>": "READ"|"WRITE", mask: {...}, EXPORT: {...}, DELETE: {...} }
+ * Admin backdoor users receive { "1": "WRITE" } (full access).
  */
-router.get('/:db/grants', async (req, res) => {
+router.get('/:db/grants', legacyAuthMiddleware, async (req, res) => {
   const { db } = req.params;
 
   if (!isValidDbName(db)) {
-    return sendLegacyDie(res, 'Invalid database' );
+    return sendLegacyDie(res, 'Invalid database');
   }
 
-  // PHP parity: PHP has no /grants endpoint — always returns `null` as plain text.
-  return res.status(200).type('text/html; charset=UTF-8').send('null');
+  const grants = req.legacyUser.grants || {};
+
+  // Admin backdoor: signal full access
+  if (req.legacyUser.isAdminBackdoor) {
+    return res.status(200).json({ '1': 'WRITE' });
+  }
+
+  return res.status(200).json(grants);
 });
 
 /**
- * Check grant for specific object/type (NODE-ONLY, no PHP equivalent — see #451)
+ * Check grant for specific object/type
  * POST /:db/check_grant
  *
- * PHP parity: PHP has no /check_grant route — it returns plain text `null` (200).
- * Node returns the same plain text `null` to match PHP behaviour.
+ * Node-only endpoint (PHP had no /check_grant route).
+ * Body: { id: <objectId>, t: <typeId>, grant: "READ"|"WRITE" }
+ * Returns: { granted: true|false }
  */
-router.post('/:db/check_grant', async (req, res) => {
+router.post('/:db/check_grant', legacyAuthMiddleware, async (req, res) => {
   const { db } = req.params;
 
   if (!isValidDbName(db)) {
-    return sendLegacyDie(res, 'Invalid database' );
+    return sendLegacyDie(res, 'Invalid database');
   }
 
-  // PHP parity: PHP has no /check_grant endpoint — always returns `null` as plain text.
-  return res.status(200).type('text/html; charset=UTF-8').send('null');
+  const id = parseInt(req.body?.id, 10) || 0;
+  const t  = parseInt(req.body?.t,  10) || 0;
+  const grant = (req.body?.grant || 'WRITE').toUpperCase();
+
+  if (!id && !t) {
+    return res.status(400).json({ error: 'Missing id or t parameter' });
+  }
+
+  try {
+    const pool = getPool();
+    const granted = await checkGrant(
+      pool,
+      db,
+      req.legacyUser.grants || {},
+      id,
+      t,
+      grant,
+      req.legacyUser.username || ''
+    );
+    return res.status(200).json({ granted: granted === true });
+  } catch (err) {
+    logger.error({ error: err.message, db }, '[check_grant] Error');
+    return res.status(500).json({ error: 'Internal error' });
+  }
 });
 
 // ============================================================================
