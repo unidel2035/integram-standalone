@@ -15,6 +15,8 @@ import { BatchService } from './BatchService.js';
 import { EventService } from './EventService.js';
 
 import { SearchService } from './SearchService.js';
+import { VectorService } from './VectorService.js';
+import { LinkService } from './LinkService.js';
 export { ObjectService } from './ObjectService.js';
 export { QueryService } from './QueryService.js';
 export { SchemaService } from './SchemaService.js';
@@ -27,8 +29,10 @@ export { BatchService } from './BatchService.js';
 export { EventService, EVENT_ACTIONS } from './EventService.js';
 
 export { SearchService } from './SearchService.js';
+export { VectorService } from './VectorService.js';
+export { LinkService } from './LinkService.js';
 export default {
   ObjectService, QueryService, SchemaService, TypeService, ValidationService,
   TransactionService, AuditService, OntologyService, BatchService, EventService,
 
-SearchService,};
+SearchService, VectorService, LinkService,};
