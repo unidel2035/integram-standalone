@@ -1,18 +1,17 @@
 /**
  * Embedding Service for KAG (Knowledge Augmented Generation)
  *
- * Generates vector embeddings for text using DeepSeek API or OpenAI API.
+ * Generates vector embeddings for text using API providers with local fallback.
  * Embeddings are used for semantic search and similarity matching.
  *
  * Features:
- * - Automatic retry with exponential backoff
+ * - Provider-level fallback (polza → local transformers.js)
  * - Batch processing for efficiency
  * - Caching to reduce API calls
- * - Support for multiple embedding models
+ * - Local fallback via @xenova/transformers (all-MiniLM-L6-v2, 384 dims)
  *
  * References:
  * - Issue #5071 - Vector embeddings and semantic search
- * - DeepSeek API: https://api.deepseek.com/
  *
  * @module EmbeddingService
  */
@@ -23,65 +22,88 @@ import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { withFallback } from '../../core/modelFallback.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+/**
+ * Available embedding providers:
+ * polza (text-embedding-3-small, 1536 dims) → local (all-MiniLM-L6-v2, 384 dims)
+ */
+const EMBEDDING_PROVIDERS = [
+  { name: 'polza', envKey: 'POLZA_AI_API_KEY', baseURL: 'https://api.polza.ai/api/v1', model: 'openai/text-embedding-3-small', dimensions: 1536, type: 'api' },
+];
+
+/**
+ * Local embedding provider using @xenova/transformers
+ * Used as fallback when all API providers are unavailable
+ */
+let localPipeline = null;
+const LOCAL_MODEL = 'Xenova/all-MiniLM-L6-v2';
+const LOCAL_DIMENSIONS = 384;
+
+async function getLocalPipeline() {
+  if (localPipeline) return localPipeline;
+  try {
+    const { pipeline } = await import('@xenova/transformers');
+    logger.info('[EmbeddingService] Loading local model...', { model: LOCAL_MODEL });
+    localPipeline = await pipeline('feature-extraction', LOCAL_MODEL);
+    logger.info('[EmbeddingService] Local model loaded', { model: LOCAL_MODEL, dimensions: LOCAL_DIMENSIONS });
+    return localPipeline;
+  } catch (err) {
+    logger.error('[EmbeddingService] Failed to load local model', { error: err.message });
+    throw err;
+  }
+}
+
+async function localEmbed(text) {
+  const extractor = await getLocalPipeline();
+  const result = await extractor(text, { pooling: 'mean', normalize: true });
+  return Array.from(result.data);
+}
 
 /**
  * Embedding Service for generating vector embeddings
  */
 class EmbeddingService {
   constructor(config = {}) {
-    // Determine API provider and key (Issue #5097)
-    // Priority: explicit config > DEEPSEEK > OPENAI > POLZA (fallback)
-    const apiKey = config.apiKey
-      || process.env.DEEPSEEK_API_KEY
-      || process.env.OPENAI_API_KEY
-      || process.env.POLZA_AI_API_KEY;
+    // If explicit apiKey + apiBase provided, use as sole provider (backward compat)
+    if (config.apiKey && config.apiBase) {
+      this.providers = [{
+        name: 'custom',
+        apiKey: config.apiKey,
+        baseURL: config.apiBase,
+        model: config.model || 'text-embedding-3-small',
+        dimensions: config.dimensions || 1536,
+        type: 'api'
+      }];
+    } else {
+      // Build provider list from available env keys
+      this.providers = EMBEDDING_PROVIDERS
+        .filter(p => process.env[p.envKey])
+        .map(p => ({ ...p, apiKey: process.env[p.envKey] }));
+    }
 
-    // Auto-detect API base URL based on available keys
-    let apiBase = config.apiBase;
-    let model = config.model;
+    // Always add local fallback
+    this.hasLocalFallback = true;
 
-    if (!apiBase) {
-      if (process.env.DEEPSEEK_API_KEY) {
-        apiBase = 'https://api.deepseek.com/v1';
-        model = model || 'text-embedding-3-small';
-      } else if (process.env.OPENAI_API_KEY) {
-        apiBase = 'https://api.openai.com/v1';
-        model = model || 'text-embedding-3-small';
-      } else if (process.env.POLZA_AI_API_KEY) {
-        apiBase = 'https://api.polza.ai/api/v1';
-        // Polza supports OpenAI models through aggregator
-        model = model || 'openai/text-embedding-3-small';
-        logger.info('[EmbeddingService] Using Polza.ai as embedding provider (fallback)');
-      } else {
-        apiBase = 'https://api.deepseek.com/v1'; // Default fallback
-        model = model || 'text-embedding-3-small';
-      }
+    if (this.providers.length === 0) {
+      logger.warn('[EmbeddingService] No API keys found. Will use local model only.');
+    } else {
+      logger.info({ providers: [...this.providers.map(p => p.name), 'local'] }, '[EmbeddingService] Available providers');
     }
 
     this.config = {
-      apiKey,
-      apiBase,
-      model,
-      maxRetries: config.maxRetries || 3,
-      retryDelay: config.retryDelay || 1000,
       batchSize: config.batchSize || 100,
       cacheDir: config.cacheDir || path.join(__dirname, '../../../data/kag/embeddings-cache'),
       enableCache: config.enableCache !== false,
-      dimensions: config.dimensions || 1536 // Default embedding dimensions
+      dimensions: config.dimensions || 1536
     };
 
-    if (!this.config.apiKey) {
-      logger.warn('[EmbeddingService] No API key provided. Service will not be functional.');
-    }
-
-    // Initialize OpenAI client (supports DeepSeek, OpenAI, and Polza - all OpenAI-compatible)
-    this.client = new OpenAI({
-      apiKey: this.config.apiKey,
-      baseURL: this.config.apiBase
-    });
+    // Track which provider generated current embeddings
+    this.activeProvider = null;
+    this.activeDimensions = null;
 
     this.cache = new Map();
     this.initialized = false;
@@ -100,10 +122,17 @@ class EmbeddingService {
 
     this.initialized = true;
     logger.info('[EmbeddingService] Initialized', {
-      model: this.config.model,
+      providers: [...this.providers.map(p => p.name), 'local'],
       cacheEnabled: this.config.enableCache,
       dimensions: this.config.dimensions
     });
+  }
+
+  /**
+   * Get current embedding dimensions (depends on active provider)
+   */
+  getDimensions() {
+    return this.activeDimensions || this.config.dimensions;
   }
 
   /**
@@ -123,53 +152,68 @@ class EmbeddingService {
     const maxLength = options.maxLength || 30000;
     const truncatedText = text.length > maxLength ? text.substring(0, maxLength) : text;
 
-    // Check cache
+    // Check cache BEFORE fallback
     const cacheKey = this._getCacheKey(truncatedText);
     if (this.config.enableCache && this.cache.has(cacheKey)) {
       logger.debug('[EmbeddingService] Cache hit', { textLength: truncatedText.length });
       return this.cache.get(cacheKey);
     }
 
-    // Generate embedding with retry
-    let lastError;
-    for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {
+    let embedding = null;
+
+    // Try API providers first
+    if (this.providers.length > 0) {
       try {
-        const response = await this.client.embeddings.create({
-          model: this.config.model,
-          input: truncatedText,
-          encoding_format: 'float'
-        });
-
-        const embedding = response.data[0].embedding;
-
-        // Cache the result
-        if (this.config.enableCache) {
-          this.cache.set(cacheKey, embedding);
-          await this.saveCache();
-        }
-
-        logger.debug('[EmbeddingService] Embedding generated', {
-          textLength: truncatedText.length,
-          dimensions: embedding.length,
-          attempt
-        });
-
-        return embedding;
-      } catch (error) {
-        lastError = error;
-        logger.warn('[EmbeddingService] Embedding attempt failed', {
-          attempt,
-          error: error.message
-        });
-
-        if (attempt < this.config.maxRetries) {
-          const delay = this.config.retryDelay * Math.pow(2, attempt - 1);
-          await this._sleep(delay);
-        }
+        embedding = await withFallback(
+          this.providers,
+          async (provider) => {
+            const client = new OpenAI({ apiKey: provider.apiKey, baseURL: provider.baseURL });
+            const response = await client.embeddings.create({
+              model: provider.model,
+              input: truncatedText,
+              encoding_format: 'float'
+            });
+            this.activeProvider = provider.name;
+            this.activeDimensions = provider.dimensions;
+            return response.data[0].embedding;
+          },
+          { label: 'Embedding', timeout: 30000 }
+        );
+      } catch (err) {
+        logger.warn('[EmbeddingService] All API providers failed, falling back to local', { error: err.message });
       }
     }
 
-    throw new Error(`Failed to generate embedding after ${this.config.maxRetries} attempts: ${lastError.message}`);
+    // Local fallback
+    if (!embedding && this.hasLocalFallback) {
+      try {
+        embedding = await localEmbed(truncatedText);
+        this.activeProvider = 'local';
+        this.activeDimensions = LOCAL_DIMENSIONS;
+        logger.info('[EmbeddingService] Used local model', { dimensions: LOCAL_DIMENSIONS });
+      } catch (err) {
+        logger.error('[EmbeddingService] Local fallback also failed', { error: err.message });
+        throw new Error('All embedding providers failed (API + local)');
+      }
+    }
+
+    if (!embedding) {
+      throw new Error('No embedding providers available');
+    }
+
+    // Cache the result
+    if (this.config.enableCache) {
+      this.cache.set(cacheKey, embedding);
+      await this.saveCache();
+    }
+
+    logger.debug('[EmbeddingService] Embedding generated', {
+      textLength: truncatedText.length,
+      dimensions: embedding.length,
+      provider: this.activeProvider
+    });
+
+    return embedding;
   }
 
   /**
@@ -217,6 +261,11 @@ class EmbeddingService {
    */
   cosineSimilarity(a, b) {
     if (!a || !b || a.length !== b.length) {
+      // Dimension mismatch — return 0 instead of throwing
+      if (a && b && a.length !== b.length) {
+        logger.warn('[EmbeddingService] Dimension mismatch in similarity', { a: a.length, b: b.length });
+        return 0;
+      }
       throw new Error('Invalid embeddings for similarity calculation');
     }
 
@@ -327,18 +376,10 @@ class EmbeddingService {
   getCacheStats() {
     return {
       entries: this.cache.size,
-      enabled: this.config.enableCache
+      enabled: this.config.enableCache,
+      activeProvider: this.activeProvider,
+      activeDimensions: this.activeDimensions
     };
-  }
-
-  /**
-   * Sleep utility
-   * @param {number} ms - Milliseconds to sleep
-   * @returns {Promise<void>}
-   * @private
-   */
-  _sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 

@@ -8016,6 +8016,19 @@ router.post('/:db', async (req, res, next) => {
 // Generic fallback for unknown actions
 // ============================================================================
 
+// V2 MCP tools (Deloitte 6 Gaps)
+router.post('/mcp/execute-tool', async (req, res) => {
+  const { toolName, arguments: toolArgs } = req.body;
+  if (toolName && toolName.startsWith('integram_v2_')) {
+    try {
+      const { executeV2Tool } = await import('../../services/mcp/integram-v2-tools.js');
+      const result = await executeV2Tool(toolName, toolArgs || {});
+      return res.json({ success: true, result, toolName });
+    } catch (e) { return res.status(500).json({ success: false, error: e.message }); }
+  }
+  return res.json({ success: false, error: 'Not a V2 tool' });
+});
+
 router.post('/:db/:action', async (req, res) => {
   const { db, action } = req.params;
 
@@ -8024,6 +8037,18 @@ router.post('/:db/:action', async (req, res) => {
     return res.status(200).json([{ error: 'Invalid database'  }]);
   }
 
+  // V2 MCP Tool routing
+  if (action === "_v2tool" || action === "_mcp_v2") {
+    try {
+      const { executeV2Tool } = await import("../../services/mcp/integram-v2-tools.js");
+      const { toolName, arguments: toolArgs } = req.body;
+      if (!toolName) return res.json({ success: false, error: "toolName required" });
+      const result = await executeV2Tool(toolName, toolArgs || {}, db);
+      return res.json(result);
+    } catch (err) {
+      return res.json({ success: false, error: err.message });
+    }
+  }
   logger.warn('[Legacy API] Unknown action', { db, action, body: req.body });
 
   res.json({ success: false, error: `Unknown action: ${action}` });

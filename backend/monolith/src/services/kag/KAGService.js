@@ -24,8 +24,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getEmbeddingService } from './EmbeddingService.js';
 import { getVectorStore } from './VectorStore.js';
+import { getSQLiteVectorStore } from './SQLiteVectorStore.js';
 import { CodeParser } from './CodeParser.js';
 import { getVersionManager } from './VersionManager.js';
+import { getKAGStorage } from './KAGStorageIntegram.js';
+import { FederatedSearch } from './FederatedSearch.js';
+import { DoubletStore } from './DoubletStore.js';
+import { LinoFormat } from './LinoFormat.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,13 +45,54 @@ class KAGService {
     });
 
     // Multi-repository configuration
-    // Default: single repository (backward compatibility)
     this.repositories = [
       {
         owner: 'unidel2035',
         repo: 'dronedoc2025',
         enabled: true,
         namespace: 'dronedoc2025'
+      },
+      {
+        owner: 'unidel2035',
+        repo: 'dronedoc2026',
+        enabled: true,
+        namespace: 'dronedoc2026'
+      },
+      {
+        owner: 'unidel2035',
+        repo: 'guitar',
+        enabled: true,
+        namespace: 'guitar'
+      },
+      {
+        owner: 'unidel2035',
+        repo: 'integramDD',
+        enabled: true,
+        namespace: 'integramDD'
+      },
+      {
+        owner: 'unidel2035',
+        repo: 'btc',
+        enabled: true,
+        namespace: 'btc'
+      },
+      {
+        owner: 'alekseymavai',
+        repo: 'TRADERAGENT',
+        enabled: true,
+        namespace: 'TRADERAGENT'
+      },
+      {
+        owner: 'RDmitryV',
+        repo: 'Trial_RDV',
+        enabled: true,
+        namespace: 'trial'
+      },
+      {
+        owner: 'unidel2035',
+        repo: 'found',
+        enabled: true,
+        namespace: 'found'
       }
     ];
 
@@ -59,13 +105,17 @@ class KAGService {
     this.cacheDir = path.join(this.dataDir, 'cache');
     this.embeddingsDir = path.join(this.dataDir, 'embeddings');
 
-    // Knowledge graph structure
+    // Knowledge graph structure (in-memory maps for backward compat)
     this.entities = new Map(); // entityId -> entity
     this.relations = new Map(); // relationId -> relation
 
+    // SQLite-backed Integram-compatible storage
+    this.storage = getKAGStorage();
+
     // Vector search services
     this.embeddingService = getEmbeddingService();
-    this.vectorStore = getVectorStore();
+    // Use SQLite-backed vector store for persistence (ChromaDB fallback was in-memory)
+    this.vectorStore = getSQLiteVectorStore();
 
     // Code parser
     this.codeParser = new CodeParser();
@@ -171,7 +221,10 @@ class KAGService {
     await fs.mkdir(this.cacheDir, { recursive: true });
     await fs.mkdir(this.embeddingsDir, { recursive: true });
 
-    // Load existing knowledge graph
+    // Initialize SQLite storage (Integram-compatible)
+    await this.storage.initialize();
+
+    // Load existing knowledge graph (SQLite primary, JSON fallback)
     await this.loadKnowledgeGraph();
 
     // Initialize vector services
@@ -181,11 +234,27 @@ class KAGService {
     // Initialize version manager
     await this.versionManager.initialize();
 
+    // Initialize DoubletStore (ассоциативный слой связей)
+    try {
+      this.doubletStore = new DoubletStore(this.storage.db);
+      logger.info('[KAG] DoubletStore initialized', this.doubletStore.getStats());
+    } catch (err) {
+      logger.warn('[KAG] DoubletStore init failed:', err.message);
+      this.doubletStore = null;
+    }
+
+    // Initialize FederatedSearch
+    this.federatedSearch = new FederatedSearch();
+    if (this.doubletStore) {
+      this.federatedSearch.setDoubletStore(this.doubletStore);
+    }
+
     this.initialized = true;
     logger.info('[KAG] Initialization complete', {
       entities: this.entities.size,
       relations: this.relations.size,
-      vectorDocuments: await this.vectorStore.count()
+      vectorDocuments: await this.vectorStore.count(),
+      doublets: this.doubletStore ? this.doubletStore.getStats().total : 0
     });
   }
 
@@ -1307,6 +1376,15 @@ class KAGService {
     } else {
       this.entities.set(entity.id, entity);
     }
+
+    // Sync to SQLite storage
+    try {
+      if (this.storage && this.storage.initialized) {
+        this.storage.addEntity(existing || entity);
+      }
+    } catch (err) {
+      // Non-blocking: don't fail if storage write fails
+    }
   }
 
   /**
@@ -1410,10 +1488,17 @@ class KAGService {
    */
   addRelation(relation) {
     const relationId = `${relation.from}_${relation.type}_${relation.to}`;
-    this.relations.set(relationId, {
-      id: relationId,
-      ...relation
-    });
+    const rel = { id: relationId, ...relation };
+    this.relations.set(relationId, rel);
+
+    // Sync to SQLite storage
+    try {
+      if (this.storage && this.storage.initialized) {
+        this.storage.addRelation(rel);
+      }
+    } catch (err) {
+      // Non-blocking
+    }
   }
 
   /**
@@ -1577,7 +1662,10 @@ class KAGService {
     } = options;
 
     const results = [];
-    const queryLower = query.toLowerCase();
+    const queryLower = query.toLowerCase().replace(/[?!.,;:(){}[\]"'«»]/g, '');
+    // Split query into individual terms for multi-word matching (strip punctuation, skip stopwords)
+    const stopWords = new Set(['что', 'это', 'как', 'где', 'кто', 'такое', 'какие', 'какой', 'какая', 'есть', 'для', 'или', 'the', 'what', 'how', 'is', 'are', 'which']);
+    const queryTerms = queryLower.split(/\s+/).filter(t => t.length >= 2 && !stopWords.has(t));
 
     // Keyword-based search
     for (const [id, entity] of this.entities) {
@@ -1586,17 +1674,30 @@ class KAGService {
       }
 
       let score = 0;
+      const nameLower = entity.name.toLowerCase();
 
-      // Check name
-      if (entity.name.toLowerCase().includes(queryLower)) {
+      // Check name — full phrase match (high weight)
+      if (nameLower.includes(queryLower)) {
         score += 1.0;
+      }
+      // Check name — individual term matches
+      for (const term of queryTerms) {
+        if (nameLower.includes(term)) {
+          score += 0.6;
+        }
       }
 
       // Check observations
       if (entity.observations) {
         for (const obs of entity.observations) {
-          if (obs.toLowerCase().includes(queryLower)) {
+          const obsLower = obs.toLowerCase();
+          if (obsLower.includes(queryLower)) {
             score += 0.5;
+          }
+          for (const term of queryTerms) {
+            if (obsLower.includes(term)) {
+              score += 0.2;
+            }
           }
         }
       }
@@ -1607,17 +1708,24 @@ class KAGService {
         if (propsString.includes(queryLower)) {
           score += 0.3;
         }
+        for (const term of queryTerms) {
+          if (propsString.includes(term)) {
+            score += 0.1;
+          }
+        }
       }
 
-      // Boost important documents
-      if (entity.type === 'Documentation') {
-        score += 0.5;
-      }
-      if (entity.name === 'README.md' || entity.name === 'CLAUDE.md') {
-        score += 2.0;
-      }
-      if (entity.type === 'File' && (entity.name === 'README.md' || entity.name === 'package.json')) {
-        score += 1.5;
+      // Boost important documents (only when not filtering by specific types)
+      if (!entityTypes) {
+        if (entity.type === 'Documentation') {
+          score += 0.5;
+        }
+        if (entity.name === 'README.md' || entity.name === 'CLAUDE.md') {
+          score += 2.0;
+        }
+        if (entity.type === 'File' && (entity.name === 'README.md' || entity.name === 'package.json')) {
+          score += 1.5;
+        }
       }
 
       if (score >= minScore) {
@@ -2139,20 +2247,49 @@ class KAGService {
       relationTypes[relation.type] = (relationTypes[relation.type] || 0) + 1;
     }
 
+    // Include SQLite storage stats if available
+    let storageStats = {};
+    try {
+      if (this.storage && this.storage.initialized) {
+        storageStats = this.storage.getStats();
+      }
+    } catch {}
+
+    // Include DoubletStore stats
+    let doubletsStats = {};
+    try {
+      if (this.doubletStore) {
+        doubletsStats = this.doubletStore.getStats();
+      }
+    } catch {}
+
     return {
       totalEntities: this.entities.size,
       totalRelations: this.relations.size,
       entityTypes,
-      relationTypes
+      relationTypes,
+      storage: storageStats,
+      doublets: doubletsStats
     };
   }
 
   /**
-   * Save knowledge graph to disk
+   * Save knowledge graph — SQLite primary, JSON as backup
    */
   async saveKnowledgeGraph() {
-    const graphFile = path.join(this.dataDir, 'knowledge_graph.json');
+    // Save to SQLite (primary)
+    try {
+      this.storage.saveFromMaps(this.entities, this.relations);
+      logger.info('[KAG] Knowledge graph saved to SQLite', {
+        entities: this.entities.size,
+        relations: this.relations.size
+      });
+    } catch (error) {
+      logger.error('[KAG] Failed to save to SQLite', { error: error.message });
+    }
 
+    // Save JSON backup (lighter — no pretty-printing for large graphs)
+    const graphFile = path.join(this.dataDir, 'knowledge_graph.json');
     const data = {
       entities: Array.from(this.entities.values()),
       relations: Array.from(this.relations.values()),
@@ -2162,8 +2299,15 @@ class KAGService {
       }
     };
 
-    await fs.writeFile(graphFile, JSON.stringify(data, null, 2));
-    logger.info('Knowledge graph saved', { file: graphFile });
+    try {
+      const jsonStr = this.entities.size > 10000
+        ? JSON.stringify(data)  // no pretty-print for large graphs
+        : JSON.stringify(data, null, 2);
+      await fs.writeFile(graphFile, jsonStr);
+      logger.info('[KAG] Knowledge graph JSON backup saved', { file: graphFile });
+    } catch (error) {
+      logger.warn('[KAG] JSON backup failed (SQLite is primary)', { error: error.message });
+    }
 
     // Create snapshot (versioning)
     try {
@@ -2177,16 +2321,38 @@ class KAGService {
   }
 
   /**
-   * Load knowledge graph from disk
+   * Load knowledge graph — SQLite primary, JSON fallback with auto-migration
    */
   async loadKnowledgeGraph() {
+    // Check if SQLite has data
+    const stats = this.storage.getStats();
+
+    if (stats.totalEntities > 0) {
+      // Load from SQLite into in-memory maps (backward compat)
+      logger.info('[KAG] Loading knowledge graph from SQLite', {
+        entities: stats.totalEntities,
+        relations: stats.totalRelations
+      });
+
+      const { entities, relations } = this.storage.exportToMaps();
+      this.entities = entities;
+      this.relations = relations;
+
+      logger.info('[KAG] Knowledge graph loaded from SQLite', {
+        entities: this.entities.size,
+        relations: this.relations.size
+      });
+      return;
+    }
+
+    // Fallback: load from JSON and migrate to SQLite
     const graphFile = path.join(this.dataDir, 'knowledge_graph.json');
-    logger.info('[KAG] Loading knowledge graph from file', { graphFile });
+    logger.info('[KAG] SQLite empty, trying JSON fallback', { graphFile });
 
     try {
       const data = await fs.readFile(graphFile, 'utf-8');
       const graph = JSON.parse(data);
-      logger.info('[KAG] Parsed graph data', {
+      logger.info('[KAG] Parsed graph data from JSON', {
         entitiesCount: graph.entities?.length,
         relationsCount: graph.relations?.length
       });
@@ -2196,27 +2362,32 @@ class KAGService {
       for (const entity of graph.entities) {
         this.entities.set(entity.id, entity);
       }
-      logger.info('[KAG] Loaded entities into map', { count: this.entities.size });
 
       // Load relations
       this.relations.clear();
       for (const relation of graph.relations) {
         this.relations.set(relation.id, relation);
       }
-      logger.info('[KAG] Loaded relations into map', { count: this.relations.size });
 
-      logger.info('[KAG] Knowledge graph loaded successfully', {
+      logger.info('[KAG] Knowledge graph loaded from JSON', {
         entities: this.entities.size,
         relations: this.relations.size
       });
+
+      // Auto-migrate to SQLite
+      if (this.entities.size > 0) {
+        logger.info('[KAG] Auto-migrating JSON → SQLite...');
+        this.storage.saveFromMaps(this.entities, this.relations);
+        logger.info('[KAG] Migration to SQLite complete');
+      }
     } catch (error) {
-      logger.error('[KAG] Error loading knowledge graph', {
-        error: error.message,
-        code: error.code,
-        graphFile
-      });
       if (error.code === 'ENOENT') {
         logger.info('[KAG] No existing knowledge graph found, starting fresh');
+      } else {
+        logger.error('[KAG] Error loading knowledge graph', {
+          error: error.message,
+          code: error.code
+        });
       }
     }
   }
@@ -2238,7 +2409,8 @@ class KAGService {
       minScore = 0.3,
       temperature = 0.2,
       maxTokens = 2000,
-      conversationHistory = []
+      conversationHistory = [],
+      entityTypes = null
     } = options;
 
     if (!llmCoordinator) {
@@ -2249,12 +2421,13 @@ class KAGService {
       throw new Error('Access token and model ID are required for RAG');
     }
 
-    logger.info('[KAG RAG] Starting question answering', { question, maxSources, minScore });
+    logger.info('[KAG RAG] Starting question answering', { question, maxSources, minScore, entityTypes });
 
     // Step 1: RETRIEVE - Search knowledge base for relevant entities
     const searchResults = await this.search(question, {
       limit: maxSources,
-      minScore
+      minScore,
+      entityTypes
     });
 
     logger.info('[KAG RAG] Retrieved search results', {
@@ -3235,11 +3408,225 @@ class KAGService {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;');
   }
+
+  // ============================================================
+  // LinoFormat export/import
+  // ============================================================
+
+  /**
+   * Экспорт графа в LinoFormat.
+   * @param {object} options — { mode: 'extended' | 'pure-lino', limit: number }
+   * @returns {string}
+   */
+  exportToLino(options = {}) {
+    const { mode = 'extended', limit = 0 } = options;
+
+    const entities = limit > 0
+      ? Array.from(this.entities.values()).slice(0, limit)
+      : Array.from(this.entities.values());
+
+    const relations = Array.from(this.relations.values());
+
+    const doublets = this.doubletStore
+      ? this.doubletStore.exportAll(limit)
+      : [];
+
+    return LinoFormat.serialize(entities, relations, doublets, { mode });
+  }
+
+  /**
+   * Импорт из LinoFormat текста.
+   * @param {string} text
+   * @returns {Promise<{entities: number, relations: number, doublets: number}>}
+   */
+  async importFromLino(text) {
+    await this.initialize();
+
+    const { entities, relations, doublets } = LinoFormat.parse(text);
+
+    let entitiesAdded = 0;
+    let relationsAdded = 0;
+    let doubletsAdded = 0;
+
+    // Import entities
+    for (const entity of entities) {
+      if (!entity.id) entity.id = entity.name;
+      this.addEntity(entity);
+      entitiesAdded++;
+    }
+
+    // Import relations
+    for (const rel of relations) {
+      if (!rel.id) rel.id = `rel-${rel.from}-${rel.to}-${rel.type}`;
+      this.addRelation(rel);
+      relationsAdded++;
+    }
+
+    // Import doublets
+    if (this.doubletStore && doublets.length > 0) {
+      for (const dbl of doublets) {
+        try {
+          this.doubletStore.createDoublet(
+            dbl.source,
+            dbl.target,
+            dbl.kind || 'same_as',
+            dbl.data || {}
+          );
+          doubletsAdded++;
+        } catch {
+          // UNIQUE constraint — skip
+        }
+      }
+    }
+
+    // Save
+    await this.saveKnowledgeGraph();
+
+    return { entities: entitiesAdded, relations: relationsAdded, doublets: doubletsAdded };
+  }
+
+  // ============================================================
+  // Knowledge Extraction Pipeline (Issue #7043)
+  // ============================================================
+
+  /**
+   * Extract knowledge from text using LLM
+   *
+   * Sends text to LLM with a structured extraction prompt,
+   * parses the JSON response, and saves entities + relations to KAG.
+   *
+   * @param {string} text - Source text to extract from
+   * @param {Object} options
+   * @param {Object} options.llmCoordinator - TokenBasedLLMCoordinator instance
+   * @param {string} options.accessToken - AI token
+   * @param {string} options.modelId - Model ID (e.g. 'kodacode/KodaAgent')
+   * @param {string} [options.source='extraction'] - Source label for provenance
+   * @returns {Promise<{entities: Array, relations: Array, usage: Object|null}>}
+   */
+  async extractKnowledge(text, { llmCoordinator, accessToken, modelId, source = 'extraction' }) {
+    await this.initialize();
+
+    if (!text || typeof text !== 'string' || text.trim().length < 10) {
+      throw new Error('Text must be a non-empty string (min 10 chars)');
+    }
+    if (!llmCoordinator || !accessToken || !modelId) {
+      throw new Error('llmCoordinator, accessToken, and modelId are required');
+    }
+
+    const truncatedText = text.substring(0, 4000);
+
+    const prompt = `Проанализируй текст и извлеки структурированные знания.
+
+Текст:
+"""
+${truncatedText}
+"""
+
+Извлеки:
+1. Сущности — объекты, люди, организации, технологии, концепции, продукты
+2. Связи между сущностями
+
+Верни ТОЛЬКО валидный JSON (без markdown-обёрток):
+{
+  "entities": [
+    { "name": "Название", "type": "Product|Organization|Person|Technology|Concept|Location|Event", "observations": ["факт 1", "факт 2"] }
+  ],
+  "relations": [
+    { "from": "Сущность1", "to": "Сущность2", "type": "hasComponent|produces|uses|isPartOf|locatedIn|worksFor|mentions|relatedTo" }
+  ]
+}`;
+
+    logger.info('[KAG Extract] Calling LLM for knowledge extraction', {
+      textLength: text.length, modelId, source
+    });
+
+    const llmResponse = await llmCoordinator.chatWithToken(
+      accessToken, modelId, prompt, {
+        application: 'KAG_KnowledgePipeline',
+        operation: 'extract_knowledge',
+        temperature: 0.1,
+        maxTokens: 2000
+      }
+    );
+
+    const responseText = llmResponse.content || llmResponse.response || '';
+
+    // Parse JSON from response (strip markdown fences if present)
+    let extracted;
+    try {
+      const cleaned = responseText.replace(/```json?\s*/g, '').replace(/```\s*/g, '').trim();
+      extracted = JSON.parse(cleaned);
+    } catch (parseErr) {
+      logger.warn('[KAG Extract] Failed to parse LLM response as JSON', {
+        error: parseErr.message, responsePreview: responseText.substring(0, 200)
+      });
+      return { entities: [], relations: [], usage: llmResponse.usage || null };
+    }
+
+    if (!Array.isArray(extracted.entities)) extracted.entities = [];
+    if (!Array.isArray(extracted.relations)) extracted.relations = [];
+
+    // Save entities to KAG
+    const savedEntities = [];
+    for (const e of extracted.entities) {
+      if (!e.name) continue;
+      const entityId = `${source}_${this._hashId(e.name)}`;
+      const entity = {
+        id: entityId,
+        name: e.name,
+        type: e.type || 'ChatFact',
+        properties: { source, extractedAt: new Date().toISOString() },
+        observations: Array.isArray(e.observations) ? e.observations : []
+      };
+      this.entities.set(entityId, entity);
+      savedEntities.push({ id: entityId, name: e.name, type: entity.type });
+    }
+
+    // Save relations to KAG
+    const savedRelations = [];
+    for (const r of extracted.relations) {
+      if (!r.from || !r.to) continue;
+      const fromId = `${source}_${this._hashId(r.from)}`;
+      const toId = `${source}_${this._hashId(r.to)}`;
+      const relId = `${source}_rel_${this._hashId(r.from + r.to)}`;
+      const relation = {
+        id: relId, type: r.type || 'relatedTo',
+        from: fromId, to: toId, properties: { source }
+      };
+      this.relations.set(relId, relation);
+      savedRelations.push({ id: relId, from: r.from, to: r.to, type: relation.type });
+    }
+
+    // Persist to storage
+    try { await this.saveKnowledgeGraph(); } catch (saveErr) {
+      logger.warn('[KAG Extract] Failed to persist knowledge graph', { error: saveErr.message });
+    }
+
+    logger.info('[KAG Extract] Knowledge extracted', {
+      entities: savedEntities.length, relations: savedRelations.length, source
+    });
+
+    return { entities: savedEntities, relations: savedRelations, usage: llmResponse.usage || null };
+  }
+
+  /**
+   * Hash a string to a short ID
+   * @private
+   */
+  _hashId(str) {
+    let hash = 0;
+    const s = String(str).toLowerCase().trim();
+    for (let i = 0; i < s.length; i++) {
+      hash = ((hash << 5) - hash) + s.charCodeAt(i);
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
+  }
 }
 
 // Singleton instance - reset on code change to pick up new VectorStore version
 let kagServiceInstance = null;
-const KAG_CODE_VERSION = 'v5097-fix-4-debug-chroma-disabled';
+const KAG_CODE_VERSION = 'v7043-knowledge-pipeline';
 
 export function getKAGService() {
   // Force recreation on code change to get new VectorStore instance

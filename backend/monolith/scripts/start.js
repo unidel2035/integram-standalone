@@ -76,12 +76,35 @@ if (fs.existsSync(PUBLIC_PATH)) {
 
 // ── Legacy PHP-compatible API + page routing ──────────────────────────────────
 
+// V2 API (AI Data Layer)
+import { DatabaseService, ConnectionManager } from '../../../packages/@integram/database/index.js';
+import { CoreDataService } from '../../../services/core-data-service/src/index.js';
+try {
+  const cm = new ConnectionManager({
+    host: process.env.INTEGRAM_DB_HOST || 'localhost',
+    port: parseInt(process.env.INTEGRAM_DB_PORT || '3306'),
+    user: process.env.INTEGRAM_DB_USER || 'root',
+    password: process.env.INTEGRAM_DB_PASSWORD || '',
+    database: process.env.INTEGRAM_DB_NAME || 'integram',
+  });
+  const mysql2 = await import('mysql2/promise');
+  await cm.initialize(mysql2.default || mysql2);
+  const dbService = new DatabaseService(cm);
+  const coreData = new CoreDataService(dbService);
+  const v2Router = coreData.createRouter({ enableLegacy: false });
+  app.use('/api', v2Router);
+  console.log('V2 API (AI Data Layer): /api/v2');
+} catch (e) {
+  console.warn('V2 API not loaded:', e.message);
+}
+
 const { default: legacyRouter } = await import('../src/api/routes/legacy-compat.js');
 app.use('/', legacyRouter);
 // Also handle /api/:db/... prefix used by myform.html save() and app.js ig.newApi()
 app.use('/api', legacyRouter);
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
+
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found', path: req.path, method: req.method });

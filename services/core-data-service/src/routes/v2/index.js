@@ -12,7 +12,7 @@ import { createOntologyRoutes } from './ontology.js';
 import { createBatchRoutes } from './batch.js';
 import { createTransactionRoutes } from './transactions.js';
 import { createEventRoutes } from './events.js';
-import { createBatchRoutes } from './batch.js';
+import { createSearchRoutes } from './search.js';
 
 /**
  * Create V2 modern routes.
