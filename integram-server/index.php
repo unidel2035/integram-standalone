@@ -7523,7 +7523,10 @@ function base64UrlDecode($input) {
     return base64_decode(strtr($input, '-_', '+/'));
 }
 function verifyJWT($jwt, $publicKey) {
-    list($header, $payload, $signature) = explode('.', $jwt, 3);
+    $parts = explode('.', $jwt, 3);
+    if(count($parts) < 3)
+        return false;
+    list($header, $payload, $signature) = $parts;
 
     if(!$signature)
 	    die("{\"warning\":\"Incorrect JWT\"}");
@@ -7606,13 +7609,19 @@ Exec_sql("SET SESSION optimizer_search_depth = 9", "Search depth");
 switch($a)  # Check actions, which don't require authentication
 {
 	case "jwt":
-        $params = verifyJWT($_POST["jwt"], JWT_PUBLIC_KEY);
-        if($params){
-            $params = json_decode($params["payload"], false);
-            authJWT($params->data->userId);
-        }
-        else
+        try {
+            if(!isset($_POST["jwt"]) || !$_POST["jwt"])
+                die("{\"error\":\"JWT verification failed\"}");
+            $params = verifyJWT($_POST["jwt"], JWT_PUBLIC_KEY);
+            if($params){
+                $params = json_decode($params["payload"], false);
+                authJWT($params->data->userId);
+            }
+            else
+                die("{\"error\":\"JWT verification failed\"}");
+        } catch (\Throwable $e) {
             die("{\"error\":\"JWT verification failed\"}");
+        }
 		break;
 		
 	case "auth":
@@ -8941,6 +8950,65 @@ if(Validate_Token())
 	        api_dump($json, "terms.json");
 		    break;
 
+		case "_list":
+		    # Return objects of type $id as plain text: id\tval per line
+		    if((int)$id === 0)
+		        die("null");
+		    $limit = isset($_REQUEST["LIMIT"]) ? (int)$_REQUEST["LIMIT"] : 50;
+		    $offset = isset($_REQUEST["F"]) ? (int)$_REQUEST["F"] : 0;
+		    $search_cond = "";
+		    if(isset($_REQUEST["q"]) && strlen($_REQUEST["q"])){
+		        $q = addslashes($_REQUEST["q"]);
+		        $search_cond = " AND (a.val LIKE '%$q%' OR EXISTS (SELECT 1 FROM $z req WHERE req.up=a.id AND req.val LIKE '%$q%'))";
+		    }
+		    $up_cond = "";
+		    if(isset($_REQUEST["up"]) && is_numeric($_REQUEST["up"]))
+		        $up_cond = " AND a.up=".(int)$_REQUEST["up"];
+		    $data_set = Exec_sql("SELECT a.id, a.val FROM $z a WHERE a.t=$id $search_cond $up_cond ORDER BY a.ord LIMIT $limit OFFSET $offset"
+		                        , "List objects");
+		    $lines = array();
+		    while($row = mysqli_fetch_array($data_set))
+		        $lines[] = $row["id"]."\t".$row["val"];
+		    die(implode("\n", $lines));
+		    break;
+
+		case "_list_join":
+		    # Return objects of type $id with requisite values as plain text: id\tval[\treq_val...] per line
+		    if((int)$id === 0)
+		        die("null");
+		    $limit = isset($_REQUEST["LIMIT"]) ? (int)$_REQUEST["LIMIT"] : 50;
+		    $offset = isset($_REQUEST["F"]) ? (int)$_REQUEST["F"] : 0;
+		    $search_cond = "";
+		    if(isset($_REQUEST["q"]) && strlen($_REQUEST["q"])){
+		        $q = addslashes($_REQUEST["q"]);
+		        $search_cond = " AND obj.val LIKE '%$q%'";
+		    }
+		    $up_cond = "";
+		    if(isset($_REQUEST["up"]) && is_numeric($_REQUEST["up"]))
+		        $up_cond = " AND obj.up=".(int)$_REQUEST["up"];
+		    # Get type requisites for join (first 5)
+		    $req_data = Exec_sql("SELECT id, val, t FROM $z WHERE up=$id ORDER BY ord LIMIT 5", "Get type reqs for join");
+		    $select_parts = array("obj.id", "obj.val");
+		    $join_parts = array();
+		    $join_idx = 0;
+		    while($req_row = mysqli_fetch_array($req_data)){
+		        $alias = "r".$join_idx++;
+		        $select_parts[] = "$alias.val AS ".$alias."val";
+		        $join_parts[] = "LEFT JOIN $z $alias ON $alias.up=obj.id AND $alias.t=".$req_row["id"];
+		    }
+		    $sql = "SELECT ".implode(", ", $select_parts)." FROM $z obj ".implode(" ", $join_parts)
+		          ." WHERE obj.t=$id $search_cond $up_cond ORDER BY obj.ord LIMIT $limit OFFSET $offset";
+		    $data_set = Exec_sql($sql, "List objects with join");
+		    $lines = array();
+		    while($row = mysqli_fetch_array($data_set)){
+		        $parts = array($row["id"], $row["val"]);
+		        for($i = 0; $i < $join_idx; $i++)
+		            $parts[] = isset($row["r".$i."val"]) ? $row["r".$i."val"] : "";
+		        $lines[] = implode("\t", $parts);
+		    }
+		    die(implode("\n", $lines));
+		    break;
+
 		case "_ref_reqs":
 		    if((int)$id === 0)
 		        die("{\"error\":\"Invalid id\"}");
@@ -8958,6 +9026,7 @@ if(Validate_Token())
 			$joins = Array();
 		    $list = Array();
 			$reqs = $reqs_granted = $sub_reqs = $search_req = $restrict = $wild_search = "";
+			$dic = null;
 			while($row = mysqli_fetch_array($data_set)){
 			    if(!isset($dic)){
     			    $dic = $row["dic"];
@@ -9070,7 +9139,10 @@ if(Validate_Token())
 				if(isset($granted))
 					$reqs_granted = "AND ($granted)";
         	}
-			$sql = "SELECT vals.id, vals.val ref_val $reqs 
+			if($dic === null){
+				die(json_encode($list, JSON_UNESCAPED_UNICODE));
+			}
+			$sql = "SELECT vals.id, vals.val ref_val $reqs
 						FROM (SELECT vals.id, vals.val $sub_reqs FROM $z vals ".implode(" ", $joins).", $z pars
 						WHERE pars.id=vals.up AND pars.up!=0 AND vals.t=$dic $reqs_granted $search_req $restrict LIMIT ".DDLIST_ITEMS.") vals
 					    ORDER BY vals.val";
@@ -9147,7 +9219,7 @@ if(Validate_Token())
     		wlog("$user@".$_SERVER["REMOTE_ADDR"]."[$scount/$time/$stime]", "log");
 			if(isApi())
 			    if(isset($_REQUEST["JSON_DATA"]))
-    				die("[".implode(",", $GLOBALS["GLOBAL_VARS"]["newapi"])."]");
+    				die("[".implode(",", $GLOBALS["GLOBAL_VARS"]["newapi"] ?? [])."]");
     			else
     				die(json_encode($GLOBALS["GLOBAL_VARS"]["api"], JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE));
         	if(($z == $GLOBALS["GLOBAL_VARS"]["user"]) || ($GLOBALS["GLOBAL_VARS"]["user"] == "admin"))

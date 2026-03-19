@@ -1,0 +1,242 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__file_docs_1773722656863"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "block"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000031698"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000031698"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__file_docs_1773722656863"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000031698"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000031698"
+    ],
+    "_parent_.val": [
+      "__file_docs_1773722656863"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "align": [
+      "LEFT",
+      "LEFT"
+    ],
+    "id": [
+      "1000031705",
+      "1000031707"
+    ],
+    "val": [
+      "TestDoc1",
+      "TestDoc2"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "base": [
+      "SHORT",
+      "FILE",
+      "SHORT",
+      "FILE"
+    ],
+    "val": [
+      "",
+      "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/711e9d6948c.txt\">711e9d6948c.txt</a>",
+      "",
+      "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/713f3f70df4.docx\">713f3f70df4.docx</a>"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "arr_type": [
+      "",
+      ""
+    ],
+    "array": [
+      "",
+      ""
+    ],
+    "base_typ": [
+      "3",
+      "10"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "grant": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000031698",
+      "1000031698"
+    ],
+    "mandatory": [
+      "",
+      ""
+    ],
+    "multi": [
+      "",
+      ""
+    ],
+    "ref": [
+      "",
+      ""
+    ],
+    "ref_type": [
+      "",
+      ""
+    ],
+    "typ": [
+      "1000031701",
+      "1000031703"
+    ],
+    "val": [
+      "__dt_prio_1773722654190",
+      "__sys_bt10_1773636931826"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000031701",
+      "1000031703"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "_parent_.dd": [
+      "",
+      ""
+    ],
+    "_parent_.ref": [
+      "1000031701",
+      "1000031703"
+    ],
+    "f_typ": [
+      "F_1000031701",
+      "F_1000031703"
+    ],
+    "filter": [
+      "",
+      ""
+    ]
+  },
+  "&object_reqs": {
+    "1000031705": [
+      "",
+      "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/711e9d6948c.txt\">711e9d6948c.txt</a>"
+    ],
+    "1000031707": [
+      "",
+      "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/713f3f70df4.docx\">713f3f70df4.docx</a>"
+    ]
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "object": [
+    {
+      "base": "1000031698",
+      "id": "1000031705",
+      "up": "1",
+      "val": "TestDoc1"
+    },
+    {
+      "base": "1000031698",
+      "id": "1000031707",
+      "up": "1",
+      "val": "TestDoc2"
+    }
+  ],
+  "req_attrs": {
+    "1000031701": "",
+    "1000031703": ""
+  },
+  "req_base": {
+    "1000031701": "SHORT",
+    "1000031703": "FILE"
+  },
+  "req_base_id": {
+    "1000031701": "3",
+    "1000031703": "10"
+  },
+  "req_order": [
+    "1000031701",
+    "1000031703"
+  ],
+  "req_type": {
+    "1000031701": "__dt_prio_1773722654190",
+    "1000031703": "__sys_bt10_1773636931826"
+  },
+  "reqs": {
+    "1000031705": {
+      "1000031703": "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/711e9d6948c.txt\">711e9d6948c.txt</a>"
+    },
+    "1000031707": {
+      "1000031703": "<a target=\"_blank\" href=\"/download/my/1000031b7f472a6/713f3f70df4.docx\">713f3f70df4.docx</a>"
+    }
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000031698,
+    "up": 1,
+    "val": "__file_docs_1773722656863"
+  }
+}

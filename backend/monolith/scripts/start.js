@@ -74,6 +74,115 @@ if (fs.existsSync(PUBLIC_PATH)) {
   console.log(`   App UI: http://localhost:${PORT}/app/templates/login.html`);
 }
 
+// ── API v2 auth endpoint (handles POST /api/v2/auth) ────────────────────────
+// Mounted BEFORE legacy router to prevent /:db/auth from intercepting v2 paths.
+// Proxies auth to legacy /:db/auth?JSON internally.
+
+app.post('/api/v2/auth', async (req, res) => {
+  try {
+    // Accept both JSON:API format and simple {login, password, database} format
+    let login, password, database;
+
+    if (req.body?.data?.type === 'auth') {
+      // JSON:API format
+      ({ login, password, database } = req.body.data.attributes || {});
+    } else {
+      // Simple format
+      ({ login, password, database } = req.body || {});
+    }
+
+    database = database || 'my';
+
+    if (!login || !password) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'login and password are required' }
+      });
+    }
+
+    // Use internal fetch to legacy auth endpoint
+    const legacyUrl = `http://127.0.0.1:${PORT}/${database}/auth?JSON`;
+    const formData = new URLSearchParams({ login, pwd: password });
+
+    const response = await fetch(legacyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString()
+    });
+
+    const data = await response.json();
+
+    // Legacy auth returns {token, id, _xsrf, msg} on success
+    // or [{error: "..."}] on failure
+    if (Array.isArray(data) && data[0]?.error) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'AUTH_FAILED', message: data[0].error }
+      });
+    }
+
+    if (data.token) {
+      return res.json({
+        success: true,
+        data: {
+          type: 'auth-session',
+          id: data.token,
+          attributes: {
+            token: data.token,
+            userId: data.id,
+            database,
+            xsrf: data._xsrf
+          }
+        },
+        meta: { timestamp: new Date().toISOString() }
+      });
+    }
+
+    // Unexpected response
+    return res.status(500).json({
+      success: false,
+      error: { code: 'UNEXPECTED', message: 'Unexpected auth response' },
+      meta: { legacy: data }
+    });
+
+  } catch (err) {
+    console.error('[V2 Auth] Error:', err.message);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'AUTH_ERROR', message: err.message }
+    });
+  }
+});
+
+console.log('   API v2 auth: POST /api/v2/auth');
+
+// ── V2 Data Layer (Schema, Search, Batch, Objects, Query, Stats) ──────────────
+
+try {
+  const { DatabaseService, ConnectionManager } = await import('../../../packages/@integram/database/index.js');
+  const { CoreDataService } = await import('../../../services/core-data-service/src/index.js');
+
+  const cm = new ConnectionManager({
+    host: process.env.INTEGRAM_DB_HOST || 'localhost',
+    port: parseInt(process.env.INTEGRAM_DB_PORT || '3306'),
+    user: process.env.INTEGRAM_DB_USER || 'root',
+    password: process.env.INTEGRAM_DB_PASSWORD || '',
+    database: process.env.INTEGRAM_DB_NAME || 'integram',
+  });
+
+  const mysql2 = await import('mysql2/promise');
+  await cm.initialize(mysql2.default || mysql2);
+
+  const dbService = new DatabaseService(cm);
+  const coreData = new CoreDataService(dbService);
+  const v2Router = coreData.createRouter({ enableLegacy: false });
+
+  app.use('/api', v2Router);
+  console.log('   V2 API (AI Data Layer): /api/v2/databases/:db/*');
+} catch (e) {
+  console.warn('⚠  V2 API not loaded:', e.message);
+}
+
 // ── Legacy PHP-compatible API + page routing ──────────────────────────────────
 
 // V2 API (AI Data Layer)

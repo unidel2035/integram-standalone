@@ -1,0 +1,1038 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__obj_main_1773587769894"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "block"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000012814"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000012814"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__obj_main_1773587769894"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000012814"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000012814"
+    ],
+    "_parent_.val": [
+      "__obj_main_1773587769894"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&no_page": {
+    "f_u": [
+      "1"
+    ],
+    "id": [
+      "1000012814"
+    ],
+    "limit": [
+      "20"
+    ],
+    "lnx": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "id": [
+      "1000012821",
+      "1000012822",
+      "1000012823",
+      "1000012824",
+      "1000012825",
+      "1000012826",
+      "1000012827",
+      "1000012828",
+      "1000012829",
+      "1000012830",
+      "1000012831",
+      "1000012832",
+      "1000012833",
+      "1000012834",
+      "1000012838",
+      "1000012839",
+      "1000012840",
+      "1000012841",
+      "1000012846",
+      "1000012847"
+    ],
+    "val": [
+      "Alpha_RENAMED",
+      "Alpha_RENAMED",
+      "Beta_updated",
+      "Beta_updated",
+      "Gamma",
+      "Gamma",
+      "Delta",
+      "Delta",
+      "Epsilon",
+      "Epsilon",
+      "SimpleObj",
+      "SimpleObj",
+      "WithReqs",
+      "WithReqs",
+      "1",
+      "9",
+      "Тест &lt;html&gt; &amp; &quot;quotes&quot;",
+      "Тест &lt;html&gt; &amp; &quot;quotes&quot;",
+      "Alpha_RENAMED",
+      "Alpha_COPY"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT",
+      "LEFT",
+      "RIGHT",
+      "RIGHT",
+      "LEFT",
+      "CENTER",
+      "LEFT"
+    ],
+    "base": [
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML",
+      "SHORT",
+      "NUMBER",
+      "NUMBER",
+      "DATETIME",
+      "BOOLEAN",
+      "HTML"
+    ],
+    "val": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012821\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012822\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012823\">(0)</A>",
+      "42",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012824\">(0)</A>",
+      "",
+      "42",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012825\">(0)</A>",
+      "123",
+      "",
+      "01.01.1970 00:00:01",
+      "X",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012826\">(0)</A>",
+      "",
+      "123",
+      "01.01.1970 00:00:01",
+      "X",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012827\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA...",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012828\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA...",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012829\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012830\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012831\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012832\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012833\">(0)</A>",
+      "99",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012834\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012838\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012839\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012840\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012841\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012846\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012847\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "arr_type": [
+      "arr-type=\"1000011108\"",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "array": [
+      "arr",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "base_typ": [
+      "3",
+      "13",
+      "13",
+      "4",
+      "11",
+      "2"
+    ],
+    "filter": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "grant": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "id": [
+      "1000012814",
+      "1000012814",
+      "1000012814",
+      "1000012814",
+      "1000012814",
+      "1000012814"
+    ],
+    "mandatory": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "multi": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "ref": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "ref_type": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "typ": [
+      "1000012815",
+      "1000012816",
+      "1000012817",
+      "1000012818",
+      "1000012819",
+      "1000012820"
+    ],
+    "val": [
+      "__ddl_renamed_1773584428786_node",
+      "__sys_bt13_1773587120583",
+      "__sys_bt13_1773587120583",
+      "__sys_bt4_1773587769956",
+      "__sys_bt11_1773587120578",
+      "__sys_bt2_1773587120561"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000011108",
+      "1000012816",
+      "1000012817",
+      "1000012818",
+      "1000012819",
+      "1000012820"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_dns": {
+    "f_typ_fr": [
+      "FR_1000012816",
+      "FR_1000012817",
+      "FR_1000012818"
+    ],
+    "f_typ_to": [
+      "TO_1000012816",
+      "TO_1000012817",
+      "TO_1000012818"
+    ],
+    "filter_fr": [
+      "",
+      "",
+      ""
+    ],
+    "filter_to": [
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "_parent_.dd": [
+      "",
+      "",
+      ""
+    ],
+    "_parent_.ref": [
+      "1000011108",
+      "1000012819",
+      "1000012820"
+    ],
+    "f_typ": [
+      "F_1000011108",
+      "F_1000012819",
+      "F_1000012820"
+    ],
+    "filter": [
+      "",
+      "",
+      ""
+    ]
+  },
+  "&object_reqs": {
+    "1000012821": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012821\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012822": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012822\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012823": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012823\">(0)</A>",
+      "42",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012824": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012824\">(0)</A>",
+      "",
+      "42",
+      "",
+      "",
+      ""
+    ],
+    "1000012825": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012825\">(0)</A>",
+      "123",
+      "",
+      "01.01.1970 00:00:01",
+      "X",
+      ""
+    ],
+    "1000012826": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012826\">(0)</A>",
+      "",
+      "123",
+      "01.01.1970 00:00:01",
+      "X",
+      ""
+    ],
+    "1000012827": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012827\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
+    ],
+    "1000012828": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012828\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
+    ],
+    "1000012829": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012829\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012830": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012830\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012831": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012831\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012832": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012832\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012833": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012833\">(0)</A>",
+      "99",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012834": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012834\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012838": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012838\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012839": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012839\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012840": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012840\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012841": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012841\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012846": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012846\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "1000012847": [
+      "<A HREF=\"/my/object/1000011108/?F_U=1000012847\">(0)</A>",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "arr_type": {
+    "1000011108": "1000011118"
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "object": [
+    {
+      "base": "1000012814",
+      "id": "1000012821",
+      "up": "1",
+      "val": "Alpha_RENAMED"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012822",
+      "up": "1",
+      "val": "Alpha_RENAMED"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012823",
+      "up": "1",
+      "val": "Beta_updated"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012824",
+      "up": "1",
+      "val": "Beta_updated"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012825",
+      "up": "1",
+      "val": "Gamma"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012826",
+      "up": "1",
+      "val": "Gamma"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012827",
+      "up": "1",
+      "val": "Delta"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012828",
+      "up": "1",
+      "val": "Delta"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012829",
+      "up": "1",
+      "val": "Epsilon"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012830",
+      "up": "1",
+      "val": "Epsilon"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012831",
+      "up": "1",
+      "val": "SimpleObj"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012832",
+      "up": "1",
+      "val": "SimpleObj"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012833",
+      "up": "1",
+      "val": "WithReqs"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012834",
+      "up": "1",
+      "val": "WithReqs"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012838",
+      "up": "1",
+      "val": "1"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012839",
+      "up": "1",
+      "val": "9"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012840",
+      "up": "1",
+      "val": "Тест &lt;html&gt; &amp; &quot;quotes&quot;"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012841",
+      "up": "1",
+      "val": "Тест &lt;html&gt; &amp; &quot;quotes&quot;"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012846",
+      "up": "1",
+      "val": "Alpha_RENAMED"
+    },
+    {
+      "base": "1000012814",
+      "id": "1000012847",
+      "up": "1",
+      "val": "Alpha_COPY"
+    }
+  ],
+  "req_attrs": {
+    "1000011108": "",
+    "1000012816": "",
+    "1000012817": "",
+    "1000012818": "",
+    "1000012819": "",
+    "1000012820": ""
+  },
+  "req_base": {
+    "1000011108": "SHORT",
+    "1000012816": "NUMBER",
+    "1000012817": "NUMBER",
+    "1000012818": "DATETIME",
+    "1000012819": "BOOLEAN",
+    "1000012820": "HTML"
+  },
+  "req_base_id": {
+    "1000011108": "3",
+    "1000012816": "13",
+    "1000012817": "13",
+    "1000012818": "4",
+    "1000012819": "11",
+    "1000012820": "2"
+  },
+  "req_order": [
+    "1000011108",
+    "1000012816",
+    "1000012817",
+    "1000012818",
+    "1000012819",
+    "1000012820"
+  ],
+  "req_type": {
+    "1000011108": "__ddl_renamed_1773584428786_node",
+    "1000012816": "__sys_bt13_1773587120583",
+    "1000012817": "__sys_bt13_1773587120583",
+    "1000012818": "__sys_bt4_1773587769956",
+    "1000012819": "__sys_bt11_1773587120578",
+    "1000012820": "__sys_bt2_1773587120561"
+  },
+  "reqs": {
+    "1000012823": {
+      "1000012816": "42"
+    },
+    "1000012824": {
+      "1000012817": "42"
+    },
+    "1000012825": {
+      "1000012816": "123",
+      "1000012818": "01.01.1970 00:00:15",
+      "1000012819": "X"
+    },
+    "1000012826": {
+      "1000012817": "123",
+      "1000012818": "01.01.1970 00:00:15",
+      "1000012819": "X"
+    },
+    "1000012827": {
+      "1000012820": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "1000012828": {
+      "1000012820": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "1000012833": {
+      "1000012816": "99"
+    }
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000012814,
+    "up": 1,
+    "val": "__obj_main_1773587769894"
+  }
+}

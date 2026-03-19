@@ -140,14 +140,23 @@ describe('P0 — Critical gaps', () => {
      */
 
     it('POST /:db with action=report&id=<n>&JSON should execute report and return data (IMPLEMENTED)', () => {
-      // legacy-compat.js lines 4977-4985: Default JSON format returns {columns, data, rownum}
+      // PHP parity: default JSON returns {columns, rows, totalCount, header, footer}
+      // rows = object keyed by row index, each row keyed by column ID
+      // granted = integer 1 (not boolean), type = integer type ID
       const mockResponse = {
-        columns: [{ id: 1, name: 'Col1', type: 8, format: 'CHARS' }],
-        data: [{ col1: 'value' }],
-        rownum: 1
+        columns: [{ id: 1, name: 'Col1', type: 8, format: 'CHARS', granted: 1 }],
+        rows: { '0': { '1': 'value' } },
+        totalCount: 1,
+        header: 'Report Title',
+        footer: []
       };
       expect(mockResponse).toHaveProperty('columns');
-      expect(mockResponse).toHaveProperty('data');
+      expect(mockResponse).toHaveProperty('rows');
+      expect(mockResponse).toHaveProperty('totalCount');
+      expect(mockResponse).toHaveProperty('header');
+      expect(mockResponse).toHaveProperty('footer');
+      expect(mockResponse.columns[0].granted).toBe(1);
+      expect(typeof mockResponse.columns[0].type).toBe('number');
     });
 
     it('POST /:db with action=report&id=<n>&JSON_KV should return [{col:val,...},...] (IMPLEMENTED)', () => {
@@ -763,11 +772,11 @@ describe('Already fixed — regression guard', () => {
   });
 
   it('HTTP 200 used for all error responses (not 4xx)', () => {
-    // PHP my_die(): always HTTP 200, body: [{"error":"..."}]
-    const phpErrorFormat = (msg) => [{ error: msg }];
+    // PHP my_die(): always HTTP 200, body: {"error":"..."}
+    const phpErrorFormat = (msg) => ({ error: msg });
     const result = phpErrorFormat('something went wrong');
-    expect(Array.isArray(result)).toBe(true);
-    expect(result[0]).toHaveProperty('error');
+    expect(typeof result).toBe('object');
+    expect(result).toHaveProperty('error');
   });
 
   it('report ?JSON_KV returns array of objects with column NAMES as keys', () => {

@@ -1,0 +1,110 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__ref_parent_1773721687139"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "none"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000031058"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000031058"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__ref_parent_1773721687139"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000031058"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000031058"
+    ],
+    "_parent_.val": [
+      "__ref_parent_1773721687139"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "align": [
+      "LEFT",
+      "LEFT"
+    ],
+    "id": [
+      "1000031068",
+      "1000031069"
+    ],
+    "val": [
+      "ParentA",
+      "ParentA"
+    ]
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "object": [
+    {
+      "base": "1000031058",
+      "id": "1000031068",
+      "up": "1",
+      "val": "ParentA"
+    },
+    {
+      "base": "1000031058",
+      "id": "1000031069",
+      "up": "1",
+      "val": "ParentA"
+    }
+  ],
+  "type": {
+    "base": "SHORT",
+    "id": 1000031058,
+    "up": 1,
+    "val": "__ref_parent_1773721687139"
+  }
+}

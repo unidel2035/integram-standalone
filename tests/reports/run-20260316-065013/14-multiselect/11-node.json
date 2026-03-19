@@ -1,0 +1,285 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__msel_devs_1773583295010"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "block"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000009443"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000009443"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__msel_devs_1773583295010"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000009443"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000009443"
+    ],
+    "_parent_.val": [
+      "__msel_devs_1773583295010"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "id": [
+      "1000009447",
+      "1000009448",
+      "1000009449",
+      "1000009450",
+      "1000009451",
+      "1000009452"
+    ],
+    "val": [
+      "Alice",
+      "Alice",
+      "Bob",
+      "Bob",
+      "Charlie",
+      "Charlie"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "base": [
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT"
+    ],
+    "val": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009447\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009448\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009449\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009450\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009451\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009452\">(0)</A>"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "arr_type": [
+      "arr-type=\"1000003785\"",
+      "arr-type=\"1000003785\""
+    ],
+    "array": [
+      "arr",
+      "arr"
+    ],
+    "base_typ": [
+      "3",
+      "3"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "grant": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000009443",
+      "1000009443"
+    ],
+    "mandatory": [
+      "",
+      ""
+    ],
+    "multi": [
+      "",
+      ""
+    ],
+    "ref": [
+      "",
+      ""
+    ],
+    "ref_type": [
+      "",
+      ""
+    ],
+    "typ": [
+      "1000009444",
+      "1000009445"
+    ],
+    "val": [
+      "__biz_lifecycle_1773533568254_p",
+      "__biz_lifecycle_1773533568254_p"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000003785"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "_parent_.dd": [
+      ""
+    ],
+    "_parent_.ref": [
+      "1000003785"
+    ],
+    "f_typ": [
+      "F_1000003785"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&object_reqs": {
+    "1000009447": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009447\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009447\">(0)</A>"
+    ],
+    "1000009448": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009448\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009448\">(0)</A>"
+    ],
+    "1000009449": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009449\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009449\">(0)</A>"
+    ],
+    "1000009450": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009450\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009450\">(0)</A>"
+    ],
+    "1000009451": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009451\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009451\">(0)</A>"
+    ],
+    "1000009452": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009452\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009452\">(0)</A>"
+    ]
+  },
+  "arr_type": {
+    "1000003785": "1000003791"
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "object": [
+    {
+      "base": "1000009443",
+      "id": "1000009447",
+      "up": "1",
+      "val": "Alice"
+    },
+    {
+      "base": "1000009443",
+      "id": "1000009448",
+      "up": "1",
+      "val": "Alice"
+    },
+    {
+      "base": "1000009443",
+      "id": "1000009449",
+      "up": "1",
+      "val": "Bob"
+    },
+    {
+      "base": "1000009443",
+      "id": "1000009450",
+      "up": "1",
+      "val": "Bob"
+    },
+    {
+      "base": "1000009443",
+      "id": "1000009451",
+      "up": "1",
+      "val": "Charlie"
+    },
+    {
+      "base": "1000009443",
+      "id": "1000009452",
+      "up": "1",
+      "val": "Charlie"
+    }
+  ],
+  "req_attrs": {
+    "1000003785": ""
+  },
+  "req_base": {
+    "1000003785": "SHORT"
+  },
+  "req_base_id": {
+    "1000003785": "3"
+  },
+  "req_order": [
+    "1000003785"
+  ],
+  "req_type": {
+    "1000003785": "__biz_lifecycle_1773533568254_p"
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000009443,
+    "up": 1,
+    "val": "__msel_devs_1773583295010"
+  }
+}

@@ -28,6 +28,9 @@ import { createRecordingRoutes } from './api/routes/recording.js';
 import { createCloudRecordingRoutes } from './api/routes/cloudRecording.js';
 import { createScheduledMeetingsRoutes } from './api/routes/scheduledMeetings.js';
 import { createTgstatRoutes } from './api/routes/tgstat.js';
+
+// A2A Protocol + Crypto Receipts + Agent Taxonomy (Deloitte Tech Trends 2026)
+import { createA2ARoutes } from './api/routes/a2a.js';
 import { createYouTubeRoutes } from './api/routes/youtube.js';
 import aiTokenRoutes from './api/routes/ai-tokens.js';
 import aiCellRoutes from './api/routes/ai-cell.js';
@@ -941,6 +944,11 @@ class IntegramBackend {
     // API Gateway Routes (Issue #2483)
     // ========================================
     this.app.use('/api/gateway', createApiGatewayRoutes());
+
+    // A2A Protocol — agent-to-agent communication, crypto receipts, agent taxonomy
+    this.app.use('/api/a2a', createA2ARoutes());
+    console.log('✅ [MONOLITH] A2A Protocol routes registered at /api/a2a');
+    console.log('   Endpoints: agents, tasks, taxonomy, receipts');
     console.log('✅ [MONOLITH] API Gateway routes registered at /api/gateway (Issue #2483)');
     console.log('   Endpoints available:');
     console.log('   - GET    /api/gateway/status');

@@ -1,0 +1,204 @@
+{
+  "&main.a.&object": {
+    "disabled": [
+      ""
+    ],
+    "id": [
+      "1000017212"
+    ],
+    "typ": [
+      "22",
+      "22"
+    ],
+    "typ_name": [
+      "Query",
+      "Query"
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__rpt_report_1773592105387",
+      "__rpt_report_1773592105387"
+    ]
+  },
+  "&main.a.&object.&buttons": {
+    "attrs": [
+      "report/1000017212"
+    ],
+    "val": [
+      "Run"
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "_parent_.disabled": [
+      ""
+    ],
+    "_parent_.val": [
+      "__rpt_report_1773592105387"
+    ],
+    "typ": [
+      "22"
+    ],
+    "type": [
+      "text"
+    ]
+  },
+  "&main.a.&object.&object_reqs": {
+    "enable_save": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "typ": [
+      "99",
+      "113",
+      "97",
+      "261",
+      "262",
+      "263",
+      "264",
+      "134"
+    ],
+    "typ_name": [
+      "Query fields",
+      "If null, set",
+      "URL",
+      "FROM",
+      "WHERE",
+      "HAVING",
+      "ORDER BY",
+      "LIMIT"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_array": {
+    "_parent_.arr_num": [
+      "0",
+      "0",
+      "0"
+    ],
+    "_parent_.id": [
+      "1000017212",
+      "1000017212",
+      "1000017212"
+    ],
+    "typ": [
+      "28",
+      "96",
+      "44"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_chars": {
+    "disabled": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "typ": [
+      "113",
+      "262",
+      "263",
+      "264"
+    ],
+    "val": [
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_short": {
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "134"
+    ],
+    "val": [
+      ""
+    ]
+  },
+  "obj": {
+    "base_typ": "3",
+    "id": "1000017212",
+    "parent": "1",
+    "typ": "22",
+    "typ_name": "Query",
+    "val": "__rpt_report_1773592105387"
+  },
+  "reqs": {
+    "97": {
+      "base": "CHARS",
+      "order": "4",
+      "type": "URL",
+      "value": ""
+    },
+    "99": {
+      "base": "REPORT_COLUMN",
+      "order": "1",
+      "type": "Query fields",
+      "value": ""
+    },
+    "111": {
+      "attrs": "report/[ID]",
+      "base": "BUTTON",
+      "order": "10",
+      "type": "Run",
+      "value": ""
+    },
+    "113": {
+      "base": "CHARS",
+      "order": "3",
+      "type": "If null, set",
+      "value": ""
+    },
+    "134": {
+      "base": "SHORT",
+      "order": "9",
+      "type": "LIMIT",
+      "value": ""
+    },
+    "261": {
+      "base": "REPORT_COLUMN",
+      "order": "5",
+      "type": "FROM",
+      "value": ""
+    },
+    "262": {
+      "base": "CHARS",
+      "order": "6",
+      "type": "WHERE",
+      "value": ""
+    },
+    "263": {
+      "base": "CHARS",
+      "order": "7",
+      "type": "HAVING",
+      "value": ""
+    },
+    "264": {
+      "base": "CHARS",
+      "order": "8",
+      "type": "ORDER BY",
+      "value": ""
+    }
+  }
+}

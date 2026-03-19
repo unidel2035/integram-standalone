@@ -1,0 +1,157 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__pgn_item_1773631113902"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "block"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000023701"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000023701"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__pgn_item_1773631113902"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000023701"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000023701"
+    ],
+    "_parent_.val": [
+      "__pgn_item_1773631113902"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "arr_type": [
+      "arr-type=\"1000023314\""
+    ],
+    "array": [
+      "arr"
+    ],
+    "base_typ": [
+      "3"
+    ],
+    "filter": [
+      ""
+    ],
+    "grant": [
+      ""
+    ],
+    "id": [
+      "1000023701"
+    ],
+    "mandatory": [
+      ""
+    ],
+    "multi": [
+      ""
+    ],
+    "ref": [
+      ""
+    ],
+    "ref_type": [
+      ""
+    ],
+    "typ": [
+      "1000023702"
+    ],
+    "val": [
+      "__dirmulti_task_1773631103590"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000023314"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "_parent_.dd": [
+      ""
+    ],
+    "_parent_.ref": [
+      "1000023314"
+    ],
+    "f_typ": [
+      "F_1000023314"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "arr_type": {
+    "1000023314": "1000023315"
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "req_attrs": {
+    "1000023314": ""
+  },
+  "req_base": {
+    "1000023314": "SHORT"
+  },
+  "req_base_id": {
+    "1000023314": "3"
+  },
+  "req_order": [
+    "1000023314"
+  ],
+  "req_type": {
+    "1000023314": "__dirmulti_task_1773631103590"
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000023701,
+    "up": 1,
+    "val": "__pgn_item_1773631113902"
+  }
+}

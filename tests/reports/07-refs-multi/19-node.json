@@ -1,0 +1,47 @@
+{
+  "&main.a.&object": {
+    "disabled": [
+      "DISABLED"
+    ],
+    "id": [
+      "1000031069"
+    ],
+    "typ": [
+      "1000031058",
+      "1000031058"
+    ],
+    "typ_name": [
+      "__ref_parent_1773721687139",
+      "__ref_parent_1773721687139"
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "ParentA",
+      "ParentA"
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "_parent_.disabled": [
+      "DISABLED"
+    ],
+    "_parent_.val": [
+      "ParentA"
+    ],
+    "typ": [
+      "1000031058"
+    ],
+    "type": [
+      "text"
+    ]
+  },
+  "obj": {
+    "base_typ": "3",
+    "id": "1000031069",
+    "parent": "1",
+    "typ": "1000031058",
+    "typ_name": "__ref_parent_1773721687139",
+    "val": "ParentA"
+  }
+}

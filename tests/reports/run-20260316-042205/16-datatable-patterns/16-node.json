@@ -1,0 +1,202 @@
+{
+  "&main.a.&object": {
+    "disabled": [
+      ""
+    ],
+    "id": [
+      "1000017958"
+    ],
+    "typ": [
+      "1000017947",
+      "1000017947"
+    ],
+    "typ_name": [
+      "__dt_tasks_1773614247190",
+      "__dt_tasks_1773614247190"
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "Задача 1",
+      "Задача 1"
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "_parent_.disabled": [
+      ""
+    ],
+    "_parent_.val": [
+      "Задача 1"
+    ],
+    "typ": [
+      "1000017947"
+    ],
+    "type": [
+      "text"
+    ]
+  },
+  "&main.a.&object.&object_reqs": {
+    "enable_save": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "typ": [
+      "1000017948",
+      "1000017949",
+      "1000017950",
+      "1000017951",
+      "1000017952",
+      "1000017953",
+      "1000017954"
+    ],
+    "typ_name": [
+      "__dml_main_1773581383757",
+      "__sys_bt2_1773613676210",
+      "__sys_bt13_1773614247288",
+      "__sys_bt13_1773614247288",
+      "__sys_bt4_1773614247274",
+      "__sys_bt11_1773613676235",
+      "__sys_bt11_1773613676235"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_array": {
+    "_parent_.arr_num": [
+      "1"
+    ],
+    "_parent_.id": [
+      "1000017958"
+    ],
+    "typ": [
+      "1000007661"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_boolean": {
+    "checked": [
+      "CHECKED",
+      ""
+    ],
+    "disabled": [
+      "",
+      ""
+    ],
+    "typ": [
+      "1000017953",
+      "1000017954"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_datetime": {
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000017952"
+    ],
+    "val": [
+      "01.04.2025 09:00:00"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      "1000017960",
+      "1000017964",
+      "1000017966",
+      "",
+      "1000017967",
+      "1000017968",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_html": {
+    "disabled": [
+      ""
+    ],
+    "typ": [
+      "1000017949"
+    ],
+    "val": [
+      "Описание первой задачи"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_number": {
+    "disabled": [
+      "",
+      ""
+    ],
+    "typ": [
+      "1000017950",
+      "1000017951"
+    ],
+    "val": [
+      "12",
+      ""
+    ]
+  },
+  "obj": {
+    "base_typ": "3",
+    "id": "1000017958",
+    "parent": "1",
+    "typ": "1000017947",
+    "typ_name": "__dt_tasks_1773614247190",
+    "val": "Задача 1"
+  },
+  "reqs": {
+    "1000017948": {
+      "arr": 1,
+      "arr_type": "1000007661",
+      "base": "SHORT",
+      "order": "1",
+      "type": "__dml_main_1773581383757",
+      "value": "Задача 1 (обновлена)"
+    },
+    "1000017949": {
+      "arr": "1",
+      "arr_type": null,
+      "base": "HTML",
+      "order": "2",
+      "type": "__sys_bt2_1773613676210",
+      "value": "Описание первой задачи"
+    },
+    "1000017950": {
+      "arr": "1",
+      "arr_type": null,
+      "base": "NUMBER",
+      "order": "3",
+      "type": "__sys_bt13_1773614247288",
+      "value": "12"
+    },
+    "1000017951": {
+      "base": "NUMBER",
+      "order": "4",
+      "type": "__sys_bt13_1773614247288",
+      "value": ""
+    },
+    "1000017952": {
+      "arr": "1",
+      "arr_type": null,
+      "base": "DATETIME",
+      "order": "5",
+      "type": "__sys_bt4_1773614247274",
+      "value": "01.04.2025 09:00:00"
+    },
+    "1000017953": {
+      "arr": "1",
+      "arr_type": null,
+      "base": "BOOLEAN",
+      "order": "6",
+      "type": "__sys_bt11_1773613676235",
+      "value": "1"
+    },
+    "1000017954": {
+      "base": "BOOLEAN",
+      "order": "6",
+      "type": "__sys_bt11_1773613676235",
+      "value": ""
+    }
+  }
+}

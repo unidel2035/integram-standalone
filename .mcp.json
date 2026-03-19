@@ -6,6 +6,15 @@
       "env": {
         "NODE_ENV": "production"
       }
+    },
+    "integram-v2": {
+      "command": "node",
+      "args": ["mcp-integram-v2.mjs"],
+      "env": {
+        "INTEGRAM_SERVER_URL": "https://ai2o.ru",
+        "INTEGRAM_SYSTEM_USERNAME": "unidel@yandex.ru",
+        "INTEGRAM_SYSTEM_PASSWORD": "Denver2035"
+      }
     }
   }
 }

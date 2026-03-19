@@ -1,0 +1,82 @@
+{
+  "&main.a.&object": {
+    "disabled": [
+      "DISABLED"
+    ],
+    "id": [
+      "1000031092"
+    ],
+    "typ": [
+      "1000031085",
+      "1000031085"
+    ],
+    "typ_name": [
+      "__lst_main_1773721911700",
+      "__lst_main_1773721911700"
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "Alpha",
+      "Alpha"
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "_parent_.disabled": [
+      "DISABLED"
+    ],
+    "_parent_.val": [
+      "Alpha"
+    ],
+    "typ": [
+      "1000031085"
+    ],
+    "type": [
+      "text"
+    ]
+  },
+  "&main.a.&object.&object_reqs": {
+    "enable_save": [
+      ""
+    ],
+    "typ": [
+      "1000031087"
+    ],
+    "typ_name": [
+      "__dt_tasks_1773635278616"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_array": {
+    "_parent_.arr_num": [
+      "0"
+    ],
+    "_parent_.id": [
+      "1000031092"
+    ],
+    "typ": [
+      "1000027673"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      ""
+    ]
+  },
+  "obj": {
+    "base_typ": "3",
+    "id": "1000031092",
+    "parent": "1",
+    "typ": "1000031085",
+    "typ_name": "__lst_main_1773721911700",
+    "val": "Alpha"
+  },
+  "reqs": {
+    "1000031087": {
+      "base": "SHORT",
+      "order": "1",
+      "type": "__dt_tasks_1773635278616",
+      "value": ""
+    }
+  }
+}

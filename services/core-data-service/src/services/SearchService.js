@@ -3,7 +3,7 @@
  *
  * Поисковый API, оптимизированный для AI-агентов.
  * Полнотекстовый поиск, фильтрация по реквизитам, агрегация,
- * обход графа связей, семантический поиск (заглушка), NL-запросы.
+ * обход графа связей, семантический поиск (VectorService cosine), NL-запросы.
  */
 
 import {
@@ -13,6 +13,7 @@ import {
 } from '@integram/common';
 
 import { ValidationService } from './ValidationService.js';
+import { VectorService } from './VectorService.js';
 
 // ============================================================================
 // Допустимые операторы фильтрации
@@ -59,6 +60,7 @@ export class SearchService {
     this.objectService = deps.objectService;
     this.logger = options.logger || console;
     this.validation = options.validationService || new ValidationService(options);
+    this.vectorService = new VectorService(databaseService, options);
   }
 
   // ==========================================================================
@@ -573,19 +575,36 @@ export class SearchService {
     }
 
     const limit = options.limit ? parseInt(options.limit, 10) : DEFAULT_LIMIT;
+
+    // Если передан готовый вектор — ищем напрямую
+    if (options.vector && Array.isArray(options.vector)) {
+      return await this.vectorService.search(db, options.vector, { limit, ...options });
+    }
+
+    // Если есть embeddingService — генерируем вектор из текста и ищем
+    if (options.embeddingService) {
+      try {
+        const embedding = await options.embeddingService.embed(text);
+        if (embedding && embedding.length > 0) {
+          const vectorResults = await this.vectorService.search(db, embedding, { limit, ...options });
+          if (vectorResults.results.length > 0) {
+            return { ...vectorResults, engine: 'vector-cosine', query: text };
+          }
+        }
+      } catch (e) {
+        this.logger.warn('[SearchService] Vector search failed, falling back to fuzzy:', e.message);
+      }
+    }
+
+    // Fallback: fuzzy text match (старое поведение)
     const types = Array.isArray(options.types) ? options.types.map(Number).filter(Boolean) : [];
-
-    // Разбиваем на слова для fuzzy-поиска
     const words = text.split(/\s+/).filter(w => w.length >= 2);
-
     if (words.length === 0) {
       return { results: [], engine: 'fuzzy-text' };
     }
 
-    // Считаем релевантность как количество совпавших слов
     const scoreExpr = words.map(() => '(val LIKE ?)').join(' + ');
     const scoreParams = words.map(w => '%' + w + '%');
-
     const conditions = words.map(() => 'val LIKE ?');
     const condParams = words.map(w => '%' + w + '%');
 
@@ -606,14 +625,9 @@ export class SearchService {
 
     return {
       results: rows.map(r => ({
-        id: r.id,
-        value: r.val,
-        parentId: r.up,
-        typeId: r.t,
-        relevance: r.relevance || 0,
+        id: r.id, value: r.val, parentId: r.up, typeId: r.t, relevance: r.relevance || 0,
       })),
       engine: 'fuzzy-text',
-      note: 'Семантический поиск пока работает как fuzzy text match. Векторный движок будет добавлен позднее.',
     };
   }
 

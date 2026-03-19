@@ -1,0 +1,252 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__lst_main_1773721911700"
+    ]
+  },
+  "type": {
+    "id": 1000031084,
+    "up": 1,
+    "val": "__lst_main_1773721911700",
+    "base": "SHORT"
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "&main.a.&uni_obj": {
+    "create_granted": [
+      "block"
+    ],
+    "id": [
+      "1000031084"
+    ],
+    "f_u": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "unique": [
+      ""
+    ],
+    "base_typ": [
+      "3"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "val": [
+      "__lst_main_1773721911700"
+    ],
+    "typ": [
+      "1000031084"
+    ],
+    "f_i": [
+      ""
+    ],
+    "lnx": [
+      "0"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "new_req": [
+      ""
+    ],
+    "_parent_.typ": [
+      "1000031084"
+    ],
+    "_parent_.val": [
+      "__lst_main_1773721911700"
+    ]
+  },
+  "req_base": {
+    "1000027673": "SHORT"
+  },
+  "req_base_id": {
+    "1000027673": "3"
+  },
+  "req_attrs": {
+    "1000027673": ""
+  },
+  "req_type": {
+    "1000027673": "__dt_tasks_1773635278616"
+  },
+  "arr_type": {
+    "1000027673": "1000027674"
+  },
+  "req_order": [
+    "1000027673"
+  ],
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "ref": [
+      ""
+    ],
+    "multi": [
+      ""
+    ],
+    "array": [
+      "arr"
+    ],
+    "mandatory": [
+      ""
+    ],
+    "grant": [
+      ""
+    ],
+    "arr_type": [
+      "arr-type=\"1000027673\""
+    ],
+    "ref_type": [
+      ""
+    ],
+    "typ": [
+      "1000031086"
+    ],
+    "base_typ": [
+      "3"
+    ],
+    "id": [
+      "1000031084"
+    ],
+    "filter": [
+      ""
+    ],
+    "val": [
+      "__dt_tasks_1773635278616"
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000031084"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000027673"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "f_typ": [
+      "F_1000027673"
+    ],
+    "_parent_.ref": [
+      "1000027673"
+    ],
+    "filter": [
+      ""
+    ],
+    "_parent_.dd": [
+      ""
+    ]
+  },
+  "object": [
+    {
+      "id": "1000031095",
+      "up": "1",
+      "val": "Gamma",
+      "base": "1000031084"
+    },
+    {
+      "id": "1000031099",
+      "up": "1",
+      "val": "Epsilon",
+      "base": "1000031084"
+    },
+    {
+      "id": "1000031097",
+      "up": "1",
+      "val": "Delta",
+      "base": "1000031084"
+    },
+    {
+      "id": "1000031093",
+      "up": "1",
+      "val": "Beta",
+      "base": "1000031084"
+    },
+    {
+      "id": "1000031091",
+      "up": "1",
+      "val": "Alpha",
+      "base": "1000031084"
+    }
+  ],
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "id": [
+      "1000031095",
+      "1000031099",
+      "1000031097",
+      "1000031093",
+      "1000031091"
+    ],
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "val": [
+      "Gamma",
+      "Epsilon",
+      "Delta",
+      "Beta",
+      "Alpha"
+    ]
+  },
+  "&object_reqs": {
+    "1000031091": [
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031091\">(0)</A>"
+    ],
+    "1000031093": [
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031093\">(0)</A>"
+    ],
+    "1000031095": [
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031095\">(0)</A>"
+    ],
+    "1000031097": [
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031097\">(0)</A>"
+    ],
+    "1000031099": [
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031099\">(0)</A>"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "base": [
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT"
+    ],
+    "val": [
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031095\">(0)</A>",
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031099\">(0)</A>",
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031097\">(0)</A>",
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031093\">(0)</A>",
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031091\">(0)</A>"
+    ]
+  }
+}

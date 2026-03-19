@@ -1,0 +1,280 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__msel_devs_1773583295010"
+    ]
+  },
+  "type": {
+    "id": 1000009443,
+    "up": 1,
+    "val": "__msel_devs_1773583295010",
+    "base": "SHORT"
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "&main.a.&uni_obj": {
+    "create_granted": [
+      "block"
+    ],
+    "id": [
+      "1000009443"
+    ],
+    "f_u": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "unique": [
+      ""
+    ],
+    "base_typ": [
+      "3"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "val": [
+      "__msel_devs_1773583295010"
+    ],
+    "typ": [
+      "1000009443"
+    ],
+    "f_i": [
+      ""
+    ],
+    "lnx": [
+      "0"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "new_req": [
+      ""
+    ],
+    "_parent_.typ": [
+      "1000009443"
+    ],
+    "_parent_.val": [
+      "__msel_devs_1773583295010"
+    ]
+  },
+  "req_base": {
+    "1000003785": "SHORT"
+  },
+  "req_base_id": {
+    "1000003785": "3"
+  },
+  "req_attrs": {
+    "1000003785": ""
+  },
+  "req_type": {
+    "1000003785": "__biz_lifecycle_1773533568254_p"
+  },
+  "arr_type": {
+    "1000003785": "1000003791"
+  },
+  "req_order": [
+    "1000003785",
+    "1000003785"
+  ],
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "ref": [
+      "",
+      ""
+    ],
+    "multi": [
+      "",
+      ""
+    ],
+    "array": [
+      "arr",
+      "arr"
+    ],
+    "mandatory": [
+      "",
+      ""
+    ],
+    "grant": [
+      "",
+      ""
+    ],
+    "arr_type": [
+      "arr-type=\"1000003785\"",
+      "arr-type=\"1000003785\""
+    ],
+    "ref_type": [
+      "",
+      ""
+    ],
+    "typ": [
+      "1000009444",
+      "1000009445"
+    ],
+    "base_typ": [
+      "3",
+      "3"
+    ],
+    "id": [
+      "1000009443",
+      "1000009443"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "val": [
+      "__biz_lifecycle_1773533568254_p",
+      "__biz_lifecycle_1773533568254_p"
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000009443"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000003785"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "f_typ": [
+      "F_1000003785"
+    ],
+    "_parent_.ref": [
+      "1000003785"
+    ],
+    "filter": [
+      ""
+    ],
+    "_parent_.dd": [
+      ""
+    ]
+  },
+  "object": [
+    {
+      "id": "1000009447",
+      "up": "1",
+      "val": "Alice",
+      "base": "1000009443"
+    },
+    {
+      "id": "1000009448",
+      "up": "1",
+      "val": "Alice",
+      "base": "1000009443"
+    },
+    {
+      "id": "1000009449",
+      "up": "1",
+      "val": "Bob",
+      "base": "1000009443"
+    },
+    {
+      "id": "1000009450",
+      "up": "1",
+      "val": "Bob",
+      "base": "1000009443"
+    },
+    {
+      "id": "1000009451",
+      "up": "1",
+      "val": "Charlie",
+      "base": "1000009443"
+    },
+    {
+      "id": "1000009452",
+      "up": "1",
+      "val": "Charlie",
+      "base": "1000009443"
+    }
+  ],
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "id": [
+      "1000009447",
+      "1000009448",
+      "1000009449",
+      "1000009450",
+      "1000009451",
+      "1000009452"
+    ],
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "val": [
+      "Alice",
+      "Alice",
+      "Bob",
+      "Bob",
+      "Charlie",
+      "Charlie"
+    ]
+  },
+  "&object_reqs": {
+    "1000009447": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009447\">(0)</A>"
+    ],
+    "1000009448": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009448\">(0)</A>"
+    ],
+    "1000009449": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009449\">(0)</A>"
+    ],
+    "1000009450": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009450\">(0)</A>"
+    ],
+    "1000009451": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009451\">(0)</A>"
+    ],
+    "1000009452": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009452\">(0)</A>"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "base": [
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT",
+      "SHORT"
+    ],
+    "val": [
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009447\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009448\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009449\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009450\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009451\">(0)</A>",
+      "<A HREF=\"/my/object/1000003785/?F_U=1000009452\">(0)</A>"
+    ]
+  }
+}

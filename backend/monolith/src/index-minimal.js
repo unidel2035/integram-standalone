@@ -7,6 +7,9 @@ import cors from 'cors';
 import http from 'http';
 import crypto from 'crypto';
 import { WebSocketServer } from 'ws';
+import { createAgentBusRoutes } from './api/routes/agent-bus.js';
+import { getAgentBus } from './services/AgentBus.js';
+import AgentBusFederation from './services/AgentBusFederation.js';
 
 const app = express();
 const PORT = process.env.PORT || 8081;
@@ -770,6 +773,9 @@ app.post('/api/:db/_d_del/:typeId', (req, res) => {
 // Error Handling
 // ============================================================================
 
+// ── AgentBus P2P ─────────────────────────────────────────────────────────────
+app.use('/api/agent-bus', createAgentBusRoutes());
+
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
   res.status(404).json({
@@ -888,7 +894,13 @@ async function startServer() {
     console.log(`   POST /api/:db/jwt        - JWT authentication (stub)`);
     console.log(`   POST /api/:db/confirm    - Password confirmation (stub)`);
     console.log(`   POST /api/:db/_m_*       - DML actions (stubs)`);
+    console.log(`   GET  /api/agent-bus/*    - AgentBus P2P Federation`);
     console.log('\n');
+
+    // Start AgentBus P2P Federation
+    const agentBus = getAgentBus();
+    const federation = new AgentBusFederation(agentBus);
+    federation.start(PORT).catch(e => console.warn('[Federation] Start error:', e.message));
   });
 }
 

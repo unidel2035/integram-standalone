@@ -1,0 +1,82 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__ref_coltab_1773721687139"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "none"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000031075"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000031075"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__ref_coltab_1773721687139"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000031075"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000031075"
+    ],
+    "_parent_.val": [
+      "__ref_coltab_1773721687139"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000031075,
+    "up": 1,
+    "val": "__ref_coltab_1773721687139"
+  }
+}

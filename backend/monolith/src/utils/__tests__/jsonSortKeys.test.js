@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { sortKeysRecursive, jsonStringifySorted, phpJsonMiddleware } from '../jsonSortKeys.js';
+import { sortKeysRecursive, jsonStringifySorted, phpJsonMiddleware, jsonHexQuot } from '../jsonSortKeys.js';
 
 describe('sortKeysRecursive', () => {
   describe('basic functionality', () => {
@@ -232,6 +232,8 @@ describe('jsonStringifySorted', () => {
     it('handles strings with special characters', () => {
       const input = { key: 'hello\nworld\t"quoted"' };
       const result = jsonStringifySorted(input);
+      // JSON_HEX_QUOT: inner quotes encoded as \u0022
+      expect(result).toContain('\\u0022quoted\\u0022');
       expect(JSON.parse(result)).toEqual(input);
     });
   });
@@ -355,5 +357,87 @@ describe('phpJsonMiddleware', () => {
 
     // Alphabetical string sort: "1" < "10" < "2"
     expect(sendMock).toHaveBeenCalledWith('{"1":"c","10":"a","2":"b"}');
+  });
+});
+
+describe('jsonHexQuot (Issue #424)', () => {
+  it('encodes a simple string without quotes unchanged', () => {
+    expect(jsonHexQuot('hello')).toBe('"hello"');
+  });
+
+  it('encodes double quotes as \\u0022', () => {
+    expect(jsonHexQuot('say "hi"')).toBe('"say \\u0022hi\\u0022"');
+  });
+
+  it('handles empty string', () => {
+    expect(jsonHexQuot('')).toBe('""');
+  });
+
+  it('handles string that is just a quote', () => {
+    expect(jsonHexQuot('"')).toBe('"\\u0022"');
+  });
+
+  it('handles multiple consecutive quotes', () => {
+    expect(jsonHexQuot('""')).toBe('"\\u0022\\u0022"');
+  });
+
+  it('preserves other escape sequences', () => {
+    expect(jsonHexQuot('line1\nline2')).toBe('"line1\\nline2"');
+    expect(jsonHexQuot('tab\there')).toBe('"tab\\there"');
+  });
+
+  it('preserves backslashes', () => {
+    expect(jsonHexQuot('back\\slash')).toBe('"back\\\\slash"');
+  });
+
+  it('round-trips through JSON.parse', () => {
+    const values = ['say "hi"', '""nested""', 'no quotes', '"', 'a"b"c'];
+    for (const val of values) {
+      expect(JSON.parse(jsonHexQuot(val))).toBe(val);
+    }
+  });
+});
+
+describe('jsonStringifySorted JSON_HEX_QUOT parity (Issue #424)', () => {
+  it('encodes double quotes in string values as \\u0022', () => {
+    const input = { name: 'John "Johnny" Doe' };
+    const result = jsonStringifySorted(input);
+    expect(result).toBe('{"name":"John \\u0022Johnny\\u0022 Doe"}');
+    expect(JSON.parse(result)).toEqual(input);
+  });
+
+  it('encodes double quotes in object keys as \\u0022', () => {
+    const input = { 'key"with"quotes': 'value' };
+    const result = jsonStringifySorted(input);
+    expect(result).toContain('key\\u0022with\\u0022quotes');
+    expect(JSON.parse(result)).toEqual(input);
+  });
+
+  it('encodes double quotes in nested structures', () => {
+    const input = { a: [{ b: 'say "hello"' }] };
+    const result = jsonStringifySorted(input);
+    expect(result).toBe('{"a":[{"b":"say \\u0022hello\\u0022"}]}');
+    expect(JSON.parse(result)).toEqual(input);
+  });
+
+  it('encodes double quotes in array string elements', () => {
+    const input = ['"quoted"', 'plain'];
+    const result = jsonStringifySorted(input);
+    expect(result).toBe('["\\u0022quoted\\u0022","plain"]');
+    expect(JSON.parse(result)).toEqual(input);
+  });
+
+  it('middleware applies JSON_HEX_QUOT encoding', () => {
+    const middleware = phpJsonMiddleware();
+    const req = {};
+    const sendMock = vi.fn();
+    const setHeaderMock = vi.fn();
+    const res = { send: sendMock, setHeader: setHeaderMock, json: vi.fn() };
+    const next = vi.fn();
+
+    middleware(req, res, next);
+    res.json({ msg: 'He said "hi"' });
+
+    expect(sendMock).toHaveBeenCalledWith('{"msg":"He said \\u0022hi\\u0022"}');
   });
 });

@@ -1,0 +1,271 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__rptexp_doc_1773631114459"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "block"
+    ],
+    "f_i": [
+      ""
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000023742"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000023742"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__rptexp_doc_1773631114459"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000023742"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000023742"
+    ],
+    "_parent_.val": [
+      "__rptexp_doc_1773631114459"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "align": [
+      "LEFT",
+      "LEFT",
+      "LEFT"
+    ],
+    "id": [
+      "1000023747",
+      "1000023749",
+      "1000023754"
+    ],
+    "val": [
+      "Doc_01",
+      "Doc_01",
+      "Doc_02"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT",
+      "RIGHT",
+      "LEFT",
+      "RIGHT",
+      "LEFT",
+      "RIGHT"
+    ],
+    "base": [
+      "SHORT",
+      "NUMBER",
+      "SHORT",
+      "NUMBER",
+      "SHORT",
+      "NUMBER"
+    ],
+    "val": [
+      "",
+      "10",
+      "",
+      "10",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "arr_type": [
+      "",
+      ""
+    ],
+    "array": [
+      "",
+      ""
+    ],
+    "base_typ": [
+      "3",
+      "13"
+    ],
+    "filter": [
+      "",
+      ""
+    ],
+    "grant": [
+      "",
+      ""
+    ],
+    "id": [
+      "1000023742",
+      "1000023742"
+    ],
+    "mandatory": [
+      "",
+      ""
+    ],
+    "multi": [
+      "",
+      ""
+    ],
+    "ref": [
+      "",
+      ""
+    ],
+    "ref_type": [
+      "",
+      ""
+    ],
+    "typ": [
+      "1000023743",
+      "1000023744"
+    ],
+    "val": [
+      "__dir_colors_1773631090448",
+      "__sys_bt13_1773631114114"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000023743",
+      "1000023744"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_dns": {
+    "f_typ_fr": [
+      "FR_1000023744"
+    ],
+    "f_typ_to": [
+      "TO_1000023744"
+    ],
+    "filter_fr": [
+      ""
+    ],
+    "filter_to": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "_parent_.dd": [
+      ""
+    ],
+    "_parent_.ref": [
+      "1000023743"
+    ],
+    "f_typ": [
+      "F_1000023743"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&object_reqs": {
+    "1000023747": [
+      "",
+      "10"
+    ],
+    "1000023749": [
+      "",
+      "10"
+    ],
+    "1000023754": [
+      "",
+      ""
+    ]
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "object": [
+    {
+      "base": "1000023742",
+      "id": "1000023747",
+      "up": "1",
+      "val": "Doc_01"
+    },
+    {
+      "base": "1000023742",
+      "id": "1000023749",
+      "up": "1",
+      "val": "Doc_01"
+    },
+    {
+      "base": "1000023742",
+      "id": "1000023754",
+      "up": "1",
+      "val": "Doc_02"
+    }
+  ],
+  "req_attrs": {
+    "1000023743": "",
+    "1000023744": ""
+  },
+  "req_base": {
+    "1000023743": "SHORT",
+    "1000023744": "NUMBER"
+  },
+  "req_base_id": {
+    "1000023743": "3",
+    "1000023744": "13"
+  },
+  "req_order": [
+    "1000023743",
+    "1000023744"
+  ],
+  "req_type": {
+    "1000023743": "__dir_colors_1773631090448",
+    "1000023744": "__sys_bt13_1773631114114"
+  },
+  "reqs": {
+    "1000023747": {
+      "1000023744": "10"
+    },
+    "1000023749": {
+      "1000023744": "10"
+    }
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000023742,
+    "up": 1,
+    "val": "__rptexp_doc_1773631114459"
+  }
+}

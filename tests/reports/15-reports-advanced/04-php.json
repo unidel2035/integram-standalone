@@ -1,0 +1,203 @@
+{
+  "obj": {
+    "id": "1000017211",
+    "val": "__rpt_report_1773592105387",
+    "parent": "1",
+    "typ": "22",
+    "typ_name": "Query",
+    "base_typ": "3"
+  },
+  "&main.a.&object": {
+    "typ": [
+      "22",
+      "22"
+    ],
+    "up": [
+      "1"
+    ],
+    "typ_name": [
+      "Query",
+      "Query"
+    ],
+    "val": [
+      "__rpt_report_1773592105387",
+      "__rpt_report_1773592105387"
+    ],
+    "id": [
+      "1000017211"
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&edit_req": {
+    "type": [
+      "text"
+    ],
+    "typ": [
+      "22"
+    ],
+    "_parent_.val": [
+      "__rpt_report_1773592105387"
+    ],
+    "_parent_.disabled": [
+      ""
+    ]
+  },
+  "reqs": {
+    "97": {
+      "type": "URL",
+      "order": "4",
+      "value": "",
+      "base": "CHARS"
+    },
+    "99": {
+      "type": "Query fields",
+      "order": "1",
+      "value": "",
+      "base": "REPORT_COLUMN"
+    },
+    "111": {
+      "type": "Run",
+      "order": "10",
+      "value": "",
+      "base": "BUTTON"
+    },
+    "113": {
+      "type": "If null, set",
+      "order": "3",
+      "value": "",
+      "base": "CHARS"
+    },
+    "134": {
+      "type": "LIMIT",
+      "order": "9",
+      "value": "",
+      "base": "SHORT"
+    },
+    "261": {
+      "type": "FROM",
+      "order": "5",
+      "value": "",
+      "base": "REPORT_COLUMN"
+    },
+    "262": {
+      "type": "WHERE",
+      "order": "6",
+      "value": "",
+      "base": "CHARS"
+    },
+    "263": {
+      "type": "HAVING",
+      "order": "7",
+      "value": "",
+      "base": "CHARS"
+    },
+    "264": {
+      "type": "ORDER BY",
+      "order": "8",
+      "value": "",
+      "base": "CHARS"
+    }
+  },
+  "&main.a.&object.&object_reqs": {
+    "typ": [
+      "99",
+      "113",
+      "97",
+      "261",
+      "262",
+      "263",
+      "264",
+      "134"
+    ],
+    "typ_name": [
+      "Query fields",
+      "If null, set",
+      "URL",
+      "FROM",
+      "WHERE",
+      "HAVING",
+      "ORDER BY",
+      "LIMIT"
+    ],
+    "enable_save": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_array": {
+    "typ": [
+      "28",
+      "96",
+      "44"
+    ],
+    "_parent_.id": [
+      "1000017211",
+      "1000017211",
+      "1000017211"
+    ],
+    "_parent_.arr_num": [
+      "0",
+      "0",
+      "0"
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_file": {
+    "reqid": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_chars": {
+    "typ": [
+      "113",
+      "262",
+      "263",
+      "264"
+    ],
+    "val": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "disabled": [
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "&main.a.&object.&object_reqs.&editreq_short": {
+    "typ": [
+      "134"
+    ],
+    "val": [
+      ""
+    ],
+    "disabled": [
+      ""
+    ]
+  },
+  "&main.a.&object.&buttons": {
+    "attrs": [
+      "report/1000017211"
+    ],
+    "val": [
+      "Run"
+    ]
+  }
+}

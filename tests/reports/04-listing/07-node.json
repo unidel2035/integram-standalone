@@ -1,0 +1,192 @@
+{
+  "&main.a": {
+    "_parent_.title": [
+      "__lst_main_1773721911700"
+    ]
+  },
+  "&main.a.&uni_obj": {
+    "base_typ": [
+      "3"
+    ],
+    "create_granted": [
+      "none"
+    ],
+    "f_i": [
+      "1000031092"
+    ],
+    "f_u": [
+      ""
+    ],
+    "filter": [
+      "&F_I=1000031092",
+      "&F_I=1000031092"
+    ],
+    "id": [
+      "1000031085"
+    ],
+    "lnx": [
+      "0"
+    ],
+    "typ": [
+      "1000031085"
+    ],
+    "unique": [
+      ""
+    ],
+    "up": [
+      "1"
+    ],
+    "val": [
+      "__lst_main_1773721911700"
+    ]
+  },
+  "&main.a.&uni_obj.&delete": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&export": {
+    "ok": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&filter_val_rcm": {
+    "f_typ": [
+      "F_1000031085"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&new_req": {
+    "_parent_.typ": [
+      "1000031085"
+    ],
+    "_parent_.val": [
+      "__lst_main_1773721911700"
+    ],
+    "new_req": [
+      ""
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all": {
+    "align": [
+      "LEFT"
+    ],
+    "id": [
+      "1000031092"
+    ],
+    "val": [
+      "Alpha"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_all.&uni_object_view_reqs": {
+    "align": [
+      "LEFT"
+    ],
+    "base": [
+      "SHORT"
+    ],
+    "val": [
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031092\">(0)</A>"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head": {
+    "arr_type": [
+      "arr-type=\"1000027673\""
+    ],
+    "array": [
+      "arr"
+    ],
+    "base_typ": [
+      "3"
+    ],
+    "filter": [
+      "&F_I=1000031092"
+    ],
+    "grant": [
+      ""
+    ],
+    "id": [
+      "1000031085"
+    ],
+    "mandatory": [
+      ""
+    ],
+    "multi": [
+      ""
+    ],
+    "ref": [
+      ""
+    ],
+    "ref_type": [
+      ""
+    ],
+    "typ": [
+      "1000031087"
+    ],
+    "val": [
+      "__dt_tasks_1773635278616"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter": {
+    "typ": [
+      "1000027673"
+    ]
+  },
+  "&main.a.&uni_obj.&uni_obj_head_filter.&filter_req_rcm": {
+    "_parent_.dd": [
+      ""
+    ],
+    "_parent_.ref": [
+      "1000027673"
+    ],
+    "f_typ": [
+      "F_1000027673"
+    ],
+    "filter": [
+      ""
+    ]
+  },
+  "&object_reqs": {
+    "1000031092": [
+      "<A HREF=\"/my/object/1000027673/?F_U=1000031092\">(0)</A>"
+    ]
+  },
+  "arr_type": {
+    "1000027673": "1000027674"
+  },
+  "base": {
+    "id": "3",
+    "unique": ""
+  },
+  "object": [
+    {
+      "base": "1000031085",
+      "id": "1000031092",
+      "up": "1",
+      "val": "Alpha"
+    }
+  ],
+  "req_attrs": {
+    "1000027673": ""
+  },
+  "req_base": {
+    "1000027673": "SHORT"
+  },
+  "req_base_id": {
+    "1000027673": "3"
+  },
+  "req_order": [
+    "1000027673"
+  ],
+  "req_type": {
+    "1000027673": "__dt_tasks_1773635278616"
+  },
+  "type": {
+    "base": "SHORT",
+    "id": 1000031085,
+    "up": 1,
+    "val": "__lst_main_1773721911700"
+  }
+}
