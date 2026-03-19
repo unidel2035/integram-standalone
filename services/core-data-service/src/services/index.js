@@ -18,6 +18,7 @@ import { VectorService } from './VectorService.js';
 import { LinkService } from './LinkService.js';
 import { AutoEmbeddingHook } from './AutoEmbeddingHook.js';
 import { TemporalService } from './TemporalService.js';
+import { UnifiedMemoryService } from './UnifiedMemoryService.js';
 
 export { ObjectService } from './ObjectService.js';
 export { QueryService } from './QueryService.js';
@@ -34,9 +35,10 @@ export { VectorService } from './VectorService.js';
 export { LinkService } from './LinkService.js';
 export { AutoEmbeddingHook } from './AutoEmbeddingHook.js';
 export { TemporalService } from './TemporalService.js';
+export { UnifiedMemoryService } from './UnifiedMemoryService.js';
 
 export default {
   ObjectService, QueryService, SchemaService, TypeService, ValidationService,
   TransactionService, AuditService, OntologyService, BatchService, EventService,
-  SearchService, VectorService, LinkService, AutoEmbeddingHook, TemporalService,
+  SearchService, VectorService, LinkService, AutoEmbeddingHook, TemporalService, UnifiedMemoryService,
 };
