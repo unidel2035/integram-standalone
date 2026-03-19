@@ -155,6 +155,12 @@ export const BASIC_TYPES = Object.freeze({
   15: 'CALCULATABLE',
   16: 'REPORT_COLUMN',
   17: 'PATH',
+  // ── Новые типы (v3 — память для агентов) ──────────────────────────────────
+  50: 'VECTOR',        // Векторное представление (embedding Float32Array как JSON)
+  51: 'JSON_DATA',     // Произвольный JSON (состояние, конфиг, граф)
+  52: 'LINK',          // Направленная связь (ребро графа) — val = JSON {target, weight, label}
+  53: 'TEMPORAL',      // Версионированное значение — val = JSON {value, validFrom, validTo}
+  54: 'EMBEDDING',     // Вектор с метаданными — val = JSON {values[], model, dimensions}
 });
 
 /**
