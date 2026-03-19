@@ -13,10 +13,12 @@ import { AuditService } from './AuditService.js';
 import { OntologyService } from './OntologyService.js';
 import { BatchService } from './BatchService.js';
 import { EventService } from './EventService.js';
-
 import { SearchService } from './SearchService.js';
 import { VectorService } from './VectorService.js';
 import { LinkService } from './LinkService.js';
+import { AutoEmbeddingHook } from './AutoEmbeddingHook.js';
+import { TemporalService } from './TemporalService.js';
+
 export { ObjectService } from './ObjectService.js';
 export { QueryService } from './QueryService.js';
 export { SchemaService } from './SchemaService.js';
@@ -27,12 +29,14 @@ export { AuditService, AUDIT_ACTIONS } from './AuditService.js';
 export { OntologyService } from './OntologyService.js';
 export { BatchService } from './BatchService.js';
 export { EventService, EVENT_ACTIONS } from './EventService.js';
-
 export { SearchService } from './SearchService.js';
 export { VectorService } from './VectorService.js';
 export { LinkService } from './LinkService.js';
+export { AutoEmbeddingHook } from './AutoEmbeddingHook.js';
+export { TemporalService } from './TemporalService.js';
+
 export default {
   ObjectService, QueryService, SchemaService, TypeService, ValidationService,
   TransactionService, AuditService, OntologyService, BatchService, EventService,
-
-SearchService, VectorService, LinkService,};
+  SearchService, VectorService, LinkService, AutoEmbeddingHook, TemporalService,
+};
