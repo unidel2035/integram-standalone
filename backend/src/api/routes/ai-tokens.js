@@ -704,7 +704,9 @@ router.post('/chat/upload', async (req, res) => {
     } else if (ext === 'pdf') {
       // Extract text from PDF
       try {
-        const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js')
+        const { createRequire } = await import('module')
+        const require = createRequire(import.meta.url)
+        const pdfParse = require('pdf-parse/lib/pdf-parse.js')
         const data = await pdfParse(buffer)
         extractedText = data.text || ''
       } catch (e) {

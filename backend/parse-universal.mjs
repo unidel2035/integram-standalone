@@ -157,7 +157,9 @@ async function extractPptx(filePath) {
 }
 
 async function extractPdf(buffer) {
-  const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js')
+  const { createRequire } = await import('module')
+  const require = createRequire(import.meta.url)
+  const pdfParse = require('pdf-parse/lib/pdf-parse.js')
   const data = await pdfParse(buffer)
   log(`[PDF] Extracted ${data.numpages} pages, ${data.text.length} chars`)
   return data.text

@@ -525,8 +525,8 @@
             <div v-if="parseableFile" class="parse-offer">
               <span class="parse-offer-text">Найти компании в файле и добавить в базу фонда?</span>
               <div class="parse-offer-actions">
-                <Button label="Найти компании" icon="pi pi-search" size="small" severity="success" @click="parseFileToIntegram" />
-                <Button label="Пропустить" icon="pi pi-times" size="small" severity="secondary" text @click="dismissParseOffer" />
+                <Button icon="pi pi-search" size="small" severity="success" @click="parseFileToIntegram" v-tooltip.top="'Найти компании'" rounded />
+                <Button icon="pi pi-times" size="small" severity="secondary" text @click="dismissParseOffer" v-tooltip.top="'Пропустить'" rounded />
               </div>
             </div>
             <div v-if="pendingParseData" class="parse-offer parse-confirm">
