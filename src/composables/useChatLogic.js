@@ -4305,9 +4305,9 @@ AI-помощник по продажам активирован! Полный �
     const fileName = attachment.name
     parseableFile.value = null
 
-    // Add system message about parsing
+    // Step 1: Preview — AI extracts, validates, shows table
     aiChat.messages.push({
-      text: `⏳ Парсинг файла **${fileName}** → создание компаний и метрик в Integram...`,
+      text: `⏳ Анализ файла **${fileName}** — извлечение компаний...`,
       time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
       isUser: false,
       isSystemNotice: true
@@ -4315,7 +4315,7 @@ AI-помощник по продажам активирован! Полный �
     scrollToBottom(aiMessagesContainer)
 
     try {
-      const res = await fetch('/api/chat/parse-file', {
+      const res = await fetch('/api/chat/parse-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -4325,16 +4325,36 @@ AI-помощник по продажам активирован! Полный �
       })
       const data = await res.json()
 
-      if (data.success) {
-        const companiesList = data.companies ? `\n\nКомпании: ${data.companies}` : ''
+      if (data.success && data.companies?.length > 0) {
+        // Build preview table
+        const statusIcon = (s) => s === 'ok' ? '✅' : s === 'warning' ? '⚠️' : '❌'
+        const lines = data.companies.map(c => {
+          const warn = c.warnings?.length ? ` _(${c.warnings.join(', ')})_` : ''
+          return `${statusIcon(c.validationStatus)} **${c.name}** — ${c.stage || '?'} / ${c.subfund || '?'} / ${c.amountDisplay || '?'}${warn} (${c.metricsCount} метрик)`
+        })
+
+        const summaryParts = [`📊 ${data.companies.length} компаний, ${data.totalMetrics} метрик`]
+        if (data.totalWarnings) summaryParts.push(`⚠️ ${data.totalWarnings} с предупреждениями`)
+        if (data.totalErrors) summaryParts.push(`❌ ${data.totalErrors} с ошибками`)
+
         aiChat.messages.push({
-          text: `✅ **Парсинг завершён!**\n\n📦 Компаний создано: ${data.created || 0}\n🔄 Обновлено: ${data.updated || 0}\n📊 Метрик: ${data.metrics || 0}${companiesList}\n\nФайл: \`${fileName}\``,
+          text: `**Превью парсинга** \`${fileName}\`\n\n${lines.join('\n')}\n\n${summaryParts.join(' | ')}`,
+          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          isUser: false,
+          parsePreview: { companies: data.companies, filename: fileName }, // store for confirm
+        })
+
+        // Store preview data for confirm step
+        pendingParseData.value = { companies: data.companies, filename: fileName }
+      } else if (data.success && (!data.companies || data.companies.length === 0)) {
+        aiChat.messages.push({
+          text: `📭 В файле **${fileName}** не найдено компаний`,
           time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
           isUser: false
         })
       } else {
         aiChat.messages.push({
-          text: `❌ Ошибка парсинга: ${data.error || 'unknown'}`,
+          text: `❌ Ошибка анализа: ${data.error || 'unknown'}`,
           time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
           isUser: false
         })
@@ -4346,9 +4366,65 @@ AI-помощник по продажам активирован! Полный �
         isUser: false
       })
     }
-    // Clean up base64 to free memory
     attachment.base64Data = undefined
     scrollToBottom(aiMessagesContainer)
+  }
+
+  // Step 2: Confirm — save previewed companies to Integram
+  const pendingParseData = ref(null)
+
+  const confirmParseToIntegram = async () => {
+    if (!pendingParseData.value) return
+    const { companies, filename: fileName } = pendingParseData.value
+    pendingParseData.value = null
+
+    aiChat.messages.push({
+      text: `⏳ Сохранение ${companies.length} компаний в Integram...`,
+      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      isUser: false,
+      isSystemNotice: true
+    })
+    scrollToBottom(aiMessagesContainer)
+
+    try {
+      const res = await fetch('/api/chat/parse-confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companies, filename: fileName })
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        const companiesList = data.companies ? `\n\nКомпании: ${data.companies}` : ''
+        aiChat.messages.push({
+          text: `✅ **Сохранено в Integram!**\n\n📦 Создано: ${data.created || 0}\n🔄 Обновлено: ${data.updated || 0}\n📊 Метрик: ${data.metrics || 0}${companiesList}\n\nФайл: \`${fileName}\``,
+          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          isUser: false
+        })
+      } else {
+        aiChat.messages.push({
+          text: `❌ Ошибка сохранения: ${data.error || 'unknown'}`,
+          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          isUser: false
+        })
+      }
+    } catch (err) {
+      aiChat.messages.push({
+        text: `❌ Ошибка: ${err.message}`,
+        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        isUser: false
+      })
+    }
+    scrollToBottom(aiMessagesContainer)
+  }
+
+  const cancelParse = () => {
+    pendingParseData.value = null
+    aiChat.messages.push({
+      text: `🚫 Парсинг отменён`,
+      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      isUser: false
+    })
   }
 
   const saveFileToIntegram = async () => {
@@ -4841,6 +4917,9 @@ AI-помощник по продажам активирован! Полный �
     removeCurrentAttachment,
     dismissParseOffer,
     parseFileToIntegram,
+    confirmParseToIntegram,
+    cancelParse,
+    pendingParseData,
     saveFileToIntegram,
     downloadAttachment,
     loadDataItems,

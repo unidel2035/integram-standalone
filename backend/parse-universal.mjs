@@ -28,13 +28,15 @@ const CLAUDE_SUB_URL = process.env.CLAUDE_SUB_URL || 'http://127.0.0.1:8085/'
 // ── CLI args ──────────────────────────────────────────────────────
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
+const jsonOutput = args.includes('--json')  // machine-readable preview output
+const dataIdx = args.indexOf('--data')      // skip AI, use pre-parsed JSON data
 const fileIdx = args.indexOf('--file')
 const modelIdx = args.indexOf('--model')
 const useClaudeSub = args.includes('--claude') || process.env.USE_CLAUDE_SUB === 'true'
 const AI_MODEL = modelIdx >= 0 ? args[modelIdx + 1] : 'deepseek/deepseek-chat'
 
 if (fileIdx < 0 || !args[fileIdx + 1]) {
-  console.error('Usage: node parse-universal.mjs --file <path> [--dry-run] [--claude] [--model <modelId>]')
+  console.error('Usage: node parse-universal.mjs --file <path> [--dry-run] [--json] [--claude] [--data <json-path>]')
   process.exit(1)
 }
 const filePath = args[fileIdx + 1]
@@ -550,67 +552,120 @@ function metricExists(existing, year, articleId) {
 // STEP 4: Main — собираем pipeline
 // ══════════════════════════════════════════════════════════════════
 
+// ── Validate extracted company data ───────────────────────────────
+function validateCompany(c) {
+  const warnings = []
+  if (!c.name && !c.fullName) warnings.push('Нет названия')
+  if (!c.stage) warnings.push('Не определена стадия')
+  if (!c.subfund) warnings.push('Не определён субфонд')
+  if (!c.amountFst && !c.budgetTotal) warnings.push('Нет суммы финансирования')
+  if (c.amountFst && c.amountFst > 10e9) warnings.push('Сумма > 10 млрд — проверьте')
+  if (c.amountFst && c.amountFst < 100000) warnings.push('Сумма < 100K — возможно ошибка единиц')
+  if (!c.metrics?.length) warnings.push('Нет метрик')
+  if (!c.description) warnings.push('Нет описания')
+  return warnings
+}
+
 async function main() {
   if (!existsSync(filePath)) {
     console.error(`[Error] File not found: ${filePath}`)
     process.exit(1)
   }
 
-  // Step 1: Extract text
-  console.log(`\n${'═'.repeat(60)}`)
-  console.log(`  Universal Parser — ${filePath}`)
-  console.log(`  Format: .${fileExt} | AI: ${useClaudeSub ? 'Claude (subscription)' : AI_MODEL} | Dry-run: ${dryRun}`)
-  console.log(`${'═'.repeat(60)}\n`)
+  let unique
 
-  const rawText = await extractText(filePath, fileExt)
-  if (!rawText || rawText.trim().length < 20) {
-    console.error('[Error] No meaningful text extracted from file')
-    process.exit(1)
+  // Mode 1: --data <json-path> — skip AI, use pre-parsed data (for confirm step)
+  if (dataIdx >= 0 && args[dataIdx + 1]) {
+    const dataPath = args[dataIdx + 1]
+    unique = JSON.parse(readFileSync(dataPath, 'utf8'))
+    if (!jsonOutput) console.log(`[Data] Loaded ${unique.length} companies from ${dataPath}`)
+  } else {
+    // Mode 2: Normal — extract text → AI → companies
+    if (!jsonOutput) {
+      console.log(`\n${'═'.repeat(60)}`)
+      console.log(`  Universal Parser — ${filePath}`)
+      console.log(`  Format: .${fileExt} | AI: ${useClaudeSub ? 'Claude (subscription)' : AI_MODEL} | Dry-run: ${dryRun}`)
+      console.log(`${'═'.repeat(60)}\n`)
+    }
+
+    const rawText = await extractText(filePath, fileExt)
+    if (!rawText || rawText.trim().length < 20) {
+      if (jsonOutput) { console.log(JSON.stringify({ error: 'No text extracted', companies: [] })); return }
+      console.error('[Error] No meaningful text extracted from file')
+      process.exit(1)
+    }
+
+    const text = rawText.slice(0, 50000)
+    if (!jsonOutput) console.log(`[Text] ${text.length} chars ready for AI\n`)
+
+    // AI extraction
+    const companies = await extractCompaniesWithAI(text)
+    if (!jsonOutput) console.log(`\n[Result] Found ${companies.length} companies total`)
+
+    // Dedup by name
+    const seen = new Set()
+    unique = companies.filter(c => {
+      const key = (c.name || c.fullName || '').toLowerCase().trim()
+      if (!key || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    if (!jsonOutput) console.log(`[Result] ${unique.length} unique after dedup\n`)
   }
 
-  // Limit to 50k chars
-  const text = rawText.slice(0, 50000)
-  console.log(`[Text] ${text.length} chars ready for AI\n`)
-
-  // Step 2: AI extraction
-  const companies = await extractCompaniesWithAI(text)
-  console.log(`\n[Result] Found ${companies.length} companies total`)
-
-  // Dedup by name
-  const seen = new Set()
-  const unique = companies.filter(c => {
-    const key = (c.name || c.fullName || '').toLowerCase().trim()
-    if (!key || seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-  console.log(`[Result] ${unique.length} unique after dedup\n`)
-
-  if (unique.length === 0) {
-    console.log('Created: 0')
-    console.log('Updated: 0')
-    console.log('Metrics: 0')
-    console.log('Companies: ')
+  if (!unique || unique.length === 0) {
+    if (jsonOutput) { console.log(JSON.stringify({ error: null, companies: [], totalMetrics: 0 })); return }
+    console.log('Created: 0\nUpdated: 0\nMetrics: 0\nCompanies: ')
     return
   }
 
-  // Dry-run output
+  // Validate each company
+  for (const c of unique) {
+    c._warnings = validateCompany(c)
+    c._metricsCount = c.metrics?.length || 0
+    c._status = c._warnings.length === 0 ? 'ok' : (c._warnings.some(w => w.includes('Нет названия')) ? 'error' : 'warning')
+  }
+
+  // JSON preview mode — output structured data for frontend
+  if (jsonOutput) {
+    const preview = unique.map(c => ({
+      name: c.name || c.fullName || '?',
+      fullName: c.fullName || null,
+      inn: c.inn || null,
+      description: (c.description || '').slice(0, 200),
+      amountFst: c.amountFst || null,
+      amountDisplay: c.amountFst ? (c.amountFst / 1e6).toFixed(1) + ' млн' : null,
+      budgetTotal: c.budgetTotal || null,
+      stage: c.stage || null,
+      subfund: c.subfund || null,
+      status: c.status || 'На рассмотрении',
+      metricsCount: c._metricsCount,
+      metrics: c.metrics || [],
+      warnings: c._warnings,
+      validationStatus: c._status,
+    }))
+    console.log(JSON.stringify({
+      error: null,
+      companies: preview,
+      totalMetrics: preview.reduce((s, c) => s + c.metricsCount, 0),
+      totalWarnings: preview.filter(c => c._status === 'warning').length,
+      totalErrors: preview.filter(c => c._status === 'error').length,
+    }))
+    return
+  }
+
+  // Dry-run output (human-readable)
   if (dryRun) {
     for (const c of unique) {
-      console.log(`  📦 ${c.name} (${c.fullName || '?'})`)
+      const icon = c._status === 'ok' ? '✅' : c._status === 'warning' ? '⚠️' : '❌'
+      console.log(`  ${icon} ${c.name} (${c.fullName || '?'})`)
       console.log(`     Stage: ${c.stage || '?'}, Status: ${c.status || '?'}, Subfund: ${c.subfund || '?'}`)
-      console.log(`     FST: ${c.amountFst ? (c.amountFst / 1e6).toFixed(1) + ' млн' : '?'}`)
-      if (c.metrics?.length) {
-        for (const m of c.metrics) {
-          console.log(`     ${m.key} ${m.year}: ${m.value} (${m.source})`)
-        }
-      }
+      console.log(`     FST: ${c.amountFst ? (c.amountFst / 1e6).toFixed(1) + ' млн' : '?'}, Metrics: ${c._metricsCount}`)
+      if (c._warnings.length) console.log(`     ⚠ ${c._warnings.join('; ')}`)
       console.log()
     }
     console.log('[DRY RUN] No changes made.')
-    console.log(`Created: 0`)
-    console.log(`Updated: 0`)
-    console.log(`Metrics: 0`)
+    console.log(`Created: 0\nUpdated: 0\nMetrics: 0`)
     console.log(`Companies: ${unique.map(c => c.name).join(', ')}`)
     return
   }

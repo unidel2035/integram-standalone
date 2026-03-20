@@ -816,6 +816,117 @@ router.post('/chat/parse-file', async (req, res) => {
   }
 })
 
+// ── POST /api/chat/parse-preview — превью: AI извлекает компании, но НЕ сохраняет ──
+router.post('/chat/parse-preview', async (req, res) => {
+  const { base64Data, filename } = req.body
+  if (!base64Data) return res.status(400).json({ error: 'base64Data is required' })
+
+  const { writeFileSync, mkdirSync, existsSync, unlinkSync } = await import('fs')
+  const { join, dirname } = await import('path')
+  const { fileURLToPath } = await import('url')
+  const { spawn } = await import('child_process')
+
+  const __dir = dirname(fileURLToPath(import.meta.url))
+  const tmpDir = join(__dir, '../../../.tmp-uploads')
+  if (!existsSync(tmpDir)) mkdirSync(tmpDir, { recursive: true })
+
+  const tmpPath = join(tmpDir, `preview_${Date.now()}_${filename || 'file'}`)
+
+  try {
+    writeFileSync(tmpPath, Buffer.from(base64Data, 'base64'))
+
+    // Run parser in dry-run + JSON mode (no writes to Integram)
+    const scriptPath = join(__dir, '../../../parse-universal.mjs')
+    const child = spawn('node', [scriptPath, '--file', tmpPath, '--dry-run', '--json'], {
+      cwd: join(__dir, '../../..'),
+      env: { ...process.env },
+      timeout: 300000
+    })
+
+    let stdout = '', stderr = ''
+    child.stdout.on('data', d => { stdout += d.toString() })
+    child.stderr.on('data', d => { stderr += d.toString() })
+
+    child.on('close', (code) => {
+      try { unlinkSync(tmpPath) } catch {}
+      try {
+        const result = JSON.parse(stdout)
+        res.json({ success: true, ...result })
+      } catch {
+        res.json({ success: false, error: stderr || stdout || 'Parse failed' })
+      }
+    })
+
+    child.on('error', (err) => {
+      try { unlinkSync(tmpPath) } catch {}
+      res.json({ success: false, error: err.message })
+    })
+  } catch (err) {
+    try { unlinkSync(tmpPath) } catch {}
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── POST /api/chat/parse-confirm — сохранить уже распарсенные компании в Integram ──
+router.post('/chat/parse-confirm', async (req, res) => {
+  const { companies, filename } = req.body
+  if (!companies?.length) return res.status(400).json({ error: 'companies array is required' })
+
+  const { writeFileSync, mkdirSync, existsSync, unlinkSync } = await import('fs')
+  const { join, dirname } = await import('path')
+  const { fileURLToPath } = await import('url')
+  const { spawn } = await import('child_process')
+
+  const __dir = dirname(fileURLToPath(import.meta.url))
+  const tmpDir = join(__dir, '../../../.tmp-uploads')
+  if (!existsSync(tmpDir)) mkdirSync(tmpDir, { recursive: true })
+
+  // Save companies JSON to tmp file
+  const tmpData = join(tmpDir, `confirm_${Date.now()}.json`)
+  const tmpFile = join(tmpDir, `dummy_${Date.now()}.txt`)
+
+  try {
+    writeFileSync(tmpData, JSON.stringify(companies))
+    writeFileSync(tmpFile, 'confirm')
+
+    // Run parser with --data (skip AI, just save to Integram)
+    const scriptPath = join(__dir, '../../../parse-universal.mjs')
+    const child = spawn('node', [scriptPath, '--file', tmpFile, '--data', tmpData], {
+      cwd: join(__dir, '../../..'),
+      env: { ...process.env },
+      timeout: 300000
+    })
+
+    let stdout = '', stderr = ''
+    child.stdout.on('data', d => { stdout += d.toString() })
+    child.stderr.on('data', d => { stderr += d.toString() })
+
+    child.on('close', (code) => {
+      try { unlinkSync(tmpData) } catch {}
+      try { unlinkSync(tmpFile) } catch {}
+      if (code === 0) {
+        const created = stdout.match(/Created: (\d+)/)?.[1] || '0'
+        const updated = stdout.match(/Updated: (\d+)/)?.[1] || '0'
+        const metrics = stdout.match(/Metrics: (\d+)/)?.[1] || '0'
+        const names = stdout.match(/Companies: (.+)/)?.[1] || ''
+        res.json({ success: true, created: Number(created), updated: Number(updated), metrics: Number(metrics), companies: names })
+      } else {
+        res.json({ success: false, error: (stderr || stdout).slice(-500) })
+      }
+    })
+
+    child.on('error', (err) => {
+      try { unlinkSync(tmpData) } catch {}
+      try { unlinkSync(tmpFile) } catch {}
+      res.json({ success: false, error: err.message })
+    })
+  } catch (err) {
+    try { unlinkSync(tmpData) } catch {}
+    try { unlinkSync(tmpFile) } catch {}
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // ── POST /api/chat/save-to-integram — сохранить файл в Integram Документы (type 1069) ──
 router.post('/chat/save-to-integram', async (req, res) => {
   const { base64Data, filename } = req.body

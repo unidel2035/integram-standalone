@@ -530,6 +530,13 @@
                 <Button label="Только как контекст" icon="pi pi-times" size="small" severity="secondary" text @click="dismissParseOffer" />
               </div>
             </div>
+            <div v-if="pendingParseData" class="parse-offer parse-confirm">
+              <span class="parse-offer-text">Подтвердите сохранение {{ pendingParseData.companies.length }} компаний в Integram</span>
+              <div class="parse-offer-actions">
+                <Button :label="`Сохранить ${pendingParseData.companies.length} компаний`" icon="pi pi-check" size="small" severity="success" @click="confirmParseToIntegram" />
+                <Button label="Отменить" icon="pi pi-times" size="small" severity="secondary" text @click="cancelParse" />
+              </div>
+            </div>
           </div>
         </TabPanel>
         </TabPanels>
@@ -1431,6 +1438,9 @@ copyToClipboard,
   removeCurrentAttachment,
   dismissParseOffer,
   parseFileToIntegram,
+  confirmParseToIntegram,
+  cancelParse,
+  pendingParseData,
   saveFileToIntegram,
   downloadAttachment,
   showImagePreview,
@@ -3436,6 +3446,11 @@ onUnmounted(() => {
     display: flex;
     gap: 0.4rem;
     flex-wrap: wrap;
+  }
+
+  &.parse-confirm {
+    background: color-mix(in srgb, var(--fst-blue) 8%, transparent);
+    border-color: color-mix(in srgb, var(--fst-blue) 25%, transparent);
   }
 }
 
