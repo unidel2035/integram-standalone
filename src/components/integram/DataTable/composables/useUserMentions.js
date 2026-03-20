@@ -90,7 +90,7 @@ export function useUserMentions(database) {
         })
 
         // Find photo column by matching against PHOTO_COLUMNS patterns
-        const photoColumn = requisites.find(req => {
+        let photoColumn = requisites.find(req => {
           const name = (req.alias || req.val || '').toLowerCase()
           return PHOTO_COLUMNS.some(pattern => name.includes(pattern))
         })
