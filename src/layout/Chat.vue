@@ -523,15 +523,14 @@
               </div>
             </div>
             <div v-if="parseableFile" class="parse-offer">
-              <span class="parse-offer-text">📄 Распознан файл данных. Парсить компании и метрики?</span>
+              <span class="parse-offer-text">Найти компании в файле и добавить в базу фонда?</span>
               <div class="parse-offer-actions">
-                <Button label="Парсить → Integram" icon="pi pi-database" size="small" severity="success" @click="parseFileToIntegram" />
-                <Button label="Сохранить в документы" icon="pi pi-save" size="small" severity="secondary" @click="saveFileToIntegram" />
-                <Button label="Только как контекст" icon="pi pi-times" size="small" severity="secondary" text @click="dismissParseOffer" />
+                <Button label="Найти компании" icon="pi pi-search" size="small" severity="success" @click="parseFileToIntegram" />
+                <Button label="Пропустить" icon="pi pi-times" size="small" severity="secondary" text @click="dismissParseOffer" />
               </div>
             </div>
             <div v-if="pendingParseData" class="parse-offer parse-confirm">
-              <span class="parse-offer-text">Подтвердите сохранение {{ pendingParseData.companies.length }} компаний в Integram</span>
+              <span class="parse-offer-text">Найдено {{ pendingParseData.companies.length }} компаний. Сохранить в базу?</span>
               <div class="parse-offer-actions">
                 <Button :label="`Сохранить ${pendingParseData.companies.length} компаний`" icon="pi pi-check" size="small" severity="success" @click="confirmParseToIntegram" />
                 <Button label="Отменить" icon="pi pi-times" size="small" severity="secondary" text @click="cancelParse" />
@@ -3436,10 +3435,12 @@ onUnmounted(() => {
   margin: 0 0.875rem 0.5rem;
 
   .parse-offer-text {
-    font-size: 0.82rem;
+    font-size: 0.9rem;
+    font-weight: 600;
     color: var(--p-text-color);
     display: block;
     margin-bottom: 0.5rem;
+    line-height: 1.4;
   }
 
   .parse-offer-actions {
