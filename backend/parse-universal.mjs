@@ -166,8 +166,10 @@ async function extractPdf(buffer) {
   const parts = []
   for (let i = 1; i <= numPages; i++) {
     try {
-      const pageText = await parser.getPageText(i)
-      if (pageText) parts.push(pageText)
+      const page = await parser.doc.getPage(i)
+      const tc = await page.getTextContent()
+      const text = tc.items.map(item => item.str).join(' ')
+      if (text.trim()) parts.push(text)
     } catch {}
   }
   const text = parts.join('\n')

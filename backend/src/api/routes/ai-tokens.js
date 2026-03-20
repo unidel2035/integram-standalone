@@ -712,7 +712,11 @@ router.post('/chat/upload', async (req, res) => {
         const numPages = parser.doc?.numPages || 0
         const parts = []
         for (let i = 1; i <= numPages; i++) {
-          try { const t = await parser.getPageText(i); if (t) parts.push(t) } catch {}
+          try {
+            const page = await parser.doc.getPage(i)
+            const tc = await page.getTextContent()
+            parts.push(tc.items.map(item => item.str).join(' '))
+          } catch {}
         }
         extractedText = parts.join('\n')
       } catch (e) {
