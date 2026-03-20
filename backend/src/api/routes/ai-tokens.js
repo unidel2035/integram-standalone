@@ -710,6 +710,36 @@ router.post('/chat/upload', async (req, res) => {
       } catch (e) {
         console.error('[chat/upload] PDF parse error:', e.message)
       }
+    } else if (ext === 'xlsx' || ext === 'xls') {
+      // Extract text from Excel
+      try {
+        const XLSX = await import('xlsx')
+        const workbook = XLSX.read(buffer, { type: 'buffer' })
+        const parts = []
+        for (const sheetName of workbook.SheetNames) {
+          const sheet = workbook.Sheets[sheetName]
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' })
+          if (rows.length === 0) continue
+          parts.push(`=== Лист: ${sheetName} ===`)
+          for (const row of rows) {
+            if (row.every(c => c === '' || c === null)) continue
+            parts.push(row.join(' | '))
+          }
+          parts.push('')
+        }
+        extractedText = parts.join('\n')
+      } catch (e) {
+        console.error('[chat/upload] Excel parse error:', e.message)
+      }
+    } else if (ext === 'docx') {
+      // Extract text from DOCX
+      try {
+        const mammoth = await import('mammoth')
+        const result = await mammoth.extractRawText({ buffer })
+        extractedText = result.value || ''
+      } catch (e) {
+        console.error('[chat/upload] DOCX parse error:', e.message)
+      }
     } else if (['txt', 'md', 'csv', 'json', 'xml', 'html'].includes(ext)) {
       extractedText = buffer.toString('utf8')
     }
@@ -751,8 +781,8 @@ router.post('/chat/parse-file', async (req, res) => {
     writeFileSync(tmpPath, Buffer.from(base64Data, 'base64'))
     console.log(`[chat/parse-file] Saved ${filename} to ${tmpPath}`)
 
-    // Run parse-fst-pptx.mjs
-    const scriptPath = join(__dir, '../../../parse-fst-pptx.mjs')
+    // Run universal parser (handles PPTX, PDF, XLSX, CSV, DOCX, TXT)
+    const scriptPath = join(__dir, '../../../parse-universal.mjs')
     const child = spawn('node', [scriptPath, '--file', tmpPath], {
       cwd: join(__dir, '../../..'),
       env: { ...process.env },
@@ -769,7 +799,8 @@ router.post('/chat/parse-file', async (req, res) => {
         const created = stdout.match(/Created: (\d+)/)?.[1] || '0'
         const updated = stdout.match(/Updated: (\d+)/)?.[1] || '0'
         const metrics = stdout.match(/Metrics: (\d+)/)?.[1] || '0'
-        res.json({ success: true, created: Number(created), updated: Number(updated), metrics: Number(metrics) })
+        const companies = stdout.match(/Companies: (.+)/)?.[1] || ''
+        res.json({ success: true, created: Number(created), updated: Number(updated), metrics: Number(metrics), companies })
       } else {
         res.json({ success: false, error: (stderr || stdout).slice(-500) })
       }

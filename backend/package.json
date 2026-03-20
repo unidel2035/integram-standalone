@@ -31,9 +31,11 @@
     "axios": "^1.13.6",
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.5",
+    "csv-parse": "^6.2.0",
     "dotenv": "^17.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
+    "mammoth": "^1.12.0",
     "multer": "^2.1.1",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
@@ -43,7 +45,8 @@
     "pdf-parse": "^2.4.5",
     "socks-proxy-agent": "^8.0.2",
     "swagger-ui-express": "^5.0.0",
-    "unzipper": "^0.12.3"
+    "unzipper": "^0.12.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "eslint": "^8.57.0"

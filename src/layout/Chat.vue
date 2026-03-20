@@ -497,7 +497,7 @@
                 @settings-change="handleSettingsChange" @show-agents="showAgentsList = true"
                 @show-settings="showSettings = true" />
               <input type="file" ref="fileInput" style="display: none" @change="handleFileUpload"
-                accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.json,.csv,image/*" multiple data-testid="file-input" />
+                accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.pptx,.ppt,.json,.csv,.xml,.html,.md,image/*" multiple data-testid="file-input" />
               <Popover ref="attachmentMenu">
                 <div class="attachment-menu">
                   <Button label="С устройства" icon="pi pi-upload" @click="triggerFileUpload(); attachmentMenu.hide()" class="p-button-text w-full justify-start" />
@@ -850,7 +850,7 @@
             <InputText ref="modalAiInputRef" v-model="aiMessage" placeholder="Задайте вопрос ИИ..."
               @keyup.enter="handleSendAiMessage" class="modal-input-field" :disabled="aiLoading" />
             <input type="file" ref="modalFileInput" style="display: none" @change="handleModalFileUpload"
-                   accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.json,.csv,image/*" multiple />
+                   accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.pptx,.ppt,.json,.csv,.xml,.html,.md,image/*" multiple />
             <Button icon="pi pi-paperclip" @click="modalAttachmentMenu.toggle($event)" class="p-button-text attachment-btn" title="Прикрепить файл" />
             <Popover ref="modalAttachmentMenu">
               <div class="attachment-menu">

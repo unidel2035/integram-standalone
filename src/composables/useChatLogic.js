@@ -4222,23 +4222,25 @@ AI-помощник по продажам активирован! Полный �
 
         let extractedText = ''
 
+        // Read base64 once — reused for upload and parse
+        let fileBase64 = null
         if (parseable) {
+          fileBase64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result.split(',')[1])
+            reader.onerror = reject
+            reader.readAsDataURL(file)
+          }).catch(() => null)
+
           // Upload to backend for text extraction
           uploadProgress.value = 30
           try {
-            const base64Data = await new Promise((resolve, reject) => {
-              const reader = new FileReader()
-              reader.onload = () => resolve(reader.result.split(',')[1])
-              reader.onerror = reject
-              reader.readAsDataURL(file)
-            })
-
             uploadProgress.value = 60
             const res = await fetch('/api/chat/upload', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                base64Data,
+                base64Data: fileBase64,
                 filename: file.name,
                 mimeType: file.type
               })
@@ -4265,18 +4267,10 @@ AI-помощник по продажам активирован! Полный �
         }
         currentAttachments.value.push(attachment)
 
-        // Offer parsing for PPTX/PDF files
-        const parseExts = ['pptx', 'ppt', 'pdf']
-        if (parseExts.includes(ext) && extractedText) {
-          // Store base64 for potential parse action
-          const base64 = await new Promise((resolve, reject) => {
-            const r = new FileReader()
-            r.onload = () => resolve(r.result.split(',')[1])
-            r.onerror = reject
-            r.readAsDataURL(file)
-          }).catch(() => null)
-
-          attachment.base64Data = base64
+        // Offer parsing for any data file (works even if upload/extract failed)
+        const parseExts = ['pptx', 'ppt', 'pdf', 'xlsx', 'xls', 'csv', 'docx', 'txt', 'json', 'xml', 'html']
+        if (parseExts.includes(ext)) {
+          attachment.base64Data = fileBase64
           parseableFile.value = {
             name: file.name,
             index: currentAttachments.value.length - 1,
@@ -4332,8 +4326,9 @@ AI-помощник по продажам активирован! Полный �
       const data = await res.json()
 
       if (data.success) {
+        const companiesList = data.companies ? `\n\nКомпании: ${data.companies}` : ''
         aiChat.messages.push({
-          text: `✅ **Парсинг завершён!**\n\n📦 Компаний создано: ${data.created || 0}\n🔄 Обновлено: ${data.updated || 0}\n📊 Метрик: ${data.metrics || 0}\n\nФайл: \`${fileName}\``,
+          text: `✅ **Парсинг завершён!**\n\n📦 Компаний создано: ${data.created || 0}\n🔄 Обновлено: ${data.updated || 0}\n📊 Метрик: ${data.metrics || 0}${companiesList}\n\nФайл: \`${fileName}\``,
           time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
           isUser: false
         })
