@@ -88,13 +88,16 @@ const ARTICLES = {
   npv:        '126238',
 }
 
+// In JSON mode, all logs go to stderr so stdout is clean JSON
+const log = jsonOutput ? (...a) => process.stderr.write(a.join(' ') + '\n') : console.log
+
 // ══════════════════════════════════════════════════════════════════
 // STEP 1: Универсальное извлечение текста из файла
 // ══════════════════════════════════════════════════════════════════
 
 async function extractText(filePath, ext) {
   const buffer = readFileSync(filePath)
-  console.log(`[Extract] ${filePath} (${ext}, ${(buffer.length / 1024).toFixed(0)} KB)`)
+  log(`[Extract] ${filePath} (${ext}, ${(buffer.length / 1024).toFixed(0)} KB)`)
 
   switch (ext) {
     case 'pptx':
@@ -149,14 +152,14 @@ async function extractPptx(filePath) {
     const slideNum = Number(entry.path.match(/slide(\d+)/)[1])
     parts.push(`[Слайд ${slideNum}] ${text}`)
   }
-  console.log(`[PPTX] Extracted ${parts.length} slides`)
+  log(`[PPTX] Extracted ${parts.length} slides`)
   return parts.join('\n\n')
 }
 
 async function extractPdf(buffer) {
   const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js')
   const data = await pdfParse(buffer)
-  console.log(`[PDF] Extracted ${data.numpages} pages, ${data.text.length} chars`)
+  log(`[PDF] Extracted ${data.numpages} pages, ${data.text.length} chars`)
   return data.text
 }
 
@@ -190,7 +193,7 @@ async function extractExcel(buffer) {
     parts.push('')
   }
 
-  console.log(`[Excel] Extracted ${workbook.SheetNames.length} sheets`)
+  log(`[Excel] Extracted ${workbook.SheetNames.length} sheets`)
   return parts.join('\n')
 }
 
@@ -214,14 +217,14 @@ async function extractCsv(buffer) {
     parts.push(row.join(' | '))
   }
 
-  console.log(`[CSV] Extracted ${lines.length - 1} rows, delimiter="${delimiter}"`)
+  log(`[CSV] Extracted ${lines.length - 1} rows, delimiter="${delimiter}"`)
   return parts.join('\n')
 }
 
 async function extractDocx(buffer) {
   const mammoth = await import('mammoth')
   const result = await mammoth.extractRawText({ buffer })
-  console.log(`[DOCX] Extracted ${result.value.length} chars`)
+  log(`[DOCX] Extracted ${result.value.length} chars`)
   return result.value
 }
 
@@ -321,7 +324,7 @@ async function callRouter(prompt, systemPrompt) {
 
 async function extractCompaniesWithAI(text) {
   const aiBackend = useClaudeSub ? 'claude-sub' : 'ai-router'
-  console.log(`[AI] Backend: ${aiBackend}`)
+  log(`[AI] Backend: ${aiBackend}`)
 
   // Split into chunks of ~8000 chars for AI processing
   const maxChunk = useClaudeSub ? 12000 : 8000 // Claude handles larger chunks
@@ -349,13 +352,13 @@ async function extractCompaniesWithAI(text) {
     }
   }
 
-  console.log(`[AI] Processing ${chunks.length} chunks (total ${text.length} chars)...`)
+  log(`[AI] Processing ${chunks.length} chunks (total ${text.length} chars)...`)
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i]
     if (chunk.trim().length < 50) continue
 
-    console.log(`[AI] Chunk ${i + 1}/${chunks.length} (${chunk.length} chars)...`)
+    log(`[AI] Chunk ${i + 1}/${chunks.length} (${chunk.length} chars)...`)
 
     try {
       const content = useClaudeSub
@@ -369,7 +372,7 @@ async function extractCompaniesWithAI(text) {
         const companies = JSON.parse(jsonMatch[0])
         if (Array.isArray(companies)) {
           allCompanies.push(...companies)
-          console.log(`[AI] → ${companies.length} companies found`)
+          log(`[AI] → ${companies.length} companies found`)
         }
       }
     } catch (err) {
@@ -413,7 +416,7 @@ async function authenticate() {
     const d = await xRes.json()
     _xsrf = d._xsrf || ''
   }
-  console.log('[Auth] OK')
+  log('[Auth] OK')
 }
 
 async function fetchExistingCompanies() {
@@ -578,14 +581,14 @@ async function main() {
   if (dataIdx >= 0 && args[dataIdx + 1]) {
     const dataPath = args[dataIdx + 1]
     unique = JSON.parse(readFileSync(dataPath, 'utf8'))
-    if (!jsonOutput) console.log(`[Data] Loaded ${unique.length} companies from ${dataPath}`)
+    if (!jsonOutput) log(`[Data] Loaded ${unique.length} companies from ${dataPath}`)
   } else {
     // Mode 2: Normal — extract text → AI → companies
     if (!jsonOutput) {
-      console.log(`\n${'═'.repeat(60)}`)
-      console.log(`  Universal Parser — ${filePath}`)
-      console.log(`  Format: .${fileExt} | AI: ${useClaudeSub ? 'Claude (subscription)' : AI_MODEL} | Dry-run: ${dryRun}`)
-      console.log(`${'═'.repeat(60)}\n`)
+      log(`\n${'═'.repeat(60)}`)
+      log(`  Universal Parser — ${filePath}`)
+      log(`  Format: .${fileExt} | AI: ${useClaudeSub ? 'Claude (subscription)' : AI_MODEL} | Dry-run: ${dryRun}`)
+      log(`${'═'.repeat(60)}\n`)
     }
 
     const rawText = await extractText(filePath, fileExt)
@@ -596,11 +599,11 @@ async function main() {
     }
 
     const text = rawText.slice(0, 50000)
-    if (!jsonOutput) console.log(`[Text] ${text.length} chars ready for AI\n`)
+    if (!jsonOutput) log(`[Text] ${text.length} chars ready for AI\n`)
 
     // AI extraction
     const companies = await extractCompaniesWithAI(text)
-    if (!jsonOutput) console.log(`\n[Result] Found ${companies.length} companies total`)
+    if (!jsonOutput) log(`\n[Result] Found ${companies.length} companies total`)
 
     // Dedup by name
     const seen = new Set()
@@ -610,7 +613,7 @@ async function main() {
       seen.add(key)
       return true
     })
-    if (!jsonOutput) console.log(`[Result] ${unique.length} unique after dedup\n`)
+    if (!jsonOutput) log(`[Result] ${unique.length} unique after dedup\n`)
   }
 
   if (!unique || unique.length === 0) {
@@ -658,13 +661,13 @@ async function main() {
   if (dryRun) {
     for (const c of unique) {
       const icon = c._status === 'ok' ? '✅' : c._status === 'warning' ? '⚠️' : '❌'
-      console.log(`  ${icon} ${c.name} (${c.fullName || '?'})`)
-      console.log(`     Stage: ${c.stage || '?'}, Status: ${c.status || '?'}, Subfund: ${c.subfund || '?'}`)
-      console.log(`     FST: ${c.amountFst ? (c.amountFst / 1e6).toFixed(1) + ' млн' : '?'}, Metrics: ${c._metricsCount}`)
-      if (c._warnings.length) console.log(`     ⚠ ${c._warnings.join('; ')}`)
-      console.log()
+      log(`  ${icon} ${c.name} (${c.fullName || '?'})`)
+      log(`     Stage: ${c.stage || '?'}, Status: ${c.status || '?'}, Subfund: ${c.subfund || '?'}`)
+      log(`     FST: ${c.amountFst ? (c.amountFst / 1e6).toFixed(1) + ' млн' : '?'}, Metrics: ${c._metricsCount}`)
+      if (c._warnings.length) log(`     ⚠ ${c._warnings.join('; ')}`)
+      log()
     }
-    console.log('[DRY RUN] No changes made.')
+    log('[DRY RUN] No changes made.')
     console.log(`Created: 0\nUpdated: 0\nMetrics: 0`)
     console.log(`Companies: ${unique.map(c => c.name).join(', ')}`)
     return
@@ -673,7 +676,7 @@ async function main() {
   // Step 3: Save to Integram
   await authenticate()
   const existing = await fetchExistingCompanies()
-  console.log(`[Integram] ${existing.length} existing companies\n`)
+  log(`[Integram] ${existing.length} existing companies\n`)
 
   let created = 0, updated = 0, metricsCreated = 0
   const companyNames = []
@@ -681,7 +684,7 @@ async function main() {
   for (const company of unique) {
     const name = company.name || company.fullName || 'Unknown'
     companyNames.push(name)
-    console.log(`\n  → ${name}`)
+    log(`\n  → ${name}`)
 
     // Find match (fuzzy by first 15 chars)
     const nameLower = name.toLowerCase()
@@ -693,7 +696,7 @@ async function main() {
     let companyId
     if (match) {
       companyId = match.id
-      console.log(`    Existing: #${companyId} "${match.name}"`)
+      log(`    Existing: #${companyId} "${match.name}"`)
 
       const updates = {}
       if (company.description) updates[REQ_DESCRIPTION] = company.description
@@ -704,7 +707,7 @@ async function main() {
 
       if (Object.keys(updates).length > 0) {
         await updateCompanyReqs(companyId, updates)
-        console.log(`    Updated ${Object.keys(updates).length} fields`)
+        log(`    Updated ${Object.keys(updates).length} fields`)
         updated++
       }
     } else {
@@ -740,7 +743,7 @@ async function main() {
           continue
         }
         if (metricExists(existingMetrics, m.year, articleId)) {
-          console.log(`    ~ ${m.key} ${m.year}: exists, skip`)
+          log(`    ~ ${m.key} ${m.year}: exists, skip`)
           continue
         }
         let value = m.value
@@ -749,7 +752,7 @@ async function main() {
         const ok = await createMetric(companyId, m.year, value, m.source || 'оценка', articleId)
         if (ok) {
           metricsCreated++
-          console.log(`    + ${m.key} ${m.year}: ${value} (${m.source || 'оценка'})`)
+          log(`    + ${m.key} ${m.year}: ${value} (${m.source || 'оценка'})`)
         }
         await new Promise(r => setTimeout(r, 200))
       }
@@ -759,7 +762,7 @@ async function main() {
   }
 
   // Final output (captured by backend)
-  console.log(`\n${'═'.repeat(60)}`)
+  log(`\n${'═'.repeat(60)}`)
   console.log(`Created: ${created}`)
   console.log(`Updated: ${updated}`)
   console.log(`Metrics: ${metricsCreated}`)
