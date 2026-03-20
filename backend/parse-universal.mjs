@@ -275,21 +275,23 @@ async function callClaudeSub(prompt, systemPrompt) {
   if (!res.ok) throw new Error(`claude-sub error: ${res.status}`)
 
   // SSE stream → collect all text chunks
+  // claude-sub-proxy format: data: {"type":"content","content":"..."}
   const body = await res.text()
   let fullText = ''
   for (const line of body.split('\n')) {
     if (!line.startsWith('data: ')) continue
+    const payload = line.slice(6).trim()
+    if (payload === '[DONE]') break
     try {
-      const evt = JSON.parse(line.slice(6))
-      if (evt.type === 'assistant' && evt.message?.content) {
-        for (const block of evt.message.content) {
-          if (block.type === 'text') fullText += block.text
-        }
+      const evt = JSON.parse(payload)
+      // claude-sub-proxy format
+      if (evt.type === 'content' && evt.content) {
+        fullText += evt.content
       }
+      // Anthropic API format (fallback)
       if (evt.type === 'content_block_delta' && evt.delta?.text) {
         fullText += evt.delta.text
       }
-      // result event has full text
       if (evt.result) fullText = evt.result
     } catch {}
   }
