@@ -341,7 +341,7 @@ async function extractCompaniesWithAI(text) {
   log(`[AI] Backend: ${aiBackend}`)
 
   // Split into chunks of ~8000 chars for AI processing
-  const maxChunk = useClaudeSub ? 12000 : 8000 // Claude handles larger chunks
+  const maxChunk = useClaudeSub ? 6000 : 8000 // claude-sub via CLI arg — keep short to avoid hanging
   const allCompanies = []
 
   // Intelligent chunking: try to split on section boundaries
