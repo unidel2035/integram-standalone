@@ -706,7 +706,7 @@ router.post('/chat/upload', async (req, res) => {
       try {
         const { createRequire } = await import('module')
         const require = createRequire(import.meta.url)
-        const pdfParse = require('pdf-parse/lib/pdf-parse.js')
+        const pdfParse = require('pdf-parse')
         const data = await pdfParse(buffer)
         extractedText = data.text || ''
       } catch (e) {
