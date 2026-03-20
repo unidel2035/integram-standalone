@@ -28,6 +28,12 @@ export const routeDescriptions = {
     tags: ['ROI Calculator', 'AI Agents', 'Research Tool', 'Business Impact', 'Analytics', 'Automation', 'Productivity', 'Time Savings']
   },
 
+  '/fst-how-it-works': {
+    description: 'Как это работает — визуальное объяснение VentureOS для инвесторов. Воронка сделок, 6 AI-агентов инвесткомитета, архитектура платформы, модули, преимущества для LP. Инфографика, сравнение «до/после», FAQ.',
+    category: 'public',
+    tags: ['Инвестор', 'Инфографика', 'Как работает', 'Воронка', 'AI', 'Скоринг', 'FAQ', 'Обзор']
+  },
+
   '/fst-soft-model': {
     description: 'Software Ontology Model — платформа мониторит сама себя. Каждый модуль VentureOS существует как лента событий: MODULE_BORN, EVENT_CONNECTED, TEST_ADDED, BUG_FOUND. State = проекция ленты. Gap-анализ, health-score, следующие шаги для каждого модуля.',
     category: 'tools',

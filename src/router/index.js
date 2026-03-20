@@ -68,6 +68,7 @@ const routes = [
       { path: 'fst-flow', component: () => import('@/views/pages/FstFlow.vue'), meta: { title: 'Моя панель' } },
       { path: 'fst-present', component: () => import('@/views/pages/FstPresent.vue'), meta: { title: 'Режим презентации' } },
       { path: 'fst-billing', component: () => import('@/views/pages/FstBilling.vue'), meta: { title: 'Биллинг и подписка' } },
+      { path: 'fst-how-it-works', component: () => import('@/views/pages/FstHowItWorks.vue'), meta: { title: 'Как это работает' } },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },

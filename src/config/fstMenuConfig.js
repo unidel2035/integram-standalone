@@ -68,6 +68,7 @@ export const fstMenuConfig = [
     icon: 'pi pi-eye',
     items: [
       { label: 'Главная',      icon: 'pi pi-home',     to: '/fst-hub' },
+      { label: 'Как это работает', icon: 'pi pi-info-circle', to: '/fst-how-it-works' },
       { label: 'Command Center', icon: 'pi pi-sitemap', to: '/fst-cc', roles: ['director', 'analyst', 'admin'] },
       { label: 'Портфель',     icon: 'pi pi-briefcase', to: '/fst-portfolio', roles: ['investor', 'director', 'analyst', 'admin'] },
       { label: 'Digital Twin', svgIcon: svgLayers,      to: '/fst-twin',      roles: ['director', 'analyst', 'admin'] },
