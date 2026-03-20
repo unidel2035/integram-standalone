@@ -1,0 +1,61 @@
+{
+  "mcpServers": {
+    "integram": {
+      "command": "/home/unidel/.nvm/versions/node/v20.19.5/bin/node",
+      "args": [
+        "/home/unidel/integram-standalone/mcp-integram-v2.mjs"
+      ],
+      "env": {
+        "INTEGRAM_SERVER_URL": "https://ai2o.ru",
+        "INTEGRAM_SYSTEM_USERNAME": "unidel@yandex.ru",
+        "INTEGRAM_SYSTEM_PASSWORD": "Denver2035"
+      }
+    },
+    "telegram": {
+      "command": "/home/unidel/.nvm/versions/node/v20.19.5/bin/node",
+      "args": [
+        "/home/unidel/dronedoc2026/backend/monolith/src/services/mcp/telegram-lead-server.js"
+      ],
+      "cwd": "/home/unidel/dronedoc2026/backend/monolith",
+      "env": {
+        "TELEGRAM_API_ID": "35138704",
+        "TELEGRAM_API_HASH": "542f1deaf9babb8c9de2af6dc7d3b9a8",
+        "NODE_ENV": "development"
+      }
+    },
+    "kag-fst": {
+      "command": "/home/unidel/.nvm/versions/node/v20.19.5/bin/node",
+      "args": [
+        "/home/unidel/fund/backend/src/services/mcp/http-kag-bridge.js"
+      ],
+      "env": {
+        "MCP_SERVER_URL": "https://ai2fund.ru",
+        "MCP_API_PATH": "/api/mcp/kag-fst"
+      }
+    },
+    "fst-calc": {
+      "command": "/home/unidel/.nvm/versions/node/v20.19.5/bin/node",
+      "args": [
+        "/home/unidel/fund/backend/mcp-calc.mjs"
+      ],
+      "env": {}
+    },
+    "playwright": {
+      "command": "/home/unidel/.nvm/versions/node/v20.19.5/bin/npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--isolated"
+      ]
+    },
+    "memory": {
+      "command": "/home/unidel/.nvm/versions/node/v20.19.5/bin/npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "/home/unidel/.claude-shared-memory.jsonl"
+      }
+    }
+  }
+}

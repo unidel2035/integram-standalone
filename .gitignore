@@ -16,3 +16,17 @@ test-results/
 
 # E2E test specs (ad-hoc)
 e2e/verify-*.spec.js
+
+# Large binary files — do not commit
+datasets/adam-v01/adam-v01-lora.zip
+datasets/adam-v01/adam-v02-lora.zip
+datasets/adam-v01/adam-v01-lora/
+serafim-v01-lora/
+*.safetensors
+*.pt
+backend/.tmp-test-files/revenue-10m.pdf
+*.png
+!src/**/*.png
+!docs/slides/*.png
+parse-pdf-result.md
+components.d.ts

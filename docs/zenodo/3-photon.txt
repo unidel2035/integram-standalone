@@ -1,0 +1,407 @@
+Vortex Photon Model: Program for Experimental
+Verification
+Dmitry Losinets
+September 2025
+Abstract
+This work investigates a vortex-based model of the photon as an alternative ap-
+proach to quantum electrodynamics (QED). While mathematically consistent with
+the Jones formalism for polarization in describing transverse field components, the
+model makes distinct, falsifiable predictions - primarily the existence of a small lon-
+gitudinal component in electromagnetic waves in vacuum. The article focuses on
+designing critical experiments to test these predictions, including direct detection
+of longitudinal field components and analysis of angular momentum transfer during
+photon absorption. Results from these experiments could either validate the model
+or reinforce the standard QED framework.
+1
+Introduction
+Standard quantum electrodynamics (QED) represents one of the most accurate and well-
+verified physical theories, whose predictions have been brilliantly confirmed experimen-
+tally [1, 2]. The mathematical apparatus of QED, based on the concept of gauge fields,
+has no equal in its predictive power [3, 4]. However, its abstract nature and lack of in-
+tuitive mechanical analogies for describing quantum objects such as photons continue to
+stimulate the search for alternative interpretations and models that can bridge the gap
+between mathematical formalism and intuitive understanding [5].
+This work explores the possibility of mechanical description of photons within the
+framework of a vortex model of the quantum vacuum, as systematically presented in
+a series of articles [6, 7]. The fundamental hypothesis of this approach is that electro-
+magnetic phenomena can be described as manifestations of the dynamics of a physical
+medium [8, 9]. Specifically, the model postulates a correspondence between the vector
+potential A and the velocity of motion of a small volume of this medium (V = A/REMHD,
+where REMHD is a dimensional constant) [6, 10].
+The aim of this article is not to refute QED, but to demonstrate that this model:
+(1) is self-consistent within its framework - its mathematical description for transverse
+field components reduces to the known Jones formalism for polarization [11]; (2) differs
+from standard theory through fundamentally testable predictions, the most important
+of which is the existence of a small longitudinal component in electromagnetic waves in
+vacuum [12, 13]; and (3) is falsifiable - it offers specific experiments whose results can
+unambiguously confirm or refute its key postulates [14].
+Thus, the work focuses on developing and describing critical experiments designed to
+test this hypothesis and quantitatively evaluate its predictions [15].
+1
+2
+Theoretical Framework: Correspondence Between Elec-
+tromagnetic and Model (Mechanical) Quantities
+2.1
+Classical Electrodynamics
+For electromagnetic waves in vacuum without charges or currents, Maxwell’s equations
+allow gauge choice. The relationship between fields and potentials is given by:
+E = −∇ϕ −∂A
+∂t
+(1)
+B = ∇× A
+(2)
+To simplify the description of free waves, we can impose conditions: - Coulomb
+gauge: ∇· A = 0 (transverse gauge) [16]. - For free fields, this is sufficient to also set
+ϕ = 0 (since in the absence of charges, the equation for ϕ reduces to ∇2ϕ = 0, and we
+can choose the solution ϕ = 0).
+With this choice:
+E = −∂A
+∂t
+(3)
+B = ∇× A
+(4)
+This completely describes the electromagnetic wave. For a monochromatic wave with
+wave vector k and frequency ω (where ω = c|k|), the vector potential can be written as:
+A(r, t) = Re
+
+A0ei(k·r−ωt)	
+(5)
+The electric field is then:
+E = −∂A
+∂t = Re
+
+iωA0ei(k·r−ωt)	
+(6)
+which corresponds to the expected behavior.
+2.2
+Quantum Theory of Photons
+In quantum electrodynamics, the photon is the quantum of excitation of the electromag-
+netic field. The fields become operators, but the gauge relationships remain similar [3].
+In the Coulomb gauge (∇· ˆA = 0) and with ϕ = 0, the electric field operator is related
+to the vector potential operator by:
+ˆE = −∂ˆA
+∂t
+(7)
+The state of a single monochromatic photon with definite momentum k and polar-
+ization λ is described by the action of the creation operator ˆa+
+k,λ on the vacuum state |0⟩
+[5]. The expected field values in a single-photon state are zero (since the photon has no
+classical analog in the sense of a well-defined field), but the operator relationships hold
+[17].
+Thus, for describing monochromatic photons in terms of potentials without loss of
+generality, we can choose the gauge with ϕ = 0 and ∇· A = 0, where E = −∂A/∂t.
+2
+This choice is correct both in classical theory and in quantum theory, where the fields
+are interpreted as operators [1, 16].
+Within the framework of the vortex electrodynamics model presented in [6], we as-
+sume that a photon represents an arbitrarily oriented circular vortex [8, 18]. Within
+the proposed vortex hypothesis [6], a model correspondence is postulated between the
+velocity of a small volume of vacuum and the vector potential: V = A/REMHD. This
+assumption, like the entire model, requires experimental verification but allows building
+a unified mechanical picture for a range of phenomena [19, 20].
+For uniform circular motion, we can conclude:
+∂A
+REMHD∂t = ∂V
+∂t = V 2
+R = −
+E
+REMHD
+(8)
+where R is the vortex radius.
+This expression is not general but reflects the specific case of uniform circular motion
+of a small volume within the presented model. Thus, we obtain an explicit correspondence
+between the electric field strength and the velocity of an arbitrary small volume of the
+vortex in the presented model.
+3
+Justification of the Jones Formalism for the Pre-
+sented Model
+Consider a thin-walled vortex of radius R, whose center of mass moves with constant
+velocity V . Each point of this vortex relative to the center of mass moves with constant
+tangential velocity along a circle. The orientation of the vortex plane is arbitrary.
+To describe the orientation of the vortex plane, we use two successive rotations:
+1. Zero position (0,0): The vortex plane coincides with the XY plane. This means
+that the normal to the vortex plane at the initial moment is directed along the
+Z-axis, and the point with zero phase has coordinates (R, 0, 0).
+2. First rotation (angle a): Rotation around the Z-axis by angle a. The new position
+of the plane is described by the pair (a, 0).
+3. Second rotation (angle b): Rotation of the already rotated plane around its new
+X-axis (which coincides with the X-axis of the laboratory system after the first
+rotation) by angle b. The final position is given by the pair (a, b).
+3.1
+Derivation of the Formula for Coordinates of a Small Volume
+1. Motion in the vortex system: In its own coordinate system (where the vortex is
+not rotated), a point moves along a circle in the XY plane. Its coordinates are given by
+the vector:
+rloc = R[cos(h), sin(h), 0],
+where h = ωt + φ
+(9)
+Here φ is the initial phase of the specific point under consideration. For a point that at
+time t = 0 was on the X-axis (i.e., had coordinates (R, 0, 0)), the initial phase φ = 0.
+2. Transition to the laboratory system: To account for rotations of the vortex
+as a whole, it is necessary to apply inverse rotations in reverse order to the vector rloc.
+This is equivalent to multiplication by rotation matrices:
+3
+Rotation by angle −b around the X-axis:
+Rx(−b) =
+
+
+1
+0
+0
+0
+cos(b)
+sin(b)
+0
+−sin(b)
+cos(b)
+
+
+(10)
+Rotation by angle −a around the Z-axis:
+Rz(−a) =
+
+
+cos(a)
+sin(a)
+0
+−sin(a)
+cos(a)
+0
+0
+0
+1
+
+
+(11)
+The final transformation: rglobal = Rz(−a) · Rx(−b) · rloc.
+3. Final formula:
+rx = R[cos(a) cos(h) −sin(a) cos(b) sin(h)]
+(12)
+ry = R[sin(a) cos(h) + cos(a) cos(b) sin(h)]
+(13)
+rz = R[sin(b) sin(h)]
+(14)
+Verification for special cases and phase clarification:
+For a point with φ = 0 at time t = 0 (h = 0), its coordinates:
+r(t = 0) = R[cos(a), sin(a), 0]
+(15)
+This corresponds to its position after two rotations.
+A quarter period for this point occurs when its phase h becomes π/2. Substituting
+cos(h) = 0 and sin(h) = 1 into the general formula, we obtain its new coordinates:
+r(h = π/2) = R[−sin(a) cos(b), cos(a) cos(b), sin(b)]
+(16)
+Let’s write the projection of the vector consisting of the component at time t = 0 plus
+i times (the component at time t = T/4) onto the XY plane:
+X = cos(a) cos(h) −sin(a) cos(b) sin(h) + i [−cos(a) sin(h) −sin(a) cos(b) cos(h)]
+(17)
+Y = sin(a) cos(h) + cos(a) cos(b) sin(h) + i [−sin(a) sin(h) + cos(a) cos(b) cos(h)]
+(18)
+Factoring out common terms:
+X = cos(a)[cos(h) −i sin(h)] −sin(a) cos(b)[sin(h) + i cos(h)]
+(19)
+Y = sin(a)[cos(h) −i sin(h)] + cos(a) cos(b)[sin(h) + i cos(h)]
+(20)
+Note that:
+cos(h) −i sin(h) = e−ih
+(21)
+sin(h) + i cos(h) = ie−ih
+(22)
+Then:
+X = cos(a)e−ih −sin(a) cos(b)ie−ih = e−ih[cos(a) −i sin(a) cos(b)]
+(23)
+Y = sin(a)e−ih + cos(a) cos(b)ie−ih = e−ih[sin(a) + i cos(a) cos(b)]
+(24)
+4
+Let:
+Ax = cos(a) −i sin(a) cos(b)
+(25)
+Ay = sin(a) + i cos(a) cos(b)
+(26)
+Assuming h = −ωt:
+X = eiωtAx
+(27)
+Y = eiωtAy
+(28)
+Write:
+Ex = |Ax| =
+p
+(cos(a) −i sin(a) cos(b))2
+(29)
+Ey = |Ay| =
+p
+(sin(a) + i cos(a) cos(b))2
+(30)
+φx = arg(Ax) = −arctan
+sin(a) cos(b)
+cos(a)
+
+= −arctan(tan(a) cos(b))
+(31)
+φy = arg(Ay) = −arctan
+cos(a) cos(b)
+sin(a)
+
+= −arctan(cot(a) cos(b))
+(32)
+Finally:
+X = eiωtExeiφx
+(33)
+Y = eiωtEyeiφy
+(34)
+Z = 0
+(35)
+We have complete correspondence with the Jones formalism.
+4
+Experimental Verification of the Model
+4.1
+Search for Longitudinal Component of Electromagnetic Field
+Core contradiction:
+• Standard model: Electromagnetic waves in vacuum are strictly transverse. The
+vectors E and B oscillate perpendicular to the direction of wave propagation k.
+There are no longitudinal components.
+• Vortex model: The model explicitly predicts the presence of a longitudinal mo-
+tion component (along the Z-axis), which implies the possibility of existence of a
+longitudinal field component or oscillations.
+Experiment description: Use a high-frequency antenna detector (e.g., for mi-
+crowave or terahertz range) that is sensitive to electric field and place it directly on
+the axis of a radiation beam propagating in a vacuum chamber.
+Setup: Point radiation source (e.g., laser or maser) →Collimator (forms a narrow
+beam) →Vacuum tube →Detector capable of moving along the beam axis with high
+precision.
+Procedure: The detector measures the field strength along the beam axis. According
+to standard theory, when the detector is precisely aligned with the beam axis, it should not
+5
+detect any signal, since field oscillations occur perpendicular to this axis. Any detected
+axial signal would indicate a longitudinal component.
+Control: The experiment must be repeated for different polarization types (linear,
+circular) from the source.
+Expected result according to standard theory: The signal on the detector will
+be absent or equal to the noise level (caused by, for example, scattering on residual gases
+or non-ideal collimation). This would refute the vortex model.
+Expected result according to vortex model: The detector will register an oscil-
+latory signal at the radiation frequency, indicating the presence of a longitudinal electric
+field component.
+4.2
+Violation of Conservation Laws at photon creation/annihilation
+Core contradiction:
+• Standard model: A photon is a massless particle with spin 1, obeying conservation
+laws of energy, momentum, and angular momentum. Its creation and absorption
+are point-like interaction acts in quantum field theory.
+• Vortex model: If a photon is an extended rotating object with internal structure,
+then during its absorption by a single atom (e.g., in the photoelectric effect), not
+only should a quantum of energy be transferred but also the angular momentum
+of this vortex. This could violate symmetry and conservation laws in elementary
+processes.
+Experiment description: Investigate recoil during absorption of a single photon.
+Setup: An ion or atom cooled to ultralow temperatures and trapped in a trap.
+A source of single photons (e.g., quantum dot) emitting photons with known angular
+momentum (circularly polarized).
+Procedure: Observe the state of the ion after photon absorption.
+According to
+standard theory, the ion should only receive recoil along the direction of the photon’s
+momentum (p = ℏk). If the photon possesses additional "vortex" angular momentum,
+this should cause rotational recoil - the ion should start rotating around its axis after
+absorption.
+Control: Carefully measure changes in both linear and angular momentum of the
+ion with utmost precision.
+Expected result according to standard theory: The change in the ion’s angular
+momentum will be equal to the photon’s spin momentum (±ℏ) but will not be caused by
+mechanical transfer of momentum from an extended vortex. No anomalous rotation will
+be observed. This would refute the vortex model.
+Expected result according to vortex model: Photon absorption will cause mea-
+surable rotation of the ion, whose magnitude may depend on the "size" or "shape" of the
+vortex predicted by the model.
+6
+Table 1: Summary of proposed experimental tests
+Experiment
+Standard
+Model
+Predic-
+tion
+Vortex Model Prediction
+Longitudinal com-
+ponent search
+No detectable signal on beam
+axis
+Detectable oscillatory signal
+at radiation frequency
+Photon absorption
+momentum
+trans-
+fer
+No anomalous rotational recoil
+Measurable rotational recoil
+dependent on vortex proper-
+ties
+5
+Conclusion
+In this work, we have analyzed the vortex photon model based on the idea of corre-
+spondence between the vector potential and the velocity of elements of a hypothetical
+medium. We have shown that for transverse field components, the model is mathemati-
+cally equivalent to the standard Jones formalism, ensuring its internal consistency in this
+regard.
+The main result of this article is not the model itself, but the development of a
+methodology for its experimental verification. We have formulated critical differences
+between the model and standard QED and proposed two specific experimental schemes
+aimed at their detection: (1) direct search for longitudinal components of the electromag-
+netic field, and (2) identification of specific effects of angular momentum transfer during
+photon absorption.
+It is important to emphasize that standard QED unambiguously predicts negative re-
+sults in these experiments. Therefore, any registered positive effect corresponding to the
+model’s quantitative predictions would have revolutionary significance for physics. Con-
+versely, the absence of expected effects within achievable measurement accuracy would
+mean falsification of this particular vortex interpretation.
+Even in the latter case, the proposed experiments retain their scientific value, as they
+are aimed at testing fundamental principles (transverse nature of waves, photon angular
+momentum) at new levels of precision and under new conditions. The presented model
+thus serves not so much as an alternative theory but as a heuristic tool generating new,
+potentially interesting experimental tasks.
+Future work should involve conducting quantitative calculations of expected effect
+magnitudes (e.g., amplitude of longitudinal components for photons of different energies)
+and directly organizing experimental studies that will serve as the ultimate arbiter in
+assessing the validity of the proposed approach.
+References
+[1] R. Loetzsch and et al. Testing quantum electrodynamics in extreme fields using
+helium-like uranium. Nature, 625:673, 2024.
+[2] R. G. Bullis and et al. Ramsey spectroscopy of the 2s1/2 hyperfine interval in atomic
+hydrogen. Physical Review Letters, 2023.
+[3] S. J. Brodsky.
+Review of quantum electrodynamics.
+Technical report, Stanford
+Linear Accelerator Center, 1992.
+7
+[4] S. G. Karshenboim. Precision physics of simple atoms: Qed tests, nuclear structure
+and fundamental constants. Physics Reports, 2005.
+[5] S. Powers, G. Xu, and et al. A statistical model for quantum spin and photon number
+states. arXiv preprint, 2024.
+[6] D. S. Losinets. Formal analogy between maxwell’s equations and vortex dynamics
+in weakly viscous media. Zenodo, 2025.
+[7] D. S. Losinets. Model of the internal structure of nucleons based on a vortex analogy:
+A self-consistent description of magnetic moments. Zenodo, 2025.
+[8] L. Drori and et al. Quantum vortices of strongly interacting photons. Science, 2023.
+[9] L. B. Boldyreva. A theory of spin vortices in a physical vacuum consisting of quantum
+oscillators. 2021.
+[10] A. Marius. A revised model of photon resulted by an etherono-quantonic theory of
+fields. Open Access Library Journal, 2:1–9, 2015.
+[11] A.P. Konijnenberg, A.J.L. Adam, and H.P. Urbach. Bsc optics. 2024.
+[12] D. Sakhno, E. Koreshin, and P. A. Belov. Longitudinal electromagnetic waves with
+extremely short wavelength. Physical Review B, 104:L100304, 2021.
+[13] D. Maluenda, M. Aviñoá, and et al. Experimental estimation of the longitudinal
+component of a highly focused electromagnetic field. Scientific Reports, 2021.
+[14] A. Zhakatayev and L. Tlebaldiyeva. Long-range longitudinal electric wave in vacuum
+radiated by electric dipole: Part i. Radio Science, 2020.
+[15] E. J. Butterworth, D. Cavazos, and et al. Longitudinal electromagnetic waves? the
+monstein-wesley experiment reconstructed. 2013.
+[16] A. Blais and A. L. Grimsmo. Circuit quantum electrodynamics. Reviews of Modern
+Physics, 93:025005, 2021.
+[17] M. Markiewicz, D. Kaszlikowski, P. Kurzyński, and et al. From contextuality of a
+single photon to realism of an electromagnetic wave. npj Quantum Information, 5:5,
+2019.
+[18] J. P. Restrepo Cuartas and C. A. Flórez-Acosta. Dynamics of a quantum polariton
+vortex: Low-excitation scenario. Physical Review B, 110:155433, 2024.
+[19] D. Barral, J. Liñares, and D. Balado. Engineering continuous and discrete variable
+quantum vortex states by nonlocal photon subtraction in a reconfigurable photonic
+chip. JOSA B, 33:2225–2235, 2016.
+[20] P. Švančara, P. Smaniotto, L. Solidoro, and et al. Rotating curved spacetime signa-
+tures from a giant quantum vortex. Nature, 628:66–70, 2024.
+8

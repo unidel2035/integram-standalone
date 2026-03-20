@@ -14,7 +14,7 @@
  * @returns {string} Integram server URL without protocol (e.g., 'api.ai2o.ru' or 'dronedoc.ru')
  */
 export function getIntegramServerUrl() {
-  const raw = import.meta.env.VITE_INTEGRAM_SERVER_URL || 'api.ai2o.ru'
+  const raw = import.meta.env.VITE_INTEGRAM_SERVER_URL || 'ai2o.ru'
   // Strip protocol if accidentally included in env (e.g. "https://api.ai2o.ru" → "api.ai2o.ru")
   return raw.replace(/^https?:\/\//, '')
 }

@@ -1,0 +1,56 @@
+{
+  "portfolio": [
+    {
+      "name": "БиоПринт",
+      "legalEntity": "ООО «БиоПринт Технологии»",
+      "description": "3D-биопечать органов и тканей для трансплантологии. Собственная технология печати с использованием стволовых клеток пациента.",
+      "fundingRequest": 60000000,
+      "stage": "Seed",
+      "subfund": "МЭ",
+      "status": "На рассмотрении",
+      "financials": {
+        "revenue2024": 3200000,
+        "revenue2025plan": 18000000,
+        "ebitda2024": -12000000,
+        "headcount": 12,
+        "trl": 5,
+        "irr": 110
+      }
+    },
+    {
+      "name": "АгроДрон Про",
+      "legalEntity": "ООО «АгроДрон Про»",
+      "description": "Платформа точного земледелия на базе роя БПЛА. Автоматическое опрыскивание, картирование полей, мониторинг урожайности.",
+      "fundingRequest": 45000000,
+      "stage": "Round A",
+      "subfund": "БАС",
+      "status": "реализация",
+      "financials": {
+        "revenue2024": 42000000,
+        "revenue2025plan": 95000000,
+        "ebitda2024": 8500000,
+        "ebitda2025plan": 22000000,
+        "headcount": 38,
+        "trl": 7,
+        "irr": 145
+      }
+    },
+    {
+      "name": "СмартРобот",
+      "legalEntity": "ООО «СмартРобот»",
+      "description": "Автономные роботы-уборщики для торговых центров и аэропортов. Навигация на базе LiDAR + computer vision.",
+      "fundingRequest": 30000000,
+      "stage": "Seed",
+      "subfund": "РОБО",
+      "status": "На рассмотрении",
+      "financials": {
+        "revenue2024": 8000000,
+        "revenue2025plan": 35000000,
+        "ebitda2024": -4000000,
+        "headcount": 20,
+        "trl": 6,
+        "irr": 85
+      }
+    }
+  ]
+}

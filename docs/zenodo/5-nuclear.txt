@@ -1,0 +1,443 @@
+Modeling Strong Interaction within a
+Hydrodynamic Model of Quantum Vacuum:
+A Qualitative Study
+Dmitry Losinets
+October 2025
+Abstract
+Within the framework of the program exploring the possibility of a unified hy-
+drodynamic description of physical phenomena [1–4], a qualitative modeling of the
+strong (nuclear) interaction is conducted. The interaction between nucleons is mod-
+eled as the result of vortex-vortex flow interactions in an ideal incompressible fluid.
+It is shown that in a system of two cylindrical vortices at short distances, forces
+emerge that qualitatively resemble strong interactions: attraction at intermediate
+ranges and repulsion at ultra-short ones (“hard-core” behavior). For the first time
+within this model, a significant dependence of the interaction on the relative ori-
+entation of vortex axes is considered, allowing the vortex angular momentum to
+be associated with spin. The influence of multi-vortex geometry on short-range
+interaction is discussed. Quantitative parameter fitting and rigorous justification
+are beyond the scope of this work and are left for further study. The model draws
+on classical vortex dynamics, notably the work of Helmholtz (1858) on point vor-
+tices [5], and on recent research including vortex excitations in nuclei observed in
+58Ni (2025) [6], as well as hydrodynamic analogs in quantum mechanics [7].
+1
+Introduction
+In works [1–4], a hydrodynamic model of the quantum vacuum was developed, represent-
+ing it as a weakly viscous fluid. Within this model, consistent analogs for electromag-
+netism, gravitation, photon polarization, and several quantum-mechanical effects were
+obtained. These successes suggest the possibility of unifying fundamental interactions
+within a single classical hydrodynamic framework, reminiscent of Kelvin’s vortex atom
+hypothesis (1867) [8] and modern hydrodynamic interpretations of quantum mechanics
+through turbulence [9].
+The goal of this paper is to explore the feasibility of modeling the strong (nuclear)
+interaction within this paradigm. We aim to demonstrate that qualitative features of
+this interaction, attraction at distances ∼1 fm, replaced by strong repulsion at smaller
+distances, spin dependence, and saturation, can naturally arise from the dynamics of vor-
+tex structures. Special attention is paid to the role of vortex orientation and geometrical
+constraints in multi-vortex systems, consistent with recent studies on vortex models of
+nuclear forces, including pulsar glitch observations [10].
+1
+For the transition from speculative analogy to testable physical hypothesis, we propose
+three potential experiments based on key model predictions, spin dependence, geometric
+effects on nuclear stability, and collective vortex behavior, providing a bridge between
+qualitative theory and empirical verification, in line with existing experiments on spin-
+dependent nucleon-nucleon interactions [11].
+2
+Foundations and Model
+2.1
+Basic Equations
+We consider an ideal incompressible fluid. The steady-state Euler equation reads:
+(u · ∇)u = −1
+ρ∇p,
+(1)
+where u is the velocity vector [m/s], p is pressure [Pa], and ρ is density [kg/m3].
+2.2
+Vortex Flow Model
+Interaction between two point-like objects is modeled as the flow perturbation caused by
+one vortex interacting with another. A linear vortex oriented along the Z axis produces
+the velocity field in cylindrical coordinates (r, ϕ, z):
+uvortex = u0
+r ϕ1,
+(2)
+where u0 is the circulation divided by 2π, and ϕ1 is the azimuthal unit vector. This
+expression, introduced by Euler in 1757, underlies classical vortex dynamics and modern
+hydrodynamic analogs of quantum mechanics [12].
+2.3
+External Flow
+The vortex is exposed to a uniform external flow v = v x1, where x1 is the unit vector
+along the X-axis.
+3
+Combined Velocity Field
+In potential flow approximation, the total velocity field is the superposition of vortex and
+uniform flows:
+u(r, ϕ) = v cos ϕ r1 −v sin ϕ ϕ1 + u0
+r ϕ1,
+(3)
+or equivalently,
+u(r, ϕ) = v cos ϕ r1 +
+u0
+r −v sin ϕ
+
+ϕ1,
+(4)
+consistent with stochastic hydrodynamic vacuum models [13].
+2
+4
+Convective Term Calculation
+In cylindrical coordinates:
+(u · ∇) = ur
+∂
+∂r + uϕ
+r
+∂
+∂ϕ + uz
+∂
+∂z.
+(5)
+With u = urr1 + uϕϕ1, we have:
+ur = v cos ϕ,
+uϕ = u0
+r −v sin ϕ.
+After differentiation and simplification, we obtain:
+[(u · ∇)u]r = −u0
+r2
+u0
+r −v sin ϕ
+
+,
+(6)
+[(u · ∇)u]ϕ = −vu0 cos ϕ
+r2
+.
+(7)
+Thus,
+(u · ∇)u = −u0
+r2
+u0
+r −v sin ϕ
+
+r1 −vu0 cos ϕ
+r2
+ϕ1,
+(8)
+This expression is consistent with classical calculations of vortex dynamics [14] and is
+used in quantum hydrodynamic models [15].
+5
+Pressure Gradient and Force Density
+From Euler’s equation:
+(u · ∇)u = −1
+ρ∇p.
+(9)
+Hence,
+∇p = ρu0
+r2
+u0
+r −v sin ϕ
+
+r1 + ρvu0 cos ϕ
+r2
+ϕ1.
+(10)
+The force density f = −∇p is:
+f = −ρu0
+r2
+u0
+r −v sin ϕ
+
+r1 −ρvu0 cos ϕ
+r2
+ϕ1.
+(11)
+Similar expressions are used in models of vacuum hydrodynamics of moving bodies [16].
+6
+Limit Case: u0 ≫v
+When u0 ≫v, at small r:
+fr ≈−ρu2
+0
+r3 ,
+(12)
+fϕ ≈−ρvu0 cos ϕ
+r2
+.
+(13)
+The radial term represents an attractive force toward the vortex center, independent of
+ϕ, resembling the strong interaction potential [17].
+3
+7
+Finite-Core Vortex and Hard-Core Repulsion
+To model the short-range repulsion at ultra-small distances, we abandon the point-vortex
+approximation and consider a vortex with a finite core of radius a (of order 1 fm). Inside
+the core (r ≤a), the flow is assumed to resemble solid-body rotation. In this regime, the
+character of the motion differs from the 1/r profile, which regularizes the singularity at
+r = 0 and allows a natural “hard-core” behavior to emerge.
+Radial Force Expression
+By analogy with the previous analysis, the radial component of the convective acceleration
+inside the core (r ≤a) can be written as
+
+(u·∇)u
+
+r = u0
+a v sin θ −u2
+0
+a2 r,
+(14)
+where u0 is the (circulation/2π) scale associated with the vortex, v is the magnitude of the
+imposed uniform flow, and θ denotes the local angle between the external-flow direction
+and the tangential direction of the isoradial circle (i.e., the azimuthal direction) at the
+evaluation point.
+Because the force density is f = −∇p, we obtain
+f = −ρ
+u0
+a v sin θ −u2
+0
+a2 r
+
+r1 = ρ u2
+0
+a2 r r1 −ρ u0
+a v sin θ r1.
+(15)
+In the limit u0 ≫v, consistent with the strong-vortex regime, the leading-order radial
+force density reduces to
+fr ≈ρ u2
+0
+a2 r,
+(16)
+which is positive and independent of the flow directions and azimuth. Hence, it always
+points away from the vortex center, i.e., it is repulsive. This captures the “hard-core”
+effect within the finite-core model observed in nuclear matter [18].
+8
+Spin Dependence and Geometry
+8.1
+Vortex Orientation (Spin)
+Vortices possess an intrinsic axis, and their angular momentum corresponds to spin [2,3].
+Interaction efficiency critically depends on their relative orientation. Parallel vortices
+attract strongly, while anti-parallel or skewed ones may produce anisotropic forces or
+even repulsion [19].
+• With parallel axes the model presented above is adequate.
+• With antiparallel or crossed axes the geometry of the flow changes dramatically.
+The flow induced by one vortex will not flow axisymmetrically around the second
+one, but will twist around its axis at an angle. This will lead to a strong anisotropy
+of the force and its possible weakening or even repulsion in some configurations.
+Thus, the model predicts a significant dependence of the nuclear interaction on
+the spins of interacting particles, in accordance with the latest searches for spin-
+dependent interactions [20].
+4
+8.2
+Neighboring Vortices and Saturation
+In dense configurations, geometric constraints lead to:
+• Screening: Long-range components are blocked by nearby vortices.
+• Saturation: Each vortex interacts primarily with its nearest neighbors, explaining
+the saturation of nuclear forces.
+This qualitatively explains the property of saturation of nuclear forces, similar to the
+effects in strongly interacting bose gases [21].
+9
+Proposed Experimental Verification
+To move from a qualitative analogy to a testable physical hypothesis, we outline three
+experiments grounded in the model’s key predictions - spin dependence, geometric effects
+on nuclear stability, and collective vortex behavior.
+These proposals are intended to
+bridge theory and measurement, in line with existing spin-dependent nucleon–nucleon
+studies [11].
+9.1
+Experiment 1: Spin-Dependent Nucleon Scattering
+Hypothesis. The strength of the strong interaction between nucleons critically depends
+on the relative orientation of their spins (vortex axes), not merely on separation. In
+certain configurations (e.g., antiparallel spins), attraction may weaken or even turn into
+repulsion, beyond what standard Yukawa-type potentials would predict to the same ex-
+tent [22,23].
+Setup.
+1. Beam and target: Use polarized neutron beams and polarized proton targets (or
+vice versa).
+Modern techniques allow preparation of both polarized beams and
+targets.
+2. Configurations: Perform elastic-scattering runs at the same collision energy but
+with different relative spin orientations:
+(a) Configuration A: parallel spins (beam and target).
+(b) Configuration B: antiparallel spins.
+(c) Configuration C: unpolarized (control).
+3. Observable: Measure the differential cross section dσ/dΩwith high precision at
+small scattering angles, which probe the intermediate range (∼1–2 fm) where the
+model predicts enhanced attraction for favorable orientations.
+Expected result (per the model).
+• Statistically significant differences in dσ/dΩbetween Configurations A and B.
+• For parallel spins (most coaxial vortices), a larger cross section, indicating stronger
+attraction.
+5
+• For antiparallel spins, a smaller cross section, consistent with reduced attraction due
+to suboptimal flow geometry.
+A clear spin-orientation dependence would directly support the proposal that flow geom-
+etry (the spin analog) plays a fundamental role in nuclear forces [22,23].
+9.2
+Experiment 2: Geometric Anomalies in Light Nuclei
+Hypothesis. Nuclear binding energy and stability depend not only on nucleon count
+but also on spatial and spin orientations, which control how efficiently vortex “flows”
+interpenetrate. Certain geometrically “degenerate” configurations should be unstable,
+consistent with observations of vortex-like excitations in light nuclei such as 58Ni [6].
+Setup.
+1. Systems: Focus on exotic, weakly bound light nuclei where geometric effects are
+most pronounced (e.g., 10He or neutron-halo systems).
+2. Methods: Employ high-resolution nuclear spectroscopy (e.g., laser spectroscopy,
+precise moment measurements) to extract:
+(a) Nuclear density radii,
+(b) Binding energies,
+(c) Spins and parities of low-lying states.
+3. Analysis: Compare with standard nuclear models (potential-based) and with qual-
+itative predictions of the hydrodynamic vortex picture.
+The model anticipates
+anomalously low binding when vortex axes block each other’s flows (e.g., multiple
+vortices with mutually perpendicular axes confined within a small volume).
+Expected result (per the model).
+• Identification of states anomalously unstable relative to standard predictions, whose
+reconstructed spin geometry matches “flow-inefficient” configurations in the hydro-
+dynamic analogy.
+• Qualitative guidance on the most stable spin arrangements in few-body systems
+(e.g., triton 3H, α particle 4He) that can be tested against precision data.
+9.3
+Experiment 3: Hydrodynamic Correlations in Relativistic
+Heavy-Ion Collisions
+Hypothesis. If nucleons and nuclei behave as vortices in a fluid, then the medium created
+in high-energy nuclear collisions (QGP) should inherit and amplify these hydrodynamic
+features. In particular, the initial vortex structure of the colliding nuclei should influence
+final-state observables, in harmony with QGP hydrodynamics and vortex-related photon
+phenomena [24].
+Setup.
+1. Conditions: Collide heavy ions (e.g., Au, Pb) at RHIC or the LHC.
+6
+2. Methodology: Use event-by-event analyses, categorizing events by initial collision
+geometry and ideally by global spin orientation of the nuclei (assuming feasible
+nuclear polarization at injection).
+3. Observables: Study two-particle and multi-particle correlations and collective-flow
+coefficients, especially directed (v1) and elliptic (v2) flow. The hydrodynamic model
+predicts enhanced and structured vortex-like signals if the colliding ions possess
+nonzero global spin alignment.
+Expected result (per the model).
+• Observation of anomalously strong collective behavior (e.g., v2 or vortex components
+in v1) not fully captured by standard hydrodynamic initial-state density gradients
+alone [24].
+• Correlations between global spin orientation (if controllable) and the pattern of
+angular correlations in final-state particles, consistent with a vortex-nature imprint
+at extreme conditions, echoing recent vortex-laser style results [17].
+10
+Conclusion
+Within the broader program aimed at developing a unified hydrodynamic model of phys-
+ical phenomena [1–4], this work has carried out a qualitative investigation into the feasi-
+bility of describing the strong nuclear interaction using vortex dynamics in an ideal fluid.
+The analysis demonstrates that the interaction between finite-size vortices naturally re-
+produces the key qualitative features of nuclear forces:
+1. A strong attractive component at distances of about 1 fm, with an approximate
+radial dependence ∼1/r3;
+2. A short-range repulsive component (“hard-core” behavior) at r ≲a;
+3. A pronounced dependence on vortex orientation, interpreted as a spin depen-
+dence of the effective interaction;
+4. The emergence of saturation effects due to geometric flow screening in multi-
+vortex systems.
+A major outcome of this study is the formulation of specific directions for possible
+experimental validation of the model. The proposed experimental programs include:
+• investigations of spin-dependent nucleon–nucleon scattering on polarized targets,
+• the search for geometric anomalies and stability deviations in light nuclei,
+• and the study of vortex-like hydrodynamic correlations in relativistic heavy-ion
+collisions.
+These proposed tests provide a bridge between the qualitative hydrodynamic frame-
+work and empirically verifiable predictions. A critical test of the model would be the
+observation of distinctive signatures such as a strong spin-orientation dependence of the
+scattering cross section, consistent with stochastic vacuum models [13].
+7
+This work therefore demonstrates the principled feasibility of describing the strong
+interaction hydrodynamically and outlines clear pathways for its experimental assess-
+ment. However, a quantitative comparison with real strong-interaction dynamics remains
+premature. Establishing such correspondence will require:
+• rigorous derivation of vortex-core structure,
+• numerical modeling of many-vortex systems,
+• quantitative parameter fitting,
+• and, most importantly, the design and realization of the proposed experimental
+tests.
+These tasks form the foundation of our ongoing and future research.
+References
+[1] D. S. Losinets (2025), Formal Analogy Between Maxwell’s Equations and Vortex Dy-
+namics in Weakly Viscous Media, Zenodo https://zenodo.org/records/16798876
+[2] D. S. Losinets (2025), Model of the Internal Structure of Nucleons Based on a Vortex
+Analogy: A Self-Consistent Description of Magnetic Moments, Zenodo https://
+zenodo.org/records/16934346
+[3] D. S. Losinets (2025), Vortex Photon Model: Program for Experimental Verification,
+Zenodo https://zenodo.org/records/17063625
+[4] D. S. Losinets (2025), Hydrodynamic Model of Gravity as Manifestation of Quantum
+Vacuum Energy Exchange, Zenodo https://zenodo.org/records/17273449
+[5] H. Aref (2007), Point vortex dynamics: A classical mathematics playground, J.
+Math. Phys. 48, 065401 https://pubs.aip.org/aip/jmp/article-abstract/48/
+6/065401/914688/Point-vortex-dynamics-A-classical-mathematics
+[6] P. von Neumann-Cosel et al. (2024), Candidate Toroidal Electric Dipole Mode in
+the Spherical Nucleus Ni-58, Phys. Rev. Lett. 133, 232502 https://journals.aps.
+org/prl/abstract/10.1103/PhysRevLett.133.232502
+[7] Hydrodynamic quantum analogs, Wikipedia https://en.wikipedia.org/wiki/
+Hydrodynamic_quantum_analogs
+[8] W. Thomson (1867), On Vortex Atoms, Phil. Mag. Vol. XXXIV https://zapatopi.
+net/kelvin/papers/on_vortex_atoms.html
+[9] Roumen Tsekov et al. (2019), A Hydrodynamic Interpretation of Quantum Mechan-
+ics via Turbulence, C. R. Acad. Bulg. Sci. 72 https://arxiv.org/pdf/1804.00395
+[10] Z. Tu, A. Li (2025), Exploring Nuclear Forces with Pulsar Glitch Observations, The
+Astrophysical Journal 984(2):200 https://www.researchgate.net/publication/
+391625374_Exploring_Nuclear_Forces_with_Pulsar_Glitch_Observations
+8
+[11] J.B. McClelland et al. (1983), The experimental determination of the effective
+nucleon-nucleon interaction for p-nucleus reactions at intermediate energies, Nuclear
+Physics A Vol. 396 https://www.sciencedirect.com/science/article/abs/pii/
+0375947483900076
+[12] M. D. John, W. M. Bush (2020), Hydrodynamic Quantum Field Theory: The On-
+set of Particle Motion and the Form of the Pilot Wave, Sec. Statistical and Com-
+putational Physics Vol. 8 https://www.frontiersin.org/journals/physics/
+articles/10.3389/fphy.2020.00300/full
+[13] S. Chiarelli et al. (2020), Stochastic Quantum Hydrodynamic Model from the Dark
+Matter of Vacuum Fluctuations: The Langevin-Schr¨odinger Equation and the Large-
+Scale Classical Limit, Open Access Library Journal Vol.7 https://www.scirp.org/
+journal/paperinformation?paperid=102600
+[14] H. K. Moffatt (2011), A Brief Introduction to Vortex Dynamics and Turbulence, En-
+vironmental Hazards https://www.damtp.cam.ac.uk/user/hkm2/PDFs/Moffatt_
+2011_WorldScientific_Abitvdat_1.pdf
+[15] S. A. Simmons et al. (2022), Phase-space stochastic quantum hydrodynamics for
+interacting Bose gases, Phys. Rev. A 106, 043309 https://journals.aps.org/pra/
+abstract/10.1103/PhysRevA.106.043309
+[16] A.
+Rizzo
+(2024),
+On
+the
+Vacuum
+Hydrodynamics
+of
+Mov-
+ing
+Bodies,
+JHEPGC
+https://www.researchgate.net/profile/
+Alessandro-Rizzo-19/publication/372592105_On_the_Vacuum_
+Hydrodynamics_of_Moving_Bodies/links/661b415139e7641c0bbe9a8a/
+On-the-Vacuum-Hydrodynamics-of-Moving-Bodies.pdf
+[17] Z. Lu et al. (2025), Nuclear Excitation and Control Induced by Intense Vortex Laser,
+arXiv https://arxiv.org/html/2503.12812v1
+[18] J. A. Gil Granados et al. (2025), Half-vortex states in the rotating outer core of neu-
+tron stars, Phys. Rev. C 111, 065802 https://journals.aps.org/prc/abstract/
+10.1103/PhysRevC.111.065802
+[19] T. Okudaira et al. (2024), Spin dependence in the p-wave resonance of La-139 + n,
+Phys. Rev. C 109, 044606 https://journals.aps.org/prc/abstract/10.1103/
+PhysRevC.109.044606
+[20] J. Shortino et al. (2024),
+Preliminary searches for spin-dependent interac-
+tions using sidebands of nuclear spin-precession signals,
+Rev. Sci. Instrum.
+95,
+013301 https://pubs.aip.org/aip/rsi/article-abstract/95/1/013301/
+2932693/Preliminary-searches-for-spin-dependent
+[21] N. Malvania et al. (2021), Generalized hydrodynamics in strongly interacting 1D
+Bose gases, Science Vol 373, Issue 6559 https://www.science.org/doi/10.1126/
+science.abf0147
+[22] P. Kroll et al. (1977), On the spin dependence of the nucleon-nucleon interaction,
+AIP Conf.Proc. 41 https://inspirehep.net/literature/5633
+9
+[23] E. Aprile et al. (2019), Constraining the Spin-Dependent WIMP-Nucleon Cross Sec-
+tions with XENON1T, Phys. Rev. Lett. 122, 141301 https://journals.aps.org/
+prl/abstract/10.1103/PhysRevLett.122.141301
+[24] Y. Xu et al. (2024), Vortex photon induced nuclear reaction: Mechanism, model,
+and application to the studies of giant resonance and astrophysical reaction rate,
+Physics Letters B Vol. 852 https://www.sciencedirect.com/science/article/
+pii/S0370269324001801
+10

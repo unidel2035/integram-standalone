@@ -1,0 +1,554 @@
+Hydrodynamic Model of Gravity as Manifestation of
+Quantum Vacuum Energy Exchange
+Dmitry Losinets
+October 2025
+Abstract
+This work investigates the possibility of describing gravitational interaction
+within the framework of a hydrodynamic model of the quantum vacuum. Nucleons
+are modeled as toroidal vortices absorbing vacuum energy, leading to a pressure
+gradient identified with gravity. The model qualitatively agrees with the law of
+universal gravitation and offers a path toward unification with electromagnetic phe-
+nomena. The justification relies on classical ideas of Sakharov’s induced gravity
+(1967) and modern analog models of gravity in hydrodynamics, including the su-
+perfluid vacuum theory.
+1
+Introduction
+As shown in works [10, 11], fundamental particles of matter (nucleons) can be modeled
+as toroidal vortices of the quantum vacuum, represented as a weakly viscous fluid. This
+approach leads to the unification of magnetic moment and charge of particles, and allows
+obtaining expressions for acting forces that are structurally identical to Maxwell’s equa-
+tions. It has been demonstrated [12] that this approach also consistently incorporates
+the mathematical formalism of quantum chromodynamics. Within the current work, we
+propose to consider the fundamental possibility of modeling gravitational phenomena and
+their relationship with electromagnetic processes in matter.
+The classical foundations of this approach date back to Sakharov’s ideas [16, 18] on
+induced gravity, where gravity arises as a consequence of quantum corrections in matter
+fields, similar to how hydrodynamics emerges from molecular physics.
+Modern devel-
+opments, such as the Superfluid Vacuum Theory (SVT) [17], consider the vacuum as a
+Bose-Einstein condensate where relativistic gravity manifests as long-wavelength excita-
+tions, and spacetime curvature as collective fluctuation modes [20, 4].
+Analog models of gravity in fluids [2], including acoustic analogies of black holes, con-
+firm the possibility of simulating quantum gravity effects, such as Hawking radiation, in
+hydrodynamic systems. As the source of gravitational interaction, we propose to develop
+a hydrodynamic model of the quantum vacuum where, in addition to flow velocities, there
+is also internal energy. The toroidal vortex, through a periodic process of compression
+and expansion of the quantum vacuum, absorbs energy from the surrounding environ-
+ment.
+When using an ideal gas model, this leads to a pressure gradient that creates
+gravitational attraction. Recent works emphasize that quantum vacuum energy can be
+the source of gravity through an effect analogous to the Casimir effect, where the Newto-
+nian gravitational potential arises from vacuum energy density ρvac [8].
+1
+The successful reduction of electromagnetism to hydrodynamics [10], the linking of
+previously considered independent particle parameters [11], and the unification with the
+mathematical formalism of quantum chromodynamics [12] show the promise of using
+hydrodynamic analogies. The presented work is a first approximation and a declaration
+of the possibility of such reduction, rather than a strict calculation of effective parameters
+of the quantum vacuum.
+2
+Qualitative Description of the Model
+Consider a steady-state toroidal vortex. It is assumed that in the small inner ring of the
+torus, gas compression occurs under the action of centrifugal forces. The motion around
+the axis of the toroidal vortex accelerates the gas outward, and the meridional motion in
+the near-axis region drives the gas inward, creating a zone of high pressure and density.
+Then the gas adiabatically expands, leaving this region, which leads to its cooling and
+acceleration, analogous to processes in a Laval nozzle.
+The cooled gas in the vortex core is heated by the surrounding atmosphere through
+turbulent heat transfer, absorbing thermal energy. This energy is used to maintain the
+vortex rotation, which through viscous forces is dissipated in the atmosphere, creating
+winds. Thus, the model describes a hypothetical cycle of converting thermal energy of
+the atmosphere into kinetic energy of air masses. Toroidal models of subatomic particles,
+such as Parson’s model (1915) [14], describe electrons and protons as ring structures with
+circulating charges, where magnetic moments arise from currents and stability is ensured
+by the balance of electromagnetic forces [5].
+It is important to distinguish two levels of consideration:
+• Macroscopic analogy (atmospheric vortices): Used as a visual metaphor il-
+lustrating processes of heat exchange, rotation, and adiabatic expansion.
+• Microscopic vacuum model: Actual calculation should be conducted at the level
+of a quantized medium, where ”temperature” and ”heat transfer” act as effective
+parameters, analogous to noise temperature in quantum systems.
+Thus, the relations described below do not imply literal identity of a nucleon and
+an atmospheric vortex, but rather set the mathematical apparatus for modeling energy
+exchange cycles. The hydrodynamic approach to quantum gravity interprets Einstein’s
+equations as hydrodynamics of systems divided into causal diamonds, where subsystems
+define density matrices with modular Hamiltonians proportional to the boundary area [1].
+Key assumption: The model considers dry air and does not account for processes
+related to changes in the state of aggregation of water (evaporation, condensation), which
+are dominant in real powerful atmospheric vortices. This assumption is valid since at the
+subatomic level there is no basis to assume the presence of state change processes.
+3
+Temperature Difference in Adiabatic Expansion
+For an adiabatic process, the temperature and volume of gas between the initial (state 1
+- before expansion) and final (state 2 - after expansion) states are related by:
+T1V γ−1
+1
+= T2V γ−1
+2
+(1)
+2
+The formula for temperature decrease during expansion (V2 > V1):
+T2
+T1
+=
+V1
+V2
+γ−1
+(2)
+where γ is the adiabatic index (≈1.4 for air).
+The temperature (T1) is approximated by the atmospheric temperature (Ta) at the
+vortex periphery. The temperature (T2 = Tv) is the temperature in the cooled vortex
+core. Consequently, the temperature difference created by expansion:
+∆Tad = Ta −Tv = Ta
+"
+1 −
+V1
+V2
+γ−1#
+(3)
+The model introduces an effective vacuum temperature, reflecting the average level of
+fluctuations and the medium’s ability to transfer energy to vortex structures. This is not
+a real thermodynamic temperature, but a parameter allowing the description of energy
+exchange in analogy with heat transfer. In analog models of gravity, such parameters
+allow simulation of quantum effects, including excitations of quasi-normal vacuum modes
+[9].
+Vacuum energy is included in the vortex cycle in the form of conditional ”heat” main-
+taining rotation and compensating for dissipation.
+4
+Power of Heat Absorption from External Atmo-
+sphere
+The heat flow power (Q) from the atmosphere to the vortex is estimated by the equation:
+Q = hS∆Tad
+(4)
+where:
+• S = 4π2Ra - surface area of the torus,
+• ∆Tad = Ta −Tv - temperature difference between atmosphere and vortex core,
+• h - heat transfer coefficient.
+The heat transfer coefficient is expressed through the Nusselt number:
+h = Nu k
+a
+,
+where
+Nu = C Ren,
+Re = va
+ν
+(5)
+Here k is thermal conductivity, ν is kinematic viscosity, v is characteristic velocity, C and
+n are empirical constants.
+5
+Rotation Intensity and Energy Dissipation
+The power dissipated due to viscosity is estimated by the formula:
+Pdiss ≈Cdρνv2a
+(6)
+3
+where Cd is a dimensionless dissipation coefficient determined by geometry and flow
+regime.
+In steady state, the power used to maintain the vortex and compensate for dissipation
+must equal the absorbed thermal power multiplied by the cycle efficiency coefficient (η <
+1):
+Pdiss = ηQ
+(7)
+This equation reflects the fact that only part of the absorbed thermal energy is con-
+verted into useful work to maintain rotation. In hydrodynamic vacuum models, dissipation
+can be associated with negative effective mass in regions of low energy, as in recent works
+on quantum hydrodynamics [15].
+6
+Relationship Between Expansion Ratio and Flow
+Velocity
+The expansion ratio (V2/V1) in the hypothetical ”Laval nozzle” of the vortex is not an
+independent quantity. It is determined by flow dynamics, particularly the balance between
+centrifugal forces and pressure.
+For a toroidal vortex, rotational motion creates a radial pressure gradient described
+by the radial equilibrium equation:
+∂P
+∂r = ρv2
+θ
+r
+(8)
+where vθ is azimuthal velocity, ρ is medium density, r is distance from the rotation axis.
+Integrating this equation for characteristic vortex sizes, we obtain an estimate of the
+pressure difference between inner and outer regions:
+∆P = Pin −Pex ≈ρv2
+(9)
+For an adiabatic process in a gas with adiabatic index (γ):
+P1
+P2
+=
+V2
+V1
+γ
+= 1 + ∆P
+P2
+(10)
+Expressing P2 through the speed of sound in the medium cs (P2 = ρc2
+s/γ for an ideal
+gas), we obtain:
+V2
+V1
+γ
+= 1 + γ v2
+c2
+s
+(11)
+For small Mach numbers (v ≪cs) we linearize:
+V2
+V1
+≈1 + v2
+c2
+s
+(12)
+Thus, we obtain the dependence:
+V2
+V1
+≈1 + αv2
+(13)
+where α = 1/c2
+s is a coefficient determined by medium properties. In the case of the
+quantum vacuum, cs represents the speed of propagation of longitudinal disturbances in
+this medium. This agrees with the fluid analogy of gravity, where vacuum flow creates
+gradients analogous to spacetime curvature [7].
+4
+7
+Analytical Relationship Between Heat Absorption
+and Flow Velocities
+Substituting into the power balance equation (7) the expressions for Q and Pdiss:
+Cdρνv2a = η
+
+C k
+a
+va
+ν
+n
+(4π2Ra)∆T
+(14)
+Simplifying, we express the required temperature difference for balance ∆Tbal:
+∆Tbal = Cdρνn+1v2−na1−n
+4π2RηCk
+(15)
+This temperature difference must be provided by the vortex itself through adiabatic
+expansion, i.e., ∆Tbal = ∆Tad. Equating equations (3) and (15) and substituting into (3)
+the relation (13), we obtain:
+Ta
+"
+1 −
+
+1
+1 + αv2
+γ−1#
+= Cdρνn+1v2−na1−n
+4π2RηCk
+(16)
+This equation relates the characteristic vortex velocity v with system parameters and
+environment (Ta, ρ, ν, k) and geometric parameters (R, a). Its solution allows finding
+the self-consistent vortex velocity determined by the balance between adiabatic cooling,
+heating from the atmosphere, and energy dissipation.
+Qualitative analysis: For small v, the left side of equation (16) behaves as ≈Taα(γ−
+1)v2, and the right side as ∼v2−n. Thus, the existence of a nontrivial solution (v > 0)
+depends on the exponent n and system parameters.
+The model predicts a threshold
+effect: for vortex formation, it is necessary to exceed some critical value of atmospheric
+temperature Ta or other parameters.
+Equations 3-16 should be understood as effective relations. In particular, the closure
+equation 16 describes the self-consistent vortex state where rotation speed is determined
+by the balance between ”adiabatic cooling” (effective) and dissipation. This echoes the
+hydrodynamic approach where subsystems in causal diamonds lead to Einstein’s equations
+as hydrodynamics [1].
+8
+Gravitational Interaction as a Consequence of Vac-
+uum Energy Absorption
+Within the model where nucleons represent toroidal vortices in the quantum vacuum,
+treated as a weakly viscous gas, gravitational interaction arises as a macroscopic mani-
+festation of energy absorption and dissipation processes at the microlevel. The idea of
+gravity as a pressure gradient in the vacuum finds support in recent works where vacuum
+energy generates the Newtonian potential through RG-flow of constant G [8].
+8.1
+Energy Density Flux Field of Vacuum
+Each toroidal vortex (nucleon) in steady state operates as a sink of vacuum energy. The
+absorption power per nucleon, according to the balance equation (16), is Q. For a macro-
+scopic body containing N nucleons, the total absorption power is Qtotal = NQ. Since the
+5
+body mass m is proportional to N, we can write:
+Qtotal = κm
+(17)
+where κ is a constant characterizing the absorption efficiency per nucleon.
+Energy absorption creates a stationary energy density flux field ⃗S in the surrounding
+vacuum.
+For a point sink of power Q in an unbounded medium, the solution of the
+continuity equation for energy flux gives:
+S(r) =
+Q
+4πr2
+(18)
+where r is the distance from the sink. The vector ⃗S is directed radially toward the sink
+center.
+8.2
+Gravitational Force as a Result of Pressure Gradient in Vac-
+uum
+In the hydrodynamic vacuum model, energy flux ⃗S is related to momentum flux. For an
+isotropic medium at large distances from the vortex, it can be considered that energy flux
+creates a radial gradient of scalar pressure P in the vacuum.
+The energy flux from a sink (nucleon) is spherically symmetric:
+S(r) =
+Q
+4πr2
+(19)
+In the hydrodynamic approximation, energy flux is related to pressure through the
+speed of propagation of longitudinal disturbances in the vacuum cs:
+dP
+dr = −S(r)
+cs
+(20)
+Substituting the expression for S(r):
+dP
+dr = −
+Q
+4πcsr2
+(21)
+Integrating over radius:
+P(r) = P0 −
+Q
+4πcsr
+(22)
+This agrees with classical ideas of Dirac about the ether as a fluid [6] and modern models
+where gravity is a fluid phenomenon in a superfluid vacuum [7, 19].
+8.3
+Interaction Force Between Two Bodies
+Consider two macroscopic bodies with masses m1 and m2, separated by distance R. In
+first approximation, each body creates a pressure field around itself. However, for dense
+macroscopic bodies, shielding is inevitable - a phenomenon where outer layers of matter
+partially absorb the energy flux directed toward inner layers.
+This leads to effective reduction of absorption power for deeply located nucleons. We
+introduce a shielding coefficient 0 < ξ ≤1, so the effective absorption power for a body
+is:
+Qeff = ξκm
+(23)
+6
+For a small body 2 located in the pressure gradient created by body 1, the resulting
+force is estimated as:
+F = −γQeff2∇P1
+(24)
+Substituting expressions considering shielding:
+F = −γ(ξ2κm2)
+ ξ1κm1
+4πcsR2
+
+⃗eR = −Gm1m2
+R2 ⃗eR
+(25)
+where the gravitational constant G = γξ1ξ2κ2
+4πcs .
+8.4
+Model Consistency Check
+Let us check whether the model can be reconciled with the observed gravitational constant
+by introducing reasonable parameters. For simplicity, assume all coefficients are on the
+order of unity and shielding equals one.
+1. Initial data and target values:
+G ≈6.67 × 10−11 m3/(kg · s2)
+v = 3 × 108 m/s
+ρ = 8.85 × 10−12 kg/m3
+(vacuum density according to [10])
+mp = 1.67 × 10−27 kg
+2. Estimate of lower bound for speed of sound
+From [10] we get q = ρvS = 1.6 × 10−19 kg/s. Then the speed of sound in the
+modeled medium will be not less than the flow velocity.
+cs ≥
+1.6 × 10−19
+(8.85 × 10−12)(1.26 × 10−29) = 1.44 × 1021 m/s
+(26)
+(indirectly confirmed by quantum effects that propagate nonlocally or with far su-
+perluminal speed).
+From [13] it can be concluded that the vacuum energy density is at least 1035
+J/m3. A similar value was obtained in work [3], which investigated outward-directed
+pressure inside protons. It is fair to assume that in space external to the proton,
+the pressure should be similar. For a near-ideal gas, the expression for sound speed
+is valid:
+cs =
+s
+γP
+ρ
+(27)
+Then the sound speed estimate is:
+cs ≈
+r
+1.4 × 1035
+8.85 × 10−12 ≈1.26 × 1023 m/s
+(28)
+3. Determination of κ from gravitational constant:
+From the formula G =
+κ2
+4πcs ≈
+κ2
+1.58×1024 it follows:
+κ2 ≈G × 1.58 × 1024 ≈6.67 × 10−11 × 1.58 × 1024 ≈1.05 × 1013
+κ ≈1.03 × 107 W/kg
+7
+4. Absorption power per nucleon:
+Q = κm ≈1.03 × 107 × 1.67 × 10−27 ≈1.71 × 10−20 W
+(29)
+5. Estimate of kinematic viscosity ν:
+From the dissipation formula:
+Pdiss ≈ηCdρνv2a
+1.71 × 10−20 ≈η × 1 × (8.85 × 10−12)ν(9 × 1016)(0.25 × 10−15)
+1.71 × 10−20 ≈η × 1.99 × 10−10ν
+ν ≈8.61 × 10−11
+η
+m2/s
+The range of permissible ν values turns out to be quite wide ≥8.61 × 10−11, how-
+ever these values do not contradict experimental data and correspond to initial premises.
+This estimate shows that the model can be mathematically reconciled with the observed
+gravitational constant. This agrees with models where G depends on scale and vacuum
+energy [8].
+9
+Relationship Between Gravity and Electromagnetism
+in a Unified Hydrodynamic Picture
+9.1
+Consistency of the Model with Electromagnetic Properties
+of Nucleons
+As shown in work [10], the velocity of the quantum vacuum can be identified with the
+vector potential ⃗A, and its potential with the scalar potential ϕ. As shown in work [11],
+the neutron, despite having zero net charge, has a complex charge distribution inside the
+vortex, explaining its gravitational interaction on par with the proton. In the toroidal
+model, such properties arise from the helical charge structure [5].
+9.2
+Unified Mechanism of Interactions
+In the proposed model:
+• Electromagnetic interaction arises from the direct effect of vortex velocity and
+pressure fields on other vortices through vector and scalar potentials [10, 11, 12].
+• Gravitational interaction is a secondary, statistical effect arising from the cre-
+ation of a pressure gradient in the vacuum during energy absorption by nucleons.
+Both interactions have a common hydrodynamic nature but manifest at different scales
+and through different components of vacuum dynamics. This echoes Sakharov’s induced
+gravity, where gravity arises from quantum fields [16, 18].
+8
+10
+Experimental Predictions and Research Directions
+To transfer the model from the category of speculative constructions to the area of testable
+scientific hypotheses, the following program of experimental research is proposed. It aims
+to validate the key tenets of the theory, in particular, the idea of vacuum energy absorption
+and the emergence of a pressure gradient. Analog simulations in fluids can be used for
+testing, including observation of Hawking radiation and Penrose superradiance [2].
+10.1
+Verification of the Fundamental Energy Absorption Mech-
+anism
+Instead of testing the speculative ”shielding,” experiments should be directed at directly
+testing the hypothesis that nucleons are sinks of vacuum energy.
+Hypothesis: If nucleons absorb vacuum energy, then a dense array of nuclear matter
+can create a detectable gradient in the surrounding vacuum.
+Experimental setup: Use highly sensitive atomic interferometers or micro-mechanical
+resonators to search for anomalies in the behavior of atoms or particles near massive high-
+density objects (e.g., near compact samples of tungsten or depleted uranium). Measure-
+ment concerns potential deviation from predictions of standard quantum mechanics for
+non-interacting particles.
+Model falsification criterion: If under controlled conditions no statistically signif-
+icant deviation from background noise is detected, the hypothesis of a stationary energy
+flux toward matter will be called into question.
+10.2
+Search for Deviations from the Law of Universal Gravita-
+tion
+The model predicts that the inverse square law may be violated at distances comparable
+to the effective size of the nucleon vortex structure or with the scattering length of ”energy
+fluxes” in the vacuum.
+Hypothesis: At ultrasmall distances (from femtometers to nanometers), gravitational
+interaction ceases to be purely radial and its force deviates from ∼1/r2 dependence.
+Experimental setup: Conduct high-precision measurements of gravitational force
+in the range from 100 nm to 10 microns using torsion balances or microelectromechanical
+systems (MEMS). Such experiments are already being conducted to search for traces
+of extra spatial dimensions, but within our model they are interpreted as testing the
+hydrodynamic nature of the vacuum.
+Falsification criterion: Absence of any deviations from Newtonian gravity in the
+investigated distance range would testify against the idea that gravity is a macroscopic
+manifestation of processes having a characteristic micro-scale.
+10.3
+Investigation of the Relationship Between Gravity and Quan-
+tum Fluctuations
+This direction tests whether the ”vacuum temperature” in the model is merely a metaphor
+or whether it is related to real, controllable quantum fluctuations.
+Hypothesis: The intensity of gravitational interaction may be modulated by locally
+changing the energy of quantum vacuum fluctuations.
+9
+Experimental setup: Conduct precision measurements of the gravitational constant
+G under conditions of active influence on the vacuum. A key experiment is placing test
+masses in a powerful electromagnetic field (to polarize the vacuum) or under Casimir
+effect conditions (to limit the fluctuation spectrum).
+Falsification criterion: If changing the configuration of quantum fluctuations (e.g.,
+changing the gap in Casimir plates) does not have any statistically significant effect on
+the measured attraction force, this would weaken the model’s position postulating a deep
+connection between the ”thermal” energy of the vacuum and gravity.
+10.4
+Unification: Search for Gravitational-Electromagnetic Cor-
+relations
+Since the model claims a common hydrodynamic nature of interactions, it should predict
+new effects at their interface.
+Hypothesis: Rapid change in the electromagnetic state of matter (e.g., polarization
+or magnetization) can cause transient (short-term) changes in its local gravitational field,
+not described by GR.
+Experimental setup: Use superconducting quantum interferometers to detect pos-
+sible gravitational anomalies near superconductors at the moment of their transition
+through the critical temperature or when exposed to a strong magnetic field. Data analy-
+sis should include methods for comparing signals in different operating modes of the setup
+and identifying weak correlated patterns.
+Falsification criterion: Absence of correlation between electromagnetic processes
+and gravitational sensor readings would indicate that the unifying potential of the model
+has no experimental basis.
+11
+Conclusion
+The developed hydrodynamic model of the quantum vacuum offers a qualitative mech-
+anism for unifying gravitational and electromagnetic phenomena, deriving the force of
+gravity not from the geometry of spacetime but from the dynamics of absorption and dis-
+sipation of energy by a fundamental medium. The current work focuses on formulating
+falsifiable predictions that allow transferring the theoretical construction into the plane
+of experimental science.
+The key result of this research is not simply a mathematical analogy, but a concrete
+plan for validating or refuting the basic postulates of the model. The proposed experi-
+ments are aimed at directly testing its fundamental foundations.
+Thus, the model becomes a source of new, testable hypotheses. Its main value lies
+not in final answers, but in the ability to ask clear, verifiable questions. Regardless of
+the outcome of experimental verification, whether they confirm or refute the model, the
+obtained data will have fundamental significance for understanding the nature of gravity
+and vacuum, potentially opening the way to new physics beyond the Standard Model and
+General Relativity. Further work will focus on a more rigorous quantitative description
+of the predicted effects for direct comparison with future experimental results.
+10
+References
+[1] T. Banks. The hydrodynamic approach to quantum gravity. arXiv, 2025.
+[2] S. L. Braunstein et al. Analogue simulations of quantum gravity with fluids. Nature
+Reviews Physics, 5:612–622, 2024.
+[3] A. Burkert et al. The pressure distribution inside the proton. Nature, 557:396–399,
+2018.
+[4] Wikipedia contributors. Superfluid vacuum theory. https://en.wikipedia.org/
+wiki/Superfluid_vacuum_theory, 2025. Accessed: 2025.
+[5] Wikipedia contributors. Toroidal ring model. https://en.wikipedia.org/wiki/
+Toroidal_ring_model, 2025. Accessed: 2025.
+[6] P. A. M. Dirac. Is there an Æther? Nature, 169(4304):702, 1952.
+[7] M. Fedi. Gravity as a fluid dynamic phenomenon in a superfluid quantum space.
+HAL Archives, 2016.
+[8] I. Fouxon. Quantum vacuum energy as the origin of gravity. arXiv, arXiv:2509.02636,
+2025.
+[9] M. J. Jacquet et al. Quantum vacuum excitation of a quasinormal mode in an analog
+model of black hole spacetime. Physical Review Letters, 130, 2023.
+[10] D. S. Losinets. Formal analogy between maxwell’s equations and vortex dynamics in
+weakly viscous media. Zenodo, 2025.
+[11] D. S. Losinets. Model of the internal structure of nucleons based on a vortex analogy:
+A self-consistent description of magnetic moments. Zenodo, 2025.
+[12] D. S. Losinets. Vortex photon model: Program for experimental verification. Zenodo,
+2025.
+[13] E. Margan. Estimating the vacuum energy density - an overview of possible scenarios.
+Preprint, 2018.
+[14] A. L. Parson. A magneton theory of the structure of the atom. Smithsonian Miscel-
+laneous Collection, 65(11):1–80, 1915.
+[15] A. Rizzo. Negative mass and inertia in the quantum vacuum hydrodynamics. Re-
+searchGate, 2024.
+[16] A. D. Sakharov. Vacuum quantum fluctuations in curved space and the theory of
+gravitation. Soviet Physics Doklady, 12:1040–1041, 1967.
+[17] K. P. Sinha, C. Sivaram, and E. C. G. Sudarshan. The superfluid vacuum state, time-
+varying cosmological constant, and nonsingular cosmological models. Foundations of
+Physics, 6:717–726, 1976.
+[18] M. Visser. Sakharov’s induced gravity: a modern perspective. Modern Physics Letters
+A, 17:977–992, 2002.
+11
+[19] G. Volovik. Vacuum energy: Quantum hydrodynamics vs. quantum gravity. JETP
+Lett., 82(6):319–324, 2005.
+[20] K. G. Zloshchastiev. Spontaneous symmetry breaking and mass generation as built-
+in phenomena in logarithmic nonlinear quantum theory. Acta Physica Polonica B,
+42(2):261–292, 2011.
+12

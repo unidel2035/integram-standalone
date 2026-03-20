@@ -69,6 +69,22 @@ const routes = [
       { path: 'fst-present', component: () => import('@/views/pages/FstPresent.vue'), meta: { title: 'Режим презентации' } },
       { path: 'fst-billing', component: () => import('@/views/pages/FstBilling.vue'), meta: { title: 'Биллинг и подписка' } },
       { path: 'fst-how-it-works', component: () => import('@/views/pages/FstHowItWorks.vue'), meta: { title: 'Как это работает' } },
+      { path: 'fst-gift', component: () => import('@/views/pages/FstGiftEngine.vue'), meta: { title: 'Движок ценности' } },
+      {
+        path: 'integram/:database?',
+        component: () => import('@/views/pages/Integram/IntegramMain.vue'),
+        meta: { title: 'Память — Таблицы Integram' },
+        children: [
+          { path: '', component: () => import('@/views/pages/Integram/IntegramTableList.vue') },
+          { path: 'dict', component: () => import('@/views/pages/Integram/IntegramDictionary.vue') },
+          { path: 'object/:typeId', component: () => import('@/views/pages/Integram/IntegramObjectView.vue') },
+          { path: 'edit_obj/:objectId', component: () => import('@/views/pages/Integram/IntegramObjectEdit.vue') },
+          { path: 'edit_types', component: () => import('@/views/pages/Integram/IntegramTypeEditor.vue') },
+          { path: 'form/:formId?', component: () => import('@/components/integram/IntegramForm.vue') },
+          { path: 'sql', component: () => import('@/components/integram/IntegramSQL.vue') },
+          { path: 'upload', component: () => import('@/components/integram/IntegramUpload.vue') },
+        ]
+      },
     ]
   },
   { path: '/fst', component: () => import('@/views/pages/FstLanding.vue'), meta: { title: 'ФСТ НТИ', public: true } },

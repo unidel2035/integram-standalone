@@ -1,0 +1,260 @@
+Model of the Internal Structure of Nucleons Based on
+a Vortex Analogy:
+A Self-Consistent Description of Magnetic Moments
+Dmitry Losinets
+August 2025
+Abstract
+This work develops a formal hydrodynamic analogy proposed in [5], offering its
+self-consistent extension for describing the magnetic moments of elementary parti-
+cles. Based on the analysis of experimental data on the electric charge distribution
+and magnetic moments of nucleons, a model of their internal structure as a system of
+coaxial toroidal vortices is constructed. The model demonstrates quantitative agree-
+ment with key experimental parameters, offering an intuitive picture for understand-
+ing microphysical processes. Concrete proposals for the experimental verification of
+the model are developed. It is emphasized that the approach does not claim to be
+fundamental but possesses significant potential for educational applications.
+1
+Introduction
+Experimental studies of electron scattering on nucleons [1, 2], including the pioneering
+work of Hofstadter and the review by Schopper [3], have revealed a complex internal
+structure of the proton and neutron, indicating the presence of a compact core ("kernel")
+and an extended envelope ("mantle") [4]. The standard interpretation of these data relies
+on the quark model.
+In this work, we propose an alternative, phenomenological approach, developing a for-
+mal analogy between electrodynamics and the dynamics of vortices in an ideal fluid, as
+presented in [5]. A key development is the self-consistent extension of this analogy from
+the description of macroscopic fields to the modeling of intrinsic particle properties, in
+particular, their magnetic moments. The aim of the work is to construct an intuitively un-
+derstandable and mathematically self-consistent model that can serve as a bridge between
+classical and quantum concepts in the educational process.
+2
+Theoretical Basis of the Model: Development of the
+Formal Analogy
+2.1
+Mathematical Framework
+The basis of the model is the development of a formal analogy in which the quantum
+vacuum is considered as a medium with properties close to those of an ideal fluid, with
+quantized vortex motion [5, 8]. Within this analogy:
+1
+• The electric charge of a particle, represented as a vortex formation, is modeled
+by the expression:
+q = 2ρV ω
+(1)
+where ρ is the medium density, V is the vortex volume, ω is the angular velocity of
+rotation. This relation follows directly from the analogy with circulation quantiza-
+tion in superfluid liquids [8, 13].
+• The magnetic moment is the key extension of the model. We propose to describe
+it by an expression analogous to the moment of force in rotational motion [6, 9]:
+µ = ρV (ωr)2
+(2)
+This expression emphasizes a unified mechanism for generating charge and magnetic
+moment through rotational motion, but through its different characteristics (linear
+velocity at the vortex periphery ωr for the magnetic moment and angular velocity
+for the charge).
+2.2
+Key Assumptions of the Model
+1. Nucleons represent a system of two coaxial toroidal vortices, corresponding to the
+experimentally observed regions: the core (radius ∼0.25 fm) and the mantle (outer
+radius ∼1.3 fm). This two-scale structure is clearly visible in the charge distribution
+data obtained from electron scattering experiments (see Fig. 1).
+2. The total charge and magnetic properties of the nucleon are determined by the
+superposition of contributions from both vortex components.
+3. The geometric parameters of the vortices are fixed by experimental data on charge
+distribution [4], which ensures the self-consistency of the model.
+m
+m
+m
+c
+c
+c
+m
+c
+m
+fm
+fm
+m
+Figure 1: Experimental data on the electric charge distribution in the proton (left image)
+and neutron (right image). The vertical axis shows the normalized charge density, while
+the horizontal axis shows the radial distance from the center.
+2
+3
+Calculation of Model Parameters and Comparison
+with Experiment
+3.1
+System of Equations for Magnetic Moments
+Using the expression for the magnetic moment and the condition of equality of the charge
+magnitudes of the core and the mantle (|2ρVcωc| = |2ρVmωm| = e
+2) [5], we obtain a system
+of equations for the magnetic moments of the proton:
+(
+µc + µm = 2.79µN
+|µc −µm| = 1.91µN
+(3)
+The solution of the system yields two parameter sets: Set A (µc = 2.35µN, µm = 0.44µN)
+and Set B (µc = 0.44µN, µm = 2.35µN).
+3.2
+Consistency Check
+The criterion for selection is agreement with the experimental ratio of radii rm/rc ≈5.2
+[4]. From the model, for spherical vortices, it follows:
+µc
+µm
+= Vcω2
+cr2
+c
+Vmω2
+mr2
+m
+=
+(Vcωc)ωcr2
+c
+(Vmωm)ωmr2
+m
+(4)
+Considering the equality Vcωc = Vmωm, and V ∝r3, we get:
+µc
+µm
+= ωcr2
+c
+ωmr2
+m
+= (Vm/Vc)r2
+c
+r2
+m
+= (r3
+m/r3
+c)r2
+c
+r2
+m
+= rm
+rc
+(5)
+Thus, the model predicts a direct relation:
+µc
+µm = rm
+rc ≈5.2.
+• Set A:
+µc
+µm = 2.35
+0.44 ≈5.34 (excellent agreement with experiment).
+• Set B: µm
+µc = 2.35
+0.44 ≈5.34 (contradicts the model, as it implies the larger magnetic
+moment is created by the larger vortex).
+The choice of Set A is the only consistent one and confirms the self-consistency of extend-
+ing the model to magnetic moments.
+4
+Discussion of Results and Educational Value
+The presented model offers a unified and intuitively understandable description of three
+key experimental facts: charge distribution, anomalous magnetic moments, and nucleon
+sizes. The use of a classical hydrodynamic analogy allows for the visualization of complex
+quantum objects, representing their internal structure in terms of vortex motion.
+This provides a significant advantage for educational applications: the model
+can be used to create visual aids and simulations, helping students form an initial intu-
+itive understanding of hadron structure before moving on to the complex mathematical
+apparatus of QCD. It is important to emphasize that the model is phenomenological
+and does not claim to be fundamental, but serves as a convenient tool for describing
+and systematizing experimental data.
+3
+5
+Development Prospects and Experimental Verifica-
+tion
+To test the model and its further development, the following experiments are proposed:
+1. Measurement of the magnetization distribution inside the nucleon. A key
+prediction of the model is the different density of the magnetic moment in the core
+and mantle. Modern experiments on polarized elastic electron scattering [10] or
+with muons could provide data to test this assertion.
+2. Study of excited states of nucleons (resonances). The model predicts that
+such states may correspond to a change in the vortex configuration (e.g., a transition
+between parameter sets A/B). Measurement of their electromagnetic transition form
+factors [11] is a critically important test.
+3. Search for kinematic features in deep-inelastic scattering. One might expect
+that the transition between scattering on the compact core and the extended mantle
+could manifest itself in sharper changes in cross-sections compared to predictions of
+models based on parton distributions.
+4. Observation of rotational effects in collisions. The vortex nature of nucleons
+might manifest itself in specific particle correlations in the final state in high-energy
+collisions [12].
+5. Extension to other hadrons. Testing similar relations for hyperons and mesons
+could serve as a test of the universality of the proposed approach.
+6
+Conclusion
+The formal hydrodynamic analogy from [5] has been developed, and its self-consistent
+extension for describing the magnetic moments of nucleons has been proposed.
+The
+constructed phenomenological model, based on the concept of a system of nested vortices,
+demonstrates quantitative agreement with experimental data on charge distribution and
+magnetic moments. The model offers an intuitive understanding of the microstructure
+of nucleons, providing a significant advantage for educational applications and visual
+modeling. Explicit proposals for the experimental verification of the model are formulated.
+The approach is not a fundamental theory but serves as an effective tool for knowledge
+systematization and education.
+References
+[1] Hofstadter, R. (1956). Electron Scattering and Nuclear Structure. Reviews of Modern
+Physics, 28(3), 214–254.
+[2] Ernst, D. J., et al. (1994). Nucleon form factors from electron-nucleon scattering.
+Physical Review C, 50(2), 910–922.
+[3] Schopper, H. (1961). Die elektromagnetische Struktur des Protons und Neutrons.
+Physikalische Bl¨atter, 21(10), 454–462.
+4
+[4] Arrington, J., et al. (2007). New measurements of the proton elastic form factor ratio.
+Physical Review Letters, 99(26), 262301.
+[5] Losinets D. (2025). Formal Analogy Between Maxwell’s Equations and Vortex Dy-
+namics in Weakly Viscous Media. https://doi.org/10.5281/zenodo.15943108
+[6] Landau, L. D., & Lifshitz, E. M. (1975). The Classical Theory of Fields (4th ed.).
+Butterworth-Heinemann.
+[7] Griffiths, D. J. (2013). Introduction to Electrodynamics (4th ed.). Pearson Education.
+[8] Donnelly, R. J. (1991). Quantized Vortices in Helium II. Cambridge University Press.
+[9] Feynman, R. P., et al. (1964). The Feynman Lectures on Physics, Vol. II. Addison-
+Wesley.
+[10] Ruth, D., et al. (2022). The Proton Spin Structure Function g2 and Generalized
+Polarizabilities in the Strong QCD Regime. https://arxiv.org/abs/2204.10224
+[11] Aznauryan, I. G., & Burkert, V. D. (2012). Electroexcitation of nucleon resonances.
+Progress in Particle and Nuclear Physics, 67(1), 1–54.
+[12] Liang, Z.-T., & Wang, X.-N. (2005). Globally polarized quark-gluon plasma in non-
+central A+A collisions. Physical Review Letters, 94(10), 102301.
+[13] Guarda, T. A. et al. (2023). The Vortex Surface in a Three-Body Quantum System.
+MDPI.
+Tables
+Table 1:
+Comparison of nucleon parameters in various models.
+Parameter
+Experiment
+Quark Model
+Vortex Model
+µp/µN
+2.79
+2.79
+2.79
+µn/µN
+-1.91
+-1.91
+-1.91
+rm/rc
+∼5.2
+—
+5.34
+rc, fm
+∼0.25
+—
+0.25
+rm, fm
+∼1.3
+—
+1.3
+Table 2:
+Calculated parameters of the vortex components within the model (Set A).
+Component
+Charge (e)
+µ/µN
+Radius (fm)
+Core
++0.5
+2.35
+0.25
+Mantle
++0.5 (p), −0.5 (n)
+0.44
+1.3
+5

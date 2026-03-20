@@ -13,6 +13,7 @@
     "seed:fst": "node scripts/seed-fst-demo-data.js"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.2.0",
     "@iconify/vue": "^5.0.0",
     "@primevue/core": "4.5.4",
     "@primevue/icons": "4.5.4",
@@ -45,7 +46,9 @@
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "prism-code-editor": "^5.0.1",
+    "quill": "^2.0.3",
     "socket.io-client": "^4.8.3",
+    "sortablejs": "^1.15.7",
     "vue": "^3.5.29",
     "vue-i18n": "^11.3.0",
     "vue-router": "^5.0.3",

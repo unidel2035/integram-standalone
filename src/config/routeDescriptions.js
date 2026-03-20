@@ -34,6 +34,12 @@ export const routeDescriptions = {
     tags: ['Инвестор', 'Инфографика', 'Как работает', 'Воронка', 'AI', 'Скоринг', 'FAQ', 'Обзор']
   },
 
+  '/fst-gift': {
+    description: 'Движок ценности — онтология взаимного вклада в экосистеме фонда. Граф участников (LP, стартапы, эксперты, менторы), обмены ценностью (капитал, экспертиза, технологии, связи), стратегические цели (Telos), циклы взаимности, плотность связей.',
+    category: 'analytics',
+    tags: ['Gift Engine', 'Value Exchange', 'Reciprocity', 'Stakeholders', 'Telos', 'Онтология', 'Взаимность', 'Граф']
+  },
+
   '/fst-soft-model': {
     description: 'Software Ontology Model — платформа мониторит сама себя. Каждый модуль VentureOS существует как лента событий: MODULE_BORN, EVENT_CONNECTED, TEST_ADDED, BUG_FOUND. State = проекция ленты. Gap-анализ, health-score, следующие шаги для каждого модуля.',
     category: 'tools',

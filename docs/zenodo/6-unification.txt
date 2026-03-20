@@ -1,0 +1,269 @@
+A Unified Hydrodynamic Model of the
+Quantum Vacuum as the Basis for
+Fundamental Interactions
+Dmitry Losinets
+October 2025
+Abstract
+This work summarizes the results obtained in papers [1–5] and presents an at-
+tempt to construct a unified system in which the parameters of a hydrodynamic
+medium, modeling the quantum vacuum (QV), are defined. This model allows a
+consistent phenomenological description that connects nuclear interactions, elec-
+tromagnetism, gravity, and certain quantum effects within a single hydrodynamic
+framework. It also formulates new hypotheses and outlines experimental methods
+for testing them.
+1
+Methodological Status and Evaluation Criteria
+The proposed framework should be regarded as a phenomenological and heuristic
+model rather than a fundamental theory. Its main value lies not in replacing existing
+quantum field theories, but in providing a unified, visual picture and generating verifiable
+predictions.
+The evaluation criteria for this type of model are:
+1. Internal consistency: Logical coherence between postulates and derived conclu-
+sions.
+2. External consistency: Ability to reproduce established experimental facts quan-
+titatively or qualitatively (e.g., Coulomb’s law, nucleon magnetic moments).
+3. Heuristic power: Capability to produce new, falsifiable hypotheses and predic-
+tions.
+4. Unifying capacity: Ability to integrate diverse phenomena into a coherent con-
+ceptual system.
+2
+Summary of the Component Studies
+2.1
+Hydrodynamic Analogy to Electrodynamics [1]
+• Formal analogy: The equations of vortex dynamics in a weakly viscous fluid are
+mathematically equivalent to Maxwell’s equations in electrodynamics.
+1
+• Physical correspondences:
+Vector potential: A ↔u
+(velocity)
+Scalar potential: ϕ ↔p
+ρ
+(pressure over density)
+Viscosity: ν ↔source of dissipation and coupling
+• Derived equations: From the Euler and continuity equations, four equations
+identical in structure to Maxwell’s equations are obtained.
+• Conversion constant: A universal constant Re = ν/c2 ensures dimensional cor-
+respondence.
+• Experimental verification: Possible in systems with quantum fluids, superfluid
+helium, or ultracold atoms.
+2.2
+Nucleon Structure [2]
+• Proton and neutron are modeled as two nested toroidal vortices with radii ∼0.25
+fm and ∼1.3 fm.
+• Magnetic moments arise naturally from rotational characteristics and agree quan-
+titatively with experiment.
+• The ratio of magnetic moments equals the ratio of toroidal radii, matching empirical
+data (≈5.2).
+• Suggested for educational use as a bridge between classical and quantum descrip-
+tions.
+• Experimental tests:
+1. Measure the distribution of magnetization inside the nucleon, study excited
+states.
+2. Search for kinematic features in deep inelastic scattering processes.
+2.3
+Photon Model [3]
+• The photon is treated as a vortex disturbance in the QV medium, with A as the
+velocity field.
+• The model reproduces the Jones formalism for polarization, maintaining internal
+consistency.
+• Predicts a small longitudinal component of the field, absent in standard QED.
+• Experimental tests:
+1. Direct detection of a longitudinal field along a collimated beam.
+2. Observation of rotational recoil of single atoms during photon absorption.
+2
+2.4
+Hydrodynamic Model of Gravitation [4]
+• Gravitation arises from energy absorption of the QV by nucleons acting as sinks,
+creating a pressure gradient.
+• Qualitatively reproduces Newton’s law: F ∼m1m2/R2.
+• Expresses G through vacuum parameters: speed of sound, density, and absorption
+efficiency.
+• Provides testable predictions: deviations from inverse-square law, Casimir-related
+anomalies, and EM–gravity coupling.
+• Experimental tests:
+1. Search for anomalies in the behavior of particles near dense matter (direct
+verification of the hypothesis of absorption of vacuum energy).
+2. Search for deviations from the inverse square law at ultra-small distances.
+3. Investigation of the influence of quantum fluctuations (for example, in Casimir’s
+experiments) on gravitational interaction.
+4. Search for short-term changes in the gravitational field during rapid changes
+in the electromagnetic state of matter.
+2.5
+Hydrodynamic Representation of the Strong Force [5]
+• Nucleon–nucleon interaction is modeled as vortex–vortex coupling in an incompress-
+ible fluid.
+• Exhibits both attraction and short-range repulsion (“hard core”) consistent with
+nuclear forces.
+• Includes spin dependence via vortex orientation, explaining saturation of nuclear
+forces.
+• Experimental tests:
+1. The study of the nucleon-nucleon scattering spin dependence.
+2. The search for anomalies in the stability of light nuclei.
+3. The analysis of hydrodynamic correlations in relativistic collisions of heavy
+ions.
+3
+Unified Picture of Interactions
+The studies [1–5] together form a coherent hierarchy:
+• Foundation: Hydrodynamic equivalents for electromagnetic quantities.
+• Matter: Nucleons as stable vortex systems.
+• Interactions:
+3
+1. Electromagnetic: direct interaction of velocity and pressure fields.
+2. Strong: vortex coupling and geometric saturation.
+3. Gravitational: pressure gradients from energy absorption.
+• Quantum phenomena: Photons as vortex perturbations with quantized angular
+momentum.
+Thus, the model presents a unified hydrodynamic view of fundamental forces as
+manifestations of a single underlying medium - the quantum vacuum.
+4
+Determining the Quantum Vacuum Density
+In [1], structural analogues of Maxwell’s equations were derived from hydrodynamic prin-
+ciples, assuming proportionality between the QV density ρ and vacuum permittivity ε0:
+ε0 = bρ.
+(1)
+Using Gauss’s law for an isolated charge Q:
+Q = ε0
+I
+S
+E · dS = ε0EeffS,
+(2)
+which yields
+Q = bρEeffS.
+(3)
+Applying Coulomb’s law:
+F =
+1
+4πε0
+Q2
+R2 ,
+(4)
+and substituting, we find:
+F = 4πbρE2
+eff
+r4
+R2.
+(5)
+Matching this with the empirical law requires b = 1, hence
+ε0 = ρ,
+(6)
+establishing a direct equivalence between the electromagnetic permittivity and the hy-
+drodynamic density of the quantum vacuum.
+These ratios are valid for the SI system of units. For other systems of units (for
+example, CGS), the coefficient b may be different.
+5
+Effective Field Strength at the Proton Radius
+Using Eq. (3),
+Eeff =
+Qp
+4πε0r2
+p
+,
+(7)
+and substituting Qp = e, ε0 = 8.854 × 10−12 F/m, and rp = 0.83 × 10−15 m:
+Eeff ≈2.1 × 1021 V/m,
+which exactly coincides with the classical Coulomb field at the proton radius, confirming
+internal consistency.
+4
+6
+Estimated Parameters of the Quantum Vacuum
+Assuming:
+1. The vacuum density in the region occupied by the nucleon is much higher than in
+free space. As a rough estimate, let’s take the density of matter inside a proton.
+ρ ∼6.7 × 1017 kg/m3 (comparable to nuclear density),
+2. u ∼c (fluid velocity near the core),
+3. and gravitational constant expressed as
+G = γξ1ξ2κ2
+4πcs
+,
+with κ ∼107 W/kg,
+we find ν ≈8.6 × 10−11/η, where 0 < η ≤1, and the hydrodynamic–electromagnetic
+conversion constant
+Re = ν
+c2 ≈10−27/η.
+Assuming A = Reu and A ≈10 (T·m) for maximal laboratory fields yields η ≈10−5.
+At the same time, the available estimate of the speed of sound in QV is lower. That
+is, within the framework of the model, η may be higher. Then the estimated pressure of
+the quantum vacuum is
+p = ρc2
+s
+γ
+≳1035 Pa,
+7
+Correspondence Between Electromagnetic and Hy-
+drodynamic Quantities
+Re = ν
+c2,
+ϕ = Re
+p
+ρ,
+A = Reu,
+E = −Re
+
+∇p
+ρ + ∂u
+∂t
+
+,
+B = Re∇× u,
+εε0 = ρ,
+µµ0 = 1
+ρc2,
+j = −ρc2Re
+∂
+∂t∇2u,
+σ = −Re∇2p,
+Q =
+I
+(ρu)dS =
+Z
+(ρω)dV,
+I =
+Z
+∂
+∂t(ρu)dS,
+M =
+Z
+(ρω2)dV.
+8
+Conclusion
+The unified hydrodynamic model presented in [1–5] provides a coherent phenomenologi-
+cal framework linking nuclear, electromagnetic, quantum, and gravitational phenomena
+through classical fluid mechanics analogies.
+The quantum vacuum is modeled as a weakly viscous fluid whose parameters con-
+sistently reproduce known physical constants across multiple interaction regimes. The
+model is falsifiable, suggests several experimental tests, and offers substantial heuristic
+and educational value. While not a replacement for quantum field theory or general rel-
+ativity, it proposes a unifying conceptual language that may guide future theoretical and
+experimental work in the study of fundamental interactions.
+5
+References
+[1] D. Losinets (2025), Formal Analogy Between Maxwell’s Equations and Vortex Dy-
+namics in Weakly Viscous Media, Zenodo, https://zenodo.org/records/16798876.
+[2] D. Losinets (2025), Model of the Internal Structure of Nucleons Based on a
+Vortex Analogy:
+A Self-Consistent Description of Magnetic Moments, Zenodo,
+https://zenodo.org/records/16934346.
+[3] D. Losinets (2025), Vortex Photon Model: Program for Experimental Verification,
+Zenodo, https://zenodo.org/records/17063625.
+[4] D. Losinets (2025), Hydrodynamic Model of Gravity as Manifestation of Quantum
+Vacuum Energy Exchange, Zenodo, https://zenodo.org/records/17273449.
+[5] D.
+Losinets
+(2025),
+Modeling
+Strong
+Interaction
+within
+a
+Hydrody-
+namic
+Model
+of
+Quantum
+Vacuum:
+A
+Qualitative
+Study,
+Zenodo,
+https://zenodo.org/records/17332329.
+6

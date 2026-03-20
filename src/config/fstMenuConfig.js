@@ -115,6 +115,7 @@ export const fstMenuConfig = [
       { label: 'Agent Room',   icon: 'pi pi-comments',   to: '/fst-room',        roles: ['director', 'analyst', 'admin'] },
       { label: 'Онтология',       icon: 'pi pi-sitemap',    to: '/event-ontology',                          roles: ['director', 'analyst', 'admin'] },
       { label: 'Онтология дара',  icon: 'pi pi-heart',      to: '/event-ontology?section=fstCommittee',   roles: ['director', 'analyst', 'admin'] },
+      { label: 'Движок ценности', icon: 'pi pi-heart',      to: '/fst-gift',                              roles: ['director', 'admin'] },
     ]
   },
   {
@@ -130,6 +131,7 @@ export const fstMenuConfig = [
       { label: 'Юридика',        svgIcon: svgScale,        to: '/fst-legal',        roles: ['director', 'admin'] },
       { label: 'Реестр ПП-1726', svgIcon: svgBookOpenText, to: '/fst-registry',     roles: ['director', 'admin'] },
       { label: 'Биллинг',        icon: 'pi pi-credit-card', to: '/fst-billing',     roles: ['director', 'admin'] },
+      { label: 'Память (Таблицы)', icon: 'pi pi-database',    to: '/integram',         roles: ['director', 'admin', 'analyst'] },
     ]
   },
   {
