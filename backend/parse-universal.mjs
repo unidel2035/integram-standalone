@@ -650,22 +650,42 @@ async function main() {
 
   // JSON preview mode — output structured data for frontend
   if (jsonOutput) {
-    const preview = unique.map(c => ({
-      name: c.name || c.fullName || '?',
-      fullName: c.fullName || null,
-      inn: c.inn || null,
-      description: (c.description || '').slice(0, 200),
-      amountFst: c.amountFst || null,
-      amountDisplay: c.amountFst ? (c.amountFst / 1e6).toFixed(1) + ' млн' : null,
-      budgetTotal: c.budgetTotal || null,
-      stage: c.stage || null,
-      subfund: c.subfund || null,
-      status: c.status || 'На рассмотрении',
-      metricsCount: c._metricsCount,
-      metrics: c.metrics || [],
-      warnings: c._warnings,
-      validationStatus: c._status,
-    }))
+    // Check for duplicates in Integram
+    let existing = []
+    try {
+      await authenticate()
+      existing = await fetchExistingCompanies()
+    } catch (e) {
+      log(`[Dedup] Auth failed, skipping: ${e.message}`)
+    }
+
+    const preview = unique.map(c => {
+      const name = c.name || c.fullName || '?'
+      const nameLower = name.toLowerCase()
+      const dup = existing.find(e => {
+        const eName = e.name.toLowerCase()
+        return eName.includes(nameLower.slice(0, 12)) || nameLower.includes(eName.slice(0, 12))
+      })
+      if (dup) c._warnings.push(`Дубль: "${dup.name}" (#${dup.id})`)
+
+      return {
+        name,
+        fullName: c.fullName || null,
+        inn: c.inn || null,
+        description: (c.description || '').slice(0, 200),
+        amountFst: c.amountFst || null,
+        amountDisplay: c.amountFst ? (c.amountFst / 1e6).toFixed(1) + ' млн' : null,
+        budgetTotal: c.budgetTotal || null,
+        stage: c.stage || null,
+        subfund: c.subfund || null,
+        status: c.status || 'На рассмотрении',
+        metricsCount: c._metricsCount,
+        metrics: c.metrics || [],
+        warnings: c._warnings,
+        validationStatus: dup ? 'warning' : c._status,
+        existingId: dup ? dup.id : null,
+      }
+    })
     console.log(JSON.stringify({
       error: null,
       companies: preview,
