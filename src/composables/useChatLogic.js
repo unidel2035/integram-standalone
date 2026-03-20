@@ -4305,72 +4305,37 @@ AI-помощник по продажам активирован! Полный �
     const fileName = attachment.name
     parseableFile.value = null
 
-    // Step 1: Preview — AI extracts, validates, shows table
-    aiChat.messages.push({
-      text: `⏳ Анализ файла **${fileName}** — извлечение компаний...`,
-      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      isUser: false,
-      isSystemNotice: true
-    })
-    scrollToBottom(aiMessagesContainer)
+    // Send extracted text as chat message — Claude will parse and show table
+    const extractedText = attachment.extractedText || ''
+    attachment.base64Data = undefined
 
-    try {
-      const res = await fetch('/api/chat/parse-preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          base64Data: attachment.base64Data,
-          filename: fileName,
-        })
-      })
-      const data = await res.json()
-
-      if (data.success && data.companies?.length > 0) {
-        // Build preview table
-        const statusIcon = (s) => s === 'ok' ? '✅' : s === 'warning' ? '⚠️' : '❌'
-        const lines = data.companies.map(c => {
-          const warn = c.warnings?.length ? ` _(${c.warnings.join(', ')})_` : ''
-          return `${statusIcon(c.validationStatus)} **${c.name}** — ${c.stage || '?'} / ${c.subfund || '?'} / ${c.amountDisplay || '?'}${warn} (${c.metricsCount} метрик)`
-        })
-
-        const summaryParts = [`📊 ${data.companies.length} компаний, ${data.totalMetrics} метрик`]
-        if (data.totalWarnings) summaryParts.push(`⚠️ ${data.totalWarnings} с предупреждениями`)
-        if (data.totalErrors) summaryParts.push(`❌ ${data.totalErrors} с ошибками`)
-
-        aiChat.messages.push({
-          text: `**Превью парсинга** \`${fileName}\`\n\n${lines.join('\n')}\n\n${summaryParts.join(' | ')}`,
-          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-          isUser: false,
-          parsePreview: { companies: data.companies, filename: fileName }, // store for confirm
-        })
-
-        // Store preview data for confirm step
-        pendingParseData.value = { companies: data.companies, filename: fileName }
-      } else if (data.success && (!data.companies || data.companies.length === 0)) {
-        aiChat.messages.push({
-          text: `📭 В файле **${fileName}** не найдено компаний`,
-          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-          isUser: false
-        })
-      } else {
-        aiChat.messages.push({
-          text: `❌ Ошибка анализа: ${data.error || 'unknown'}`,
-          time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-          isUser: false
-        })
-      }
-    } catch (err) {
+    if (!extractedText || extractedText.trim().length < 20) {
       aiChat.messages.push({
-        text: `❌ Ошибка: ${err.message}`,
+        text: `📭 Не удалось извлечь текст из файла **${fileName}**`,
         time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
         isUser: false
       })
+      scrollToBottom(aiMessagesContainer)
+      return
     }
-    attachment.base64Data = undefined
-    scrollToBottom(aiMessagesContainer)
+
+    // Send file text as chat message — AI will parse and show table
+    const parsePrompt = `Проанализируй данные из файла "${fileName}" и найди все компании/стартапы.
+
+Покажи результат в виде таблицы:
+| Компания | Стадия | Субфонд | Сумма запроса | Выручка 2024 | IRR |
+|----------|--------|---------|--------------|-------------|-----|
+
+После таблицы напиши итог: сколько компаний найдено.
+
+Данные файла:
+${extractedText.slice(0, 12000)}`
+
+    aiMessage.value = parsePrompt
+    await sendAiMessage()
   }
 
-  // Step 2: Confirm — save previewed companies to Integram
+  // Legacy — kept for backward compatibility
   const pendingParseData = ref(null)
 
   const confirmParseToIntegram = async () => {

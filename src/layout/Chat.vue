@@ -529,13 +529,6 @@
                 <Button icon="pi pi-times" size="small" severity="secondary" text @click="dismissParseOffer" v-tooltip.top="'Пропустить'" rounded />
               </div>
             </div>
-            <div v-if="pendingParseData" class="parse-offer parse-confirm">
-              <span class="parse-offer-text">Найдено {{ pendingParseData.companies.length }} компаний. Сохранить в базу?</span>
-              <div class="parse-offer-actions">
-                <Button :label="`Сохранить ${pendingParseData.companies.length} компаний`" icon="pi pi-check" size="small" severity="success" @click="confirmParseToIntegram" />
-                <Button label="Отменить" icon="pi pi-times" size="small" severity="secondary" text @click="cancelParse" />
-              </div>
-            </div>
           </div>
         </TabPanel>
         </TabPanels>
