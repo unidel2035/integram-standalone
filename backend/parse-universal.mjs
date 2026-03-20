@@ -159,10 +159,13 @@ async function extractPptx(filePath) {
 async function extractPdf(buffer) {
   const { createRequire } = await import('module')
   const require = createRequire(import.meta.url)
-  const pdfParse = require('pdf-parse')
-  const data = await pdfParse(buffer)
-  log(`[PDF] Extracted ${data.numpages} pages, ${data.text.length} chars`)
-  return data.text
+  const { PDFParse } = require('pdf-parse')
+  const parser = new PDFParse(buffer)
+  await parser.load()
+  const pages = parser.shouldParse() ? await parser.getText() : ''
+  const text = typeof pages === 'string' ? pages : (Array.isArray(pages) ? pages.join('\n') : String(pages))
+  log(`[PDF] Extracted ${text.length} chars`)
+  return text
 }
 
 async function extractExcel(buffer) {

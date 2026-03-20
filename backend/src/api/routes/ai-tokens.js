@@ -706,9 +706,11 @@ router.post('/chat/upload', async (req, res) => {
       try {
         const { createRequire } = await import('module')
         const require = createRequire(import.meta.url)
-        const pdfParse = require('pdf-parse')
-        const data = await pdfParse(buffer)
-        extractedText = data.text || ''
+        const { PDFParse } = require('pdf-parse')
+        const parser = new PDFParse(buffer)
+        await parser.load()
+        extractedText = parser.shouldParse() ? await parser.getText() : ''
+        if (Array.isArray(extractedText)) extractedText = extractedText.join('\n')
       } catch (e) {
         console.error('[chat/upload] PDF parse error:', e.message)
       }
