@@ -23,16 +23,18 @@ dotenv.config({ path: join(__dirname, '.env') })
 const INTEGRAM_SERVER = process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru'
 const DB = 'fst'
 const AI_ROUTER_URL = process.env.AI_ROUTER_URL || 'http://localhost:5174/api/ai-tokens/chat'
+const CLAUDE_SUB_URL = process.env.CLAUDE_SUB_URL || 'http://127.0.0.1:8085/'
 
 // ── CLI args ──────────────────────────────────────────────────────
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
 const fileIdx = args.indexOf('--file')
 const modelIdx = args.indexOf('--model')
+const useClaudeSub = args.includes('--claude') || process.env.USE_CLAUDE_SUB === 'true'
 const AI_MODEL = modelIdx >= 0 ? args[modelIdx + 1] : 'deepseek/deepseek-chat'
 
 if (fileIdx < 0 || !args[fileIdx + 1]) {
-  console.error('Usage: node parse-universal.mjs --file <path> [--dry-run] [--model <modelId>]')
+  console.error('Usage: node parse-universal.mjs --file <path> [--dry-run] [--claude] [--model <modelId>]')
   process.exit(1)
 }
 const filePath = args[fileIdx + 1]
@@ -258,9 +260,67 @@ const EXTRACTION_PROMPT = `Ты — аналитик венчурного фон
 ФОРМАТ ОТВЕТА: JSON массив объектов. Если компаний нет — верни [].
 Никакого текста кроме JSON. Без markdown-обрамления.`
 
+// ── AI call via claude-sub-proxy (SSE → collect text) ─────────────
+async function callClaudeSub(prompt, systemPrompt) {
+  const res = await fetch(CLAUDE_SUB_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: prompt,
+      systemPrompt,
+      model: 'sonnet',
+      noMcp: true,
+    })
+  })
+  if (!res.ok) throw new Error(`claude-sub error: ${res.status}`)
+
+  // SSE stream → collect all text chunks
+  const body = await res.text()
+  let fullText = ''
+  for (const line of body.split('\n')) {
+    if (!line.startsWith('data: ')) continue
+    try {
+      const evt = JSON.parse(line.slice(6))
+      if (evt.type === 'assistant' && evt.message?.content) {
+        for (const block of evt.message.content) {
+          if (block.type === 'text') fullText += block.text
+        }
+      }
+      if (evt.type === 'content_block_delta' && evt.delta?.text) {
+        fullText += evt.delta.text
+      }
+      // result event has full text
+      if (evt.result) fullText = evt.result
+    } catch {}
+  }
+  return fullText
+}
+
+// ── AI call via token router (JSON response) ─────────────────────
+async function callRouter(prompt, systemPrompt) {
+  const res = await fetch(AI_ROUTER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      modelId: AI_MODEL,
+      prompt,
+      systemPrompt,
+      application: 'universal-parser',
+      temperature: 0.1,
+      maxTokens: 4000
+    })
+  })
+  if (!res.ok) throw new Error(`router error: ${res.status}`)
+  const data = await res.json()
+  return data.response || '[]'
+}
+
 async function extractCompaniesWithAI(text) {
+  const aiBackend = useClaudeSub ? 'claude-sub' : 'ai-router'
+  console.log(`[AI] Backend: ${aiBackend}`)
+
   // Split into chunks of ~8000 chars for AI processing
-  const maxChunk = 8000
+  const maxChunk = useClaudeSub ? 12000 : 8000 // Claude handles larger chunks
   const allCompanies = []
 
   // Intelligent chunking: try to split on section boundaries
@@ -274,7 +334,6 @@ async function extractCompaniesWithAI(text) {
         chunks.push(remaining)
         break
       }
-      // Find a good break point (double newline, slide marker, sheet marker)
       let breakAt = maxChunk
       const breakPoints = ['\n\n', '\n===', '\n[Слайд', '\n---']
       for (const bp of breakPoints) {
@@ -295,26 +354,9 @@ async function extractCompaniesWithAI(text) {
     console.log(`[AI] Chunk ${i + 1}/${chunks.length} (${chunk.length} chars)...`)
 
     try {
-      const res = await fetch(AI_ROUTER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          modelId: AI_MODEL,
-          prompt: chunk,
-          systemPrompt: EXTRACTION_PROMPT,
-          application: 'universal-parser',
-          temperature: 0.1,
-          maxTokens: 4000
-        })
-      })
-
-      if (!res.ok) {
-        console.warn(`[AI] Router error: ${res.status}`)
-        continue
-      }
-
-      const data = await res.json()
-      const content = data.response || '[]'
+      const content = useClaudeSub
+        ? await callClaudeSub(chunk, EXTRACTION_PROMPT)
+        : await callRouter(chunk, EXTRACTION_PROMPT)
 
       // Extract JSON array from response (might have markdown wrapping)
       const cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '')
@@ -515,7 +557,7 @@ async function main() {
   // Step 1: Extract text
   console.log(`\n${'═'.repeat(60)}`)
   console.log(`  Universal Parser — ${filePath}`)
-  console.log(`  Format: .${fileExt} | Model: ${AI_MODEL} | Dry-run: ${dryRun}`)
+  console.log(`  Format: .${fileExt} | AI: ${useClaudeSub ? 'Claude (subscription)' : AI_MODEL} | Dry-run: ${dryRun}`)
   console.log(`${'═'.repeat(60)}\n`)
 
   const rawText = await extractText(filePath, fileExt)
