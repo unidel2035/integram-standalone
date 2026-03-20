@@ -36,8 +36,8 @@ const parsedMarkdown = computed(() => {
     return ''
   }
 
-  // Collapse all double blank lines to single
-  contentStr = contentStr.replace(/\n{2,}/g, '\n').trim()
+  // Collapse triple+ blank lines to double (keep double for markdown tables/paragraphs)
+  contentStr = contentStr.replace(/\n{3,}/g, '\n\n').trim()
 
   try {
     let html = marked(contentStr)
