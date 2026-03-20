@@ -298,9 +298,12 @@ async function callClaudeSub(prompt, systemPrompt) {
   })
   if (!res.ok) throw new Error(`claude-sub error: ${res.status}`)
 
+  log(`[AI] claude-sub response status: ${res.status}`)
+
   // SSE stream → collect all text chunks
   // claude-sub-proxy format: data: {"type":"content","content":"..."}
   const body = await res.text()
+  log(`[AI] claude-sub body length: ${body.length}, preview: ${body.slice(0, 200)}`)
   let fullText = ''
   for (const line of body.split('\n')) {
     if (!line.startsWith('data: ')) continue
