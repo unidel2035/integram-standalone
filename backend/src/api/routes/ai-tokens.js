@@ -798,7 +798,7 @@ router.post('/chat/parse-file', async (req, res) => {
     const child = spawn('node', [scriptPath, '--file', tmpPath], {
       cwd: join(__dir, '../../..'),
       env: { ...process.env },
-      timeout: 300000
+      timeout: 600000
     })
 
     let stdout = '', stderr = ''
@@ -852,7 +852,7 @@ router.post('/chat/parse-preview', async (req, res) => {
     const child = spawn('node', [scriptPath, '--file', tmpPath, '--dry-run', '--json'], {
       cwd: join(__dir, '../../..'),
       env: { ...process.env },
-      timeout: 300000
+      timeout: 600000
     })
 
     let stdout = '', stderr = ''
@@ -914,7 +914,7 @@ router.post('/chat/parse-confirm', async (req, res) => {
     const child = spawn('node', [scriptPath, '--file', tmpFile, '--data', tmpData], {
       cwd: join(__dir, '../../..'),
       env: { ...process.env },
-      timeout: 300000
+      timeout: 600000
     })
 
     let stdout = '', stderr = ''
