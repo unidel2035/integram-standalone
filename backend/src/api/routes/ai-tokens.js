@@ -850,10 +850,18 @@ router.post('/chat/parse-preview', async (req, res) => {
     child.on('close', (code) => {
       try { unlinkSync(tmpPath) } catch {}
       try {
-        const result = JSON.parse(stdout)
+        // Extract last JSON line from stdout (dotenv/logs may prepend text)
+        const lines = stdout.trim().split('\n')
+        let jsonStr = null
+        for (let i = lines.length - 1; i >= 0; i--) {
+          const line = lines[i].trim()
+          if (line.startsWith('{')) { jsonStr = line; break }
+        }
+        if (!jsonStr) throw new Error('No JSON in output')
+        const result = JSON.parse(jsonStr)
         res.json({ success: true, ...result })
-      } catch {
-        res.json({ success: false, error: stderr || stdout || 'Parse failed' })
+      } catch (e) {
+        res.json({ success: false, error: (stderr || stdout || 'Parse failed').slice(-500) })
       }
     })
 
