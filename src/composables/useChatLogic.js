@@ -4218,7 +4218,7 @@ AI-помощник по продажам активирован! Полный �
     try {
       for (const file of files) {
         const ext = file.name.split('.').pop().toLowerCase()
-        const parseable = ['pptx', 'ppt', 'pdf', 'txt', 'md', 'csv', 'json', 'xml', 'html'].includes(ext)
+        const parseable = ['pptx', 'ppt', 'pdf', 'xlsx', 'xls', 'docx', 'txt', 'md', 'csv', 'json', 'xml', 'html'].includes(ext)
 
         let extractedText = ''
 
