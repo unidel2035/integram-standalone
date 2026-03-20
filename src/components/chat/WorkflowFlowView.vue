@@ -603,7 +603,7 @@ onUnmounted(() => {
   align-items: center;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--surface-border, var(--surface-border));
-  background: var(--p-surface-card));
+  background: var(--p-surface-card);
 }
 
 .flow-title {
@@ -850,7 +850,7 @@ onUnmounted(() => {
 }
 
 .detail-code {
-  background: var(--p-surface-card));
+  background: var(--p-surface-card);
   padding: 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -864,7 +864,7 @@ onUnmounted(() => {
   gap: 1rem;
   padding: 0.5rem 1rem;
   border-top: 1px solid var(--surface-border, var(--surface-border));
-  background: var(--p-surface-card));
+  background: var(--p-surface-card);
 }
 
 .legend-item {

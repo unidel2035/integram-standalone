@@ -1889,7 +1889,7 @@ watch(() => session.value?.arguments?.length, () => {
   border: 1.5px solid;
   display: flex; align-items: center; justify-content: center;
   z-index: 1;
-  background: var(--p-surface-card));
+  background: var(--p-surface-card);
 }
 .fst-sim-phase-label {
   font-size: 0.7rem;
@@ -1975,7 +1975,7 @@ watch(() => session.value?.arguments?.length, () => {
   border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   padding: 6px 8px;
-  background: var(--p-surface-card));
+  background: var(--p-surface-card);
 }
 .fst-sim-arg.counter { margin-left: 14px; border-left: 2px solid var(--fst-purple); }
 .fst-sim-arg.type-challenge { border-color: rgba(239,83,80,0.3); }
@@ -1987,7 +1987,7 @@ watch(() => session.value?.arguments?.length, () => {
 }
 .fst-sim-arg-text { font-size: 0.78rem; line-height: 1.5; color: var(--p-text-color, var(--p-content-border-color)); }
 .fst-sim-votes-block {
-  border: 1px solid var(--p-content-border-color); border-radius: 6px; padding: 8px; background: var(--p-surface-card)); margin-top: 8px;
+  border: 1px solid var(--p-content-border-color); border-radius: 6px; padding: 8px; background: var(--p-surface-card); margin-top: 8px;
 }
 .fst-sim-votes-title {
   font-size: 0.75rem; font-weight: 600; color: var(--fst-cyan); margin-bottom: 6px;

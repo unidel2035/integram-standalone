@@ -385,7 +385,7 @@ onMounted(() => {
 }
 
 .content-text :deep(pre) {
-  background: var(--p-surface-card));
+  background: var(--p-surface-card);
   padding: 0.75rem;
   border-radius: 6px;
   overflow-x: auto;
