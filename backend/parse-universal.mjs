@@ -281,12 +281,17 @@ const EXTRACTION_PROMPT = `Ты — аналитик венчурного фон
 
 // ── AI call via claude-sub-proxy (SSE → collect text) ─────────────
 async function callClaudeSub(prompt, systemPrompt) {
+  // Combine system prompt + user prompt into one message
+  // Avoids passing systemPrompt via CLI --system-prompt (shell escaping issues)
+  const combinedMessage = systemPrompt
+    ? `${systemPrompt}\n\n---\n\nДАННЫЕ ДЛЯ АНАЛИЗА:\n${prompt}`
+    : prompt
+
   const res = await fetch(CLAUDE_SUB_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      message: prompt,
-      systemPrompt,
+      message: combinedMessage,
       model: 'sonnet',
       noMcp: true,
     })
