@@ -287,6 +287,8 @@ async function callClaudeSub(prompt, systemPrompt) {
     ? `${systemPrompt}\n\n---\n\nДАННЫЕ ДЛЯ АНАЛИЗА:\n${prompt}`
     : prompt
 
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 180000) // 3 min per chunk
   const res = await fetch(CLAUDE_SUB_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -294,15 +296,19 @@ async function callClaudeSub(prompt, systemPrompt) {
       message: combinedMessage,
       model: 'sonnet',
       noMcp: true,
-    })
+    }),
+    signal: controller.signal,
   })
+  clearTimeout(timeout)
   if (!res.ok) throw new Error(`claude-sub error: ${res.status}`)
 
   log(`[AI] claude-sub response status: ${res.status}`)
 
   // SSE stream → collect all text chunks
   // claude-sub-proxy format: data: {"type":"content","content":"..."}
+  const bodyTimeout = setTimeout(() => controller.abort(), 180000)
   const body = await res.text()
+  clearTimeout(bodyTimeout)
   log(`[AI] claude-sub body length: ${body.length}, preview: ${body.slice(0, 200)}`)
   let fullText = ''
   for (const line of body.split('\n')) {
