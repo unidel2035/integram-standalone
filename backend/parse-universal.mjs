@@ -160,11 +160,18 @@ async function extractPdf(buffer) {
   const { createRequire } = await import('module')
   const require = createRequire(import.meta.url)
   const { PDFParse } = require('pdf-parse')
-  const parser = new PDFParse(buffer)
+  const parser = new PDFParse({ data: new Uint8Array(buffer) })
   await parser.load()
-  const pages = parser.shouldParse() ? await parser.getText() : ''
-  const text = typeof pages === 'string' ? pages : (Array.isArray(pages) ? pages.join('\n') : String(pages))
-  log(`[PDF] Extracted ${text.length} chars`)
+  const numPages = parser.doc?.numPages || 0
+  const parts = []
+  for (let i = 1; i <= numPages; i++) {
+    try {
+      const pageText = await parser.getPageText(i)
+      if (pageText) parts.push(pageText)
+    } catch {}
+  }
+  const text = parts.join('\n')
+  log(`[PDF] Extracted ${numPages} pages, ${text.length} chars`)
   return text
 }
 
