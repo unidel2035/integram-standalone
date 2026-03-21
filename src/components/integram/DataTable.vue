@@ -1197,7 +1197,7 @@ const props = defineProps({
   isAddingRow: { type: Boolean, default: false },
   isAddingColumn: { type: Boolean, default: false },
   allDataLoaded: { type: Boolean, default: true }, // Все данные загружены (для клиентских операций)
-  dateStyle: { type: String, default: 'relative' }, // classic, relative, chip, smart
+  dateStyle: { type: String, default: 'classic' }, // classic, relative, chip, smart
   serverUrl: { type: String, default: '' }, // API server URL for file downloads (e.g., https://ai2o.ru)
   typeId: { type: [Number, String], default: null }, // Table type ID for localStorage keys
   autoLoadDirs: { type: Boolean, default: true }, // Whether to auto-load directory metadata
@@ -4643,6 +4643,7 @@ const formatDateStyled = (timestamp, style) => {
       break
   }
 
+  if (style === 'classic') return displayText
   return `<span class="cell-chip cell-date ${info.cssClass}" data-tooltip="${tooltip}"><i class="pi pi-calendar"></i><span>${displayText}</span></span>`
 }
 
@@ -4675,6 +4676,7 @@ const formatDateTimeStyled = (timestamp, style) => {
       break
   }
 
+  if (style === 'classic') return displayText
   return `<span class="cell-chip cell-datetime ${info.cssClass}" data-tooltip="${tooltip}"><i class="pi pi-clock"></i><span>${displayText}</span></span>`
 }
 
