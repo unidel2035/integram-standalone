@@ -2595,7 +2595,7 @@ const headerTieredMenuItems = computed(() => {
       command: () => emit('open-add-lookup-column', isReference ? header.id : null)
     })
 
-    if (isPlainText) {
+    if (isPlainText || header.columnType === 'number') {
       menuItems.push({
         label: 'Конвертировать в справочник',
         icon: 'pi pi-sitemap',
@@ -2688,7 +2688,7 @@ const headerMenuItems = computed(() => [
   {
     label: 'Конвертировать в справочник',
     icon: 'pi pi-sitemap',
-    visible: currentHeader.value?.type === 3 && !currentHeader.value?.refType,
+    visible: (currentHeader.value?.type === 3 || currentHeader.value?.type === 1) && !currentHeader.value?.refType,
     command: () => emit('column-convert-to-ref', currentHeader.value?.id),
     disabled: props?.disableEditing
   },
