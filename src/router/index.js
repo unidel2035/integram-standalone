@@ -76,6 +76,8 @@ const routes = [
         meta: { title: 'Память — Таблицы Integram' },
         children: [
           { path: '', component: () => import('@/views/pages/Integram/IntegramTableList.vue') },
+          { path: 'table', component: () => import('@/views/pages/Integram/IntegramDictionary.vue') },
+          { path: 'table/:typeId', component: () => import('@/views/pages/Integram/IntegramObjectView.vue') },
           { path: 'dict', component: () => import('@/views/pages/Integram/IntegramDictionary.vue') },
           { path: 'object/:typeId', component: () => import('@/views/pages/Integram/IntegramObjectView.vue') },
           { path: 'edit_obj/:objectId', component: () => import('@/views/pages/Integram/IntegramObjectEdit.vue') },
