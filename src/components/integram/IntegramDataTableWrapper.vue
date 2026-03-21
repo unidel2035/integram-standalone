@@ -2109,6 +2109,8 @@ function loadSettings() {
     if (stored) {
       // ✅ Пользователь уже открывал таблицу ранее - используем СОХРАНЕННЫЕ настройки
       const parsedSettings = JSON.parse(stored)
+      // Force dateStyle to classic (override cached 'relative')
+      parsedSettings.dateStyle = DEFAULT_SETTINGS.dateStyle
       console.log('[loadSettings] Загружены сохраненные настройки из localStorage:', parsedSettings)
       return { ...DEFAULT_SETTINGS, ...parsedSettings }
     } else {
