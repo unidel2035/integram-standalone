@@ -2477,16 +2477,11 @@ const headerTieredMenuItems = computed(() => {
     // Date display modes for year-like NUMBER columns
     const hName = (header.value || '').toLowerCase()
     if (hName.includes('год') || hName.includes('year') || hName.includes('основан') || hName.includes('дата')) {
-      menuItems.push({
-        label: 'Отображение даты',
-        icon: 'pi pi-calendar',
-        items: [
-          { label: 'Только год (2024)', command: () => setColumnDateMode(header.id, 'year') },
-          { label: 'Дата (01.01.2024)', command: () => setColumnDateMode(header.id, 'date') },
-          { label: 'Дата + время', command: () => setColumnDateMode(header.id, 'datetime') },
-          { label: 'Прошло времени (3 года)', command: () => setColumnDateMode(header.id, 'elapsed') },
-        ]
-      })
+      menuItems.push({ separator: true })
+      menuItems.push({ label: 'Год (2024)', icon: 'pi pi-calendar', command: () => setColumnDateMode(header.id, 'year') })
+      menuItems.push({ label: 'Дата (01.01.2024)', icon: 'pi pi-calendar', command: () => setColumnDateMode(header.id, 'date') })
+      menuItems.push({ label: 'Дата + время', icon: 'pi pi-clock', command: () => setColumnDateMode(header.id, 'datetime') })
+      menuItems.push({ label: 'Прошло времени', icon: 'pi pi-history', command: () => setColumnDateMode(header.id, 'elapsed') })
     }
   }
 
@@ -2734,6 +2729,24 @@ const headerMenuItems = computed(() => [
     disabled: props?.disableEditing
   },
   { separator: true, visible: (currentHeader.value?.type === 3 && !currentHeader.value?.refType) || currentHeader.value?.refType != null },
+  {
+    label: 'Год (2024)',
+    icon: 'pi pi-calendar',
+    visible: (currentHeader.value?.type === 13 || currentHeader.value?.type === 14) && /год|year|основан|дата/i.test(currentHeader.value?.value || ''),
+    command: () => setColumnDateMode(currentHeader.value?.id, 'year')
+  },
+  {
+    label: 'Дата (01.01.2024)',
+    icon: 'pi pi-calendar',
+    visible: (currentHeader.value?.type === 13 || currentHeader.value?.type === 14) && /год|year|основан|дата/i.test(currentHeader.value?.value || ''),
+    command: () => setColumnDateMode(currentHeader.value?.id, 'date')
+  },
+  {
+    label: 'Прошло времени',
+    icon: 'pi pi-history',
+    visible: (currentHeader.value?.type === 13 || currentHeader.value?.type === 14) && /год|year|основан|дата/i.test(currentHeader.value?.value || ''),
+    command: () => setColumnDateMode(currentHeader.value?.id, 'elapsed')
+  },
   {
     label: 'Условное форматирование',
     icon: 'pi pi-palette',
