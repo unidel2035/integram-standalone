@@ -2041,26 +2041,16 @@ onMounted(async () => {
     my: { login: 'd', password: 'd' },
   }
 
-  // Re-read session from localStorage (IntegramMain may have authenticated already)
-  integramApiClient.loadSession()
-
-  if (!integramApiClient.isAuthenticated()) {
-    // Try auto-login
-    const creds = AUTO_CREDENTIALS[dbFromRoute]
-    if (creds) {
-      try {
-        await integramApiClient.switchDatabase(dbFromRoute)
-        await integramApiClient.authenticate(dbFromRoute, creds.login, creds.password)
-        console.log(`[IntegramObjectView] Auto-login to ${dbFromRoute} OK`)
-      } catch (e) {
-        console.warn(`[IntegramObjectView] Auto-login failed:`, e.message)
-      }
+  // Always auto-login to ensure fresh token for the database
+  const creds = AUTO_CREDENTIALS[dbFromRoute]
+  if (creds) {
+    try {
+      await integramApiClient.switchDatabase(dbFromRoute)
+      await integramApiClient.authenticate(dbFromRoute, creds.login, creds.password)
+      console.log(`[IntegramObjectView] Auth OK for ${dbFromRoute}`)
+    } catch (e) {
+      console.warn(`[IntegramObjectView] Auth failed:`, e.message)
     }
-  }
-
-  // Ensure correct database
-  if (integramApiClient.currentDatabase !== dbFromRoute) {
-    await integramApiClient.switchDatabase(dbFromRoute)
   }
 
   // Read page number and limit from URL query
