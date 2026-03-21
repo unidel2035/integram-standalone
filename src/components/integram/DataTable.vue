@@ -1203,7 +1203,7 @@ const props = defineProps({
   autoLoadDirs: { type: Boolean, default: true }, // Whether to auto-load directory metadata
   database: { type: String, default: 'my' }, // Database name for mentions and other features
   disableRowEditDialog: { type: Boolean, default: false }, // Issue #6651: Disable row edit dialog popup
-  textWrapEnabled: { type: Boolean, default: false } // Issue #6779: Enable text wrapping in cells
+  textWrapEnabled: { type: Boolean, default: true } // Text wrapping enabled by default
 })
 
 const emit = defineEmits([
@@ -8209,8 +8209,8 @@ th {
 td {
   background: var(--surface-a);
   color: var(--text-color);
-  max-width: 0; /* Prevent cell expansion */
-  overflow: hidden; /* Prevent overflow */
+  max-width: 400px;
+  overflow: hidden;
 }
 
 tr:hover td {
@@ -8460,9 +8460,10 @@ tr.data-row td.row-counter-cell.hover-active {
 }
 
 .cell-content {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 /* Issue #6779: Text wrap mode - override nowrap when enabled */
@@ -10691,7 +10692,8 @@ tfoot {
   text-decoration: none;
   transition: all 0.15s ease;
   cursor: pointer;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
   max-width: 100%;
   overflow: visible;
 }
