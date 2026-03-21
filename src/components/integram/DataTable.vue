@@ -4643,6 +4643,7 @@ const formatDateStyled = (timestamp, style) => {
       break
   }
 
+  if (style === 'classic') return `<span title="${tooltip}">${displayText}</span>`
   return `<span class="cell-chip cell-date ${info.cssClass}" data-tooltip="${tooltip}"><i class="pi pi-calendar"></i><span>${displayText}</span></span>`
 }
 
@@ -4675,6 +4676,7 @@ const formatDateTimeStyled = (timestamp, style) => {
       break
   }
 
+  if (style === 'classic') return `<span title="${tooltip}">${displayText}</span>`
   return `<span class="cell-chip cell-datetime ${info.cssClass}" data-tooltip="${tooltip}"><i class="pi pi-clock"></i><span>${displayText}</span></span>`
 }
 

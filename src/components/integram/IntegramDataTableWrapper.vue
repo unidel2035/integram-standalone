@@ -2096,7 +2096,7 @@ const DEFAULT_SETTINGS = {
   maxAutoLoadSize: 20000,      // Макс размер для автозагрузки
   backgroundChunkSize: 1000,   // Размер chunk
   backgroundDelay: 150,        // Задержка между chunk (мс)
-  dateStyle: 'relative',       // Стиль дат: classic, relative, chip, smart
+  dateStyle: 'classic',         // Стиль дат: classic (DD.MM.YYYY), relative, pill
   showSavePopup: false         // Issue #6651: Показывать диалог "Сохранить" при редактировании строки
 }
 
