@@ -4522,6 +4522,24 @@ const formatCellValue = (value, type, rowId, headerId) => {
         return formatNumber(num, formatConfig)
       }
 
+      // Level indicators: TRL, MRL, Sovereignty — render as colored chips
+      const headerName = (header?.value || '').toLowerCase()
+      if (Number.isInteger(num) && num >= 1 && num <= 9) {
+        const TRL_LABELS = { 1:'Базовые принципы', 2:'Концепция', 3:'Эксперимент', 4:'Лаборатория', 5:'Релевантная среда', 6:'Прототип', 7:'Эксплуатация', 8:'Квалификация', 9:'Серия' }
+        const MRL_LABELS = { 1:'Базовые возможности', 2:'Концепция', 3:'Подтверждение', 4:'Лаборатория', 5:'Опытное компонент.', 6:'Опытный прототип', 7:'Опытная партия', 8:'Мелкая серия', 9:'Полная серия' }
+        const SOV_LABELS = { 1:'Импорт 100%', 2:'Критическая завис.', 3:'Есть план', 4:'30-50%', 5:'50-70%', 6:'70-85%', 7:'Суверенная+импорт', 8:'>90%', 9:'100% суверен.' }
+
+        const color = num <= 3 ? 'var(--fst-red)' : num <= 6 ? 'var(--fst-brand)' : 'var(--fst-green)'
+        let label = null
+        if (headerName.includes('trl')) label = TRL_LABELS[num]
+        else if (headerName.includes('mrl')) label = MRL_LABELS[num]
+        else if (headerName.includes('суверен')) label = SOV_LABELS[num]
+
+        if (label) {
+          return `<span class="cell-chip" style="background:color-mix(in srgb,${color} 15%,transparent);color:${color};border:1px solid color-mix(in srgb,${color} 30%,transparent)" title="${label}"><strong>${num}</strong> ${label}</span>`
+        }
+      }
+
       // Fallback to default formatting (for backward compatibility)
       const decimals = type === 14 ? 2 : 0
       const formatted = num.toLocaleString('ru-RU', {
