@@ -1020,7 +1020,7 @@ const MAX_DEPTH = _MAX_DEPTH
  */
 // Issue #6789: Coda-style headers - calculate width based on text only (no inline icons)
 const calcDefaultColumnWidth = (text) => {
-  if (!text) return 150
+  if (!text) return 160
 
   // Base calculation: approximate 8px per character
   const baseWidth = text.length * 8
@@ -1028,8 +1028,8 @@ const calcDefaultColumnWidth = (text) => {
   // Add padding (left + right = 32px) + small buffer for indicators (16px)
   const width = baseWidth + 48
 
-  // Min: 100px (enough for short columns), Max: 300px (prevent overly wide columns)
-  return Math.min(Math.max(width, 100), 300)
+  // Min: 130px, Max: 350px
+  return Math.min(Math.max(width, 130), 350)
 }
 
 const FUNCTION_HANDLERS = {
@@ -4643,7 +4643,6 @@ const formatDateStyled = (timestamp, style) => {
       break
   }
 
-  if (style === 'classic') return displayText
   return `<span class="cell-chip cell-date ${info.cssClass}" data-tooltip="${tooltip}"><i class="pi pi-calendar"></i><span>${displayText}</span></span>`
 }
 
@@ -4676,7 +4675,6 @@ const formatDateTimeStyled = (timestamp, style) => {
       break
   }
 
-  if (style === 'classic') return displayText
   return `<span class="cell-chip cell-datetime ${info.cssClass}" data-tooltip="${tooltip}"><i class="pi pi-clock"></i><span>${displayText}</span></span>`
 }
 
