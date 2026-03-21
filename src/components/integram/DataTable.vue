@@ -1288,6 +1288,25 @@ const isNumberFormatDialogVisible = ref(false)
 const numberFormatConfigHeader = ref(null)
 const numberFormatCurrentConfig = ref({})
 
+// Column date display modes (year, date, datetime, elapsed)
+const columnDateModes = ref({})
+
+function setColumnDateMode(headerId, mode) {
+  columnDateModes.value[headerId] = mode
+  // Persist in localStorage
+  try {
+    const key = `datatable_date_modes_${props.typeId || 'default'}`
+    localStorage.setItem(key, JSON.stringify(columnDateModes.value))
+  } catch {}
+}
+
+// Load saved date modes
+try {
+  const key = `datatable_date_modes_${props.typeId || 'default'}`
+  const saved = localStorage.getItem(key)
+  if (saved) columnDateModes.value = JSON.parse(saved)
+} catch {}
+
 // Reference Table Modal State (Issue #6859)
 const isReferenceTableModalVisible = ref(false)
 const referenceTableId = ref(null)
@@ -2454,6 +2473,21 @@ const headerTieredMenuItems = computed(() => {
         openNumberFormatDialog(header)
       }
     })
+
+    // Date display modes for year-like NUMBER columns
+    const hName = (header.value || '').toLowerCase()
+    if (hName.includes('год') || hName.includes('year') || hName.includes('основан') || hName.includes('дата')) {
+      menuItems.push({
+        label: 'Отображение даты',
+        icon: 'pi pi-calendar',
+        items: [
+          { label: 'Только год (2024)', command: () => setColumnDateMode(header.id, 'year') },
+          { label: 'Дата (01.01.2024)', command: () => setColumnDateMode(header.id, 'date') },
+          { label: 'Дата + время', command: () => setColumnDateMode(header.id, 'datetime') },
+          { label: 'Прошло времени (3 года)', command: () => setColumnDateMode(header.id, 'elapsed') },
+        ]
+      })
+    }
   }
 
   // 2. Type submenu (only if not disabled)
@@ -4531,6 +4565,32 @@ const formatCellValue = (value, type, rowId, headerId) => {
 
         if (label) {
           return `<span class="cell-chip" style="background:color-mix(in srgb,${color} 15%,transparent);color:${color};border:1px solid color-mix(in srgb,${color} 30%,transparent)" title="${label}"><strong>${num}</strong> ${label}</span>`
+        }
+      }
+
+      // Year/date display for year-like numbers (1900-2100)
+      if (Number.isInteger(num) && num >= 1900 && num <= 2100) {
+        const isYearField = headerName.includes('год') || headerName.includes('year') || headerName.includes('основан')
+        const dateMode = columnDateModes.value[headerId]
+
+        if (isYearField || dateMode) {
+          const mode = dateMode || 'year'
+          const now = new Date().getFullYear()
+          const diff = now - num
+          const pluralYear = diff === 1 ? 'год' : diff <= 4 ? 'года' : 'лет'
+
+          switch (mode) {
+            case 'year':
+              return `<span class="cell-number" title="${diff} ${pluralYear} назад">${num}</span>`
+            case 'date':
+              return `<span class="cell-number">01.01.${num}</span>`
+            case 'datetime':
+              return `<span class="cell-number">01.01.${num} 00:00</span>`
+            case 'elapsed':
+              return `<span class="cell-number" title="${num}">${diff} ${pluralYear}</span>`
+            default:
+              return `<span class="cell-number" title="${diff} ${pluralYear} назад">${num}</span>`
+          }
         }
       }
 
