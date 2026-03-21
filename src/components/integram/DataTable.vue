@@ -4515,14 +4515,8 @@ const formatCellValue = (value, type, rowId, headerId) => {
 
       // Get header to check for number format configuration
       const header = localHeaders.value.find(h => h.id === headerId)
-      const formatConfig = header ? parseNumberFormat(header.attrs || '') : null
 
-      // Use number formatter with configuration
-      if (formatConfig && formatConfig.type) {
-        return formatNumber(num, formatConfig)
-      }
-
-      // Level indicators: TRL, MRL, Sovereignty — render as colored chips
+      // Level indicators: TRL, MRL, Sovereignty — render as colored chips FIRST
       const headerName = (header?.value || '').toLowerCase()
       if (Number.isInteger(num) && num >= 1 && num <= 9) {
         const TRL_LABELS = { 1:'Базовые принципы', 2:'Концепция', 3:'Эксперимент', 4:'Лаборатория', 5:'Релевантная среда', 6:'Прототип', 7:'Эксплуатация', 8:'Квалификация', 9:'Серия' }
@@ -4538,6 +4532,12 @@ const formatCellValue = (value, type, rowId, headerId) => {
         if (label) {
           return `<span class="cell-chip" style="background:color-mix(in srgb,${color} 15%,transparent);color:${color};border:1px solid color-mix(in srgb,${color} 30%,transparent)" title="${label}"><strong>${num}</strong> ${label}</span>`
         }
+      }
+
+      // Use number formatter with configuration
+      const formatConfig = header ? parseNumberFormat(header.attrs || '') : null
+      if (formatConfig && formatConfig.type) {
+        return formatNumber(num, formatConfig)
       }
 
       // Fallback to default formatting (for backward compatibility)
