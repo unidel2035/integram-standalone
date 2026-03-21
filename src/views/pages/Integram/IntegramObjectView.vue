@@ -2032,9 +2032,31 @@ async function executeAddColumn() {
 
 // Lifecycle
 onMounted(async () => {
-  if (!isAuthenticated.value) {
-    router.replace('/integram/login');
-    return;
+  // Ensure database is set and authenticated before loading data
+  const dbFromRoute = route.params.database || 'fst'
+  const AUTO_CREDENTIALS = {
+    nous: { login: 'nous', password: 'dow8h73w' },
+    kval: { login: 'd', password: 'd' },
+    fst: { login: 'd', password: 'd' },
+    my: { login: 'd', password: 'd' },
+  }
+
+  if (!isAuthenticated.value || integramApiClient.currentDatabase !== dbFromRoute) {
+    const creds = AUTO_CREDENTIALS[dbFromRoute]
+    if (creds) {
+      try {
+        await integramApiClient.switchDatabase(dbFromRoute)
+        await integramApiClient.authenticate(dbFromRoute, creds.login, creds.password)
+        console.log(`[IntegramObjectView] Auto-login to ${dbFromRoute} OK`)
+      } catch (e) {
+        console.warn(`[IntegramObjectView] Auto-login failed:`, e.message)
+        router.replace('/integram/login');
+        return;
+      }
+    } else {
+      router.replace('/integram/login');
+      return;
+    }
   }
 
   // Read page number and limit from URL query
