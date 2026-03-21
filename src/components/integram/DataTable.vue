@@ -8673,7 +8673,7 @@ th:not(.row-counter-header) {
   cursor: pointer;
 }
 :deep(.row-menu-id-item .p-menuitem-text) {
-  font-family: monospace;
+  font-family: inherit;
   font-weight: 600;
 }
 
@@ -10280,7 +10280,7 @@ tfoot {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-family: inherit;
 }
 
 .row-counter-footer {
@@ -10775,7 +10775,7 @@ tfoot {
 :deep(.cell-number) {
   display: inline-block;
   font-variant-numeric: tabular-nums; /* Monospaced digits for alignment */
-  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
@@ -10811,7 +10811,7 @@ tfoot {
 :deep(.cell-currency) {
   display: inline-block;
   font-variant-numeric: tabular-nums;
-  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   padding: 2px 4px;
@@ -10822,7 +10822,7 @@ tfoot {
 :deep(.cell-percent) {
   display: inline-block;
   font-variant-numeric: tabular-nums;
-  font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   padding: 2px 4px;
@@ -11285,7 +11285,7 @@ tfoot {
   background: var(--p-stone-50, #fafaf9);
   border: 1px solid var(--p-stone-200, #e7e5e4);
   color: var(--p-stone-700, #44403c);
-  font-family: monospace;
+  font-family: inherit;
   font-size: 0.8rem;
 }
 
@@ -11304,7 +11304,7 @@ tfoot {
   border: 1px solid var(--p-blue-200, #bfdbfe);
   border-radius: 4px;
   color: var(--p-blue-700, #1d4ed8);
-  font-family: monospace;
+  font-family: inherit;
   font-size: 0.8rem;
   text-decoration: none;
   transition: all 0.15s ease;
