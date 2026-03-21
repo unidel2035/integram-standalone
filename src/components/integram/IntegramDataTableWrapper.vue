@@ -3334,6 +3334,21 @@ function transformData(data, reset = true) {
           }
         }
 
+        // Virtual directories: map number values to reference IDs
+        // TRL 5 (number) → dirRowId 226261 (object "TRL 5" in table 226256)
+        const VIRTUAL_DIRS_ROW = {
+          '6155': 226256, // TRL base ID: level N → ID 226256+N
+          '6157': 226266, // MRL
+          '6159': 226276, // Sovereignty
+        }
+        if (VIRTUAL_DIRS_ROW[reqId] && reqValue && !cell.dirRowId) {
+          const num = parseInt(reqValue)
+          if (num >= 1 && num <= 9) {
+            cell.dirRowId = VIRTUAL_DIRS_ROW[reqId] + num
+            cell.dirTableId = VIRTUAL_DIRS_ROW[reqId]
+          }
+        }
+
         // Mark nested/subordinate fields
         if (isNested) {
           cell.nested = true
