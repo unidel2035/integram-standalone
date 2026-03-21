@@ -3159,6 +3159,16 @@ function transformData(data, reset = true) {
         columnType = isMulti ? 'multi' : 'dir'
       }
 
+      // Virtual directories: NUMBER fields with known reference tables
+      const VIRTUAL_DIRS = {
+        '6155': '226256', // TRL → Уровни TRL
+        '6157': '226266', // MRL → Уровни MRL
+        '6159': '226276', // Суверенность → Уровни суверенности
+      }
+      if (!refType && VIRTUAL_DIRS[reqId]) {
+        columnType = 'dir'
+      }
+
       // Issue #6792: Detect lookup columns from attrs
       // Format: :ALIAS=name:lookup:refReq=123:targetReq=456:
       const attrs = data.req_attrs?.[reqId] || ''
@@ -3203,7 +3213,7 @@ function transformData(data, reset = true) {
         width: 150,
         termId: reqId,
         columnType,
-        dirTableId: refType ? parseInt(refType) : null,
+        dirTableId: refType ? parseInt(refType) : (VIRTUAL_DIRS[reqId] ? parseInt(VIRTUAL_DIRS[reqId]) : null),
         isMulti,
         nested: isNested, // Boolean flag for DataTable.vue compatibility
         nestedTableId: isNested ? parseInt(reqId) : null, // For nested columns, reqId in req_order IS the subordinate table typeId
