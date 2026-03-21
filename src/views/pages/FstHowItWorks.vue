@@ -7,7 +7,7 @@
     <div class="hiw">
       <div class="hiw-header">
         <div class="hiw-header-title">Архитектура VentureOS</div>
-        <div class="hiw-header-sub">7 уровней глубины, которые невозможно воспроизвести</div>
+        <div class="hiw-header-sub">7 уровней глубины — уникальная архитектура платформы</div>
       </div>
 
       <div class="hiw-diagram">
@@ -29,7 +29,7 @@
         <div class="hiw-level hiw-level-special">
           <div class="hiw-level-tag hiw-tag-gold">2</div>
           <div class="hiw-level-label">СМЫСЛОВОЙ ФУНДАМЕНТ</div>
-          <div class="hiw-level-hint">авторская методология, которую нельзя воспроизвести копированием</div>
+          <div class="hiw-level-hint">авторская методология, выстроенная годами исследований</div>
           <div class="hiw-nodes">
             <div v-for="n in level2" :key="n.id" class="hiw-node hiw-gold" @mouseenter="tip = n" @mouseleave="tip = null">
               <i :class="n.icon"></i><span>{{ n.label }}</span>
@@ -125,7 +125,7 @@
 
       <div class="hiw-footer-note">
         Каждый уровень — годы исследований, обучения и накопления данных.<br>
-        Скопировать код можно. Воспроизвести экосистему — нет.
+        Полная экосистема — результат накопленного опыта и методологии.
       </div>
     </div>
   </FstPageLayout>
@@ -340,11 +340,11 @@ const level7 = [
   width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--fst-purple);
-  animation: fdot 2.5s infinite;
+  animation: fdot 6s ease-in-out infinite;
 }
 @keyframes fdot {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50% { opacity: 0.6; }
 }
 
 /* Tooltip */
