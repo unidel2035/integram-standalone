@@ -255,6 +255,9 @@ export function useCellEditing(
           editingValue.value = options.initialValue
         } else if ([4, 9].includes(header.type) && typeof cell.value === 'number') {
           editingValue.value = new Date(cell.value * 1000)
+        } else if ([13, 14].includes(header.type) && /год|year|основан/i.test(header.value || '') && typeof cell.value === 'number' && cell.value >= 1900 && cell.value <= 2100) {
+          // Year-like NUMBER column → Date for Calendar year picker
+          editingValue.value = new Date(cell.value, 0, 1)
         } else {
           editingValue.value = cell.value
         }
@@ -425,6 +428,11 @@ export function useCellEditing(
       // Issue #6864: Convert Date object to Unix timestamp for DATE (type 9) and DATETIME (type 4)
       if ([4, 9].includes(header.type) && editingValue.value instanceof Date) {
         valueToSave = Math.floor(editingValue.value.getTime() / 1000)
+      }
+
+      // Year-like NUMBER columns: Calendar returns Date → extract year as number
+      if ([13, 14].includes(header.type) && editingValue.value instanceof Date) {
+        valueToSave = editingValue.value.getFullYear()
       }
 
       // Immediate local update for reactive UI

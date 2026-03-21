@@ -149,6 +149,101 @@ class IntegramApiClient {
 
     // Load session from localStorage on initialization
     this.loadSession()
+
+    // Audit trail — queue and flush
+    this._auditQueue = []
+    this._auditTimer = null
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => this._flushAudit())
+    }
+  }
+
+  // ── Audit Trail ──────────────────────────────────────────────────────────
+
+  /**
+   * Parse a mutation endpoint and data into an audit entry.
+   * Called automatically from post() for _m_set, _m_new, _m_del, _m_save, _m_move.
+   */
+  _emitAudit(endpoint, data, response) {
+    try {
+      // Determine action and IDs from endpoint
+      let action, objectId, typeId
+      const m = endpoint.match(/^_m_(set|new|del|save|move)\/(\d+)/)
+      if (!m) return // Not a mutation endpoint
+      const verb = m[1]
+      const id = m[2]
+      if (verb === 'new') { action = 'create'; typeId = id; objectId = response?.obj || response?.id || null }
+      else if (verb === 'del') { action = 'delete'; objectId = id }
+      else if (verb === 'set') { action = 'update'; objectId = id }
+      else if (verb === 'save') { action = 'update'; objectId = id }
+      else if (verb === 'move') { action = 'move'; objectId = id }
+      else return
+
+      // Extract changed fields (keys starting with 't' followed by digits)
+      const fields = {}
+      if (data && typeof data === 'object') {
+        for (const [k, v] of Object.entries(data)) {
+          if (k === '_xsrf' || k === 'up' || k === 'forced') continue
+          const reqMatch = k.match(/^t(\d+)$/)
+          if (reqMatch) {
+            fields[reqMatch[1]] = { new: v }
+          } else if (k.startsWith('r')) {
+            fields[k] = { new: v }
+          }
+        }
+      }
+
+      // For create — extract typeId from data if not in endpoint
+      if (action === 'create' && !typeId) {
+        for (const k of Object.keys(data || {})) {
+          const tm = k.match(/^t(\d+)$/)
+          if (tm && !fields[tm[1]]) { typeId = tm[1]; break }
+        }
+      }
+
+      this._auditQueue.push({
+        timestamp: new Date().toISOString(),
+        database: this.database || '',
+        action,
+        objectId: objectId ? String(objectId) : null,
+        typeId: typeId ? String(typeId) : null,
+        userId: this.userId || null,
+        userName: this.userName || null,
+        fields,
+        source: 'web'
+      })
+
+      // Debounced flush — batch every 3 seconds
+      if (!this._auditTimer) {
+        this._auditTimer = setTimeout(() => this._flushAudit(), 3000)
+      }
+    } catch (err) {
+      // Never break main flow
+      console.warn('[integramApiClient] Audit emit error:', err.message)
+    }
+  }
+
+  _flushAudit() {
+    this._auditTimer = null
+    if (this._auditQueue.length === 0) return
+    const entries = this._auditQueue.splice(0)
+    try {
+      const base = (typeof window !== 'undefined' && window.location?.origin) || ''
+      const url = `${base}/api/audit/log`
+      // Use sendBeacon if available (works during page unload), fallback to fetch
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        navigator.sendBeacon(url, JSON.stringify({ entries }))
+      } else {
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entries }),
+          keepalive: true
+        }).catch(() => {})
+      }
+    } catch {
+      // Ignore — audit is best-effort
+    }
   }
 
   /**
@@ -1428,6 +1523,11 @@ class IntegramApiClient {
         timeout: 30000, // 30 second timeout
         ...axiosOptions  // Issue #6501: Use axiosOptions without useMyXsrf flag
       })
+
+      // Audit trail — log mutations (_m_set, _m_new, _m_del, _m_save, _m_move)
+      if (endpoint.startsWith('_m_')) {
+        this._emitAudit(endpoint, data, response.data)
+      }
 
       return response.data
     } catch (error) {

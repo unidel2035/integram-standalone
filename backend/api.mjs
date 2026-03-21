@@ -83,6 +83,8 @@ import { logUsage, incrementUsage, checkTokenQuota, deductTokens } from './src/s
 import { refreshConfig } from './src/services/fstConfigService.js'
 import { createKAGFstMCPRoutes } from './src/api/routes/kag.js'
 import { createClaudeMemoryRoutes } from './src/api/routes/claude-memory.js'
+import auditService from './src/services/AuditService.js'
+import auditRoutes from './src/api/routes/audit.js'
 import { createFundOrchestrator } from './src/agents/orchestration/FundOrchestrator.js'
 import { createAgentBusRoutes } from './src/api/routes/agent-bus.js'
 import { getAgentBus } from './src/services/AgentBus.js'
@@ -847,6 +849,73 @@ app.post('/api/doc-blocks/:docId/sync', async (req, res) => {
   }
 })
 
+// ── DDL proxy routes (Integram _d_alias, _d_attrs, _d_type) ─────────────────
+// Issue #6609: Frontend saveDDLAlias/saveDDLAttrs call these endpoints
+// to proxy DDL operations through the backend with system credentials.
+
+app.post('/api/doc-blocks/ddl/requisite-alias', async (req, res) => {
+  try {
+    const { reqId, alias, database = 'kval', userToken, userXsrf } = req.body
+    if (!reqId || !alias) return res.status(400).json({ error: 'reqId and alias required' })
+
+    // Use user credentials if provided, otherwise system auth
+    let sess
+    if (userToken && userXsrf) {
+      sess = { token: userToken, xsrf: userXsrf }
+    } else {
+      sess = await _docBlocksAuth(database)
+    }
+
+    const resp = await fetch(`${_docBlocksIntegram}/${database}/_d_alias/${reqId}?JSON_KV=`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Authorization': sess.token,
+        'Cookie': `token=${sess.token}`
+      },
+      body: `_xsrf=${encodeURIComponent(sess.xsrf)}&val=${encodeURIComponent(alias)}`
+    })
+    const text = await resp.text()
+    let data
+    try { data = JSON.parse(text) } catch { data = { raw: text } }
+    res.json(data)
+  } catch (err) {
+    console.error('[DDL] requisite-alias error:', err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.post('/api/doc-blocks/ddl/requisite-attrs', async (req, res) => {
+  try {
+    const { reqId, attrs, database = 'kval', userToken, userXsrf } = req.body
+    if (!reqId || attrs === undefined) return res.status(400).json({ error: 'reqId and attrs required' })
+
+    let sess
+    if (userToken && userXsrf) {
+      sess = { token: userToken, xsrf: userXsrf }
+    } else {
+      sess = await _docBlocksAuth(database)
+    }
+
+    const resp = await fetch(`${_docBlocksIntegram}/${database}/_d_attrs/${reqId}?JSON_KV=`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Authorization': sess.token,
+        'Cookie': `token=${sess.token}`
+      },
+      body: `_xsrf=${encodeURIComponent(sess.xsrf)}&val=${encodeURIComponent(attrs)}`
+    })
+    const text = await resp.text()
+    let data
+    try { data = JSON.parse(text) } catch { data = { raw: text } }
+    res.json(data)
+  } catch (err) {
+    console.error('[DDL] requisite-attrs error:', err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // ── Stub routes for features in development ─────────────────────────────────
 // Prevent 404 noise in console from frontend calls
 
@@ -855,6 +924,10 @@ app.get('/api/debate/sessions/:id', (req, res) => res.status(404).json({ error: 
 
 // ── AnamnesisMemory (Claude Memory — факты, семантика, нарратив) ─────────────
 app.use('/api/claude-memory', createClaudeMemoryRoutes())
+
+// ── Audit Trail ─────────────────────────────────────────────────────────────
+auditService.initialize()
+app.use('/api/audit', auditRoutes)
 
 // ── Multi-Agent Orchestrator ─────────────────────────────────────────────────
 const fundOrchestrator = createFundOrchestrator({ port: parseInt(process.env.FST_API_PORT || '8082') })

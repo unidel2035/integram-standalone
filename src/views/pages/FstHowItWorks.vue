@@ -7,7 +7,6 @@
     <div class="hiw">
       <div class="hiw-header">
         <div class="hiw-header-title">Архитектура VentureOS</div>
-        <div class="hiw-header-sub">7 уровней глубины — уникальная архитектура платформы</div>
       </div>
 
       <div class="hiw-diagram">
@@ -17,7 +16,7 @@
           <div class="hiw-level-tag hiw-tag-blue">1</div>
           <div class="hiw-level-label">ВХОД</div>
           <div class="hiw-nodes">
-            <div v-for="n in level1" :key="n.id" class="hiw-node hiw-blue" @mouseenter="tip = n" @mouseleave="tip = null">
+            <div v-for="n in level1" :key="n.id" class="hiw-node hiw-blue" @mouseenter="showTip(n, $event)" @mouseleave="hideTip()">
               <i :class="n.icon"></i><span>{{ n.label }}</span>
             </div>
           </div>
@@ -31,7 +30,7 @@
           <div class="hiw-level-label">СМЫСЛОВОЙ ФУНДАМЕНТ</div>
           <div class="hiw-level-hint">авторская методология, выстроенная годами исследований</div>
           <div class="hiw-nodes">
-            <div v-for="n in level2" :key="n.id" class="hiw-node hiw-gold" @mouseenter="tip = n" @mouseleave="tip = null">
+            <div v-for="n in level2" :key="n.id" class="hiw-node hiw-gold" @mouseenter="showTip(n, $event)" @mouseleave="hideTip()">
               <i :class="n.icon"></i><span>{{ n.label }}</span>
             </div>
           </div>
@@ -44,7 +43,7 @@
           <div class="hiw-level-tag hiw-tag-cyan">3</div>
           <div class="hiw-level-label">ГРАФ ЗНАНИЙ + ПАМЯТЬ АГЕНТОВ</div>
           <div class="hiw-nodes">
-            <div v-for="n in level3" :key="n.id" class="hiw-node hiw-cyan" @mouseenter="tip = n" @mouseleave="tip = null">
+            <div v-for="n in level3" :key="n.id" class="hiw-node hiw-cyan" @mouseenter="showTip(n, $event)" @mouseleave="hideTip()">
               <i :class="n.icon"></i><span>{{ n.label }}</span>
             </div>
           </div>
@@ -57,7 +56,7 @@
           <div class="hiw-level-tag hiw-tag-purple">4</div>
           <div class="hiw-level-label">ОБУЧЕНИЕ АГЕНТОВ</div>
           <div class="hiw-nodes">
-            <div v-for="n in level4" :key="n.id" class="hiw-node hiw-purple" @mouseenter="tip = n" @mouseleave="tip = null">
+            <div v-for="n in level4" :key="n.id" class="hiw-node hiw-purple" @mouseenter="showTip(n, $event)" @mouseleave="hideTip()">
               <i :class="n.icon"></i><span>{{ n.label }}</span>
             </div>
           </div>
@@ -70,7 +69,7 @@
           <div class="hiw-level-tag hiw-tag-brand">5</div>
           <div class="hiw-level-label">ОРКЕСТРАЦИЯ 148 АГЕНТОВ</div>
           <div class="hiw-nodes">
-            <div v-for="n in level5" :key="n.id" class="hiw-node hiw-brand" @mouseenter="tip = n" @mouseleave="tip = null">
+            <div v-for="n in level5" :key="n.id" class="hiw-node hiw-brand" @mouseenter="showTip(n, $event)" @mouseleave="hideTip()">
               <i :class="n.icon"></i><span>{{ n.label }}</span>
             </div>
           </div>
@@ -83,7 +82,7 @@
           <div class="hiw-level-tag hiw-tag-green">6</div>
           <div class="hiw-level-label">AI-АНАЛИЗ СДЕЛКИ</div>
           <div class="hiw-nodes">
-            <div v-for="n in level6" :key="n.id" class="hiw-node hiw-green" @mouseenter="tip = n" @mouseleave="tip = null">
+            <div v-for="n in level6" :key="n.id" class="hiw-node hiw-green" @mouseenter="showTip(n, $event)" @mouseleave="hideTip()">
               <i :class="n.icon"></i><span>{{ n.label }}</span>
             </div>
           </div>
@@ -96,7 +95,7 @@
           <div class="hiw-level-tag hiw-tag-green-dark">7</div>
           <div class="hiw-level-label">РЕЗУЛЬТАТ ИНВЕСТОРУ</div>
           <div class="hiw-nodes">
-            <div v-for="n in level7" :key="n.id" class="hiw-node hiw-green-out" @mouseenter="tip = n" @mouseleave="tip = null">
+            <div v-for="n in level7" :key="n.id" class="hiw-node hiw-green-out" @mouseenter="showTip(n, $event)" @mouseleave="hideTip()">
               <i :class="n.icon"></i><span>{{ n.label }}</span>
             </div>
           </div>
@@ -104,7 +103,7 @@
 
         <!-- Tooltip -->
         <Transition name="tip">
-          <div v-if="tip" class="hiw-tip">
+          <div v-if="tip" class="hiw-tip" :style="{ top: tipPos.top + 'px', left: tipPos.left + 'px' }">
             <div class="hiw-tip-head">{{ tip.label }}</div>
             <div class="hiw-tip-body">{{ tip.desc }}</div>
             <div v-if="tip.detail" class="hiw-tip-detail">{{ tip.detail }}</div>
@@ -132,17 +131,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 import FstPageLayout from '@/components/fst-shared/FstPageLayout.vue'
 
 const tip = ref(null)
+const tipPos = ref({ top: 0, left: 0 })
+let tipLeaveTimer = null
+const showTip = (n, event) => {
+  clearTimeout(tipLeaveTimer)
+  const rect = event.currentTarget.getBoundingClientRect()
+  tipPos.value = { top: rect.top + rect.height + 10, left: rect.left + rect.width / 2 }
+  tip.value = n
+}
+const hideTip = () => { tipLeaveTimer = setTimeout(() => { tip.value = null }, 120) }
+onBeforeUnmount(() => clearTimeout(tipLeaveTimer))
 
 const stats = [
   { val: '48 ч', label: 'анализ сделки' },
   { val: '148', label: 'агентов в реестре' },
   { val: '1 100+', label: 'концептов в графе' },
   { val: '60+', label: 'MCP-инструментов' },
-  { val: '2', label: 'обученных LoRA-модели' },
+  { val: '1', label: 'обученная LoRA-модель' },
   { val: '7', label: 'уровней глубины' },
 ]
 
@@ -167,8 +176,7 @@ const level3 = [
 ]
 
 const level4 = [
-  { id: 't1', icon: 'pi pi-star', label: 'Адам (LoRA v0.2)', desc: 'Первый AI-агент, обученный на онтологической основе. 176 примеров: дары, богословие, физика, диалоги. Fine-tuned LoRA на DeepSeek. Знает принципы кеносиса и телоса на уровне весов модели.', detail: 'LoRA 358MB, 176 примеров обучения', route: '/fst-school' },
-  { id: 't2', icon: 'pi pi-star-fill', label: 'Серафим (LoRA v0.1)', desc: 'Второй обученный агент. Специализация на другом аспекте онтологии. Обучен отдельно, работает в паре с Адамом. Два агента — два голоса одной традиции.', detail: 'Отдельная LoRA-модель' },
+  { id: 't1', icon: 'pi pi-star', label: 'Fine-tuned LoRA', desc: 'AI-агент, дообученный на 176 примерах инвестиционных решений. Знает методологию фонда на уровне весов модели.', detail: 'LoRA 358MB, 176 примеров обучения', route: '/fst-school' },
   { id: 't3', icon: 'pi pi-trophy', label: 'Турниры предсказаний', desc: '12 специализированных агентов соревнуются в точности прогнозов. Monte Carlo, Bayesian, Game Theory, Devil\'s Advocate. Brier-скоры, tit-for-tat: точные агенты получают больше уверенности.', detail: '12 алгоритмов, автокалибровка', route: '/fst-school' },
 ]
 
@@ -292,7 +300,7 @@ const level7 = [
   transition: all 0.2s;
   min-width: 80px;
 }
-.hiw-node:hover { transform: translateY(-3px); z-index: 5; }
+.hiw-node:hover { z-index: 5; }
 .hiw-node i { font-size: 20px; }
 .hiw-node span { font-size: 10px; font-weight: 700; color: var(--p-text-color); text-align: center; max-width: 100px; }
 
@@ -350,8 +358,7 @@ const level7 = [
 /* Tooltip */
 .hiw-tip {
   position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   z-index: 200;
   background: var(--p-surface-card);
   border: 1.5px solid var(--p-primary-color);
@@ -366,9 +373,9 @@ const level7 = [
 .hiw-tip-link { font-size: 11px; font-weight: 700; color: var(--p-primary-color); cursor: pointer; display: flex; align-items: center; gap: 4px; }
 .hiw-tip-link:hover { text-decoration: underline; }
 
-.tip-enter-active { transition: all 0.12s ease-out; }
-.tip-leave-active { transition: all 0.08s ease-in; }
-.tip-enter-from, .tip-leave-to { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+.tip-enter-active { transition: opacity 0.15s ease-out; }
+.tip-leave-active { transition: opacity 0.1s ease-in; }
+.tip-enter-from, .tip-leave-to { opacity: 0; }
 
 /* Bottom stats */
 .hiw-bottom {

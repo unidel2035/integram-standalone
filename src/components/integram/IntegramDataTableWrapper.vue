@@ -3336,12 +3336,14 @@ function transformData(data, reset = true) {
 
         // Virtual directories: map number values to reference IDs
         // TRL 5 (number) → dirRowId 226261 (object "TRL 5" in table 226256)
+        // Only applies when field is still a NUMBER (no refType) — after migration to
+        // real reference fields, refType is set and values are handled above.
         const VIRTUAL_DIRS_ROW = {
           '6155': 226256, // TRL base ID: level N → ID 226256+N
           '6157': 226266, // MRL
           '6159': 226276, // Sovereignty
         }
-        if (VIRTUAL_DIRS_ROW[reqId] && reqValue && !cell.dirRowId) {
+        if (!refType && VIRTUAL_DIRS_ROW[reqId] && reqValue && !cell.dirRowId) {
           const num = parseInt(reqValue)
           if (num >= 1 && num <= 9) {
             cell.dirRowId = VIRTUAL_DIRS_ROW[reqId] + num
@@ -6821,8 +6823,77 @@ async function handleLoadDirectoryMetadata({ dirTableId, callback }) {
  * @param {string} params.headerId - Header ID in DataTable
  * @param {string} params.termId - Requisite ID in database
  */
-async function handleHeaderAction({ action, headerId, termId }) {
-  console.log('[handleHeaderAction]', { action, headerId, termId })
+async function handleHeaderAction({ action, headerId, termId, type: newType }) {
+  console.log('[handleHeaderAction]', { action, headerId, termId, newType })
+
+  // ===== Change column type =====
+  if (action === 'change-type') {
+    const header = headers.value.find(h => h.id === headerId)
+    let requisiteId = termId || header?.termId
+
+    if (!requisiteId || requisiteId === 'val') {
+      toast.add({
+        severity: 'warn',
+        summary: 'Невозможно изменить тип',
+        detail: 'Главную колонку изменить нельзя',
+        life: 5000
+      })
+      return
+    }
+
+    if (typeof requisiteId === 'string') {
+      requisiteId = parseInt(requisiteId, 10)
+    }
+
+    if (!requisiteId || isNaN(requisiteId) || !newType) {
+      toast.add({
+        severity: 'error',
+        summary: 'Ошибка',
+        detail: 'Не найден ID реквизита или тип не указан',
+        life: 5000
+      })
+      return
+    }
+
+    try {
+      if (database.value) integramApiClient.setDatabase(database.value)
+      await integramApiClient.ensureXsrf()
+
+      // Resolve concrete type ID for the database (some DBs need it)
+      const concreteTypeId = await integramApiClient.resolveRequisiteType(newType)
+      console.log('[handleHeaderAction] change-type: reqId=%d, baseType=%d, concreteType=%d', requisiteId, newType, concreteTypeId)
+
+      const result = await integramApiClient.changeRequisiteType(requisiteId, concreteTypeId)
+      console.log('[handleHeaderAction] change-type API response:', result)
+
+      // Check for API error
+      const errorMsg = Array.isArray(result)
+        ? result[0]?.error
+        : result?.error || result?.failed
+      if (errorMsg) {
+        throw new Error(errorMsg)
+      }
+
+      toast.add({
+        severity: 'success',
+        summary: 'Тип изменён',
+        detail: `Колонка "${header?.value || requisiteId}" — тип обновлён`,
+        life: 3000
+      })
+
+      // Reload data to reflect the type change
+      await loadData()
+    } catch (err) {
+      console.error('[handleHeaderAction] change-type error:', err)
+      toast.add({
+        severity: 'error',
+        summary: 'Ошибка смены типа',
+        detail: err.message || 'Не удалось изменить тип колонки через API',
+        life: 5000
+      })
+    }
+    return
+  }
 
   if (action === 'delete') {
     // Find header to get termId if not provided

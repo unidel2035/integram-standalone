@@ -132,7 +132,7 @@ export const fstMenuConfig = [
       { label: 'Реестр ПП-1726', svgIcon: svgBookOpenText, to: '/fst-registry',     roles: ['director', 'admin'] },
       { label: 'Биллинг',        icon: 'pi pi-credit-card', to: '/fst-billing',     roles: ['director', 'admin'] },
       { label: 'Память (Таблицы)', icon: 'pi pi-database',    to: '/integram/fst',     roles: ['director', 'admin', 'analyst'] },
-      { label: 'Компании ФСТ',    icon: 'pi pi-building',    to: '/integram/fst/object/1155', roles: ['director', 'admin', 'analyst'] },
+      { label: 'Реестр компаний', icon: 'pi pi-table',       to: '/integram/fst/table/1155',  roles: ['director', 'admin', 'analyst'] },
     ]
   },
   {

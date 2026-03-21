@@ -858,7 +858,7 @@
                       placeholder="Введите путь к файлу..."
                     />
 
-                    <component v-else :is="getEditorComponent(header.type)" ref="cellEditorInput" v-model="editingValue" @keydown="handleCellEditorKeydown($event, header.id, item.data.id)" @keydown.esc="cancelCellEdit" @blur="saveAndCloseCellEdit(header.id, item.data.id)" :binary="header.type === 11" :showIcon="true" :dateFormat="header.type === 9 ? 'dd.mm.yy' : 'dd.mm.yy HH:mm'" :showTime="header.type === 4" :showSeconds="header.type === 4" class="cell-editor seamless-editor" v-bind="getEditorProps(header.type, header.dirTableId, getDirectoryOptions(header.dirTableId, header.filterCondition, item.data), props.database)" />
+                    <component v-else :is="getEditorComponent(header.type, undefined, undefined, header.value)" ref="cellEditorInput" v-model="editingValue" @keydown="handleCellEditorKeydown($event, header.id, item.data.id)" @keydown.esc="cancelCellEdit" @blur="saveAndCloseCellEdit(header.id, item.data.id)" :binary="header.type === 11" :showIcon="true" :dateFormat="header.type === 9 ? 'dd.mm.yy' : 'dd.mm.yy HH:mm'" :showTime="header.type === 4" :showSeconds="header.type === 4" :view="isYearLikeColumn(header.value) && (header.type === 13 || header.type === 14) ? 'year' : undefined" :appendTo="isYearLikeColumn(header.value) || header.type === 9 || header.type === 4 ? 'body' : undefined" class="cell-editor seamless-editor" v-bind="getEditorProps(header.type, header.dirTableId, getDirectoryOptions(header.dirTableId, header.filterCondition, item.data), props.database)" />
                   </template>
                 </div>
               </td>
@@ -6336,7 +6336,10 @@ const handleCellEditorKeydown = (event, headerId, rowId) => {
   // Handle Tab key (save and move right/left)
   if (event.key === 'Tab') {
     event.preventDefault()
-    saveAndCloseCellEdit(headerId, rowId)
+    // Save and close synchronously — don't use saveAndCloseCellEdit (rAF check
+    // sees focus still inside the cell and aborts the close)
+    saveCellEdit(headerId, rowId)
+    cancelCellEdit()
 
     nextTick(() => {
       if (event.shiftKey) {
@@ -6363,7 +6366,10 @@ const handleCellEditorKeydown = (event, headerId, rowId) => {
     if (event.ctrlKey || event.metaKey) return
 
     event.preventDefault()
-    saveAndCloseCellEdit(headerId, rowId)
+    // Save and close synchronously — don't use saveAndCloseCellEdit (rAF check
+    // sees focus still inside the cell and aborts the close)
+    saveCellEdit(headerId, rowId)
+    cancelCellEdit()
 
     nextTick(() => {
       if (event.shiftKey) {
@@ -6383,21 +6389,24 @@ const handleCellEditorKeydown = (event, headerId, rowId) => {
 
   if (event.key === 'ArrowLeft' && isAtStart && !event.shiftKey) {
     event.preventDefault()
-    saveAndCloseCellEdit(headerId, rowId)
+    saveCellEdit(headerId, rowId)
+    cancelCellEdit()
     nextTick(() => navigateToCell('left'))
     return
   }
 
   if (event.key === 'ArrowRight' && isAtEnd && !event.shiftKey) {
     event.preventDefault()
-    saveAndCloseCellEdit(headerId, rowId)
+    saveCellEdit(headerId, rowId)
+    cancelCellEdit()
     nextTick(() => navigateToCell('right'))
     return
   }
 
   if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && !event.shiftKey) {
     event.preventDefault()
-    saveAndCloseCellEdit(headerId, rowId)
+    saveCellEdit(headerId, rowId)
+    cancelCellEdit()
     nextTick(() => navigateToCell(event.key === 'ArrowUp' ? 'up' : 'down'))
     return
   }
@@ -7338,9 +7347,14 @@ const openNestedFromRowEdit = (header) => {
     tableName: originalHeader?.value || header.value
   })
 }
-const getEditorComponent = (type, dirTableId, columnType) => {
+const isYearLikeColumn = (headerName) => /год|year|основан/i.test(headerName || '')
+
+const getEditorComponent = (type, dirTableId, columnType, headerName) => {
   if (dirTableId && columnType === 'multi') return MultiSelect
   else if (dirTableId) return Dropdown
+
+  // Year-like NUMBER columns → Calendar year picker instead of InputNumber
+  if ((type === 13 || type === 14) && isYearLikeColumn(headerName)) return Calendar
 
   const componentMap = {
     3: MentionAutocomplete,  // SHORT text - with @mentions support
