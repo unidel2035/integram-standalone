@@ -5,11 +5,13 @@
  * - Webhook secrets для источников данных
  */
 
-// Integram configuration
-const INTEGRAM_SERVER = process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru'
+// Integram configuration — read from env lazily (dotenv runs after ESM imports)
 const INTEGRAM_DB = 'fst'
-const INTEGRAM_USERNAME = process.env.INTEGRAM_SYSTEM_USERNAME
-const INTEGRAM_PASSWORD = process.env.INTEGRAM_SYSTEM_PASSWORD
+const getIntegramConfig = () => ({
+  server: process.env.INTEGRAM_SERVER_URL || 'https://ai2o.ru',
+  username: process.env.INTEGRAM_SYSTEM_USERNAME || process.env.INTEGRAM_FST_USERNAME,
+  password: process.env.INTEGRAM_SYSTEM_PASSWORD || process.env.INTEGRAM_FST_PASSWORD,
+})
 
 // Webhook secrets (из переменных окружения)
 const WEBHOOK_SECRETS = {
@@ -35,10 +37,10 @@ async function authenticateIntegram() {
       return integramTokenCache
     }
 
-    // Integram auth возвращает 302 с Set-Cookie: {db}=<token>, не JSON
-    const response = await fetch(`${INTEGRAM_SERVER}/${INTEGRAM_DB}/auth`, {
+    const { server: INTEGRAM_SERVER, username: INTEGRAM_USERNAME, password: INTEGRAM_PASSWORD } = getIntegramConfig()
+    // Try JSON auth first (reliable), fallback to Set-Cookie
+    const response = await fetch(`${INTEGRAM_SERVER}/${INTEGRAM_DB}/auth?JSON_KV=`, {
       method: 'POST',
-      redirect: 'manual',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         login: INTEGRAM_USERNAME,
@@ -46,19 +48,23 @@ async function authenticateIntegram() {
       })
     })
 
-    // 302 = успех, токен в Set-Cookie
-    if (response.status !== 302) {
-      throw new Error(`Integram auth failed: ${response.status}`)
-    }
-
-    // Извлекаем токен из Set-Cookie: {db}=<token>
-    const setCookies = response.headers.getSetCookie?.() || []
     let token = null
-    for (const c of setCookies) {
-      const m = c.match(new RegExp(`^${INTEGRAM_DB}=([^;]+)`))
-      if (m) { token = m[1]; break }
+    const text = await response.text()
+    try {
+      let data = JSON.parse(text)
+      if (Array.isArray(data)) data = data[0]
+      token = data.token
+      if (!token) console.error('[Auth] JSON parsed but no token:', text.slice(0, 200))
+    } catch (parseErr) {
+      console.error('[Auth] JSON parse failed:', parseErr.message, 'response:', text.slice(0, 200))
+      // Fallback: try Set-Cookie (legacy)
+      const setCookies = response.headers.getSetCookie?.() || []
+      for (const c of setCookies) {
+        const m = c.match(new RegExp(`^${INTEGRAM_DB}=([^;]+)`))
+        if (m) { token = m[1]; break }
+      }
     }
-    if (!token) throw new Error('Integram auth: no token in Set-Cookie')
+    if (!token) throw new Error('Integram auth: no token in response')
 
     // Получаем _xsrf через /xsrf endpoint
     const xsrfRes = await fetch(`${INTEGRAM_SERVER}/${INTEGRAM_DB}/xsrf`, {
@@ -76,7 +82,7 @@ async function authenticateIntegram() {
     return integramTokenCache
 
   } catch (error) {
-    console.error('[Auth] Integram auth error:', error.message)
+    console.error('[Auth] Integram auth error:', error.message, '| server:', INTEGRAM_SERVER, '| user:', INTEGRAM_USERNAME ? 'set' : 'MISSING')
     throw new Error('Failed to authenticate with Integram')
   }
 }
@@ -106,7 +112,7 @@ export async function authenticateApiToken(req, res, next) {
     // Проверяем токен в БД (type 1195: API Tokens)
     const API_TOKENS_TYPE = 1195
     const response = await fetch(
-      `${INTEGRAM_SERVER}/${INTEGRAM_DB}/_d_req/${API_TOKENS_TYPE}?JSON_KV&l=100`,
+      `${getIntegramConfig().server}/${INTEGRAM_DB}/_d_req/${API_TOKENS_TYPE}?JSON_KV&l=100`,
       {
         headers: { 'X-Authorization': integramToken }
       }
